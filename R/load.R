@@ -13,8 +13,31 @@
 #' @export
 load.web <- function(r_file, tz = "Canada/Pacific", sep = ",") {
   r <- read.table(r_file, sep = ",", col.names = c("date","feeder_id","bird_id"))
-  r$time <- as.POSIXct(strptime(r$date, "%m-%d-%yT%H:%M:%SZ",tz = "Zulu"))
+  r$time <- as.POSIXct(strptime(r$date, "%m-%d-%yT%H:%M:%SZ", tz = "Zulu"))
   attributes(r$time)$tzone <- tz
+  r <- r[,c("bird_id","time", "feeder_id")]
+  return(r)
+}
+
+#' Load read data from the web (update)
+#'
+#' Loads raw read data from csv files downloaded from the \url{http://gaia.tru.ca/birdMOVES/datadownload.html} website and formats them for use with the feedr functions. This is merely a wrapper function that does many things that you can do yourself. It's utility depends on how standardized your data is, and whether you have extra details you need to address. This is updated to work with newer data download formats
+#'
+#' @param r_file Character. The location of a single file to load.
+#' @param tz.to Character. The time zone the date/times should be converted to (should match one of the zones produced by \code{OlsonNames())}.
+#' @param tz.from Character. The time zone the date/times should be converted from (should match one of the zones produced by \code{OlsonNames())}.
+#' @param sep Character. An override for the separator in the \code{read.table()} call (see \code{sep =} under \code{?read.table} for more details).
+#'
+#' @examples
+#' \dontrun{r <- load.web("downloaded_file.csv")}
+
+#' @export
+load.web2 <- function(r_file, tz.from = "GMT", tz.to = "Canada/Pacific", sep = ",") {
+  r <- read.csv(r_file)
+  r <- r[, c("feeder_id","bird_id","timezone")]
+  names(r)[3] <- "time"
+  r$time <- as.POSIXct(r$time, tz = tz.from)
+  attributes(r$time)$tzone <- tz.to
   r <- r[,c("bird_id","time", "feeder_id")]
   return(r)
 }
