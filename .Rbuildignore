@@ -1,0 +1,11 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^testing.R$
+^test_load\.R$
+^testing_maps.R"
+^maps.Rmd$
+^testing_gaps.R$
+^visualizations.R$
+^my-vignette.Rmd$
+
+
