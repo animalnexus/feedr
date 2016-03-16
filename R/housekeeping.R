@@ -11,6 +11,7 @@
 #'
 #' @return A data frame without the specified bird ids. Messages are printed to inform the user of matching or non-matching bird ids.
 #'
+#'
 #' @examples
 #' \dontrun{
 #' r <- load.web("downloaded_file.csv")
