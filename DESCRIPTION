@@ -4,14 +4,13 @@ Title: Transforming Raw RFID Data
 Version: 0.1
 Date: 2016-02-11
 Authors@R: person("LaZerte", "Stefanie E.", email = "stefanie.lazerte@unbc.ca", role = c("aut","cre"))
-URL: http://steffi.ca/steffi.lazerte
+URL: https://github.com/steffilazerte/feedr
 Description: This packages is designed to help turn raw RFID read data into data
     sets that can be use to answer a variety of biological questions.
 License: What license is it under?
 LazyData: TRUE
 Depends:
-    R (>= 3.2.2)
-Imports:
+    R (>= 3.2.2),
     RCurl,
     ggplot2,
     ggmap,
@@ -20,6 +19,7 @@ Imports:
     plyr,
     reshape2,
     stringr
+Imports:
 Suggests:
     testthat,
     knitr,
