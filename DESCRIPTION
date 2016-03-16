@@ -12,6 +12,7 @@ LazyData: TRUE
 Depends:
     R (>= 3.2.2)
 Imports:
+    RCurl,
     ggplot2,
     ggmap,
     htmltools,
