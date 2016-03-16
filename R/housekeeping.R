@@ -1,15 +1,25 @@
 
 #' Check for and omit non-bird bird ids
 #'
-#' This function pads all short ids with leading zeros, then compares the bird ids in your data file to those in an index file. Any ids matched to a species with a value in the \code{omit_bird} argument will be omitted from the data set.
+#' This function pads all short ids with leading zeros, then compares the bird
+#' ids in your data file to those in an index file. Any ids matched to a species
+#' with a value in the \code{omit_bird} argument will be omitted from the data
+#' set.
 #'
-#' This is useful for removing ids you know are errors (e.g., \code{0000000000}) or which you know are wands.
+#' This is useful for removing ids you know are errors (e.g., \code{0000000000})
+#' or which you know are wands.
 #'
-#' @param r Data frame. A data frame of read data, with at least column \code{bird_id}.
-#' @param bird_ids Character or Data frame. Either the name and location of a .csv file containing the bird id index or a data frame of the bird id index. In either case, the data must contain two columns: \code{bird_id} and \code{species}.
-#' @param omit_bird Character vector. All the values of \code{species} in the bird id index which you would like to omit from your data. Defaults to \code{c("wand", "error")}.
-#'
-#' @return A data frame without the specified bird ids. Messages are printed to inform the user of matching or non-matching bird ids.
+#' @param r Data frame. A data frame of read data, with at least column
+#'   \code{bird_id}.
+#' @param bird_ids Character or Data frame. Either the name and location of a
+#'   .csv file containing the bird id index or a data frame of the bird id
+#'   index. In either case, the data must contain two columns: \code{bird_id}
+#'   and \code{species}.
+#' @param omit_bird Character vector. All the values of \code{species} in the
+#'   bird id index which you would like to omit from your data. Defaults to
+#'   \code{c("wand", "error")}.
+#' @return A data frame without the specified bird ids. Messages are printed to
+#'   inform the user of matching or non-matching bird ids.
 #'
 #'
 #' @examples
@@ -59,14 +69,23 @@ check.ids <- function(r, bird_ids, omit_bird = c("wand", "error")){
 
 #' Check for and correct odd bird ids
 #'
-#' This function compares the bird ids in your data file to those in a problem index file. Any ids matched will be replaced with the corrected value in the problem index.
+#' This function compares the bird ids in your data file to those in a problem
+#' index file. Any ids matched will be replaced with the corrected value in the
+#' problem index.
 #'
-#' This is useful for correcting ids that have been mangled by opening files in Word (where leading zeros are stripped) or for dealing with any odd problems in the field.
+#' This is useful for correcting ids that have been mangled by opening files in
+#' Word (where leading zeros are stripped) or for dealing with any odd problems
+#' in the field.
 #'
-#' @param r Data frame. A data frame of read data, with at least column \code{bird_id}.
-#' @param problems Character or Data frame. Either the name and location of a .csv file containing the problem index or a data frame of the problem index. In either case, the data must contain two columns: \code{original_id} and \code{corrected_id}.
+#' @param r Data frame. A data frame of read data, with at least column
+#'   \code{bird_id}.
+#' @param problems Character or Data frame. Either the name and location of a
+#'   .csv file containing the problem index or a data frame of the problem
+#'   index. In either case, the data must contain two columns:
+#'   \code{original_id} and \code{corrected_id}.
 #'
-#' @return A data frame with corrected ids. Messages are printed to inform the user of any corrections made.
+#' @return A data frame with corrected ids. Messages are printed to inform the
+#'   user of any corrections made.
 #'
 #' @examples
 #' \dontrun{
