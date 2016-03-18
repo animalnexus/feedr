@@ -16,7 +16,11 @@ load.web.legacy <- function(r_file, tz = "Canada/Pacific", sep = ",") {
   r <- read.table(r_file, sep = ",", col.names = c("date","feeder_id","bird_id"))
   r$time <- as.POSIXct(strptime(r$date, "%m-%d-%yT%H:%M:%SZ", tz = "Zulu"))
   attributes(r$time)$tzone <- tz
+
+  # Trim any trailing or leading white spaces
+  r <- data.frame(apply(r, MARGIN = 2, FUN = trimws))
   r <- r[,c("bird_id","time", "feeder_id")]
+
   return(r)
 }
 
@@ -35,9 +39,17 @@ load.web.legacy <- function(r_file, tz = "Canada/Pacific", sep = ",") {
 
 #' @export
 load.web <- function(r_file, tz = "Canada/Pacific", sep = ",") {
-  if(!is.data.frame(r_file)) r <- r[, c("feeder_id","bird_id","timezone")] else r <- r_file
+  if(!is.data.frame(r_file)) {
+    r <- read.csv(r_file, strip.white = TRUE)
+    r <- r[, c("feeder_id","bird_id","timezone")]
+    } else r <- r_file
+
   names(r)[names(r) == "timezone"] <- "time"
   r$time <- as.POSIXct(r$time, tz = tz)
+
+  # Remove all leading and trailing spaces from observations
+  r <- data.frame(apply(r, MARGIN = 2, FUN = trimws))
+
   r <- r[,c("bird_id","time", "feeder_id", names(r)[!(names(r) %in% c("bird_id", "time", "feeder_id"))])]
   return(r)
 }
@@ -91,6 +103,9 @@ load.raw <- function(r_file, tz = "Canada/Pacific", feeder_pattern = "[GPR]{2,3}
 
     # Extract Proper Date and Times
     r$time <- as.POSIXct(strptime(paste(r$date, r$time), format = "%m/%d/%y %H:%M:%S",tz = tz))
+
+    # Trim leading or trailing whitespace
+    r <- data.frame(apply(r, MARGIN = 2, FUN = trimws))
     r <- r[,c("bird_id","time","feeder_id")]
 
     # Get any extra columns by matching patterns in file name as specified by extra_pattern and extra_name
@@ -190,7 +205,7 @@ get.data <- function(start = NULL,
                         qendtz = tz))
 
   g <- RCurl::getForm(url, .params = params)
-  r <- load.web(read.csv(text = g), tz = tz)
+  r <- load.web(read.csv(text = g, strip.white = TRUE), tz = tz)
   return(r)
 }
 
