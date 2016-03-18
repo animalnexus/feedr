@@ -9,17 +9,17 @@ Description: This packages is designed to help turn raw RFID read data into data
     sets that can be use to answer a variety of biological questions.
 License: What license is it under?
 LazyData: TRUE
-Depends:
-    R (>= 3.2.2),
+Depends: R (>= 3.2.2)
+Imports:
     RCurl,
     ggplot2,
     ggmap,
     htmltools,
     leaflet,
+    lubridate,
     plyr,
     reshape2,
     stringr
-Imports:
 Suggests:
     testthat,
     knitr,

@@ -7,18 +7,27 @@
 check.problems(r, problems)
 }
 \arguments{
-\item{r}{Data frame. A data frame of read data, with at least column \code{bird_id}.}
+\item{r}{Data frame. A data frame of read data, with at least column
+\code{bird_id}.}
 
-\item{problems}{Character or Data frame. Either the name and location of a .csv file containing the problem index or a data frame of the problem index. In either case, the data must contain two columns: \code{original_id} and \code{corrected_id}.}
+\item{problems}{Character or Data frame. Either the name and location of a
+.csv file containing the problem index or a data frame of the problem
+index. In either case, the data must contain two columns:
+\code{original_id} and \code{corrected_id}.}
 }
 \value{
-A data frame with corrected ids. Messages are printed to inform the user of any corrections made.
+A data frame with corrected ids. Messages are printed to inform the
+  user of any corrections made.
 }
 \description{
-This function compares the bird ids in your data file to those in a problem index file. Any ids matched will be replaced with the corrected value in the problem index.
+This function compares the bird ids in your data file to those in a problem
+index file. Any ids matched will be replaced with the corrected value in the
+problem index.
 }
 \details{
-This is useful for correcting ids that have been mangled by opening files in Word (where leading zeros are stripped) or for dealing with any odd problems in the field.
+This is useful for correcting ids that have been mangled by opening files in
+Word (where leading zeros are stripped) or for dealing with any odd problems
+in the field.
 }
 \examples{
 \dontrun{

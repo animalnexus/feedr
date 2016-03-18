@@ -7,20 +7,31 @@
 check.ids(r, bird_ids, omit_bird = c("wand", "error"))
 }
 \arguments{
-\item{r}{Data frame. A data frame of read data, with at least column \code{bird_id}.}
+\item{r}{Data frame. A data frame of read data, with at least column
+\code{bird_id}.}
 
-\item{bird_ids}{Character or Data frame. Either the name and location of a .csv file containing the bird id index or a data frame of the bird id index. In either case, the data must contain two columns: \code{bird_id} and \code{species}.}
+\item{bird_ids}{Character or Data frame. Either the name and location of a
+.csv file containing the bird id index or a data frame of the bird id
+index. In either case, the data must contain two columns: \code{bird_id}
+and \code{species}.}
 
-\item{omit_bird}{Character vector. All the values of \code{species} in the bird id index which you would like to omit from your data. Defaults to \code{c("wand", "error")}.}
+\item{omit_bird}{Character vector. All the values of \code{species} in the
+bird id index which you would like to omit from your data. Defaults to
+\code{c("wand", "error")}.}
 }
 \value{
-A data frame without the specified bird ids. Messages are printed to inform the user of matching or non-matching bird ids.
+A data frame without the specified bird ids. Messages are printed to
+  inform the user of matching or non-matching bird ids.
 }
 \description{
-This function pads all short ids with leading zeros, then compares the bird ids in your data file to those in an index file. Any ids matched to a species with a value in the \code{omit_bird} argument will be omitted from the data set.
+This function pads all short ids with leading zeros, then compares the bird
+ids in your data file to those in an index file. Any ids matched to a species
+with a value in the \code{omit_bird} argument will be omitted from the data
+set.
 }
 \details{
-This is useful for removing ids you know are errors (e.g., \code{0000000000}) or which you know are wands.
+This is useful for removing ids you know are errors (e.g., \code{0000000000})
+or which you know are wands.
 }
 \examples{
 \dontrun{
