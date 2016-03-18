@@ -216,7 +216,7 @@ get.data <- function(start = NULL,
   }
 
   # Stop if url doesn't exist
-  if(!url.exists(url)) stop("The url '", url, "' doesn't exist (or you have no internet connection).")
+  if(!RCurl::url.exists(url)) stop("The url '", url, "' doesn't exist (or you have no internet connection).")
 
   # Stop if sites not in list
   if(!all(sites %in% c("Kamloops", "Costa Rica"))) stop("Sites must be one or more of 'Kamloops' and/or 'Costa Rica'")
