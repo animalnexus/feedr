@@ -17,10 +17,7 @@ load.web.legacy <- function(r_file, tz = "Canada/Pacific", sep = ",") {
   r$time <- as.POSIXct(strptime(r$date, "%m-%d-%yT%H:%M:%SZ", tz = "Zulu"))
   attributes(r$time)$tzone <- tz
 
-  # Trim any trailing or leading white spaces
-  r <- data.frame(apply(r, MARGIN = 2, FUN = trimws))
-  r <- r[,c("bird_id","time", "feeder_id")]
-
+  r <- format.data(r, tz = tz)
   return(r)
 }
 
@@ -39,18 +36,8 @@ load.web.legacy <- function(r_file, tz = "Canada/Pacific", sep = ",") {
 
 #' @export
 load.web <- function(r_file, tz = "Canada/Pacific", sep = ",") {
-  if(!is.data.frame(r_file)) {
-    r <- read.csv(r_file, strip.white = TRUE)
-    r <- r[, c("feeder_id","bird_id","timezone")]
-    } else r <- r_file
-
-  names(r)[names(r) == "timezone"] <- "time"
-  r$time <- as.POSIXct(r$time, tz = tz)
-
-  # Remove all leading and trailing spaces from observations
-  r <- data.frame(apply(r, MARGIN = 2, FUN = trimws))
-
-  r <- r[,c("bird_id","time", "feeder_id", names(r)[!(names(r) %in% c("bird_id", "time", "feeder_id"))])]
+  r <- read.csv(r_file, strip.white = TRUE)
+  r <- format.data(r, tz = tz)
   return(r)
 }
 
@@ -95,26 +82,71 @@ load.web <- function(r_file, tz = "Canada/Pacific", sep = ",") {
 load.raw <- function(r_file, tz = "Canada/Pacific", feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1) {
     r <- read.table(r_file, col.names = c("bird_id","date","time"), skip = skip, sep = sep)
 
+    # Trim leading or trailing whitespace
+    r <- data.frame(apply(r, MARGIN = 2, FUN = trimws))
+
     # Get feeder Ids by matching patterns in file name
     r$feeder_id <- stringr::str_extract(r_file, feeder_pattern)
 
     # Convert bird_id to character for combining later on
     r$bird_id <- as.character(r$bird_id)
 
-    # Extract Proper Date and Times
-    r$time <- as.POSIXct(strptime(paste(r$date, r$time), format = "%m/%d/%y %H:%M:%S",tz = tz))
-
-    # Trim leading or trailing whitespace
-    r <- data.frame(apply(r, MARGIN = 2, FUN = trimws))
-    r <- r[,c("bird_id","time","feeder_id")]
-
     # Get any extra columns by matching patterns in file name as specified by extra_pattern and extra_name
     if(!is.null(extra_pattern)){
       if(is.null(extra_name)) stop("You have specified patterns to match for extra columns, but you have not specified what these column names ('extra_name') should be.")
       for(i in 1:length(extra_pattern)) r[,extra_name[i]] <- stringr::str_extract(r_file, extra_pattern[i])
     } else if(!is.null(extra_name)) stop("You have specified names for extra columns, but you have not specified what pattern to match for filling ('extra_pattern').")
+
+    r$time <- lubridate::parse_date_time(paste(r$date, r$time), orders = "%m/%d/%y %H:%M:%S", tz = tz)
+    r <- r[, names(r) != "date"]
+
+    # Reorder columns
+    r <- r[,c("bird_id", "time", "feeder_id", names(r)[!(names(r) %in% c("bird_id", "time", "feeder_id"))])]
     return(r)
 }
+
+#' Load and combine raw data files
+#'
+#' This is a wrapper function which loads and combines all raw data files from a series of nested folders.
+#'
+#' @param r_dir Character. The director that holds all your raw data files (can be in subdirectories)
+#' @param pattern Character. A regular expression pattern that matches the files you wish to include. Defaults to "DATA" to include only DATA files and not NOTE files.
+#' @param tz Character. The time zone the date/times should be converted to (should match one of the zones produced by \code{OlsonNames())}.
+#' @param feeder_pattern Character. A regular expression matching the feeder id in the file name.
+#' @param extra_pattern Character vector. A vector of regular expressions matching any extra information in the file or directory names.
+#' @param extra_name Character vector. A vector of column names matching the order of \code{extra_pattern} for storing the results of the pattern.
+#' @param sep Character. An override for the separator in the \code{read.table()} call (see \code{sep =} under \code{?read.table} for more details).
+#' @param skip Character. An override for the skip in the \code{read.table()} call (see \code{skip =} under \code{?read.table} for more details).
+#'
+#' @export
+load.raw.all <- function(r_dir,
+                         pattern = "DATA",
+                         tz = "Canada/Pacific",
+                         feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
+                         extra_pattern = NULL,
+                         extra_name = NULL,
+                         sep = "",
+                         skip = 1) {
+  # Get file locations (match pattern and get all subfiles)
+  r_list <- list.files(r_dir, pattern = pattern, recursive = TRUE, full.names = TRUE)
+
+  # Remove temporary files
+  r_list <- r_list[!grepl("~", r_list)]
+
+  if(length(r_list) == 0) stop("Either the directory is empty or your pattern matches no files")
+
+  # Load in data and assign extra colums
+  r <- do.call('rbind', lapply(r_list,
+                               load.raw,
+                               tz = tz,
+                               feeder_pattern = feeder_pattern,
+                               extra_pattern = extra_pattern,
+                               extra_name = extra_name,
+                               sep = sep, skip = skip))
+  r <- format.data(r, tz = tz)
+  return(r)
+}
+
 
 
 #' Download data from Thompson Rivers University "BirdMoves" website.
@@ -205,7 +237,31 @@ get.data <- function(start = NULL,
                         qendtz = tz))
 
   g <- RCurl::getForm(url, .params = params)
-  r <- load.web(read.csv(text = g, strip.white = TRUE), tz = tz)
+  r <- format.data(read.csv(text = g, strip.white = TRUE, colClasses = "character"), tz = tz)
+  return(r)
+}
+
+#' Internal function: Format data
+#'
+#' Formats data for the loading function.
+#'
+#' @export
+format.data <- function(r, tz){
+
+  # Trim leading or trailing whitespace
+  r <- data.frame(apply(r, MARGIN = 2, FUN = trimws))
+
+  # Extract Proper Date and Times
+  names(r)[names(r) == "timezone"] <- "time"
+  r$time <- lubridate::ymd_hms(r$time, tz = tz)
+
+  # Make sure all factors are factors:
+  r$bird_id <- as.factor(r$bird_id)
+  r$feeder_id <- as.factor(r$feeder_id)
+
+  # Reorder columns
+  r <- r[,c("bird_id", "time", "feeder_id", names(r)[!(names(r) %in% c("bird_id", "time", "feeder_id"))])]
+
   return(r)
 }
 
