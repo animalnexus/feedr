@@ -37,29 +37,23 @@ check.ids <- function(r, bird_ids, omit_bird = c("wand", "error")){
 
   if(!is.data.frame(bird_ids)) bird_ids <- read.csv(bird_ids)
 
-  # Pad short ids with leading zeros
-  bird_ids$bird_id <- as.character(bird_ids$bird_id)
-  bird_ids$bird_id[nchar(bird_ids$bird_id) < 10] <- stringr::str_pad(bird_ids$bird_id[nchar(bird_ids$bird_id) < 10], 10, pad = "0")
-  r$bird_id <- as.character(r$bird_id)
-  r$bird_id[nchar(r$bird_id) < 10] <- stringr::str_pad(r$bird_id[nchar(r$bird_id) < 10], 10, pad = "0")
-
   # Check for other id problems
-  if(any(nchar(bird_ids$bird_id) != 10)) stop("After correcting for leading zeros, you still have some bird_ids in your bird_id index that are not 10 characters long")
-  if(any(nchar(r$bird_id) != 10)) stop("After correcting for leading zeros, you still have some bird_ids in your read data that are not 10 characters long")
+  if(any(nchar(as.character(bird_ids$bird_id)) != 10)) stop("You have some bird_ids in your bird_id index that are not 10 characters long")
+  if(any(nchar(as.character(r$bird_id)) != 10)) stop("You have some bird_ids in your read data that are not 10 characters long")
 
   # Look for unknown ids in your data
   unlisted <- unique(r$bird_id[!(r$bird_id  %in% unique(bird_ids$bird_id))])
-  if(length(unlisted) > 0) print(paste("Some ids present in your data do not exist in the bird_id index:", paste(unlisted, collapse = ", "))) else print("All ids in your data are also in your bird_id index")
+  if(length(unlisted) > 0) message(paste("Some ids present in your data do not exist in the bird_id index:", paste(unlisted, collapse = ", "))) else message("All ids in your data are also in your bird_id index")
 
   # Look for individuals in your bird_ids that are not in your data
   unseen <- unique(bird_ids$bird_id[!(bird_ids$bird_id %in% unique(r$bird_id))])
-  if(length(unseen) > 0) print(paste("Some ids present in your bird_id index, are not in your data:", paste0(unseen, collapse = ", "))) else print("All ids in your bird_id index are also in your data")
+  if(length(unseen) > 0) message(paste("Some ids present in your bird_id index, are not in your data:", paste0(unseen, collapse = ", "))) else message("All ids in your bird_id index are also in your data")
 
   # Which ids in the data set match the "omit" section?
   if(!is.data.frame(bird_ids)) bird_ids <- read.csv(bird_ids)
   ob <- unique(bird_ids[bird_ids$species %in% omit_bird, "bird_id"]) # Which to omit in general
   ob2 <- unique(r$bird_id[r$bird_id %in% ob]) # Which to omit in this case
-  if(length(ob2) > 0) print(paste("The following bird ids have been omitted:",paste0(ob2, collapse = ", "))) else print("No ids have been omitted")
+  if(length(ob2) > 0) message(paste("The following bird ids have been omitted:",paste0(ob2, collapse = ", "))) else message("No ids have been omitted")
 
   # Only keep those that aren't in the "omit" section (also keeps ids not in any section: 'unlisted')
   r <- r[!(r$bird_id %in% ob),]
@@ -87,18 +81,9 @@ check.ids <- function(r, bird_ids, omit_bird = c("wand", "error")){
 #' @return A data frame with corrected ids. Messages are printed to inform the
 #'   user of any corrections made.
 #'
-#' @examples
-#' \dontrun{
-#' r <- load.web("downloaded_file.csv")
-#' r <- check.ids(r, bird_ids = "bird_index.csv")
-#'
-#' r <- load.web("downloaded_file.csv")
-#' b <- read.csv("bird_index.csv")
-#' r <- check.ids(r, bird_ids = b)
-#' }
 #' @export
 check.problems <- function(r, problems){
-  if(length(problems) > 1 & !is.data.frame(problems)) stop("problems should either be the name of a comma separated file (csv) OR should be a data frame. In either case, the data should contain headers 'original_id' and 'corrected_id'")
+  if(length(problems) > 1 & !is.data.frame(problems)) stop("Problems should either be the name of a comma separated file (csv) OR should be a data frame. In either case, the data should contain headers 'original_id' and 'corrected_id'")
 
   # Get factor categories for bird_id
   birds <- levels(r$bird_id)
@@ -106,6 +91,13 @@ check.problems <- function(r, problems){
 
   # If problems is a file, load it
   if(!is.data.frame(problems)) problems <- read.csv(problems)
+
+  if(!all(names(problems) %in% c("original_id", "corrected_id"))) stop("Problems should contain headers 'original_id' and 'corrected_id'")
+  if(nrow(problems) < 1) stop("Problems data frame has no rows")
+
+  # Trim leading or trailing whitespace
+  problems <- data.frame(apply(problems, MARGIN = 2, FUN = trimws))
+
   problems$original_id <- as.character(problems$original_id)
   problems$corrected_id <- as.character(problems$corrected_id)
 
@@ -123,8 +115,8 @@ check.problems <- function(r, problems){
   r$bird_id <- factor(r$bird_id, levels = birds)
 
   if(nrow(fixes) > 0) {
-    print("The following bird ids have been corrected:")
-    print(fixes)
-  } else print("No bird ids needed to be fixed")
+    message("The following bird ids have been corrected:")
+    message(paste0(apply(fixes, 1, paste0, collapse = " to "), collapse = "\n"))
+  } else message("No bird ids needed to be fixed")
   return(r)
 }
