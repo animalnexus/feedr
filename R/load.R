@@ -83,7 +83,7 @@ load.raw <- function(r_file, tz = "Canada/Pacific", feeder_pattern = "[GPR]{2,3}
     r <- read.table(r_file, col.names = c("bird_id","date","time"), skip = skip, sep = sep)
 
     # Trim leading or trailing whitespace
-    r <- data.frame(apply(r, MARGIN = 2, FUN = trimws))
+    r <- plyr::ddply(r, c(), plyr::colwise(trimws))[ , -1]
 
     # Get feeder Ids by matching patterns in file name
     r$feeder_id <- stringr::str_extract(r_file, feeder_pattern)
@@ -249,7 +249,7 @@ get.data <- function(start = NULL,
 format.data <- function(r, tz){
 
   # Trim leading or trailing whitespace
-  r <- data.frame(apply(r, MARGIN = 2, FUN = trimws))
+  r <- plyr::ddply(r, c(), plyr::colwise(trimws))[ , -1]
 
   # Extract Proper Date and Times
   names(r)[names(r) == "timezone"] <- "time"
