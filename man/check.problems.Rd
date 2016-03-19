@@ -29,14 +29,4 @@ This is useful for correcting ids that have been mangled by opening files in
 Word (where leading zeros are stripped) or for dealing with any odd problems
 in the field.
 }
-\examples{
-\dontrun{
-r <- load.web("downloaded_file.csv")
-r <- check.ids(r, bird_ids = "bird_index.csv")
-
-r <- load.web("downloaded_file.csv")
-b <- read.csv("bird_index.csv")
-r <- check.ids(r, bird_ids = b)
-}
-}
 
