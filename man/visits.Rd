@@ -4,22 +4,19 @@
 \alias{visits}
 \title{'Raw' data to 'visits' data}
 \usage{
-visits(r, bw = 3, pass = NULL, allow.imp = FALSE, na.rm = FALSE)
+visits(r, bw = 3, allow.imp = FALSE, na.rm = FALSE)
 }
 \arguments{
 \item{r}{Dataframe. Contains raw reads from an RFID reader with colums \code{bird_id}, \code{feeder_id}, \code{time}.}
 
 \item{bw}{Numerical. The minimum number of seconds between reads for two successive reads to be considered separate visits.}
 
-\item{pass}{Character vector. The names of any extra columns that should be
-'passed' through the function.}
-
 \item{allow.imp}{Logical. Whether impossible visits should be allowed (see details).}
 
 \item{na.rm}{Logical. Whether NA values should be automatically omited. Otherwise an error is returned.}
 }
 \value{
-A data frame with visits specifying \code{bird_id} and \code{feeder_id} as well as the \code{start} and \code{end} of the visit. Any extra columns are passed through with \code{pass} they will also be included at the end.
+A data frame with visits specifying \code{bird_id} and \code{feeder_id} as well as the \code{start} and \code{end} of the visit. Any extra columns that are unique at the level of bird_id or feeder_id will also be passed through (i.e. age, sex, feeder location, etc.).
 }
 \description{
 Raw data from RFID feeders contain multiple reads per individual simply
