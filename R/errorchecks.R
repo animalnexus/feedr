@@ -1,6 +1,6 @@
 
 check.name <- function(d, n = c("bird_id", "feeder_id")) {
-  if(!all(names %in% names(d))) stop(paste0("Required columns aren't present. Require: ", paste0("'", n, "'", collapse = ", ")))
+  if(!all(n %in% names(d))) stop(paste0("Required columns aren't present. Require: ", paste0("'", n, "'", collapse = ", ")))
 }
 
 check.time <- function(d, n = c("start", "end"), internal = TRUE) {
