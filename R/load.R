@@ -17,7 +17,7 @@ load.web.legacy <- function(r_file, tz = "Canada/Pacific", sep = ",") {
   r$time <- as.POSIXct(strptime(r$date, "%m-%d-%yT%H:%M:%SZ", tz = "Zulu"))
   attributes(r$time)$tzone <- tz
 
-  r <- format.data(r, tz = tz)
+  r <- load.format(r, tz = tz)
   return(r)
 }
 
@@ -37,7 +37,7 @@ load.web.legacy <- function(r_file, tz = "Canada/Pacific", sep = ",") {
 #' @export
 load.web <- function(r_file, tz = "Canada/Pacific", sep = ",") {
   r <- read.csv(r_file, strip.white = TRUE)
-  r <- format.data(r, tz = tz)
+  r <- load.format(r, tz = tz)
   return(r)
 }
 
@@ -101,7 +101,7 @@ load.raw <- function(r_file, tz = "Canada/Pacific", feeder_pattern = "[GPR]{2,3}
     r <- r[, names(r) != "date"]
 
     # Reorder columns
-    r <- r[,c("bird_id", "time", "feeder_id", names(r)[!(names(r) %in% c("bird_id", "time", "feeder_id"))])]
+    r <- col.order(r, c("bird_id", "time", "feeder_id"))
     return(r)
 }
 
@@ -143,7 +143,7 @@ load.raw.all <- function(r_dir,
                                extra_pattern = extra_pattern,
                                extra_name = extra_name,
                                sep = sep, skip = skip))
-  r <- format.data(r, tz = tz)
+  r <- load.format(r, tz = tz)
   return(r)
 }
 
@@ -237,7 +237,7 @@ get.data <- function(start = NULL,
                         qendtz = tz))
 
   g <- RCurl::getForm(url, .params = params)
-  r <- format.data(read.csv(text = g, strip.white = TRUE, colClasses = "character"), tz = tz)
+  r <- load.format(read.csv(text = g, strip.white = TRUE, colClasses = "character"), tz = tz)
   return(r)
 }
 
@@ -246,7 +246,7 @@ get.data <- function(start = NULL,
 #' Formats data for the loading function.
 #'
 #' @export
-format.data <- function(r, tz){
+load.format <- function(r, tz){
 
   # Trim leading or trailing whitespace
   r <- plyr::ddply(r, c(), plyr::colwise(trimws))[ , -1]
@@ -260,7 +260,7 @@ format.data <- function(r, tz){
   r$feeder_id <- as.factor(r$feeder_id)
 
   # Reorder columns
-  r <- r[,c("bird_id", "time", "feeder_id", names(r)[!(names(r) %in% c("bird_id", "time", "feeder_id"))])]
+  r <- col.order(r, c("bird_id", "time", "feeder_id"))
 
   return(r)
 }
