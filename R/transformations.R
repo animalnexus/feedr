@@ -19,12 +19,10 @@
 #'
 #' @param r Dataframe. Contains raw reads from an RFID reader with colums \code{bird_id}, \code{feeder_id}, \code{time}.
 #' @param bw Numerical. The minimum number of seconds between reads for two successive reads to be considered separate visits.
-#' @param pass Character vector. The names of any extra columns that should be
-#'   'passed' through the function.
 #' @param allow.imp Logical. Whether impossible visits should be allowed (see details).
 #' @param na.rm Logical. Whether NA values should be automatically omited. Otherwise an error is returned.
 #'
-#' @return A data frame with visits specifying \code{bird_id} and \code{feeder_id} as well as the \code{start} and \code{end} of the visit. Any extra columns are passed through with \code{pass} they will also be included at the end.
+#' @return A data frame with visits specifying \code{bird_id} and \code{feeder_id} as well as the \code{start} and \code{end} of the visit. Any extra columns that are unique at the level of bird_id or feeder_id will also be passed through (i.e. age, sex, feeder location, etc.).
 #'
 #' @examples
 #' \dontrun{
@@ -33,26 +31,18 @@
 #' }
 
 #' @export
-visits <- function(r, bw = 3, pass = NULL, allow.imp = FALSE, na.rm = FALSE){
-  # Confirm that the columns are appropriate
-  if(!all(c("feeder_id","bird_id","time") %in% names(r))) stop("Required columns aren't present. Require \"bird_id\", \"feeder_id\", and \"time\"")
+visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE){
+
+  # Confirm that expected columns and formats are present
+  check.name(r, n = c("bird_id", "feeder_id", "time"))
+  check.time(r, n = "time", internal = FALSE)
+  check.format(r)
 
   # Check for NAs, remove if specified by na.rm = TRUE
   if(any(is.na(r))) {
     if(na.rm == FALSE) stop("NAs found. To automatically remove NAs, specify 'na.rm = TRUE'.")
     if(na.rm == TRUE) r <- r[rowSums(is.na(r)) == 0,]
   }
-
-  # Check for potential issues
-  if(any(stringr::str_count(r$feeder_id, "_") > 0)) warning("Using '_' in feeder_id names conflicts with the mapping functions. You should remove any '_'s if you plan to use these functions.")
-
-  # Confirm that the time column is a POSIXct object
-  if(!inherits(r$time, "POSIXct")) {
-    stop("time column is not in POSIXct format. Try as.POSIXct(strptime(...))")
-  }
-
-  # Remove excess columns
-  r <- r[,c("feeder_id","bird_id","time", pass)]
 
   # Grab the timezone
   tz <- attr(r$time, "tzone")
@@ -86,7 +76,7 @@ visits <- function(r, bw = 3, pass = NULL, allow.imp = FALSE, na.rm = FALSE){
   r$end[c(any(diff.time, diff.bird, diff.feeder), TRUE)] <- r$time[c(any(diff.time, diff.bird, diff.feeder), TRUE)]
 
   # Get visits
-  v <- r[!(is.na(r$start) & is.na(r$end)),c("feeder_id","bird_id","start","end", pass)]
+  v <- r[!(is.na(r$start) & is.na(r$end)),c("feeder_id","bird_id","start","end")]
   v <- reshape2::melt(v, measure.vars = c("start","end"))
   v <- v[!is.na(v$value),]
   v <- plyr::ddply(v[order(v$value),], c("feeder_id", "bird_id", "variable"), transform, n = 1:length(value))
@@ -97,8 +87,8 @@ visits <- function(r, bw = 3, pass = NULL, allow.imp = FALSE, na.rm = FALSE){
   v <- v[order(v$start),-grep("^n$",names(v))]
 
   # Return error if any NAs
-  if(any(is.na(v[ , !(names(v) %in% pass)]))) {
-    print(v[rowSums(is.na(v[ , !(names(v) %in% pass)])) > 0,])
+  if(any(is.na(v))) {
+    print(v[rowSums(is.na(v)) > 0,])
     stop("Unknown error: NAs present in output")
   }
 
@@ -106,8 +96,22 @@ visits <- function(r, bw = 3, pass = NULL, allow.imp = FALSE, na.rm = FALSE){
   v$bird_n <- length(unique(v$bird_id))
   v$feeder_n <- length(unique(v$feeder_id))
 
+  # Get extra columns but only if they're unique to either bird_id or feeder_id
+  extra.cols <- names(r)[!(names(r) %in% c("bird_id", "feeder_id", "time", "start", "end"))]
+
+  keep <- vector()
+  for(n in extra.cols) {
+    if(nrow(unique(r[, c(n, "bird_id")]))   == length(unique(r$bird_id))) keep <- c(keep, n)
+    if(nrow(unique(r[, c(n, "feeder_id")])) == length(unique(r$feeder_id))) keep <- c(keep, n)
+  }
+  keep <- unique(keep)
+  if(length(keep) > 0) v <- merge(v, unique(r[ , c("bird_id", "feeder_id", keep)]), by = c("bird_id", "feeder_id"))
+
+  # Order and format data frame
+  v <- col.order(v, c("bird_id", "start", "end", "feeder_id", "bird_n", "feeder_n"))
   v$feeder_id <- factor(v$feeder_id)
   v$bird_id <- factor(v$bird_id)
+
   return(v)
 }
 
@@ -161,25 +165,10 @@ visits <- function(r, bw = 3, pass = NULL, allow.imp = FALSE, na.rm = FALSE){
 move <- function(v1, all = FALSE){
 
   # Check for correct formatting
-  if(!all(c("bird_id", "feeder_id", "start", "end") %in% names(v1))) {
-    stop("Required columns aren't present. Require \"bird_id\",\"feeder_id\", \"start\" and \"end\"")
-  }
-
-  if(!all(sapply(v1[, c("start", "end")], class) == c("POSIXct", "POSIXt"))) {
-    stop("Start and End columns must be in R's date/time formating (POSIXct). Consider as.POSIXct() and strptime().")
-  }
-
-  # Check for correct data
-  if(length(unique(v1$bird_id)) > 1) stop("This function is only designed to be run on one individual at a time. Consider using the ddply function from the plyr package to apply this function to all birds. E.g.,  f <- ddply(v, c(\"bird_id\"), movement)")
-
-  # Check for potential issues
-  if(any(stringr::str_count(v1$feeder_id, "_") > 0)) warning("Using '_' in feeder_id names conflicts with the mapping functions. You should remove any '_'s if you plan to use these functions.")
-
-  # Movement path function (unique for each feeder path)
-  mp <- function(x) {
-    x$move_path <- paste(as.character(sort(unlist(x[,c("feeder_left","feeder_arrived")]))),collapse = "_")
-    return(x)
-  }
+  check.name(v1, c("bird_id", "feeder_id", "start", "end"))
+  check.time(v1)
+  check.indiv(v1)
+  check.format(v1)
 
   # Grab sample sizes
   bird_n <- v1$bird_n[1]
@@ -188,6 +177,8 @@ move <- function(v1, all = FALSE){
   # Get factor levels
   bird_id <- levels(v1$bird_id)
   feeder_id <- levels(v1$feeder_id)
+
+  # Get movement options
   move_dir <- expand.grid(feeder_left = feeder_id, feeder_arrived = feeder_id)
   move_dir <- move_dir[move_dir$feeder_left != move_dir$feeder_arrived,]
   move_path <- unique(plyr::adply(move_dir, .margins = 1, .fun = mp)[,3])
@@ -241,9 +232,11 @@ move <- function(v1, all = FALSE){
     m <- data.frame()
   }
 
+  # Order
+  m <- col.order(m, c("bird_id", "left", "arrived", "feeder_left", "feeder_arrived", "move_dir", "move_path", "strength", "bird_n", "feeder_n"))
+
   return(m)
 }
-
 
 # ----------------------------------
 # feeding
@@ -297,15 +290,9 @@ move <- function(v1, all = FALSE){
 feeding <- function(v1, bw = 15){
 
   ## Check for correct formatting
-  if(!all(c("bird_id","feeder_id", "start","end") %in% names(v1))) {
-    stop("Required columns aren't present. Require \"bird_id\",\"feeder_id\", \"start\" and \"end\"")
-  }
-
-  if(!all(sapply(v1[,c("start","end")],class) == c("POSIXct","POSIXt"))) {
-    stop("Start and End columns must be in R's date/time formating (POSIXct). Consider as.POSIXct() and strptime().")
-  }
-
-  if(length(unique(v1$bird_id)) > 1) stop("This function is only designed to be run on one individual at a time. Consider using the ddply function from the plyr package to apply this function to all birds. E.g.,  f <- ddply(v, c(\"bird_id\"), feeding)")
+  check.name(v1, c("bird_id","feeder_id", "start","end"))
+  check.time(v1)
+  check.indiv(v1)
 
   # Grab samples sizes
   bird_n <- v1$bird_n[1]
