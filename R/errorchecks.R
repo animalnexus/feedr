@@ -15,6 +15,6 @@ check.indiv <- function(d) {
 
 check.format <- function(d, n = "feeder_id") {
   for(i in n) {
-    if(any(stringr::str_count(d[, i], "_") > 0)) warning(paste0("Using '_' in ", i, " values conflicts with the mapping functions. You should remove any '_'s if you plan to use these functions."))
+    if(any(stringr::str_count(d[, i], "_") > 0)) message(paste0("Using '_' in ", i, " values conflicts with the mapping functions. You should remove any '_'s if you plan to use these functions."))
   }
 }

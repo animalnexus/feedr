@@ -30,9 +30,9 @@ test_that("check.indiv returns error if more than one bird_id", {
 test_that("check.format returns error if '_' in column values", {
   d <- data.frame(bird_id = c("041868D396", "041868D861", "041868FF93", "062000__043E", "0620__0004F8", "0620000514"),
                   feeder_id = c("456", "5678", "TR_567", "GH_563", "YU848", "56_67"))
-  expect_warning(check.format(d))
-  expect_warning(check.format(d, n = "bird_id"))
+  expect_message(check.format(d))
+  expect_message(check.format(d, n = "bird_id"))
   expect_silent(check.format(d[1:2,]))
   expect_silent(check.format(d[1:2,], n = "bird_id"))
-  expect_warning(check.format(d, n = c("bird_id", "feeder_id")))
+  expect_messge(check.format(d, n = c("bird_id", "feeder_id")))
 })
