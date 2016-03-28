@@ -1,0 +1,74 @@
+library(feedr)
+context("Transformations between data types")
+
+# activity()
+test_that("activity() in general", {
+  f <- plyr::ddply(visits(load.web("../data/test_load_web.csv")), c("bird_id"), feeding)
+  a <- plyr::ddply(f, c("bird_id"), activity)
+
+  expect_message(plyr::ddply(f, c("bird_id"), activity),
+                 "041868D396: Individual has less than 24hrs of data, skipping...")
+
+  expect_message(plyr::ddply(f, c("bird_id"), activity),
+                 "0620000514: 88.89% of obs")
+
+  expect_message(plyr::ddply(f, c("bird_id"), activity, res = 5),
+                 "0620000514: 55.56% of obs")
+
+   expect_is(a, "data.frame")
+   expect_match(names(a)[1:4], "^bird_id$|^time$|^activity$|^feeder_id$")
+   expect_is(a$bird_id, "factor")
+   expect_is(a$feeder_id, "factor")
+   expect_is(a$time, "POSIXct")
+
+   expect_equal(a$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
+   expect_equal(a$feeder_id[1], factor(NA, levels = c("2100", "2200", "2400", "2700")))
+   expect_equal(a$time[1], as.POSIXct("2016-01-28"))
+   expect_equal(nrow(a), 386)
+})
+
+# activity()
+test_that("activity() no missing, by feeder", {
+  f <- plyr::ddply(visits(load.web("../data/test_load_web.csv")), c("bird_id"), feeding)
+  a <- plyr::ddply(f, c("bird_id"), activity, by_feeder = TRUE)
+
+  expect_equal(a$feeder_id[1], factor(NA, levels = c("2100", "2200", "2400", "2700")))
+  expect_equal(nrow(a), 1544)
+})
+
+# activity()
+test_that("activity() missing", {
+  f <- plyr::ddply(visits(load.web("../data/test_load_web.csv")), c("bird_id"), feeding)
+  m <- read.csv("../data/missing.csv")
+
+  a <- plyr::ddply(f, c("bird_id"), activity, by_feeder = TRUE, missing = m)
+  expect_equal(nrow(a[a$activity == "unknown",]), 260)
+
+  a <- plyr::ddply(f, c("bird_id"), activity, missing = m)
+  expect_equal(nrow(a[a$activity == "unknown",]), 130)
+
+  a <- plyr::ddply(f, c("bird_id"), activity, missing = "../data/missing.csv")
+  expect_equal(nrow(a[a$activity == "unknown",]), 130)
+
+  expect_error(plyr::ddply(f, c("bird_id"), activity, missing = c(1, 2)), "'missing' must be")
+})
+
+# daily()
+test_that("daily() byfeeder == FALSE", {
+  f <- plyr::ddply(visits(load.web("../data/test_load_web.csv")), c("bird_id"), feeding)
+  a <- plyr::ddply(f, c("bird_id"), activity)
+  d <- plyr::ddply(a, c("bird_id"), daily)
+
+  expect_equal(d$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
+  expect_equal(d$feeder_id[1], factor(NA, levels = c("2100", "2200", "2400", "2700")))
+  expect_equal(d$time[1], as.POSIXct("1970-01-01"))
+  expect_equal(nrow(d), 192)
+
+  a <- plyr::ddply(f, c("bird_id"), activity, by_feeder = TRUE)
+  d <- plyr::ddply(a, c("bird_id"), daily)
+
+  expect_equal(d$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
+  expect_equal(d$feeder_id[1], factor(2100, levels = c("2100", "2200", "2400", "2700")))
+  expect_equal(d$time[1], as.POSIXct("1970-01-01"))
+  expect_equal(nrow(d), 768)
+})
