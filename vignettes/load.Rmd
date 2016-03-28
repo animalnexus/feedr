@@ -14,12 +14,22 @@ vignette: >
 library(feedr)
 ```
 
-This is a quick tutorial to get you started with loading in your own data. `feedr` includes two wrapper functions that can be used to load and format your data. These two functions, `load.raw` and `load.web` work with either raw feeder data downloaded from the feeders themselves (each download in a separate file, or one big file) or from the web via <http://gaia.tru.ca/birdMOVES/datadownload.html> website.
+This is a quick tutorial to get you started with loading in your own data. `feedr` includes several wrapper functions that can be used to load and format your data.
+
+- `load.raw()`
+- `load.raw.web()`
+- `load.web()`
+- `load.web.legacy()`
+- `get.data()`
+
+These functions work with either __raw__ feeder data (downloaded directly from the feeders) or __web__ feeder data downloaded from the birdmoves websites (either by hand, from <http://gaia.tru.ca/birdMOVES/datadownload.html>, or with the `get.data()` function.
+
+`load.web.legacy()` is simply a function for loading in web data in the older format.
 
 ## `load.web()`
 
 Assuming your data is stored in a folder called "Data" at the same level as your .R script:
-```{r, echo = FALSE}
+```{r, eval = FALSE}
 r <- load.web(system.file("extdata", "downloaded_file.csv", package = "feedr"))
 ```
 
@@ -27,14 +37,14 @@ r <- load.web(system.file("extdata", "downloaded_file.csv", package = "feedr"))
 r <- load.web("./Data/downloaded_file.csv")
 ```
 
-```{r}
+```{r eval = FALSE}
 head(r)
 ```
 
 ## `load.raw()`
 
 ### Load in a single file:
-```{r echo = FALSE}
+```{r eval = FALSE}
 all.files <- list.files(system.file("extdata", "raw", "exp1", package = "feedr"), full.names = T)
 r <- load.raw(all.files[1])
 ```
@@ -43,7 +53,7 @@ r <- load.raw(all.files[1])
 r <- load.raw("./Data/exp1/GR10DATA_2015_12_09.TXT")
 ```
 
-```{r}
+```{r eval = FALSE}
 head(r)
 ```
 
@@ -62,7 +72,7 @@ Now do some R-fu:
 r <- do.call('rbind', lapply(all.files, load.raw))
 ```
 
-```{r}
+```{r eval = FALSE}
 head(r)
 ```
 
@@ -70,7 +80,7 @@ head(r)
 
 First you need to list all the files you want to load (and ONLY the files you want to load):
 
-```{r echo = FALSE}
+```{r eval = FALSE}
 all.files <- list.files(system.file("extdata", package = "feedr"), "G", recursive = TRUE, full.names = T)
 ```
 ```{r eval = FALSE}
@@ -78,14 +88,14 @@ all.files <- list.files("./Data/raw/", recursive = TRUE)
 ```
 
 Now you can load these files as above:
-```{r eval = TRUE}
+```{r eval = FALSE}
 r <- do.call('rbind', lapply(all.files, load.raw))
 head(r)
 ```
 
 If the file names are informative beyond specifying `feeder_id` we can also pull that in. In this case, we'll ask `load.raw` to match the `exp1`, `exp2`, etc., as this reflects which experiment the data belongs to. Here I've added line returns to make the code more readable.
 
-```{r}
+```{r eval = FALSE}
 r <- do.call('rbind', 
              lapply(all.files, 
                     load.raw, 

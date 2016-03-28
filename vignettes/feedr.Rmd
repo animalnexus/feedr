@@ -1,0 +1,59 @@
+---
+title: "feedr"
+author: "Steffi LaZerte"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Loading in Data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+<!--
+rmarkdown::render("navigation.Rmd", output_file = paste0("../Reports/Final Reports/NAVIGATION.html"))
+-->
+
+This is an overview of how to use functions in the `feedr` package to transform and visual your RFID data.
+
+## A couple of notes
+
+__A note about folders:__
+Throughout this document all examples assume that you have stored your R scripts in a folder called 'Scripts', and your data in a folder called 'Data' and that both of these folders are located in the same project file. You can organize your scripts and data how you like, but remember to modify the file paths to match your organization. 
+
+__A note about terminology:__
+Throughout this document we will be using several different terms in a specific context.
+
+- __raw__ data is the data downloaded from the feeders or from the birdmoves website. This data is in the format of reads in which each line represents an RFID read moment, with two or three pieces of information: Time of the read, ID of the RFID tag, and, optionally, the ID of the feeder.
+- __visits__ data is the output of the `visits()` function and is the smallest transformed data.
+- __visualizations__ are static or interactive maps produced by the mapping functions which visualize the movement and feeding patterns around your feeders.
+
+Namely, the read data always needs to be loaded first [reads tutorial](./tutorial_reads.html) and the `visits` function always needs to be run first.
+
+## Functions
+
+1. [Visits Function](./function_visits.html)
+2. [Displacements Function](./function_displacements.html)
+3. [Dominance Function](./function_dominance.html)
+4. [Movements](./function_movement.html)
+5. [Feeding bouts](./function_feeding.html)
+
+## 
+This is a diagrammatic representation of which functions depend on which:
+```{r, echo = F}
+DiagrammeR::grViz("
+digraph rmarkdown {
+node[shape = box]
+visits -> displacements
+visits -> movements
+visits -> feeding
+displacements -> dominance
+
+feeding -> activity
+activity -> 'daily activity'
+
+feeding -> mapping
+movements -> mapping
+}
+", height = 600)
+```
+
