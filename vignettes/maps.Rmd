@@ -20,15 +20,15 @@ This is a quick tutorial to get you started with visualizing your data. `feedr` 
 
 This creates static maps using the package `ggmap`.
 
-```{r, echo = FALSE}
+```{r eval = FALSE}
 r <- load.web(system.file("extdata", "downloaded_file.csv", package = "feedr"))
 ```
 
-```{r, eval = FALSE}
+```{r eval = FALSE}
 r <- load.web("./Data/downloaded_file.csv")
 ```
 
-```{r}
+```{r eval = FALSE}
 v <- visits(r)
 
 ```
@@ -36,7 +36,7 @@ v <- visits(r)
 ## `load.raw()`
 
 ### Load in a single file:
-```{r echo = FALSE}
+```{r eval = FALSE}
 all.files <- list.files(system.file("extdata", "raw", "exp1", package = "feedr"), full.names = T)
 r <- load.raw(all.files[1])
 ```
@@ -45,7 +45,7 @@ r <- load.raw(all.files[1])
 r <- load.raw("./Data/exp1/GR10DATA_2015_12_09.TXT")
 ```
 
-```{r}
+```{r eval = FALSE}
 head(r)
 ```
 
@@ -64,7 +64,7 @@ Now do some R-fu:
 r <- do.call('rbind', lapply(all.files, load.raw))
 ```
 
-```{r}
+```{r eval = FALSE}
 head(r)
 ```
 
@@ -72,7 +72,7 @@ head(r)
 
 First you need to list all the files you want to load (and ONLY the files you want to load):
 
-```{r echo = FALSE}
+```{r eval = FALSE}
 all.files <- list.files(system.file("extdata", package = "feedr"), "G", recursive = TRUE, full.names = T)
 ```
 ```{r eval = FALSE}
@@ -80,14 +80,14 @@ all.files <- list.files("./Data/raw/", recursive = TRUE)
 ```
 
 Now you can load these files as above:
-```{r eval = TRUE}
+```{r eval = FALSE}
 r <- do.call('rbind', lapply(all.files, load.raw))
 head(r)
 ```
 
 If the file names are informative beyond specifying `feeder_id` we can also pull that in. In this case, we'll ask `load.raw` to match the `exp1`, `exp2`, etc., as this reflects which experiment the data belongs to. Here I've added line returns to make the code more readable.
 
-```{r}
+```{r eval = FALSE}
 r <- do.call('rbind', 
              lapply(all.files, 
                     load.raw, 
