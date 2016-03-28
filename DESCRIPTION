@@ -7,7 +7,7 @@ Authors@R: person("LaZerte", "Stefanie E.", email = "stefanie.lazerte@unbc.ca", 
 URL: https://github.com/steffilazerte/feedr
 Description: This packages is designed to help turn raw RFID read data into data
     sets that can be use to answer a variety of biological questions.
-License: What license is it under?
+License: GPL-3
 LazyData: TRUE
 Depends: R (>= 3.2.2)
 Imports:
