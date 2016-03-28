@@ -13,6 +13,9 @@ activity(f1, res = 15, by_feeder = FALSE, missing = NULL)
 \item{res}{Character. The resolution over which to calculate activity. Should
 be in the format of "15 min" or "1 hour", etc.}
 
+\item{by_feeder}{Logical. Should the activity be calculated overall, or
+individually for each feeder?}
+
 \item{missing}{Data frame. If there are known times for a particular feeder
 for which activity can't be recorded (i.e. times during which a feeder was
 inactive).}

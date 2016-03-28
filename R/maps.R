@@ -58,7 +58,7 @@ map.prep <- function(locs, f = NULL, m = NULL) {
     m <- suppressWarnings(reshape2::melt(m, measure.vars = c("1","2"), value.name = "feeder_id", variable.name = "feeder"))
     m <- merge(m, locs, by = "feeder_id", all.x = T, all.y = F)
     if(nrow(m[is.na(m$lat) | is.na(m$lon),]) > 0) message(paste0("Removed ", nrow(m[is.na(m$lat) | is.na(m$lon),]), " movement paths due to at least one missing lat or lon."))
-    m <- ddply(m, c("move_path"), .fun = function(x) if(any(is.na(x[,c('lat','lon')]))) return(data.frame()) else return(x))
+    m <- plyr::ddply(m, c("move_path"), .fun = function(x) if(any(is.na(x[,c('lat','lon')]))) return(data.frame()) else return(x))
   }
 
 
@@ -74,16 +74,24 @@ map.prep <- function(locs, f = NULL, m = NULL) {
 # ----------------------------------
 #' Map data using leaflet
 #'
-#' Visualize feeding bout and movement data using leaflet for R. This produces an interactive html map. The user must summarize feeding and movement data in the manner that they wish to visualize it. This function can take invidiual bird data as well as grand summarise (see Details and Examples).
+#' Visualize feeding bout and movement data using leaflet for R. This produces
+#' an interactive html map. The user must summarize feeding and movement data in
+#' the manner that they wish to visualize it. This function can take invidiual
+#' bird data as well as grand summarise (see Details and Examples).
 #'
-#' @param f Dataframe. Contains raw reads from an RFID reader with colums \code{bird_id}, \code{feeder_id}, \code{time}.
+#' @param f Dataframe. Contains raw reads from an RFID reader with colums
+#'   \code{bird_id}, \code{feeder_id}, \code{time}.
 #' @param m Dataframe.
 #' @param locs Dataframe.
-#' @param f.scale m.scale Numerical. Scaling constants to increase (> 1) or decrease (< 1) the relative size of feeding (f) and movement (m) data.
-#' @param f.title m.title Character. Titles for the legends of feeding (f) and movement (m) data.
-#' @param f.pal m.pal Character vectors. Colours used to construct gradients for feeding (f) and movement (m) data.
+#' @param f.scale m.scale Numerical. Scaling constants to increase (> 1) or
+#'   decrease (< 1) the relative size of feeding (f) and movement (m) data.
+#' @param f.title m.title Character. Titles for the legends of feeding (f) and
+#'   movement (m) data.
+#' @param f.pal m.pal Character vectors. Colours used to construct gradients for
+#'   feeding (f) and movement (m) data.
 #'
-#' @return An interactive leaflet map with layers for feeding time, movement paths and feeder positions.
+#' @return An interactive leaflet map with layers for feeding time, movement
+#'   paths and feeder positions.
 #'
 #' @examples
 #' \dontrun{
@@ -120,7 +128,8 @@ map.prep <- function(locs, f = NULL, m = NULL) {
 #' m.indiv <- ddply(m, .(bird_id, move_path), summarise,
 #'            path_use = length(move_path))
 #'
-#' # Look at individual summary maps (note that Leaflet just stacks individuals one on top of the other)
+#' # Look at individual summary maps (note that Leaflet just stacks individuals
+#' one on top of the other)
 #' map.leaflet(f = f.indiv, m = m.all, locs = l)
 #' map.ggmap(f = f.indiv, m = m.all, locs = l)
 #' }
@@ -240,20 +249,32 @@ map.leaflet <- function(f, m, locs,
 # ----------------------------------
 #' Map data using ggmap
 #'
-#' Visualize feeding bout and movement data using ggmap in R. This produces a static map. The user must summarize feeding and movement data in the manner that they wish to visualize it. This function can take invidiual bird data as well as grand summarise (see Details and Examples).
+#' Visualize feeding bout and movement data using ggmap in R. This produces a
+#' static map. The user must summarize feeding and movement data in the manner
+#' that they wish to visualize it. This function can take invidiual bird data as
+#' well as grand summarise (see Details and Examples).
 #'
-#' @param f Dataframe. Contains raw reads from an RFID reader with colums \code{bird_id}, \code{feeder_id}, \code{time}.
+#' @param f Dataframe. Contains raw reads from an RFID reader with colums
+#'   \code{bird_id}, \code{feeder_id}, \code{time}.
 #' @param m Dataframe.
 #' @param locs Dataframe.
-#' @param f.scale,m.scale Numerical. Scaling constants to increase (> 1) or decrease (< 1) the relative size of feeding (f) and movement (m) data.
-#' @param f.title,m.title Character. Titles for the legends of feeding (f) and movement (m) data.
-#' @param f.pal,m.pal Character vectors. Colours used to construct gradients for feeding (f) and movement (m) data.
-#' @param maptype Character. The type of map to download. See \code{maptype} under \code{\link[ggmap]{get_map}} for more options.
-#' @param mapsource Character. The source of the map to download. See \code{source} under \code{\link[ggmap]{get_map}} for more options.
-#' @param zoom Numeric. The zoom level of the map to download. See \code{zoom} under \code{\link[ggmap]{get_map}} for more options.
-#' @param which Character vector. A vector of bird ids specifying which to show. Only applies when using individual data.
+#' @param f.scale,m.scale Numerical. Scaling constants to increase (> 1) or
+#'   decrease (< 1) the relative size of feeding (f) and movement (m) data.
+#' @param f.title,m.title Character. Titles for the legends of feeding (f) and
+#'   movement (m) data.
+#' @param f.pal,m.pal Character vectors. Colours used to construct gradients for
+#'   feeding (f) and movement (m) data.
+#' @param maptype Character. The type of map to download. See \code{maptype}
+#'   under \code{\link[ggmap]{get_map}} for more options.
+#' @param mapsource Character. The source of the map to download. See
+#'   \code{source} under \code{\link[ggmap]{get_map}} for more options.
+#' @param zoom Numeric. The zoom level of the map to download. See \code{zoom}
+#'   under \code{\link[ggmap]{get_map}} for more options.
+#' @param which Character vector. A vector of bird ids specifying which to show.
+#'   Only applies when using individual data.
 #'
-#' @return An interactive leaflet map with layers for feeding time, movement paths and feeder positions.
+#' @return An interactive leaflet map with layers for feeding time, movement
+#'   paths and feeder positions.
 #'
 #' @examples
 #' \dontrun{
@@ -290,7 +311,8 @@ map.leaflet <- function(f, m, locs,
 #' m.indiv <- ddply(m, .(bird_id, move_path), summarise,
 #'            path_use = length(move_path))
 #'
-#' # Look at individual summary maps (note that Leaflet just stacks individuals one on top of the other)
+#' # Look at individual summary maps (note that Leaflet just stacks individuals
+#' one on top of the other)
 #' map.leaflet(f = f.indiv, m = m.all, locs = l)
 #' map.ggmap(f = f.indiv, m = m.all, locs = l)
 #' }

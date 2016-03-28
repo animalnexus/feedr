@@ -7,17 +7,27 @@
 load.web(r_file, tz = "Canada/Pacific", sep = ",")
 }
 \arguments{
-\item{r_file}{Character or Data frame. The location of a single file to load, or a data frame of raw reads to be formated.}
+\item{r_file}{Character or Data frame. The location of a single file to load,
+or a data frame of raw reads to be formated.}
 
-\item{tz}{Character. The time zone the date/times are in (should match one of the zones produced by \code{OlsonNames())}.}
+\item{tz}{Character. The time zone the date/times are in (should match one of
+the zones produced by \code{OlsonNames())}.}
 
-\item{sep}{Character. An override for the separator in the \code{read.table()} call (see \code{sep =} under \code{?read.table} for more details).}
+\item{sep}{Character. An override for the separator in the
+\code{read.table()} call (see \code{sep =} under \code{?read.table} for
+more details).}
 }
 \description{
-Loads raw read data from csv files downloaded from the __current__ \url{http://gaia.tru.ca/birdMOVES/datadownload.html} website and formats them for use with the feedr functions. This is merely a wrapper function that does many things that you can do yourself. It's utility depends on how standardized your data is, and whether you have extra details you need to address. This is updated to work with newer data download formats.
+Loads raw read data from csv files downloaded from the __current__
+\url{http://gaia.tru.ca/birdMOVES/datadownload.html} website and formats them
+for use with the feedr functions. This is merely a wrapper function that does
+many things that you can do yourself. It's utility depends on how
+standardized your data is, and whether you have extra details you need to
+address. This is updated to work with newer data download formats.
 }
 \details{
-This function is also used by \code{\link{get.data}} and so can accept a data frame in place of a file location.
+This function is also used by \code{\link{get.data}} and so can accept a data
+frame in place of a file location.
 }
 \examples{
 \dontrun{r <- load.web("downloaded_file.csv")}

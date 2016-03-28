@@ -21,6 +21,8 @@
 #'   \code{bird_id}
 #' @param res Character. The resolution over which to calculate activity. Should
 #'   be in the format of "15 min" or "1 hour", etc.
+#' @param by_feeder Logical. Should the activity be calculated overall, or
+#'   individually for each feeder?
 #' @param missing Data frame. If there are known times for a particular feeder
 #'   for which activity can't be recorded (i.e. times during which a feeder was
 #'   inactive).

@@ -9,23 +9,34 @@ load.raw.all(r_dir, pattern = "DATA", tz = "Canada/Pacific",
   extra_name = NULL, sep = "", skip = 1)
 }
 \arguments{
-\item{r_dir}{Character. The director that holds all your raw data files (can be in subdirectories)}
+\item{r_dir}{Character. The director that holds all your raw data files (can
+be in subdirectories)}
 
-\item{pattern}{Character. A regular expression pattern that matches the files you wish to include. Defaults to "DATA" to include only DATA files and not NOTE files.}
+\item{pattern}{Character. A regular expression pattern that matches the files
+you wish to include. Defaults to "DATA" to include only DATA files and not
+NOTE files.}
 
-\item{tz}{Character. The time zone the date/times should be converted to (should match one of the zones produced by \code{OlsonNames())}.}
+\item{tz}{Character. The time zone the date/times should be converted to
+(should match one of the zones produced by \code{OlsonNames())}.}
 
-\item{feeder_pattern}{Character. A regular expression matching the feeder id in the file name.}
+\item{feeder_pattern}{Character. A regular expression matching the feeder id
+in the file name.}
 
-\item{extra_pattern}{Character vector. A vector of regular expressions matching any extra information in the file or directory names.}
+\item{extra_pattern}{Character vector. A vector of regular expressions
+matching any extra information in the file or directory names.}
 
-\item{extra_name}{Character vector. A vector of column names matching the order of \code{extra_pattern} for storing the results of the pattern.}
+\item{extra_name}{Character vector. A vector of column names matching the
+order of \code{extra_pattern} for storing the results of the pattern.}
 
-\item{sep}{Character. An override for the separator in the \code{read.table()} call (see \code{sep =} under \code{?read.table} for more details).}
+\item{sep}{Character. An override for the separator in the
+\code{read.table()} call (see \code{sep =} under \code{?read.table} for
+more details).}
 
-\item{skip}{Character. An override for the skip in the \code{read.table()} call (see \code{skip =} under \code{?read.table} for more details).}
+\item{skip}{Character. An override for the skip in the \code{read.table()}
+call (see \code{skip =} under \code{?read.table} for more details).}
 }
 \description{
-This is a wrapper function which loads and combines all raw data files from a series of nested folders.
+This is a wrapper function which loads and combines all raw data files from a
+series of nested folders.
 }
 

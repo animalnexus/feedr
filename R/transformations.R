@@ -250,7 +250,7 @@ move <- function(v1, all = FALSE){
 #' feeders or by \code{bw} minutes.
 #'
 #'
-#' @param  Dataframe. A visits data frame containing only \strong{one} unique
+#' @param v1 Dataframe. A visits data frame containing only \strong{one} unique
 #'   bird id. From the output of \code{visits}. Must contain columns
 #'   \code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.
 #' @param bw Numeric. The minimum number of minutes between visits for two
@@ -330,10 +330,6 @@ feeding <- function(v1, bw = 15){
 # ----------------------------------
 # disp
 # ----------------------------------
-#'
-
-#'
-#'
 
 #' 'Visits' to 'displacements'
 #'

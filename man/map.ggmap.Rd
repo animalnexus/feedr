@@ -10,31 +10,43 @@ map.ggmap(f, m, locs, f.scale = 1, m.scale = 1, f.title = "Feeding time",
   which = NULL)
 }
 \arguments{
-\item{f}{Dataframe. Contains raw reads from an RFID reader with colums \code{bird_id}, \code{feeder_id}, \code{time}.}
+\item{f}{Dataframe. Contains raw reads from an RFID reader with colums
+\code{bird_id}, \code{feeder_id}, \code{time}.}
 
 \item{m}{Dataframe.}
 
 \item{locs}{Dataframe.}
 
-\item{f.scale, m.scale}{Numerical. Scaling constants to increase (> 1) or decrease (< 1) the relative size of feeding (f) and movement (m) data.}
+\item{f.scale, m.scale}{Numerical. Scaling constants to increase (> 1) or
+decrease (< 1) the relative size of feeding (f) and movement (m) data.}
 
-\item{f.title, m.title}{Character. Titles for the legends of feeding (f) and movement (m) data.}
+\item{f.title, m.title}{Character. Titles for the legends of feeding (f) and
+movement (m) data.}
 
-\item{f.pal, m.pal}{Character vectors. Colours used to construct gradients for feeding (f) and movement (m) data.}
+\item{f.pal, m.pal}{Character vectors. Colours used to construct gradients for
+feeding (f) and movement (m) data.}
 
-\item{maptype}{Character. The type of map to download. See \code{maptype} under \code{\link[ggmap]{get_map}} for more options.}
+\item{maptype}{Character. The type of map to download. See \code{maptype}
+under \code{\link[ggmap]{get_map}} for more options.}
 
-\item{mapsource}{Character. The source of the map to download. See \code{source} under \code{\link[ggmap]{get_map}} for more options.}
+\item{mapsource}{Character. The source of the map to download. See
+\code{source} under \code{\link[ggmap]{get_map}} for more options.}
 
-\item{zoom}{Numeric. The zoom level of the map to download. See \code{zoom} under \code{\link[ggmap]{get_map}} for more options.}
+\item{zoom}{Numeric. The zoom level of the map to download. See \code{zoom}
+under \code{\link[ggmap]{get_map}} for more options.}
 
-\item{which}{Character vector. A vector of bird ids specifying which to show. Only applies when using individual data.}
+\item{which}{Character vector. A vector of bird ids specifying which to show.
+Only applies when using individual data.}
 }
 \value{
-An interactive leaflet map with layers for feeding time, movement paths and feeder positions.
+An interactive leaflet map with layers for feeding time, movement
+  paths and feeder positions.
 }
 \description{
-Visualize feeding bout and movement data using ggmap in R. This produces a static map. The user must summarize feeding and movement data in the manner that they wish to visualize it. This function can take invidiual bird data as well as grand summarise (see Details and Examples).
+Visualize feeding bout and movement data using ggmap in R. This produces a
+static map. The user must summarize feeding and movement data in the manner
+that they wish to visualize it. This function can take invidiual bird data as
+well as grand summarise (see Details and Examples).
 }
 \examples{
 \dontrun{
@@ -71,7 +83,8 @@ f.indiv <- ddply(f, .(bird_id, feeder_id), summarise,
 m.indiv <- ddply(m, .(bird_id, move_path), summarise,
            path_use = length(move_path))
 
-# Look at individual summary maps (note that Leaflet just stacks individuals one on top of the other)
+# Look at individual summary maps (note that Leaflet just stacks individuals
+one on top of the other)
 map.leaflet(f = f.indiv, m = m.all, locs = l)
 map.ggmap(f = f.indiv, m = m.all, locs = l)
 }

@@ -14,7 +14,12 @@ load.web.legacy(r_file, tz = "Canada/Pacific", sep = ",")
 \item{sep}{Character. An override for the separator in the \code{read.table()} call (see \code{sep =} under \code{?read.table} for more details).}
 }
 \description{
-Loads raw read data from csv files downloaded from the __old__ version of \url{http://gaia.tru.ca/birdMOVES/datadownload.html} website and formats them for use with the feedr functions. This is merely a wrapper function that does many things that you can do yourself. It's utility depends on how standardized your data is, and whether you have extra details you need to address.
+Loads raw read data from csv files downloaded from the __old__ version of
+\url{http://gaia.tru.ca/birdMOVES/datadownload.html} website and formats them
+for use with the feedr functions. This is merely a wrapper function that does
+many things that you can do yourself. It's utility depends on how
+standardized your data is, and whether you have extra details you need to
+address.
 }
 \examples{
 \dontrun{r <- load.web.legacy("downloaded_file.csv")}

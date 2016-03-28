@@ -10,38 +10,61 @@ get.data(start = NULL, end = NULL,
   tz = "America/Vancouver", sites = "Kamloops")
 }
 \arguments{
-\item{start}{Character. This is the start date (with or without time) for the data to download. There is some flexibility in the format (see details). If NULL, get records from start.}
+\item{start}{Character. This is the start date (with or without time) for the
+data to download. There is some flexibility in the format (see details). If
+NULL, get records from start.}
 
-\item{end}{Character. This is the end date (with or without time) for the data to download. There is some flexibility in the format (see details). If NULL, get records to end.}
+\item{end}{Character. This is the end date (with or without time) for the
+data to download. There is some flexibility in the format (see details). If
+NULL, get records to end.}
 
-\item{url}{Character. This is the url for the web form action. _Not_ the url where users go to download their data by hand. The default should not need to be changed.}
+\item{url}{Character. This is the url for the web form action. _Not_ the url
+where users go to download their data by hand. The default should not need
+to be changed.}
 
-\item{feeder_details}{Character vector. This specifies extra columns with details about the feeders to download. Use NULL to download no extra columns.}
+\item{feeder_details}{Character vector. This specifies extra columns with
+details about the feeders to download. Use NULL to download no extra
+columns.}
 
-\item{bird_details}{Character vector. This specifies extra columns with details about the birds to download. Use NULL to download no extra columns.}
+\item{bird_details}{Character vector. This specifies extra columns with
+details about the birds to download. Use NULL to download no extra columns.}
 
-\item{tz}{Character vector. Timezone to use for specifying and downloading data. Timezone must be one of "America/Vancouver" (default), "America/Costa Rica", or "GMC".}
+\item{tz}{Character vector. Timezone to use for specifying and downloading
+data. Timezone must be one of "America/Vancouver" (default), "America/Costa
+Rica", or "GMC".}
 
-\item{sites}{Character vector. Sites to download data from. Currently must be one or more of "Kamloops" (default) or "Costa Rica".}
+\item{sites}{Character vector. Sites to download data from. Currently must be
+one or more of "Kamloops" (default) or "Costa Rica".}
 }
 \description{
-This function uses RCurl to submit an HTML form and retrieve the csv file. This is simply a convenience function to replace going to the website yourself (http://gaia.tru.ca/birdMOVES/datadownload.html) and then running the data frame through \code{\link{load.web}}.
+This function uses RCurl to submit an HTML form and retrieve the csv file.
+This is simply a convenience function to replace going to the website
+yourself (http://gaia.tru.ca/birdMOVES/datadownload.html) and then running
+the data frame through \code{\link{load.web}}.
 }
 \details{
-Note that while the website requires a date in the format of YYYY-MM-DD HH:MM:SS, this function is a bit more flexible. Using \code{\link[lubridate]{parse_date_time}} from the lubridate package, the format of the date/time supplied will estimated. This allows for partial date/times to be supplied (e.g., "2015-01-01 09" or "2015-09" or "2015-09-01"). For best results, specify the date/time format as YYYY-MM-DD HH:MM:SS and truncate as needed. Note that truncated times are interpreted as 00 and trucated dates as the first of the month and the first month of the year. Thus "2015" will be sumbitted as "2015-01-01 00:00:00".
+Note that while the website requires a date in the format of YYYY-MM-DD
+HH:MM:SS, this function is a bit more flexible. Using
+\code{\link[lubridate]{parse_date_time}} from the lubridate package, the
+format of the date/time supplied will estimated. This allows for partial
+date/times to be supplied (e.g., "2015-01-01 09" or "2015-09" or
+"2015-09-01"). For best results, specify the date/time format as YYYY-MM-DD
+HH:MM:SS and truncate as needed. Note that truncated times are interpreted as
+00 and trucated dates as the first of the month and the first month of the
+year. Thus "2015" will be sumbitted as "2015-01-01 00:00:00".
 
 For specifying extra \code{bird_details}:
 
-- "species" gives species name
-- "sex" gives sex (M, F, U for male, female and unknown)
-- "age" gives age (ASY, AHY, SY, and HY for After Second Year, After Hatch Year, Second Year, and Hatch Year)
-  See \href{https://www.pwrc.usgs.gov/BBL/manual/age.cfm}{USGS banding lab} for details about banding
-- "tagged_on" gives you the date the RFID tag was mounted on the bird
+- "species" gives species name - "sex" gives sex (M, F, U for male, female
+and unknown) - "age" gives age (ASY, AHY, SY, and HY for After Second Year,
+After Hatch Year, Second Year, and Hatch Year) See
+\href{https://www.pwrc.usgs.gov/BBL/manual/age.cfm}{USGS banding lab} for
+details about banding - "tagged_on" gives you the date the RFID tag was
+mounted on the bird
 
 For specifying extra \code{feeder_details}:
 
-- "site_name" gives site name
-- "loc" gives lon/lat coordiates
+- "site_name" gives site name - "loc" gives lon/lat coordiates
 }
 \examples{
 \dontrun{
@@ -52,7 +75,9 @@ r <- get.data()
 r <- get.date(start = "2016")
 
 # Get specific data
-r <- get.data(start = "2016-01-01 09:34:12", end = "2016-02-01", bird_details = c("species", "age", "sex", "tagged_on"))
+r <- get.data(start = "2016-01-01 09:34:12",
+              end = "2016-02-01",
+              bird_details = c("species", "age", "sex", "tagged_on"))
 }
 
 }

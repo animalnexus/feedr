@@ -7,13 +7,13 @@
 feeding(v1, bw = 15)
 }
 \arguments{
+\item{v1}{Dataframe. A visits data frame containing only \strong{one} unique
+bird id. From the output of \code{visits}. Must contain columns
+\code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.}
+
 \item{bw}{Numeric. The minimum number of minutes between visits for two
 successive visits to be considered separate feeding bouts. When \code{bw} =
 NULL only visits to another feeder are scored as a separate feeding bout.}
-
-\item{Dataframe.}{A visits data frame containing only \strong{one} unique
-bird id. From the output of \code{visits}. Must contain columns
-\code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.}
 }
 \value{
 A data frame of feeding bouts. A feeding bout is defined as the bout

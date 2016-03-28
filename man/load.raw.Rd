@@ -11,30 +11,41 @@ load.raw(r_file, tz = "Canada/Pacific",
 \arguments{
 \item{r_file}{Character. The location of a single file to load.}
 
-\item{tz}{Character. The time zone the date/times should be converted to (should match one of the zones produced by \code{OlsonNames())}.}
+\item{tz}{Character. The time zone the date/times should be converted to
+(should match one of the zones produced by \code{OlsonNames())}.}
 
-\item{feeder_pattern}{Character. A regular expression matching the feeder id in the file name.}
+\item{feeder_pattern}{Character. A regular expression matching the feeder id
+in the file name.}
 
-\item{extra_pattern}{Character vector. A vector of regular expressions matching any extra information in the file or directory names.}
+\item{extra_pattern}{Character vector. A vector of regular expressions
+matching any extra information in the file or directory names.}
 
-\item{extra_name}{Character vector. A vector of column names matching the order of \code{extra_pattern} for storing the results of the pattern.}
+\item{extra_name}{Character vector. A vector of column names matching the
+order of \code{extra_pattern} for storing the results of the pattern.}
 
-\item{sep}{Character. An override for the separator in the \code{read.table()} call (see \code{sep =} under \code{?read.table} for more details).}
+\item{sep}{Character. An override for the separator in the
+\code{read.table()} call (see \code{sep =} under \code{?read.table} for
+more details).}
 
-\item{skip}{Character. An override for the skip in the \code{read.table()} call (see \code{skip =} under \code{?read.table} for more details).}
+\item{skip}{Character. An override for the skip in the \code{read.table()}
+call (see \code{skip =} under \code{?read.table} for more details).}
 }
 \description{
-Loads raw read data and formats for use with the feedr functions. This is merely a wrapper function that does many things that you can do yourself. It's utility depends on how standardized your data is, and whether you have extra details you need to address
+Loads raw read data and formats for use with the feedr functions. This is
+merely a wrapper function that does many things that you can do yourself.
+It's utility depends on how standardized your data is, and whether you have
+extra details you need to address
 }
 \examples{
 \dontrun{
-# Load a single raw file:
-r <- load.raw("GPR13DATA_2015_12_01.csv")
+# Load a single raw file: r <- load.raw("GPR13DATA_2015_12_01.csv")
 
-# Load a single raw file where the feeder id is not the default, and is rather something like: 2300, 2500, 2550
+# Load a single raw file where the feeder id is not the default, and is
+rather something like: 2300, 2500, 2550
 r <- load.raw("2300.csv", feeder_pattern = "[0-9]{4}")
 
-# Note that the following won't work because the pattern matches both the feeder id as well as the year:
+# Note that the following won't work because the pattern matches both the
+feeder id as well as the year:
 r <- load.raw("2300_2015_12_01.csv", feeder_pattern = "[0-9]{4}")
 
 # Extract extra data to be stored in another column:
@@ -45,11 +56,14 @@ r <- load.raw("2300.csv", extra_pattern = "exp[0-9]{1}", extra_name = experiment
 # First list the files in a folder called Data:
 l <- list.files("./Data", full.names = TRUE)
 
-# Use lapply to apply the load.raw function to each file in l, then use do.call to rbind them all together
-r <- do.call('rbind', lapply(l, load.raw))
+# Use lapply to apply the load.raw function to each file in l, then use
+do.call to rbind them all together r <- do.call('rbind', lapply(l, load.raw))
 
 # All together now:
-r <- do.call('rbind', lapply(l, load.raw, extra_pattern = "exp[0-9]{1}", extra_name = "experiment"))
+r <- do.call('rbind',
+             lapply(l, load.raw,
+                       extra_pattern = "exp[0-9]{1}",
+                       extra_name = "experiment"))
 }
 }
 
