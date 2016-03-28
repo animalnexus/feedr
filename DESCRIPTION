@@ -21,6 +21,7 @@ Imports:
     reshape2,
     stringr
 Suggests:
+    DiagrammeR,
     testthat,
     knitr,
     rmarkdown

@@ -3,6 +3,7 @@
 export(activity)
 export(check.ids)
 export(check.problems)
+export(daily)
 export(disp)
 export(dom)
 export(feeding)
