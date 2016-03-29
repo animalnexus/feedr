@@ -34,5 +34,5 @@ test_that("check.format returns error if '_' in column values", {
   expect_message(check.format(d, n = "bird_id"))
   expect_silent(check.format(d[1:2,]))
   expect_silent(check.format(d[1:2,], n = "bird_id"))
-  expect_messge(check.format(d, n = c("bird_id", "feeder_id")))
+  expect_message(check.format(d, n = c("bird_id", "feeder_id")))
 })

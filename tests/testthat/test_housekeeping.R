@@ -3,26 +3,25 @@ context("Checking Data for Errors")
 
 # check.ids()
 test_that("check.ids catches and removes correctly", {
-  r <- load.web("../data/test_load_web.csv")
   b <- read.csv("../data/bird_index.csv")
 
-  expect_message(check.ids(r, b), "All ids in your data are also in your bird_id index")
-  expect_message(check.ids(r, b), "All ids in your bird_id index are also in your data")
-  expect_message(check.ids(r, b), "No ids have been omitted")
+  expect_message(check.ids(finches, b), "All ids in your data are also in your bird_id index")
+  expect_message(check.ids(finches, b), "All ids in your bird_id index are also in your data")
+  expect_message(check.ids(finches, b), "No ids have been omitted")
 
   b$species <- as.character(b$species)
   b$species[1] <- "wand"
   b$species[2] <- "error"
-  expect_message(check.ids(r, b), "All ids in your data are also in your bird_id index")
-  expect_message(check.ids(r, b), "All ids in your bird_id index are also in your data")
-  expect_message(check.ids(r, b), "The following bird ids have been omitted: 0620000514, 041868D861")
-  expect_equal(nrow(check.ids(r, b)[check.ids(r, b)$bird_id == "0620000514",]), 0)
-  expect_equal(nrow(check.ids(r, b)[check.ids(r, b)$bird_id == "041868D861",]), 0)
+  expect_message(check.ids(finches, b), "All ids in your data are also in your bird_id index")
+  expect_message(check.ids(finches, b), "All ids in your bird_id index are also in your data")
+  expect_message(check.ids(finches, b), "The following bird ids have been omitted: 0620000514, 041868D861")
+  expect_equal(nrow(check.ids(finches, b)[check.ids(finches, b)$bird_id == "0620000514",]), 0)
+  expect_equal(nrow(check.ids(finches, b)[check.ids(finches, b)$bird_id == "041868D861",]), 0)
 
   b <- b[b$bird_id != "0620000514",]
-  expect_message(check.ids(r, b), "Some ids present in your data do not exist in the bird_id index: 0620000514")
+  expect_message(check.ids(finches, b), "Some ids present in your data do not exist in the bird_id index: 0620000514")
 
-  r <- r[!(r$bird_id %in% c("0620000514", "041868D861")),]
+  r <- finches[!(finches$bird_id %in% c("0620000514", "041868D861")),]
   expect_message(check.ids(r, b), "Some ids present in your bird_id index, are not in your data: 041868D861")
 
   expect_is(check.ids(r, b)$bird_id, "factor")
@@ -36,17 +35,16 @@ test_that("check.ids catches and removes correctly", {
 
 # check.problems()
 test_that("check.problems catches and removes correctly", {
-  r <- load.web("../data/test_load_web.csv")
   p <- read.csv("../data/problems.csv")
 
-  expect_message(check.problems(r, p), "The following bird ids have been corrected:")
-  expect_is(check.problems(r, p)$bird_id, "factor")
-  expect_is(check.problems(r, p)$feeder_id, "factor")
-  expect_is(check.problems(r, p)$time, "POSIXct")
-  expect_equal(sum(levels(check.problems(r, p)$bird_id) == "041B6BEF6B"), 1)
-  expect_equal(sum(levels(check.problems(r, p)$bird_id) == "041B999F6B"), 1)
+  expect_message(check.problems(finches, p), "The following bird ids have been corrected:")
+  expect_is(check.problems(finches, p)$bird_id, "factor")
+  expect_is(check.problems(finches, p)$feeder_id, "factor")
+  expect_is(check.problems(finches, p)$time, "POSIXct")
+  expect_equal(sum(levels(check.problems(finches, p)$bird_id) == "041B6BEF6B"), 1)
+  expect_equal(sum(levels(check.problems(finches, p)$bird_id) == "041B999F6B"), 1)
 
   p$original_id <- as.character(p$original_id)
   p$original_id <- p$corrected_id
-  expect_message(check.problems(r, p), "No bird ids needed to be fixed")
+  expect_message(check.problems(finches, p), "No bird ids needed to be fixed")
 })

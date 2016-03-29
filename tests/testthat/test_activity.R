@@ -3,7 +3,7 @@ context("Transformations between data types")
 
 # activity()
 test_that("activity() in general", {
-  f <- plyr::ddply(visits(load.web("../data/test_load_web.csv")), c("bird_id"), feeding)
+  f <- plyr::ddply(visits(finches), c("bird_id"), feeding)
   a <- plyr::ddply(f, c("bird_id"), activity)
 
   expect_message(plyr::ddply(f, c("bird_id"), activity),
@@ -21,7 +21,7 @@ test_that("activity() in general", {
    expect_is(a$feeder_id, "factor")
    expect_is(a$time, "POSIXct")
 
-   expect_equal(a$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
+   expect_equal(a$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
    expect_equal(a$feeder_id[1], factor(NA, levels = c("2100", "2200", "2400", "2700")))
    expect_equal(a$time[1], as.POSIXct("2016-01-28"))
    expect_equal(nrow(a), 386)
@@ -29,16 +29,16 @@ test_that("activity() in general", {
 
 # activity()
 test_that("activity() no missing, by feeder", {
-  f <- plyr::ddply(visits(load.web("../data/test_load_web.csv")), c("bird_id"), feeding)
+  f <- plyr::ddply(visits(finches), c("bird_id"), feeding)
   a <- plyr::ddply(f, c("bird_id"), activity, by_feeder = TRUE)
 
-  expect_equal(a$feeder_id[1], factor(NA, levels = c("2100", "2200", "2400", "2700")))
+  expect_equal(a$feeder_id[1], factor(2100, levels = c("2100", "2200", "2400", "2700")))
   expect_equal(nrow(a), 1544)
 })
 
 # activity()
 test_that("activity() missing", {
-  f <- plyr::ddply(visits(load.web("../data/test_load_web.csv")), c("bird_id"), feeding)
+  f <- plyr::ddply(visits(finches), c("bird_id"), feeding)
   m <- read.csv("../data/missing.csv")
 
   a <- plyr::ddply(f, c("bird_id"), activity, by_feeder = TRUE, missing = m)
@@ -54,21 +54,21 @@ test_that("activity() missing", {
 })
 
 # daily()
-test_that("daily() byfeeder == FALSE", {
-  f <- plyr::ddply(visits(load.web("../data/test_load_web.csv")), c("bird_id"), feeding)
+test_that("daily() by_feeder == FALSE", {
+  f <- plyr::ddply(visits(finches), c("bird_id"), feeding)
   a <- plyr::ddply(f, c("bird_id"), activity)
   d <- plyr::ddply(a, c("bird_id"), daily)
 
-  expect_equal(d$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
+  expect_equal(d$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
   expect_equal(d$feeder_id[1], factor(NA, levels = c("2100", "2200", "2400", "2700")))
-  expect_equal(d$time[1], as.POSIXct("1970-01-01"))
+  expect_equal(d$time[1], as.POSIXct("1970-01-01", tz = "UTM"))
   expect_equal(nrow(d), 192)
 
   a <- plyr::ddply(f, c("bird_id"), activity, by_feeder = TRUE)
   d <- plyr::ddply(a, c("bird_id"), daily)
 
-  expect_equal(d$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
+  expect_equal(d$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
   expect_equal(d$feeder_id[1], factor(2100, levels = c("2100", "2200", "2400", "2700")))
-  expect_equal(d$time[1], as.POSIXct("1970-01-01"))
+  expect_equal(d$time[1], as.POSIXct("1970-01-01", tz = "UTM"))
   expect_equal(nrow(d), 768)
 })

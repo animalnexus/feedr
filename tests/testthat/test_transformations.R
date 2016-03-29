@@ -3,7 +3,7 @@ context("Transformations between data types")
 
 # visits()
 test_that("visits() returns appropriate, non-empty dataframe", {
-  v <- visits(load.web("../data/test_load_web.csv"))
+  v <- visits(finches)
   expect_is(v, "data.frame")
   expect_match(names(v)[1:3], "^bird_id$|^start$|^end$|^feeder_id$")
   expect_is(v$bird_id, "factor")
@@ -11,11 +11,11 @@ test_that("visits() returns appropriate, non-empty dataframe", {
   expect_is(v$start, "POSIXct")
   expect_is(v$end, "POSIXct")
 
-  expect_equal(v$bird_id[1], factor("041868D396", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
+  expect_equal(v$bird_id[1], factor("041868D396", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
   expect_equal(v$feeder_id[1], factor("2100", levels = c("2100", "2200", "2400", "2700")))
   expect_equal(v$start[1], as.POSIXct("2016-01-29 13:18:26"))
   expect_equal(v$end[1], as.POSIXct("2016-01-29 13:18:26"))
-  expect_equal(v$bird_n[1], 6)
+  expect_equal(v$bird_n[1], 5)
   expect_equal(v$feeder_n[1], 4)
   expect_equal(v$loc[1], "(-120.3624278,50.66895556)")
   expect_equal(v$species[1], "House Finch")
