@@ -189,7 +189,7 @@ load.raw.all <- function(r_dir,
 
 
 
-#' Download data from Thompson Rivers University "BirdMoves" website.
+#' Download data from BirdMoves website.
 #'
 #' This function uses RCurl to submit an HTML form and retrieve the csv file.
 #' This is simply a convenience function to replace going to the website
@@ -208,16 +208,23 @@ load.raw.all <- function(r_dir,
 #'
 #' For specifying extra \code{bird_details}:
 #'
-#' - "species" gives species name - "sex" gives sex (M, F, U for male, female
-#' and unknown) - "age" gives age (ASY, AHY, SY, and HY for After Second Year,
-#' After Hatch Year, Second Year, and Hatch Year) See
+#' \itemize{
+#'   \item "species" gives species name
+#'   \item "sex" gives sex (M, F, U for male, female and unknown)
+#'   \item "age" gives age (ASY, AHY, SY, and HY for After Second Year, After
+#' Hatch Year, Second Year, and Hatch Year) See
 #' \href{https://www.pwrc.usgs.gov/BBL/manual/age.cfm}{USGS banding lab} for
-#' details about banding - "tagged_on" gives you the date the RFID tag was
+#' details about banding
+#'   \item "tagged_on" gives you the date the RFID tag was
 #' mounted on the bird
+#' }
 #'
 #' For specifying extra \code{feeder_details}:
 #'
-#' - "site_name" gives site name - "loc" gives lon/lat coordiates
+#' \itemize{
+#'  \item "site_name" gives site name
+#'  \item "loc" gives lon/lat coordiates
+#'  }
 #'
 #' @param start Character. This is the start date (with or without time) for the
 #'   data to download. There is some flexibility in the format (see details). If
@@ -241,8 +248,14 @@ load.raw.all <- function(r_dir,
 #'
 #' @examples
 #' \dontrun{
-#' # Get all data (may take a couple minutes)
+#' # Get all Kamloops data (may take a couple minutes)
 #' r <- get.data()
+#'
+#' # Get all Costa Rica data (may take a couple minutes)
+#' r <- get.data(sites = "Costa Rica")
+#'
+#' # Get all data (may take a couple minutes)
+#' r <- get.data(sites = c("Kamloops", "Costa Rica"))
 #'
 #' # Get all 2016 data
 #' r <- get.date(start = "2016")
@@ -302,6 +315,9 @@ get.data <- function(start = NULL,
                         qendtz = tz))
 
   g <- RCurl::getForm(url, .params = params)
+
+  if(nchar(g) < 200) stop("There are no online data matching these parameters. Try different sites or a different date range.")
+
   r <- load.format(read.csv(text = g, strip.white = TRUE, colClasses = "character"), tz = tz)
   return(r)
 }
@@ -310,7 +326,6 @@ get.data <- function(start = NULL,
 #'
 #' Formats data for the loading function.
 #'
-#' @export
 load.format <- function(r, tz){
 
   # Trim leading or trailing whitespace
