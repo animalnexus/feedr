@@ -1,15 +1,7 @@
-## TODO
-
-# Individual birds
-# - colour coded for time
-# - maybe animated?
-
-
 #' Scaling feeding and movement data for maps
 #'
 #' A scaling function used by mapping functions
 #'
-#' @export
 smart.scale <- function(x, m) {
   x <- as.numeric(x)
   x <- (x / max(x)) * (25 * m)
@@ -21,7 +13,6 @@ smart.scale <- function(x, m) {
 #'
 #' A data prep function used by mapping functions
 #'
-#' @export
 map.prep <- function(locs, f = NULL, m = NULL) {
 
   # Check data
