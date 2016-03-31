@@ -398,13 +398,8 @@ feeding <- function(v1, bw = 15){
 disp <- function(v, bw = 5){
 
   ## Check for correct formatting
-  if(!all(c("bird_id","feeder_id", "start","end") %in% names(v))) {
-    stop("Required columns aren't present. Require \"bird_id\",\"feeder_id\", \"start\" and \"end\"")
-  }
-
-  if(!all(sapply(v[,c("start","end")],class) == c("POSIXct","POSIXt"))) {
-    stop("Start and End columns must be in R's date/time formating (POSIXct). Consider as.POSIXct() and strptime().")
-  }
+  check.name(v, c("bird_id", "feeder_id", "start", "end"))
+  check.time(v)
 
   bird_id <- levels(v$bird_id)
   feeder_id <- levels(v$feeder_id)
@@ -422,6 +417,7 @@ disp <- function(v, bw = 5){
 
   v <- v[v$displacee | v$displacer, ]
 
+  if(all(!v$displacee, !v$displacer)) stop(paste0("There are no displacement events with a bw = ", bw, ", stopping now"))
   ## Create the displacement data frame.
   d <- data.frame(feeder_id = factor(v$feeder_id[v$displacee == TRUE], levels = feeder_id),
                   left = v$end[v$displacee == TRUE],
@@ -430,8 +426,12 @@ disp <- function(v, bw = 5){
                   displacer = factor(v$bird_id[v$displacer == TRUE], levels = bird_id))
 
   ## Summarize totals
-  s <- reshape2::melt(d, measure.vars = c("displacee", "displacer"), variable.name = "role", value.name = "bird_id")
-  s <- plyr::ddply(s, c("role", "bird_id"), plyr::summarise, n = length(bird_id), .drop = FALSE)
+  s <- reshape2::melt(d,
+                      measure.vars = c("displacee", "displacer"),
+                      variable.name = "role",
+                      value.name = "bird_id")
+  s <- plyr::ddply(s, c("role", "bird_id"), plyr::summarise,
+                   n = length(bird_id), .drop = FALSE)
   s <- reshape2::dcast(s, ... ~ role, value.var = "n")
   s$p_win <- s$displacer / (s$displacee + s$displacer)
   s <- s[order(s$p_win, decreasing = TRUE),]
