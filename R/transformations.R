@@ -49,7 +49,7 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE){
 
   # Get spacing between visits, whether same bird or not, and whether same feeder or not
   r <- r[order(r$time),]
-  diff.time <- r$time[-1] - r$time[-nrow(r)] > bw
+  diff.time <- (r$time[-1] - r$time[-nrow(r)]) > bw
   diff.bird <- r$bird_id[-nrow(r)] != r$bird_id[-1]
   diff.feeder <- r$feeder_id[-nrow(r)] != r$feeder_id[-1]
 
@@ -71,9 +71,10 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE){
   # - bird after is not the same OR
   # - feeder after is not the same
 
+  new_visit <- apply(cbind(diff.time, diff.bird, diff.feeder), 1, any)
   r$end <- r$start <- as.POSIXct(NA)
-  r$start[c(TRUE, any(diff.time, diff.bird, diff.feeder))] <- r$time[c(TRUE, any(diff.time, diff.bird, diff.feeder))]
-  r$end[c(any(diff.time, diff.bird, diff.feeder), TRUE)] <- r$time[c(any(diff.time, diff.bird, diff.feeder), TRUE)]
+  r$start[c(TRUE, new_visit)] <- r$time[c(TRUE, new_visit)]
+  r$end[c(new_visit, TRUE)] <- r$time[c(new_visit, TRUE)]
 
   # Get visits
   v <- r[!(is.na(r$start) & is.na(r$end)),c("feeder_id","bird_id","start","end")]
@@ -84,13 +85,7 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE){
   v <- reshape2::dcast(v, ... ~ variable, value.var = "value")
   v$start <- as.POSIXct(v$start, tz = tz)
   v$end <- as.POSIXct(v$end, tz = tz)
-  v <- v[order(v$start),-grep("^n$",names(v))]
-
-  # Return error if any NAs
-  if(any(is.na(v))) {
-    print(v[rowSums(is.na(v)) > 0,])
-    stop("Unknown error: NAs present in output")
-  }
+  v <- v[, -grep("^n$",names(v))]
 
   # Get sample sizes
   v$bird_n <- length(unique(v$bird_id))
@@ -109,6 +104,7 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE){
 
   # Order and format data frame
   v <- col.order(v, c("bird_id", "start", "end", "feeder_id", "bird_n", "feeder_n"))
+  v <- v[order(v$bird_id, v$start), ]
   v$feeder_id <- factor(v$feeder_id)
   v$bird_id <- factor(v$bird_id)
 
@@ -308,10 +304,10 @@ feeding <- function(v1, bw = 15){
 
   if(!is.null(bw)){
     time_diff <- v1$start[-1] - v1$end[-nrow(v1)]
-    v1$feed_start[c(TRUE,(time_diff > bw*60 | feeder_diff))] <- TRUE
+    v1$feed_start[c(TRUE, (time_diff > bw*60 | feeder_diff))] <- TRUE
     v1$feed_end[c((time_diff > bw*60 | feeder_diff), TRUE)] <- TRUE
   } else {
-    v1$feed_start[c(TRUE,feeder_diff)] <- TRUE
+    v1$feed_start[c(TRUE, feeder_diff)] <- TRUE
     v1$feed_end[c(feeder_diff, TRUE)] <- TRUE
   }
 
