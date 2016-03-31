@@ -3,7 +3,7 @@ context("Checking Data for Errors")
 
 # check.ids()
 test_that("check.ids catches and removes correctly", {
-  b <- read.csv("../data/bird_index.csv")
+  b <- read.csv(system.file("extdata", "bird_index.csv", package = "feedr"))
 
   expect_message(check.ids(finches, b), "All ids in your data are also in your bird_id index")
   expect_message(check.ids(finches, b), "All ids in your bird_id index are also in your data")
@@ -35,7 +35,7 @@ test_that("check.ids catches and removes correctly", {
 
 # check.problems()
 test_that("check.problems catches and removes correctly", {
-  p <- read.csv("../data/problems.csv")
+  p <- read.csv(system.file("extdata", "problems.csv", package = "feedr"))
 
   expect_message(check.problems(finches, p), "The following bird ids have been corrected:")
   expect_is(check.problems(finches, p)$bird_id, "factor")
