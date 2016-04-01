@@ -18,7 +18,7 @@
 #' The function will return an error if impossible visits are detected (unless \code{allow.imp = TRUE}) . A visit is deemed impossible if a single bird travels between feeders in less time than specified by \code{bw}.
 #'
 #' @param r Dataframe. Contains raw reads from an RFID reader with colums \code{bird_id}, \code{feeder_id}, \code{time}.
-#' @param bw Numerical. The minimum number of seconds between reads for two successive reads to be considered separate visits.
+#' @param bw Numerical. The minimum interval, in seconds, between reads for two successive reads to be considered separate visits.
 #' @param allow.imp Logical. Whether impossible visits should be allowed (see details).
 #' @param na.rm Logical. Whether NA values should be automatically omited. Otherwise an error is returned.
 #'
@@ -180,8 +180,7 @@ move <- function(v1, all = FALSE){
   move_path <- unique(plyr::adply(move_dir, .margins = 1, .fun = mp)[,3])
   move_dir <- paste0(move_dir$feeder_left, "_", move_dir$feeder_arrived)
 
-
-  if(length(unique(v1$feeder_id)) > 1) {
+  if(length(unique(v1$feeder_id)) > 1) { # Only proceed if there are actual data!
     # If there are movements, calculate events
     v1 <- v1[order(v1$start),]
     diff <- v1$feeder_id[-1] != v1$feeder_id[-nrow(v1)]
@@ -209,6 +208,8 @@ move <- function(v1, all = FALSE){
     m <- plyr::adply(m, .margins = 1, .fun = mp)
     m$move_path <- factor(m$move_path, levels = move_path)
 
+    # Order
+    m <- col.order(m, c("bird_id", "left", "arrived", "feeder_left", "feeder_arrived", "move_dir", "move_path", "strength", "bird_n", "feeder_n"))
 
   } else if (all == TRUE) {
     # Create the movement data frame for birds that didn't move between feeders
@@ -227,9 +228,6 @@ move <- function(v1, all = FALSE){
     # If there are no movements and all == FALSE, return an empty data.frame
     m <- data.frame()
   }
-
-  # Order
-  m <- col.order(m, c("bird_id", "left", "arrived", "feeder_left", "feeder_arrived", "move_dir", "move_path", "strength", "bird_n", "feeder_n"))
 
   return(m)
 }
@@ -339,8 +337,8 @@ feeding <- function(v1, bw = 15){
 #' @param v Dataframe. A visits data frame containing \strong{all} visits from
 #'   \strong{all} birds. From the output of \code{visits}. Must contain columns
 #'   \code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.
-#' @param bw Numeric. The minimum number of seconds between visits by two
-#'   different birds for the event to be considered a displacement.
+#' @param bw Numeric. The maximum interval in seconds between visits by two
+#'   different birds for the interaction to be considered a displacement.
 #'
 #' @return A list with the following named items:
 #' \enumerate{
@@ -359,7 +357,7 @@ feeding <- function(v1, bw = 15){
 #'    \item Time of the arrival of the displacer (\code{arrived})
 #'   }
 #'
-#'   \item \code{summary}: A data frame of overall wins/lossess per individual,
+#'   \item \code{summaries}: A data frame of overall wins/lossess per individual,
 #'   containing the following columns:
 #'   \itemize{
 #'    \item ID of the bird (\code{bird_id})
@@ -385,9 +383,9 @@ feeding <- function(v1, bw = 15){
 #'     d[['displacements']][1:5,]
 #'     d$displacements[1:5,]
 #'
-#'     # Look at summary:
-#'     d[['summary']]
-#'     d$summary
+#'     # Look at summaries:
+#'     d[['summaries']]
+#'     d$summaries
 #'
 #'     # Look at interactions:
 #'     d[['interactions']]
@@ -441,32 +439,55 @@ disp <- function(v, bw = 5){
                    n = length(displacee), .drop = FALSE)
   t <- t[order(match(t$displacer,s$bird_id)),]  ##Sort according to the p_win value from s
 
-  return(list("displacements" = d, "summary" = s, "interactions" = t))
+  return(list("displacements" = d, "summaries" = s, "interactions" = t))
 }
 
-
+#' 'displacements' to 'dominance'
+#'
+#' @param d Data frame or List. Either the interactions data frame which is
+#'   returned as a list item from \code{disp()}, or the whole displacements list
+#'   returned by \code{disp()}.
+#'
+#' @param tries Numeric. The maximum number of iterations to find the 'best guess'
+#'
+#' @param omit_zero Logical. Should individuals with 0 interactions (sum of wins
+#'   and losses) be omitted?
+#'
 #' @export
-dom <- function(disp, tries = 50){
+dom <- function(d, tries = 50, omit_zero = TRUE){
 
-  ## Function takes either the whole output of disp() or just the dominance table
-  if(!is.data.frame(disp)) disp <- disp$interactions
+  # Function takes either the whole output of disp() or just the dominance table
+  if(!is.data.frame(d)) d <- d$interactions
 
-  ## Check for Correct formating
-  if(!all(c("displacer","displacee","n") %in% names(disp))) {
-    stop("Required columnss aren't present. Require \"displacer\",\"displacee\", and \"n\"")
+  # Check for Correct formating
+  check.name(d, c("displacer","displacee","n"))
+
+  # Start with best order
+  o <- merge(plyr::ddply(d, c("displacer"), plyr::summarise, win = sum(n)),
+             plyr::ddply(d, c("displacee"), plyr::summarise, loss = sum(n)),
+             by.x = "displacer", by.y = "displacee")
+  o$p.win <- o$win / (o$win + o$loss)
+  o <- o[order(o$p.win,decreasing = TRUE), ]
+
+  # Check sample sizes and warn if low
+
+  if(omit_zero == TRUE) {
+    omit <- o$displacer[(o$win + o$loss) == 0]
+    o <- o[!(o$displacer %in% omit), ]
+    d <- d[!(d$displacee %in% omit) & !(d$displacer %in% omit), ]
+    message("bird_ids with zero interactions have been omitted: ", paste0(omit, collapse = ", "))
   }
 
-  ## Start with best order
-  o <- merge(plyr::ddply(disp, c("displacer"), plyr::summarise, win = sum(n)),
-             plyr::ddply(disp, c("displacee"), plyr::summarise, loss = sum(n)), by.x = "displacer", by.y = "displacee")
-  o$p.win <- o$win / (o$win + o$loss)
-  o <- o[order(o$p.win,decreasing = TRUE),]
+  if(nrow(o[(o$win + o$loss) <= 2, ]) / nrow(o) > 0.5) message("More than 50% of your interactions (", round(nrow(d[d$n == 0, ]) / nrow(d)*100), "%) have 2 or fewer observations, this matrix may be founded on too little data.")
+
   o <- list(as.character(unique(o$displacer)))
 
+
+
   ## Setup the matrix
-  disp <- reshape2::dcast(disp, displacer ~ displacee, value.var = "n")
-  row.names(disp) <- disp$displacer
-  disp <- as.matrix(disp[,-grep("^displacer$", names(disp))])
+  d <- reshape2::dcast(d, displacer ~ displacee, value.var = "n")
+  row.names(d) <- d$displacer
+  d <- as.matrix(d[,-grep("^displacer$", names(d))])
 
   ## Setup Loop
   try <- 0
@@ -479,7 +500,7 @@ dom <- function(disp, tries = 50){
 
     for(i in 1:length(o.l)){
       new.o <- o.l[[i]]
-      temp <- disp
+      temp <- d
 
       ## Sort matrix by dominance hierarchy (new.o)
       temp <- temp[order(match(rownames(temp),new.o)),order(match(colnames(temp),new.o))]
@@ -505,9 +526,10 @@ dom <- function(disp, tries = 50){
       o.l <- o.l[n == min(n)]
     }
 
+    # Compare with previous matrix, if the same, we're done
     if(identical(prev, o.l)) done <- TRUE else prev <- o.l
 
-    if(length(rev) > 0 & done == FALSE){
+    if(length(rev) > 0 & length(rev[[1]]) > 0 & done == FALSE){
       ## Add the new reversal switches to our list of options and try again
       for(j in 1:length(rev)){
         for(i in 1:nrow(rev[[j]])){
@@ -526,12 +548,12 @@ dom <- function(disp, tries = 50){
     }
   }
   #print(paste0("Started with: ",paste0(unlist(o), collapse = ", ")))
-  print(paste0("Tried ",try," times. Found ",length(o.l), " 'best' matrices, with ",nrow(rev[[1]])," reversal(s) per matrix"))
+  message(paste0("Tried ",try," times. Found ",length(o.l), " 'best' matrices, with ",nrow(rev[[1]])," reversal(s) per matrix"))
 
   m <- list()
   r <- list()
   for(i in 1:length(o.l)) {
-    m[[length(m)+1]] <- disp[order(match(rownames(disp),o.l[[i]])),order(match(colnames(disp),o.l[[i]]))]
+    m[[length(m)+1]] <- d[order(match(rownames(d),o.l[[i]])),order(match(colnames(d),o.l[[i]]))]
     if(length(rev[[i]]) > 0) r[[length(r)+1]] <- c(rownames(m[[i]])[rev[[i]][1]], colnames(m[[i]])[rev[[i]][2]])
   }
 
