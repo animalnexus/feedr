@@ -1,12 +1,34 @@
 # Grab extra columns unique only
 keep.extra <- function(d, n){
+
   d <- unique(d[, setdiff(names(d), n)])
+
   # If loc present, deconstruct
   if(any(names(d) == "loc")){
     d$lon <- as.numeric(gsub("\\(([-0-9.]+),[-0-9.]+\\)", "\\1", d$loc))
     d$lat <- as.numeric(gsub("\\([-0-9.]+,([-0-9.]+)\\)", "\\1", d$loc))
     d <- d[, names(d) != "loc",]
   }
+
+  if(nrow(d) > 1) {
+    bird_id <- names(which(lapply(d[, !(names(d) %in% c("bird_id", "feeder_id"))], FUN = function(x) nrow(unique(cbind(d$bird_id, x)))) == length(unique(d$bird_id))))
+    feeder_id <- names(which(lapply(d[, !(names(d) %in% c("bird_id", "feeder_id"))], FUN = function(x) nrow(unique(cbind(d$feeder_id, x)))) == length(unique(d$feeder_id))))
+
+    both <- intersect(bird_id, feeder_id)
+    feeder_id <- setdiff(setdiff(feeder_id, both), bird_id)
+    bird_id <- setdiff(setdiff(bird_id, both), feeder_id)
+  }
+
+  if(length(both) > 0) both <- unique(d[, c("bird_id", "feeder_id", both)]) else both <- NULL
+  if(length(bird_id) > 0) bird_id <- unique(d[, c("bird_id", bird_id)]) else bird_id <- NULL
+  if(length(feeder_id) > 0) feeder_id <- unique(d[, c("feeder_id", feeder_id)]) else feeder_id <- NULL
+  return(list(both = both, bird_id = bird_id, feeder_id = feeder_id))
+}
+
+merge.extra <- function(d, extra) {
+  if(!is.null(extra$both)) d <- merge(d, extra$both, by = c("bird_id", "feeder_id"), all.x = TRUE, all.y = FALSE)
+  if(!is.null(extra$bird_id)) d <- merge(d, extra$bird_id, by = "bird_id", all.x = TRUE, all.y = FALSE)
+  if(!is.null(extra$feeder_id)) d <- merge(d, extra$feeder_id, by = "feeder_id", all.x = TRUE, all.y = FALSE)
   return(d)
 }
 
@@ -38,12 +60,12 @@ keep.extra <- function(d, n){
 #'
 #' @examples
 #' \dontrun{
-#' r <- load.web("downloaded_file.csv")
+#' r <- get.data(start = "2016-03-06", end = "2016-03-08")
 #' v <- visits(r)
 #' }
 
 #' @export
-visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE){
+visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE){
 
   # Confirm that expected columns and formats are present
   check.name(r, n = c("bird_id", "feeder_id", "time"))
@@ -57,7 +79,7 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE){
   }
 
   # Grab unique extra cols
-  extra <- keep.extra(r, n = "time")
+  if(pass == TRUE) extra <- keep.extra(r, n = "time")
 
   # Grab the timezone
   tz <- attr(r$time, "tzone")
@@ -107,7 +129,7 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE){
   v$feeder_n <- length(unique(v$feeder_id))
 
   # Add in extra
-  v <- merge(v, extra, all.x = TRUE, all.y = FALSE, by = c("bird_id", "feeder_id"))
+  if(pass == TRUE) v <- merge.extra(v, extra)
 
   # Order and format data frame
   v <- col.order(v, c("bird_id", "start", "end", "feeder_id", "bird_n", "feeder_n"))
@@ -147,10 +169,11 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE){
 #'
 #' \dontrun{
 #'
+#' r <- get.data(start = "2016-03-06", end = "2016-03-08")
 #' v <- visits(r)
 #'
 #' # One bird at a time:
-#' m <- move(v[v$bird_id == "062000039D",])
+#' m <- move(v[v$bird_id == "041868BED6",])
 #'
 #' # Split a data frame by \code{bird_id} with \code{plyr}, then apply \code{move}.
 #' library(plyr)
@@ -163,7 +186,7 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE){
 #' }
 
 #' @export
-move <- function(v1, all = FALSE){
+move <- function(v1, all = FALSE, pass = TRUE){
 
   # Check for correct formatting
   check.name(v1, c("bird_id", "feeder_id", "start", "end"))
@@ -178,11 +201,11 @@ move <- function(v1, all = FALSE){
   # Get movement options
   move_dir <- expand.grid(feeder_left = feeder_id, feeder_arrived = feeder_id)
   move_dir <- move_dir[move_dir$feeder_left != move_dir$feeder_arrived,]
-  move_path <- unique(plyr::adply(move_dir, .margins = 1, .fun = mp)[,3])
   move_dir <- paste0(move_dir$feeder_left, "_", move_dir$feeder_arrived)
+  move_path <- unique(sapply(move_dir, FUN = mp))
 
   # Get extra columns
-  extra <- keep.extra(v1, n = c("start", "end"))
+  if(pass == TRUE) extra <- keep.extra(v1, n = c("start", "end"))
 
   if(length(unique(v1$feeder_id)) > 1) { # Only proceed if there are actual data!
     # If there are movements, calculate events
@@ -200,11 +223,11 @@ move <- function(v1, all = FALSE){
 
     m$move_dir <- rep(factor(paste0(m$feeder_id[m$direction == "left"], "_", m$feeder_id[m$direction == "arrived"]), levels = move_dir), 2)
     m$strength <- 1 / as.numeric(difftime(m$time[m$direction == "arrived"], m$time[m$direction == "left"], units = "hours"))
-    m <- plyr::adply(m, .margins = 1, .fun = mp)
+    m$move_path <- sapply(m$move_dir, FUN = mp)
     m$move_path <- factor(m$move_path, levels = move_path)
 
     # Add in extra cols
-    m <- merge(m, extra, by = c("bird_id", "feeder_id"), all.x = TRUE, all.y = FALSE)
+    if(pass == TRUE) m <- merge.extra(m, extra)
 
     # Order
     m <- col.order(m, c("bird_id", "time", "feeder_id", "move_dir", "move_path", "strength"))
@@ -218,7 +241,7 @@ move <- function(v1, all = FALSE){
                     move_path = factor(NA, levels = move_path),
                     strength = as.numeric(NA))
     # Add in extra cols
-    m <- merge(m, extra, by = c("bird_id", "feeder_id"), all.x = TRUE, all.y = FALSE)
+    if(pass == TRUE) m <- merge.extra(m, extra)
     # Order
     m <- col.order(m, c("bird_id", "time", "feeder_id", "move_dir", "move_path", "strength"))
   } else {
@@ -277,7 +300,7 @@ move <- function(v1, all = FALSE){
 #'  }
 
 #' @export
-feeding <- function(v1, bw = 15){
+feeding <- function(v1, bw = 15, pass = TRUE){
 
   ## Check for correct formatting
   check.name(v1, c("bird_id","feeder_id", "start","end"))
@@ -290,7 +313,7 @@ feeding <- function(v1, bw = 15){
   feeder_id <- levels(v1$feeder_id)
 
   # Keep extra cols
-  extra <- keep.extra(v1, n = c("start", "end"))
+  if(pass == TRUE) extra <- keep.extra(v1, n = c("start", "end"))
 
   v1 <- v1[order(v1$start),]
   feeder_diff <- v1$feeder_id[-1] != v1$feeder_id[-nrow(v1)]
@@ -313,7 +336,7 @@ feeding <- function(v1, bw = 15){
                   feed_length = difftime(v1$end[v1$feed_end == TRUE], v1$start[v1$feed_start == TRUE], units = "mins"))
 
   # Get extra columns and add in
-  f <- merge(f, extra, by = c("bird_id", "feeder_id"), all.x = TRUE, all.y = FALSE)
+  if(pass == TRUE) f <- merge.extra(f, extra)
 
   return(f)
 }
@@ -391,7 +414,7 @@ feeding <- function(v1, bw = 15){
 #'  }
 
 #' @export
-disp <- function(v, bw = 5){
+disp <- function(v, bw = 5, pass = TRUE){
 
   ## Check for correct formatting
   check.name(v, c("bird_id", "feeder_id", "start", "end"))
@@ -404,7 +427,7 @@ disp <- function(v, bw = 5){
   v <- v[order(v$start), ]
 
   # Keep extra columns
-  extra <- keep.extra(v, n = c("start", "end"))
+  if(pass == TRUE) extra <- keep.extra(v, n = c("start", "end"))
 
   ## Define displacee and displacer by
   #  (a) whether subsequent visit was a different bird, AND
@@ -427,6 +450,9 @@ disp <- function(v, bw = 5){
 
   d <- d[, !(names(d) %in% c("start", "end"))]
   if(nrow(d) == 0) stop(paste0("There are no displacement events with a bw = ", bw, ", stopping now"))
+
+  if(pass == TRUE) d <- merge.extra(d, extra)
+  d <- col.order(d, c("bird_id", "left", "arrived", "feeder_id", "role"))
 
   ## Summarize totals
   s <- plyr::ddply(d, c("role", "bird_id"), plyr::summarise,
@@ -486,8 +512,6 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
   if(nrow(o[(o$win + o$loss) <= 2, ]) / nrow(o) > 0.5) message("More than 50% of your interactions (", round(nrow(d[d$n == 0, ]) / nrow(d)*100), "%) have 2 or fewer observations, this matrix may be founded on too little data.")
 
   o <- list(as.character(unique(o$displacer)))
-
-
 
   ## Setup the matrix
   d <- reshape2::dcast(d, displacer ~ displacee, value.var = "n")
