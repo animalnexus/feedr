@@ -289,6 +289,9 @@ feeding <- function(v1, bw = 15){
   bird_id <- levels(v1$bird_id)
   feeder_id <- levels(v1$feeder_id)
 
+  # Keep extra cols
+  extra <- keep.extra(v1, n = c("start", "end"))
+
   v1 <- v1[order(v1$start),]
   feeder_diff <- v1$feeder_id[-1] != v1$feeder_id[-nrow(v1)]
   v1$feed_end <- v1$feed_start <- FALSE
@@ -307,12 +310,10 @@ feeding <- function(v1, bw = 15){
                   feeder_id = factor(v1$feeder_id[v1$feed_start == TRUE], levels = feeder_id),
                   feed_start = v1$start[v1$feed_start == TRUE],
                   feed_end = v1$end[v1$feed_end == TRUE],
-                  feed_length = difftime(v1$end[v1$feed_end == TRUE], v1$start[v1$feed_start == TRUE], units = "mins"),
-                  bird_n = bird_n,
-                  feeder_n = feeder_n)
+                  feed_length = difftime(v1$end[v1$feed_end == TRUE], v1$start[v1$feed_start == TRUE], units = "mins"))
 
   # Get extra columns and add in
-  f <- merge(f, keep.extra(v1, n = c("start", "end")), by = c("bird_id", "feeder_id"), all.x = TRUE, all.y = FALSE)
+  f <- merge(f, extra, by = c("bird_id", "feeder_id"), all.x = TRUE, all.y = FALSE)
 
   return(f)
 }
