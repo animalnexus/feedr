@@ -342,8 +342,8 @@ feeding <- function(v1, bw = 15){
 #'   \code{displacements}: A data frame of individual displacement events,
 #'   including the following columns:
 #'   \itemize{
-#'    \item ID of the feeder at
-#'   which the event occurred (\code{feeder_id})
+#'    \item \code{feeder_id}: ID of the feeder at which the event
+#'    occurred
 #'    \item ID of the bird being
 #'   displaced (\code{displacee})
 #'    \item ID of the bird doing the displacing
@@ -400,42 +400,45 @@ disp <- function(v, bw = 5){
 
   v <- v[order(v$start), ]
 
+  # Keep extra columns
+  extra <- keep.extra(v, n = c("start", "end"))
+
   ## Define displacee and displacer by
   ##  (a) whether subsequent visit was a different bird, AND
   #   (b) the arrival of the 2nd bird occurred within 'bw' seconds of the departure of the 1st
   bird.diff <- v$bird_id[-1] != v$bird_id[-nrow(v)]
   time.diff <- (v$start[-1] - v$end[-nrow(v)]) < bw
 
-  v$displacee <- c(bird.diff & time.diff,FALSE)
-  v$displacer <- c(FALSE, bird.diff & time.diff)
+  d <- v[, c("bird_id", "feeder_id", "start", "end")]
+  d$role <- NA
+  d$role[c(bird.diff & time.diff, FALSE)] <- "displacee"
+  d$role[c(FALSE, bird.diff & time.diff)] <- "displacer"
 
-  v <- v[v$displacee | v$displacer, ]
+  d <- d[!is.na(d$role), ]
+  d <- d[order(d$role, d$start), ]
 
-  if(all(!v$displacee, !v$displacer)) stop(paste0("There are no displacement events with a bw = ", bw, ", stopping now"))
-  ## Create the displacement data frame.
-  d <- data.frame(feeder_id = factor(v$feeder_id[v$displacee == TRUE], levels = feeder_id),
-                  left = v$end[v$displacee == TRUE],
-                  arrived = v$start[v$displacer == TRUE],
-                  displacee = factor(v$bird_id[v$displacee == TRUE], levels = bird_id),
-                  displacer = factor(v$bird_id[v$displacer == TRUE], levels = bird_id))
+  d$left <- rep(v$end[c(bird.diff & time.diff, FALSE)], 2)
+  d$arrived <- rep(v$start[c(FALSE, bird.diff & time.diff)], 2)
+
+  d <- d[, !(names(d) %in% c("start", "end"))]
+  if(nrow(d) == 0) stop(paste0("There are no displacement events with a bw = ", bw, ", stopping now"))
 
   ## Summarize totals
-  s <- reshape2::melt(d,
-                      measure.vars = c("displacee", "displacer"),
-                      variable.name = "role",
-                      value.name = "bird_id")
-  s <- plyr::ddply(s, c("role", "bird_id"), plyr::summarise,
+  s <- plyr::ddply(d, c("role", "bird_id"), plyr::summarise,
                    n = length(bird_id), .drop = FALSE)
   s <- reshape2::dcast(s, ... ~ role, value.var = "n")
   s$p_win <- s$displacer / (s$displacee + s$displacer)
   s <- s[order(s$p_win, decreasing = TRUE),]
 
   ## Summarize interactions
-  t <- plyr::ddply(d, c("displacee", "displacer"), plyr::summarise,
-                   n = length(displacee), .drop = FALSE)
+  t <- d
+  t$interaction <- paste(t$bird_id[t$role == "displacer"], t$bird_id[t$role == "displacee"], sep = "_")
+  t <- plyr::ddply(t, "interaction", plyr::summarise,
+                   n = length(interaction), .drop = FALSE)
+  t[, c("displacer", "displacee")] <- stringr::str_extract_all(t$interaction, paste0(bird_id, collapse = "|"), simplify = TRUE)
   t <- t[order(match(t$displacer,s$bird_id)),]  ##Sort according to the p_win value from s
 
-  return(list("displacements" = d, "summaries" = s, "interactions" = t))
+  return(list("displacements" = d, "summaries" = s, "interactions" = t[, names(t) != "interaction",]))
 }
 
 #' 'displacements' to 'dominance'
