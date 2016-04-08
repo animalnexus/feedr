@@ -394,6 +394,7 @@ disp <- function(v, bw = 5){
   ## Check for correct formatting
   check.name(v, c("bird_id", "feeder_id", "start", "end"))
   check.time(v)
+  check.format(v)
 
   bird_id <- levels(v$bird_id)
   feeder_id <- levels(v$feeder_id)
@@ -404,21 +405,23 @@ disp <- function(v, bw = 5){
   extra <- keep.extra(v, n = c("start", "end"))
 
   ## Define displacee and displacer by
-  ##  (a) whether subsequent visit was a different bird, AND
-  #   (b) the arrival of the 2nd bird occurred within 'bw' seconds of the departure of the 1st
+  #  (a) whether subsequent visit was a different bird, AND
+  #  (b) the arrival of the 2nd bird occurred within 'bw' seconds of the departure of the 1st
+  #  (c) all of this occurs at the same feeder
   bird.diff <- v$bird_id[-1] != v$bird_id[-nrow(v)]
   time.diff <- (v$start[-1] - v$end[-nrow(v)]) < bw
+  feeder.diff <- v$feeder_id[-1] == v$feeder_id[-nrow(v)]
 
   d <- v[, c("bird_id", "feeder_id", "start", "end")]
   d$role <- NA
-  d$role[c(bird.diff & time.diff, FALSE)] <- "displacee"
-  d$role[c(FALSE, bird.diff & time.diff)] <- "displacer"
+  d$role[c(bird.diff & time.diff & feeder.diff, FALSE)] <- "displacee"
+  d$role[c(FALSE, bird.diff & time.diff & feeder.diff)] <- "displacer"
 
   d <- d[!is.na(d$role), ]
   d <- d[order(d$role, d$start), ]
 
-  d$left <- rep(v$end[c(bird.diff & time.diff, FALSE)], 2)
-  d$arrived <- rep(v$start[c(FALSE, bird.diff & time.diff)], 2)
+  d$left <- rep(v$end[c(bird.diff & time.diff & feeder.diff, FALSE)], 2)
+  d$arrived <- rep(v$start[c(FALSE, bird.diff & time.diff & feeder.diff)], 2)
 
   d <- d[, !(names(d) %in% c("start", "end"))]
   if(nrow(d) == 0) stop(paste0("There are no displacement events with a bw = ", bw, ", stopping now"))
