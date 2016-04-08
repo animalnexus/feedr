@@ -13,8 +13,7 @@ check.indiv <- function(d) {
   if(length(unique(d$bird_id)) > 1) stop("This function is only designed to be run on one individual at a time. Consider using the ddply() function from the plyr package, or the do() function from the dplyr package to apply this function to all birds.")
 }
 
-check.format <- function(d, n = "feeder_id") {
-  for(i in n) {
-    if(any(stringr::str_count(d[, i], "_") > 0)) message(paste0("Using '_' in ", i, " values conflicts with the mapping functions. You should remove any '_'s if you plan to use these functions."))
-  }
+check.format <- function(d) {
+  if(any(stringr::str_count(d$feeder_id, "_") > 0)) message("Using '_' in feeder_id values conflicts with the mapping functions. You should remove any '_'s if you plan to use these functions.")
+  if(any(stringr::str_count(d$bird_id, "_") > 0)) message("Using '_' in bird_id values conflicts with the displacement/dominance functions. You should remove any '_'s if you plan to use these functions.")
 }

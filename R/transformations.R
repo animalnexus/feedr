@@ -283,6 +283,7 @@ feeding <- function(v1, bw = 15){
   check.name(v1, c("bird_id","feeder_id", "start","end"))
   check.time(v1)
   check.indiv(v1)
+  check.format(v1)
 
   # Get factor levels
   bird_id <- levels(v1$bird_id)
@@ -463,6 +464,7 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
 
   # Check for Correct formating
   check.name(d, c("displacer","displacee","n"))
+  check.format(d)
 
   # Start with best order
   o <- merge(plyr::ddply(d, c("displacer"), plyr::summarise, win = sum(n)),
