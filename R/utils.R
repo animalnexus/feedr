@@ -7,6 +7,6 @@ col.order <- function(d, n){
 
 # Internal Movement path function (unique for each feeder path)
 mp <- function(x) {
-  x$move_path <- paste(as.character(sort(unlist(x[,c("feeder_left","feeder_arrived")]))),collapse = "_")
+  x$move_path <- paste0(sort(unlist(strsplit(as.character(x$move_dir), "_"))), collapse = "_")
   return(x)
 }

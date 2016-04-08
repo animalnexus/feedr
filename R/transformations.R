@@ -1,3 +1,15 @@
+# Grab extra columns unique only
+keep.extra <- function(d, n){
+  d <- unique(d[, setdiff(names(d), n)])
+  # If loc present, deconstruct
+  if(any(names(d) == "loc")){
+    d$lon <- as.numeric(gsub("\\(([-0-9.]+),[-0-9.]+\\)", "\\1", d$loc))
+    d$lat <- as.numeric(gsub("\\([-0-9.]+,([-0-9.]+)\\)", "\\1", d$loc))
+    d <- d[, names(d) != "loc",]
+  }
+  return(d)
+}
+
 # ----------------------------------
 # visits()
 # ----------------------------------
@@ -43,6 +55,9 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE){
     if(na.rm == FALSE) stop("NAs found. To automatically remove NAs, specify 'na.rm = TRUE'.")
     if(na.rm == TRUE) r <- r[rowSums(is.na(r)) == 0,]
   }
+
+  # Grab unique extra cols
+  extra <- keep.extra(r, n = "time")
 
   # Grab the timezone
   tz <- attr(r$time, "tzone")
@@ -91,16 +106,8 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE){
   v$bird_n <- length(unique(v$bird_id))
   v$feeder_n <- length(unique(v$feeder_id))
 
-  # Get extra columns but only if they're unique to either bird_id or feeder_id
-  extra.cols <- names(r)[!(names(r) %in% c("bird_id", "feeder_id", "time", "start", "end"))]
-
-  keep <- vector()
-  for(n in extra.cols) {
-    if(nrow(unique(r[, c(n, "bird_id")]))   == length(unique(r$bird_id))) keep <- c(keep, n)
-    if(nrow(unique(r[, c(n, "feeder_id")])) == length(unique(r$feeder_id))) keep <- c(keep, n)
-  }
-  keep <- unique(keep)
-  if(length(keep) > 0) v <- merge(v, unique(r[ , c("bird_id", "feeder_id", keep)]), by = c("bird_id", "feeder_id"))
+  # Add in extra
+  v <- merge(v, extra, all.x = TRUE, all.y = FALSE, by = c("bird_id", "feeder_id"))
 
   # Order and format data frame
   v <- col.order(v, c("bird_id", "start", "end", "feeder_id", "bird_n", "feeder_n"))
@@ -110,8 +117,6 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE){
 
   return(v)
 }
-
-
 
 
 # ----------------------------------
@@ -166,10 +171,6 @@ move <- function(v1, all = FALSE){
   check.indiv(v1)
   check.format(v1)
 
-  # Grab sample sizes
-  bird_n <- v1$bird_n[1]
-  feeder_n <- v1$feeder_n[1]
-
   # Get factor levels
   bird_id <- levels(v1$bird_id)
   feeder_id <- levels(v1$feeder_id)
@@ -180,6 +181,9 @@ move <- function(v1, all = FALSE){
   move_path <- unique(plyr::adply(move_dir, .margins = 1, .fun = mp)[,3])
   move_dir <- paste0(move_dir$feeder_left, "_", move_dir$feeder_arrived)
 
+  # Get extra columns
+  extra <- keep.extra(v1, n = c("start", "end"))
+
   if(length(unique(v1$feeder_id)) > 1) { # Only proceed if there are actual data!
     # If there are movements, calculate events
     v1 <- v1[order(v1$start),]
@@ -188,47 +192,39 @@ move <- function(v1, all = FALSE){
     v1$left[c(diff, FALSE)] <- TRUE
     v1$arrived[c(FALSE, diff)] <- TRUE
 
-    # Create the movement data frame.
-    m <- data.frame(bird_id = factor(v1$bird_id[1], levels = bird_id),
-                    left = v1$end[v1$left == TRUE],
-                    arrived = v1$start[v1$arrived == TRUE],
-                    feeder_left = factor(v1$feeder_id[v1$left == TRUE], levels = feeder_id),
-                    feeder_arrived = factor(v1$feeder_id[v1$arrived == TRUE], levels = feeder_id),
-                    move_dir = NA,
-                    move_path = NA,
-                    strength = NA,
-                    bird_n = bird_n,
-                    feeder_n = feeder_n)
+    m <- reshape2::melt(v1[v1$left | v1$arrived,], measure.vars = c("left", "arrived"), variable.name = "direction")
+    m <- m[m$value, ]
+    m <- reshape2::melt(m, measure.vars = c("start", "end"), variable = "type", value.name = "time")
+    m <- m[(m$direction == "left" & m$type == "end") | (m$direction == "arrived" & m$type == "start"), !(names(m) %in% c("value", "type"))]
+    m <- m[order(m$direction, m$time),]
 
-    # Calculate movement direction and strength of the feeder connection (inverse of time between arrived and left)
-    m$move_dir = factor(paste0(m$feeder_left, "_", m$feeder_arrived), levels = move_dir)
-    m$strength = 1 / as.numeric(difftime(m$arrived, m$left, units = "hours"))
-
-    # Get absolute feeder path (no directionality)
+    m$move_dir <- rep(factor(paste0(m$feeder_id[m$direction == "left"], "_", m$feeder_id[m$direction == "arrived"]), levels = move_dir), 2)
+    m$strength <- 1 / as.numeric(difftime(m$time[m$direction == "arrived"], m$time[m$direction == "left"], units = "hours"))
     m <- plyr::adply(m, .margins = 1, .fun = mp)
     m$move_path <- factor(m$move_path, levels = move_path)
 
+    # Add in extra cols
+    m <- merge(m, extra, by = c("bird_id", "feeder_id"), all.x = TRUE, all.y = FALSE)
+
     # Order
-    m <- col.order(m, c("bird_id", "left", "arrived", "feeder_left", "feeder_arrived", "move_dir", "move_path", "strength", "bird_n", "feeder_n"))
+    m <- col.order(m, c("bird_id", "time", "feeder_id", "move_dir", "move_path", "strength"))
 
   } else if (all == TRUE) {
     # Create the movement data frame for birds that didn't move between feeders
     m <- data.frame(bird_id = factor(v1$bird_id[1], levels = bird_id),
-                    left = as.POSIXct(NA),
-                    arrived = as.POSIXct(NA),
-                    feeder_left = factor(NA, levels = feeder_id),
-                    feeder_arrived = factor(NA, levels = feeder_id),
+                    time = as.POSIXct(NA),
+                    feeder_id = factor(NA, levels = feeder_id),
                     move_dir = factor(NA, levels = move_dir),
                     move_path = factor(NA, levels = move_path),
-                    strength = as.numeric(NA),
-                    bird_n = as.numeric(NA),
-                    feeder_n = as.numeric(NA))
-
+                    strength = as.numeric(NA))
+    # Add in extra cols
+    m <- merge(m, extra, by = c("bird_id", "feeder_id"), all.x = TRUE, all.y = FALSE)
+    # Order
+    m <- col.order(m, c("bird_id", "time", "feeder_id", "move_dir", "move_path", "strength"))
   } else {
     # If there are no movements and all == FALSE, return an empty data.frame
     m <- data.frame()
   }
-
   return(m)
 }
 
@@ -288,10 +284,6 @@ feeding <- function(v1, bw = 15){
   check.time(v1)
   check.indiv(v1)
 
-  # Grab samples sizes
-  bird_n <- v1$bird_n[1]
-  feeder_n <- v1$feeder_n[1]
-
   # Get factor levels
   bird_id <- levels(v1$bird_id)
   feeder_id <- levels(v1$feeder_id)
@@ -317,6 +309,10 @@ feeding <- function(v1, bw = 15){
                   feed_length = difftime(v1$end[v1$feed_end == TRUE], v1$start[v1$feed_start == TRUE], units = "mins"),
                   bird_n = bird_n,
                   feeder_n = feeder_n)
+
+  # Get extra columns and add in
+  f <- merge(f, keep.extra(v1, n = c("start", "end")), by = c("bird_id", "feeder_id"), all.x = TRUE, all.y = FALSE)
+
   return(f)
 }
 
