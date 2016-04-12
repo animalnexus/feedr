@@ -33,7 +33,7 @@
 #'
 #' @export
 
-activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE, pass = TRUE){
+activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE, keep_all = FALSE, pass = TRUE){
   #v <- visits(get.data(start = "2016-03-05", end = "2016-03-07"))
   #f1 <- feeding(v[v$bird_id == "0620000514",])
 
@@ -70,11 +70,14 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
   }
 
   # Calculate Activity only if > 24hrs of data
-  if((max(f1$feed_end) - min(f1$feed_start)) < lubridate::dhours(24)) {
-    message(paste0(f1$bird_id[1], ": Individual has less than 24hrs of data, skipping..."))
+  if((max(f1$feed_end) - min(f1$feed_start)) < lubridate::dhours(24) & keep_all == FALSE) {
+    message(paste0(f1$bird_id[1], ": Skipping. Individual has less than 24hrs of data"))
+  } else if (all(f1$feed_length == 0))  {
+    message(paste0(f1$bird_id[1], ": Skipping. All feeding bouts are 0 min. Consider increasing 'bw' in feeding()"))
   } else {
-
     ## ACCOUNT FOR MISSING!!!
+
+    # Check proportion of time active, warn if really low
     p.active <- as.numeric(sum(f1$feed_length)) / as.numeric(difftime(max(f1$feed_end), min(f1$feed_start), units = "mins"))
     if(p.active < 0.05) message(paste0(f1$bird_id[1], ": Active less than 5% of the total time period..."))
 
