@@ -1,7 +1,5 @@
-#' Scaling feeding and movement data for maps
-#'
-#' A scaling function used by mapping functions
-#'
+# Scaling feeding and movement data for maps
+# A scaling function used by mapping functions
 smart.scale <- function(x, m) {
   x <- as.numeric(x)
   x <- x - min(x) + 0.01
@@ -10,10 +8,8 @@ smart.scale <- function(x, m) {
 }
 
 
-#' Prep data for mapping
-#'
-#' A data prep function used by mapping functions
-#'
+# Prep data for mapping
+# A data prep function used by mapping functions
 map.prep <- function(locs, f = NULL, m = NULL) {
 
   # Check data
@@ -74,11 +70,11 @@ map.prep <- function(locs, f = NULL, m = NULL) {
 #'   \code{bird_id}, \code{feeder_id}, \code{time}.
 #' @param m Dataframe.
 #' @param locs Dataframe.
-#' @param f.scale m.scale Numerical. Scaling constants to increase (> 1) or
+#' @param f.scale,m.scale Numerical. Scaling constants to increase (> 1) or
 #'   decrease (< 1) the relative size of feeding (f) and movement (m) data.
-#' @param f.title m.title Character. Titles for the legends of feeding (f) and
+#' @param f.title,m.title Character. Titles for the legends of feeding (f) and
 #'   movement (m) data.
-#' @param f.pal m.pal Character vectors. Colours used to construct gradients for
+#' @param f.pal,m.pal Character vectors. Colours used to construct gradients for
 #'   feeding (f) and movement (m) data.
 #'
 #' @return An interactive leaflet map with layers for feeding time, movement
