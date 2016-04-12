@@ -18,7 +18,7 @@
 
 #' @export
 load.web.legacy <- function(r_file, tz = "Canada/Pacific", sep = ",") {
-  r <- read.table(r_file, sep = ",", col.names = c("date","feeder_id","bird_id"))
+  r <- read.table(r_file, sep = ",", col.names = c("date","feeder_id","bird_id"), colClasses = "character")
   r$time <- as.POSIXct(strptime(r$date, "%m-%d-%yT%H:%M:%SZ", tz = "Zulu"))
   attributes(r$time)$tzone <- tz
 
@@ -109,7 +109,11 @@ load.web <- function(r_file, tz = "Canada/Pacific", sep = ",") {
 #' }
 #' @export
 load.raw <- function(r_file, tz = "Canada/Pacific", feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1) {
-    r <- read.table(r_file, col.names = c("bird_id","date","time"), skip = skip, sep = sep)
+    r <- read.table(r_file,
+                    col.names = c("bird_id","date","time"),
+                    colClasses = "character",
+                    skip = skip,
+                    sep = sep)
 
     # Trim leading or trailing whitespace
     r <- plyr::ddply(r, c(), plyr::colwise(trimws))[ , -1]
