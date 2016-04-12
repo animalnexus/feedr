@@ -447,12 +447,10 @@ disp <- function(v, bw = 5, pass = TRUE){
   time.diff <- (v$start[-1] - v$end[-nrow(v)]) < bw
   feeder.diff <- v$feeder_id[-1] == v$feeder_id[-nrow(v)]
 
-  d <- v[, c("bird_id", "feeder_id", "start", "end")]
-  d$role <- NA
-  d$role[c(bird.diff & time.diff & feeder.diff, FALSE)] <- "displacee"
-  d$role[c(FALSE, bird.diff & time.diff & feeder.diff)] <- "displacer"
-
-  d <- d[!is.na(d$role), ]
+  d <- rbind(v[c(bird.diff & time.diff & feeder.diff, FALSE), c("bird_id", "feeder_id", "start", "end")],
+             v[c(FALSE, bird.diff & time.diff & feeder.diff), c("bird_id", "feeder_id", "start", "end")])
+  d <- d[order(d$start), ]
+  d$role <- c("displacee", "displacer")
   d <- d[order(d$role, d$start), ]
 
   d$left <- rep(v$end[c(bird.diff & time.diff & feeder.diff, FALSE)], 2)
@@ -463,6 +461,7 @@ disp <- function(v, bw = 5, pass = TRUE){
 
   if(pass == TRUE) d <- merge.extra(d, extra)
   d <- col.order(d, c("bird_id", "left", "arrived", "feeder_id", "role"))
+  d <- d[order(d$left), ]
 
   ## Summarize totals
   s <- plyr::ddply(d, c("role", "bird_id"), plyr::summarise,
