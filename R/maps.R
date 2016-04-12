@@ -126,7 +126,7 @@ map.prep <- function(locs, f = NULL, m = NULL) {
 #' }
 #' @export
 #' @import leaflet
-map.leaflet <- function(f, m, locs,
+map.leaflet <- function(f = NULL, m = NULL, locs,
                  f.scale = 1, m.scale = 1,
                  f.title = "Feeding time", m.title = "Path use",
                  f.pal = c("yellow","red"),
@@ -308,7 +308,7 @@ map.leaflet <- function(f, m, locs,
 #' map.ggmap(f = f.indiv, m = m.all, locs = l)
 #' }
 #' @export
-map.ggmap <- function(f, m, locs,
+map.ggmap <- function(f = NULL, m = NULL, locs,
                  f.scale = 1, m.scale = 1,
                  f.title = "Feeding time", m.title = "Path use",
                  f.pal = c("yellow","red"),
