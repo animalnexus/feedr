@@ -18,7 +18,8 @@ test_that("visits() returns appropriate, non-empty dataframe", {
   expect_equal(v$end[2], as.POSIXct("2016-01-29 11:21:26"))
   expect_equal(v$bird_n[2], 5)
   expect_equal(v$feeder_n[2], 4)
-  expect_equal(v$loc[2], "(-120.3624278,50.66895556)")
+  expect_equal(round(v$lon[2], 4), -120.3624)
+  expect_equal(round(v$lat[2], 5), 50.66896)
   expect_equal(v$species[2], "House Finch")
   expect_equal(nrow(v[v$end != v$start,]), 49) ## 47 visits > 0 seconds
 })

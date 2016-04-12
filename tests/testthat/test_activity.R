@@ -7,7 +7,7 @@ test_that("activity() in general", {
   a <- plyr::ddply(f, c("bird_id"), activity)
 
   expect_message(plyr::ddply(f, c("bird_id"), activity),
-                 "041868D396: Individual has less than 24hrs of data, skipping...")
+                 "041868D396: Skipping. Individual has less than 24hrs of data")
 
   expect_message(plyr::ddply(f, c("bird_id"), activity),
                  "0620000514: 88.89% of obs")
@@ -16,7 +16,7 @@ test_that("activity() in general", {
                  "0620000514: 55.56% of obs")
 
    expect_is(a, "data.frame")
-   expect_match(names(a)[1:4], "^bird_id$|^time$|^activity$|^feeder_id$")
+   expect_match(names(a)[1:6], "^bird_id$|^time$|^date$|^activity$|^activity_c$|^feeder_id$")
    expect_is(a$bird_id, "factor")
    expect_is(a$feeder_id, "factor")
    expect_is(a$time, "POSIXct")
@@ -42,13 +42,13 @@ test_that("activity() missing", {
   m <- read.csv("../data/missing.csv")
 
   a <- plyr::ddply(f, c("bird_id"), activity, by_feeder = TRUE, missing = m)
-  expect_equal(nrow(a[a$activity == "unknown",]), 260)
+  expect_equal(nrow(a[a$activity_c == "unknown",]), 260)
 
   a <- plyr::ddply(f, c("bird_id"), activity, missing = m)
-  expect_equal(nrow(a[a$activity == "unknown",]), 130)
+  expect_equal(nrow(a[a$activity_c == "unknown",]), 130)
 
   a <- plyr::ddply(f, c("bird_id"), activity, missing = "../data/missing.csv")
-  expect_equal(nrow(a[a$activity == "unknown",]), 130)
+  expect_equal(nrow(a[a$activity_c == "unknown",]), 130)
 
   expect_error(plyr::ddply(f, c("bird_id"), activity, missing = c(1, 2)), "'missing' must be")
 })
