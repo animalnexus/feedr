@@ -326,10 +326,8 @@ get.data <- function(start = NULL,
   return(r)
 }
 
-#' Internal function: Format data
-#'
-#' Formats data for the loading function.
-#'
+# Internal function: Format data
+# Formats data for the loading function.
 load.format <- function(r, tz){
 
   # Trim leading or trailing whitespace
