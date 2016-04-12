@@ -230,10 +230,12 @@ move <- function(v1, all = FALSE, pass = TRUE){
     m$move_path <- sapply(m$move_dir, FUN = mp)
     m$move_path <- factor(m$move_path, levels = move_path)
 
+
     # Add in extra cols
     if(pass == TRUE) m <- merge.extra(m, extra)
 
     # Order
+    m <- m[order(m$bird_id, m$time),]
     m <- col.order(m, c("bird_id", "time", "feeder_id", "move_dir", "move_path", "strength"))
 
   } else if (all == TRUE) {
@@ -244,10 +246,13 @@ move <- function(v1, all = FALSE, pass = TRUE){
                     move_dir = factor(NA, levels = move_dir),
                     move_path = factor(NA, levels = move_path),
                     strength = as.numeric(NA))
+
     # Add in extra cols
     if(pass == TRUE) m <- merge.extra(m, extra)
+
     # Order
     m <- col.order(m, c("bird_id", "time", "feeder_id", "move_dir", "move_path", "strength"))
+
   } else {
     # If there are no movements and all == FALSE, return an empty data.frame
     m <- data.frame()
@@ -341,6 +346,7 @@ feeding <- function(v1, bw = 15, pass = TRUE){
 
   # Get extra columns and add in
   if(pass == TRUE) f <- merge.extra(f, extra)
+  f <- f[order(f$bird_id, f$feed_start), ]
 
   return(f)
 }
