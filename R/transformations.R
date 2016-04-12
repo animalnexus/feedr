@@ -51,14 +51,25 @@ merge.extra <- function(d, extra, only = NULL) {
 #' \item A change in feeder for a single individual (\code{feeder_id})
 #' }
 #'
-#' The function will return an error if impossible visits are detected (unless \code{allow.imp = TRUE}) . A visit is deemed impossible if a single bird travels between feeders in less time than specified by \code{bw}.
+#' The function will return an error if impossible visits are detected (unless
+#'   \code{allow.imp = TRUE}) . A visit is deemed impossible if a single bird
+#'   travels between feeders in less time than specified by \code{bw}.
 #'
-#' @param r Dataframe. Contains raw reads from an RFID reader with colums \code{bird_id}, \code{feeder_id}, \code{time}.
-#' @param bw Numerical. The minimum interval, in seconds, between reads for two successive reads to be considered separate visits.
-#' @param allow.imp Logical. Whether impossible visits should be allowed (see details).
-#' @param na.rm Logical. Whether NA values should be automatically omited. Otherwise an error is returned.
+#' @param r Dataframe. Contains raw reads from an RFID reader with colums
+#'   \code{bird_id}, \code{feeder_id}, \code{time}.
+#' @param bw Numerical. The minimum interval, in seconds, between reads for two
+#'   successive reads to be considered separate visits.
+#' @param allow.imp Logical. Whether impossible visits should be allowed (see
+#'   details).
+#' @param na.rm Logical. Whether NA values should be automatically omited.
+#'   Otherwise an error is returned.
+#' @param pass Logical. Pass 'extra' columns through the function and append
+#'   them to the output.
 #'
-#' @return A data frame with visits specifying \code{bird_id} and \code{feeder_id} as well as the \code{start} and \code{end} of the visit. Any extra columns that are unique at the level of bird_id or feeder_id will also be passed through (i.e. age, sex, feeder location, etc.).
+#' @return A data frame with visits specifying \code{bird_id} and
+#'   \code{feeder_id} as well as the \code{start} and \code{end} of the visit.
+#'   Any extra columns that are unique at the level of bird_id or feeder_id will
+#'   also be passed through (i.e. age, sex, feeder location, etc.).
 #'
 #' @examples
 #' \dontrun{
@@ -149,21 +160,29 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE){
 
 #' 'Visits' to 'movements' for a single bird_id
 #'
-#' For a single \code{bird_id}, turns visits to mulitple feeders into movements between feeders
+#' For a single \code{bird_id}, turns visits to mulitple feeders into movements
+#' between feeders
 #'
-
+#' @param v1 Dataframe. A visits data frame containing only \strong{one} unique
+#'   bird id. From the output of \code{visits}. Must contain columns
+#'   \code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.
+#' @param all Logical. Should all bird_ids be returned, even if the bird made no
+#'   movements? If TRUE, a data frame with NAs for all columns except
+#'   \code{bird_id} will be returned, if FALSE, an empty data frame will be
+#'   returned.
+#' @param pass Logical. Pass 'extra' columns through the function and append
+#'   them to the output.
 #'
-#' @param v1 Dataframe. A visits data frame containing only \strong{one} unique bird id. From the output of \code{visits}. Must contain columns \code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.
-#' @param all Logical. Should all bird_ids be returned, even if the bird made no movements? If TRUE, a data frame with NAs for all columns except \code{bird_id} will be returned, if FALSE, an empty data frame will be returned.
-#'
-#' @return A data frame of movements. These are defined as the bout of time from leaving one feeder to arriving at a second one. The data contain:
+#' @return A data frame of movements. These are defined as the bout of time from
+#'   leaving one feeder to arriving at a second one. The data contain:
 #' \itemize{
 #' \item ID of the bird (\code{bird_id})
 #' \item Time of leaving the 1st feeder (\code{left})
 #' \item Time of arriving at the 2nd feeder (\code{arrived})
 #' \item The ID of the first feeder (\code{feeder_id1})
 #' \item The ID of the second feeder (\code{feeder_id2})
-#' \item The ID of the unique track between those two feeders (\code{feeder_path})
+#' \item The ID of the unique track between those two feeders
+#'       (\code{feeder_path})
 #' \item This is simply the IDs of the two feeders alphabetized
 #' }
 #'
@@ -177,7 +196,8 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE){
 #' # One bird at a time:
 #' m <- move(v[v$bird_id == "041868BED6",])
 #'
-#' # Split a data frame by \code{bird_id} with \code{plyr}, then apply \code{move}.
+#' # Split a data frame by \code{bird_id} with \code{plyr}, then
+#'   apply \code{move}.
 #' library(plyr)
 #' m <- ddply(v, c("bird_id"), move)
 #'
@@ -278,17 +298,16 @@ move <- function(v1, all = FALSE, pass = TRUE){
 #' @param bw Numeric. The minimum number of minutes between visits for two
 #'   successive visits to be considered separate feeding bouts. When \code{bw} =
 #'   NULL only visits to another feeder are scored as a separate feeding bout.
+#' @param pass Logical. Pass 'extra' columns through the function and append
+#'   them to the output.
 #'
 #' @return A data frame of feeding bouts. A feeding bout is defined as the bout
 #'   of time spent making regular visits to a feeder, in which each visit
 #'   occurrred within some cutoff time of the last. This data frame has the
-#'   following columns:
-#'   \itemize{
-#'     \item ID of the bird (\code{bird_id})
-#'     \item ID of the feeder(\code{feeder_id})
-#'     \item Time of the start of the feeding bout (\code{feed.start})
-#'     \item Time of the end of the feeding bout (\code{feed.end})
-#'   }
+#'   following columns: \itemize{ \item ID of the bird (\code{bird_id}) \item ID
+#'   of the feeder(\code{feeder_id}) \item Time of the start of the feeding bout
+#'   (\code{feed.start}) \item Time of the end of the feeding bout
+#'   (\code{feed.end}) }
 #'
 #' @examples
 #'  \dontrun{
@@ -298,7 +317,8 @@ move <- function(v1, all = FALSE, pass = TRUE){
 #'  # One bird at a time:
 #'  f <- feed(v[v$bird_id == "062000039D",])
 #'
-#'  # Split a data frame by \code{bird_id} with \code{plyr}, then apply \code{move}.
+#'  # Split a data frame by \code{bird_id} with \code{plyr}, then
+#'    apply \code{move}.
 #'  library(plyr)
 #'  f <- ddply(v, c("bird_id"), feed)
 #'
@@ -370,40 +390,26 @@ feeding <- function(v1, bw = 15, pass = TRUE){
 #'   \code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.
 #' @param bw Numeric. The maximum interval in seconds between visits by two
 #'   different birds for the interaction to be considered a displacement.
+#' @param pass Logical. Pass 'extra' columns through the function and append
+#'   them to the output.
 #'
-#' @return A list with the following named items:
-#' \enumerate{
-#'  \item
+#' @return A list with the following named items: \enumerate{ \item
 #'   \code{displacements}: A data frame of individual displacement events,
-#'   including the following columns:
-#'   \itemize{
-#'    \item \code{feeder_id}: ID of the feeder at which the event
-#'    occurred
-#'    \item ID of the bird being
-#'   displaced (\code{displacee})
-#'    \item ID of the bird doing the displacing
-#'   (\code{displacer})
-#'    \item Time of the departure of the displacee
-#'   (\code{left})
-#'    \item Time of the arrival of the displacer (\code{arrived})
-#'   }
+#'   including the following columns: \itemize{ \item \code{feeder_id}: ID of
+#'   the feeder at which the event occurred \item ID of the bird being displaced
+#'   (\code{displacee}) \item ID of the bird doing the displacing
+#'   (\code{displacer}) \item Time of the departure of the displacee
+#'   (\code{left}) \item Time of the arrival of the displacer (\code{arrived}) }
 #'
-#'   \item \code{summaries}: A data frame of overall wins/lossess per individual,
-#'   containing the following columns:
-#'   \itemize{
-#'    \item ID of the bird (\code{bird_id})
-#'    \item No. of times the bird was displaced (\code{displacee})
-#'    \item No. of times the bird was a displacer (\code{displacer})
-#'    \item Proportion of wins (\code{p_win})
-#'   }
-#'   \item \code{interactions}: A data frame of interaction summaries,
-#'   containing the following columns:
-#'   \itemize{
-#'    \item ID of the displacee (\code{displacee})
-#'    \item ID of the displacer (\code{displacer})
-#'    \item No. of times this interaction occurred (\code{n})
-#'   }
-#'  }
+#'   \item \code{summaries}: A data frame of overall wins/lossess per
+#'   individual, containing the following columns: \itemize{ \item ID of the
+#'   bird (\code{bird_id}) \item No. of times the bird was displaced
+#'   (\code{displacee}) \item No. of times the bird was a displacer
+#'   (\code{displacer}) \item Proportion of wins (\code{p_win}) } \item
+#'   \code{interactions}: A data frame of interaction summaries, containing the
+#'   following columns: \itemize{ \item ID of the displacee (\code{displacee})
+#'   \item ID of the displacer (\code{displacer}) \item No. of times this
+#'   interaction occurred (\code{n}) } }
 #'
 #' @examples
 #'   \dontrun{
@@ -441,7 +447,8 @@ disp <- function(v, bw = 5, pass = TRUE){
 
   ## Define displacee and displacer by
   #  (a) whether subsequent visit was a different bird, AND
-  #  (b) the arrival of the 2nd bird occurred within 'bw' seconds of the departure of the 1st
+  #  (b) the arrival of the 2nd bird occurred within 'bw' seconds of the
+  #      departure of the 1st
   #  (c) all of this occurs at the same feeder
   bird.diff <- v$bird_id[-1] != v$bird_id[-nrow(v)]
   time.diff <- (v$start[-1] - v$end[-nrow(v)]) < bw
@@ -486,9 +493,7 @@ disp <- function(v, bw = 5, pass = TRUE){
 #' @param d Data frame or List. Either the interactions data frame which is
 #'   returned as a list item from \code{disp()}, or the whole displacements list
 #'   returned by \code{disp()}.
-#'
 #' @param tries Numeric. The maximum number of iterations to find the 'best guess'
-#'
 #' @param omit_zero Logical. Should individuals with 0 interactions (sum of wins
 #'   and losses) be omitted?
 #'
