@@ -53,7 +53,6 @@ map.prep <- function(locs, f = NULL, m = NULL) {
     m <- plyr::ddply(m, c("move_path"), .fun = function(x) if(any(is.na(x[,c('lat','lon')]))) return(data.frame()) else return(x))
   }
 
-
   if(!is.null(f)) if(nrow(f) == 0) stop("Missing 'f' lat/lon data, did you supply a correct 'locs' file?")
   if(!is.null(m)) if(nrow(m) == 0) stop("Missing 'm' lat/lon data, did you supply a correct 'locs' file?")
 
@@ -104,10 +103,10 @@ map.prep <- function(locs, f = NULL, m = NULL) {
 #'
 #' # Summarise data for visualization (use totals):
 #' f.all <- ddply(f, .(feeder_id), summarise,
-#'            feed_length = sum(feed_length) / bird_n)
+#'            feed_length = sum(feed_length) / bird_n[1])
 #'
 #' m.all <- ddply(m, .(move_path), summarise,
-#'            path_use = length(move_path) / bird_n)
+#'            path_use = length(move_path) / bird_n[1])
 #'
 #' # Look at total summary maps
 #' map.leaflet(f = f.all, m = m.all, locs = l)
