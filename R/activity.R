@@ -30,6 +30,8 @@
 #'   inactive).
 #' @param sun Logical. Calculate sun rise/set? If by_feeder = FALSE, returns
 #'   median sun rise/set across all feeders for each day.
+#' @param keep_all Logical. Keep all individuals, even ones with less than 24hrs of data.
+#' @param pass Logical. Pass 'extra' columns through the function and append them to the output.
 #'
 #' @export
 
@@ -225,9 +227,7 @@ daily <- function(a1){
   return(d)
 }
 
-#' Get sunrise/sunset times
-#'
-#' @export
+# Get sunrise/sunset times
 sun <- function(loc, date) {
   loc <- as.matrix(loc, nrow = 1)
   date <- as.POSIXct(date)
