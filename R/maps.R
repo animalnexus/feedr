@@ -367,14 +367,7 @@ map.ggmap <- function(f = NULL, m = NULL, locs,
                        legend = "topleft",
                        ylab = "Latitude",
                        xlab = "Longitude") +
-    ggplot2::labs(x = "Longitude", y = "Latitude")
-
-  # If movement paths specified
-  if(!is.null(m)){
-    maps <- maps +
-      ggplot2::geom_line(data = m, ggplot2::aes(x = lon, y = lat, group = move_path, colour = path_use, size = path_use2, lineend = "round"), alpha = 0.75) +
-      ggplot2::scale_colour_gradientn(name = m.title, colours = m.pal)
-  }
+          ggplot2::labs(x = "Longitude", y = "Latitude")
 
   # If feeding data specified
   if(!is.null(f)) {
@@ -382,6 +375,13 @@ map.ggmap <- function(f = NULL, m = NULL, locs,
       ggplot2::geom_point(data = f, ggplot2::aes(x = lon, y = lat, fill = feed_length, size = feed_length), shape = 21, alpha = 0.75) +
       ggplot2::scale_fill_gradientn(name = f.title, colours = f.pal) +
       ggplot2::scale_size(guide = FALSE, range = c(min(f$feed_length2), max(f$feed_length2))) #specify radius, as the scale has already been back calculated to represent area in the end (based on requirements for leaflet)
+  }
+
+  # If movement paths specified
+  if(!is.null(m)){
+    maps <- maps +
+      ggplot2::geom_path(data = m, ggplot2::aes(x = lon, y = lat, group = move_path, colour = path_use, size = path_use2), lineend = "round", alpha = 0.75) +
+      ggplot2::scale_colour_gradientn(name = m.title, colours = m.pal)
   }
 
   # Add feeder points
