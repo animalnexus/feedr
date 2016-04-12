@@ -4,6 +4,7 @@
 #'
 smart.scale <- function(x, m) {
   x <- as.numeric(x)
+  x <- x - min(x) + 0.01
   x <- (x / max(x)) * (25 * m)
   return(x)
 }
@@ -332,6 +333,15 @@ map.ggmap <- function(f, m, locs,
     }
     f <- droplevels(f[f$bird_id %in% which,])
     m <- droplevels(m[m$bird_id %in% which,])
+
+    temp.f <- plyr::ddply(f, "bird_id", summarize, sum = sum(feed_length))
+    temp.m <- plyr::ddply(m, "bird_id", summarize, sum = length(path_use))
+    keep.id <- intersect(temp.f$bird_id[temp.f$sum > 0], temp.m$bird_id[temp.m$sum > 0])
+    if(length(setdiff(which, keep.id)) > 0) {
+      message(paste0("Some bird_ids removed due to lack of data: ", paste(setdiff(which, keep.id), collapse = ", ")))
+      f <- droplevels(f[f$bird_id %in% keep.id, ])
+      m <- droplevels(m[m$bird_id %in% keep.id, ])
+    }
   } else bird_id = NULL
 
   # Final Data Prep
@@ -340,13 +350,13 @@ map.ggmap <- function(f, m, locs,
     u <- units(f$feed_length)
     f$feed_length <- as.numeric(f$feed_length)
     f <- f[order(f$feed_length, decreasing = TRUE),]
-    f$feed_length2 <- smart.scale(f$feed_length, f.scale)
+    f$feed_length2 <- smart.scale(f$feed_length, f.scale * 0.7)
   }
 
   if(!is.null(m)){
     # Sort and Scale
     m <- m[order(m$path_use, decreasing = TRUE), ]
-    m$path_use2 <- smart.scale(m$path_use, m.scale)
+    m$path_use2 <- smart.scale(m$path_use, m.scale * 1.75)
   }
 
   # Basic Map (reverse order to make sure feeders are on top)
