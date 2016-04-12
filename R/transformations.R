@@ -210,7 +210,9 @@ move <- function(v1, all = FALSE, pass = TRUE){
   if(pass == TRUE) extra <- keep.extra(v1, n = c("start", "end"))
 
   if(length(unique(v1$feeder_id)) > 1) { # Only proceed if there are actual data!
+
     # If there are movements, calculate events
+    v1 <- v1[, c("bird_id", "start", "end", "feeder_id")]
     v1 <- v1[order(v1$start),]
     diff <- v1$feeder_id[-1] != v1$feeder_id[-nrow(v1)]
     v1$arrived <- v1$left <- FALSE
