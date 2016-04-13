@@ -4,19 +4,29 @@
 \alias{visits}
 \title{'Raw' data to 'visits' data}
 \usage{
-visits(r, bw = 3, allow.imp = FALSE, na.rm = FALSE)
+visits(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE)
 }
 \arguments{
-\item{r}{Dataframe. Contains raw reads from an RFID reader with colums \code{bird_id}, \code{feeder_id}, \code{time}.}
+\item{r}{Dataframe. Contains raw reads from an RFID reader with colums
+\code{bird_id}, \code{feeder_id}, \code{time}.}
 
-\item{bw}{Numerical. The minimum number of seconds between reads for two successive reads to be considered separate visits.}
+\item{bw}{Numerical. The minimum interval, in seconds, between reads for two
+successive reads to be considered separate visits.}
 
-\item{allow.imp}{Logical. Whether impossible visits should be allowed (see details).}
+\item{allow.imp}{Logical. Whether impossible visits should be allowed (see
+details).}
 
-\item{na.rm}{Logical. Whether NA values should be automatically omited. Otherwise an error is returned.}
+\item{na.rm}{Logical. Whether NA values should be automatically omited.
+Otherwise an error is returned.}
+
+\item{pass}{Logical. Pass 'extra' columns through the function and append
+them to the output.}
 }
 \value{
-A data frame with visits specifying \code{bird_id} and \code{feeder_id} as well as the \code{start} and \code{end} of the visit. Any extra columns that are unique at the level of bird_id or feeder_id will also be passed through (i.e. age, sex, feeder location, etc.).
+A data frame with visits specifying \code{bird_id} and
+  \code{feeder_id} as well as the \code{start} and \code{end} of the visit.
+  Any extra columns that are unique at the level of bird_id or feeder_id will
+  also be passed through (i.e. age, sex, feeder location, etc.).
 }
 \description{
 Raw data from RFID feeders contain multiple reads per individual simply
@@ -31,11 +41,13 @@ Visits are defined by three pieces of data:
 \item A change in feeder for a single individual (\code{feeder_id})
 }
 
-The function will return an error if impossible visits are detected (unless \code{allow.imp = TRUE}) . A visit is deemed impossible if a single bird travels between feeders in less time than specified by \code{bw}.
+The function will return an error if impossible visits are detected (unless
+  \code{allow.imp = TRUE}) . A visit is deemed impossible if a single bird
+  travels between feeders in less time than specified by \code{bw}.
 }
 \examples{
 \dontrun{
-r <- load.web("downloaded_file.csv")
+r <- get.data(start = "2016-03-06", end = "2016-03-08")
 v <- visits(r)
 }
 }
