@@ -84,18 +84,16 @@ map.prep <- function(locs, f = NULL, m = NULL) {
 #' \dontrun{
 #'
 #' # Get feeding and movement data
-#' r <- loadWeb("downloaded_data.csv")
 #'
-#' v <- visits(r)
+#' v <- visits(finches)
 #' f <- ddply(v, .(bird_id), feeding, bw = 15)
 #' m <- ddply(v, .(bird_id), move)
 #'
-#' # Get feeder locations
-#' l <- read.csv("feeder index.csv")
+#' # Get feeder locations from data
+#' l <- unique(f[, c("feeder_id", "lat", "lon")])
 #'
-#' # If from web, lat/lon may be in the same column, extract it:
-#' l$lon <- as.numeric(gsub("\\(([-0-9.]+),[-0-9.]+\\)", "\\1", l$loc))
-#' l$lat <- as.numeric(gsub("\\([-0-9.]+,([-0-9.]+)\\)", "\\1", l$loc))
+#' # OR get feeder locations from file
+#' l <- read.csv("feeder index.csv")
 #'
 #' # Summarise data for visualization (use totals):
 #' f.all <- ddply(f, .(feeder_id), summarise,
@@ -116,7 +114,7 @@ map.prep <- function(locs, f = NULL, m = NULL) {
 #'            path_use = length(move_path))
 #'
 #' # Look at individual summary maps (note that Leaflet just stacks individuals
-#' one on top of the other)
+#'   one on top of the other)
 #' map.leaflet(f = f.indiv, m = m.all, locs = l)
 #' map.ggmap(f = f.indiv, m = m.all, locs = l)
 #' }
@@ -300,8 +298,8 @@ map.leaflet <- function(f = NULL, m = NULL, locs,
 #'
 #' # Look at individual summary maps (note that Leaflet just stacks individuals
 #' one on top of the other)
-#' map.leaflet(f = f.indiv, m = m.all, locs = l)
-#' map.ggmap(f = f.indiv, m = m.all, locs = l)
+#' map.leaflet(f = f.indiv, m = m.indiv, locs = l)
+#' map.ggmap(f = f.indiv, m = m.indiv, locs = l, f.scale = 0.7, m.scale = 0.05)
 #' }
 #' @export
 map.ggmap <- function(f = NULL, m = NULL, locs,
@@ -322,8 +320,9 @@ map.ggmap <- function(f = NULL, m = NULL, locs,
 
   # Summaries or individual birds?
   if(any(names(f) == "bird_id", names(m) == "bird_id")) {
+    if(is.null(which)) which <- as.character(unique(c(as.character(f$bird_id), as.character(m$bird_id))))
     bird_id <- unique(unlist(list(f$bird_id, m$bird_id)))
-    if(length(bird_id) > 10 & (is.null(which) | length(which) > 10)) {
+    if(length(bird_id) > 10 & length(which) > 10) {
       stop("You have chosen to run this funciton on more than 10 birds. This may overload your system. I would recommend trying again using the 'which' argument to specify a subset of birds.")
     }
     f <- droplevels(f[f$bird_id %in% which,])
