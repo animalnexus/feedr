@@ -4,7 +4,7 @@
 \alias{map.leaflet}
 \title{Map data using leaflet}
 \usage{
-map.leaflet(f, m, locs, f.scale = 1, m.scale = 1,
+map.leaflet(f = NULL, m = NULL, locs, f.scale = 1, m.scale = 1,
   f.title = "Feeding time", m.title = "Path use", f.pal = c("yellow",
   "red"), m.pal = c("yellow", "red"))
 }
@@ -16,13 +16,13 @@ map.leaflet(f, m, locs, f.scale = 1, m.scale = 1,
 
 \item{locs}{Dataframe.}
 
-\item{f.scale}{m.scale Numerical. Scaling constants to increase (> 1) or
+\item{f.scale, m.scale}{Numerical. Scaling constants to increase (> 1) or
 decrease (< 1) the relative size of feeding (f) and movement (m) data.}
 
-\item{f.title}{m.title Character. Titles for the legends of feeding (f) and
+\item{f.title, m.title}{Character. Titles for the legends of feeding (f) and
 movement (m) data.}
 
-\item{f.pal}{m.pal Character vectors. Colours used to construct gradients for
+\item{f.pal, m.pal}{Character vectors. Colours used to construct gradients for
 feeding (f) and movement (m) data.}
 }
 \value{
@@ -39,25 +39,23 @@ bird data as well as grand summarise (see Details and Examples).
 \dontrun{
 
 # Get feeding and movement data
-r <- loadWeb("downloaded_data.csv")
 
-v <- visits(r)
+v <- visits(finches)
 f <- ddply(v, .(bird_id), feeding, bw = 15)
 m <- ddply(v, .(bird_id), move)
 
-# Get feeder locations
-l <- read.csv("feeder index.csv")
+# Get feeder locations from data
+l <- unique(f[, c("feeder_id", "lat", "lon")])
 
-# If from web, lat/lon may be in the same column, extract it:
-l$lon <- as.numeric(gsub("\\\\(([-0-9.]+),[-0-9.]+\\\\)", "\\\\1", l$loc))
-l$lat <- as.numeric(gsub("\\\\([-0-9.]+,([-0-9.]+)\\\\)", "\\\\1", l$loc))
+# OR get feeder locations from file
+l <- read.csv("feeder index.csv")
 
 # Summarise data for visualization (use totals):
 f.all <- ddply(f, .(feeder_id), summarise,
-           feed_length = sum(feed_length) / bird_n)
+           feed_length = sum(feed_length) / bird_n[1])
 
 m.all <- ddply(m, .(move_path), summarise,
-           path_use = length(move_path) / bird_n)
+           path_use = length(move_path) / bird_n[1])
 
 # Look at total summary maps
 map.leaflet(f = f.all, m = m.all, locs = l)
@@ -71,7 +69,7 @@ m.indiv <- ddply(m, .(bird_id, move_path), summarise,
            path_use = length(move_path))
 
 # Look at individual summary maps (note that Leaflet just stacks individuals
-one on top of the other)
+  one on top of the other)
 map.leaflet(f = f.indiv, m = m.all, locs = l)
 map.ggmap(f = f.indiv, m = m.all, locs = l)
 }
