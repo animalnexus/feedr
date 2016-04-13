@@ -4,7 +4,8 @@
 \alias{activity}
 \title{Calculate activity from feeding data}
 \usage{
-activity(f1, res = 15, by_feeder = FALSE, missing = NULL)
+activity(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE,
+  keep_all = FALSE, pass = TRUE)
 }
 \arguments{
 \item{f1}{Data frame. A feeding bout data frame for an individual
@@ -14,11 +15,20 @@ activity(f1, res = 15, by_feeder = FALSE, missing = NULL)
 be in the format of "15 min" or "1 hour", etc.}
 
 \item{by_feeder}{Logical. Should the activity be calculated overall, or
-individually for each feeder?}
+individually for each feeder visited? If there is only one feeder,
+by_feeder will automatically revert to TRUE to enable passing of
+feeder-related variables.}
 
 \item{missing}{Data frame. If there are known times for a particular feeder
 for which activity can't be recorded (i.e. times during which a feeder was
 inactive).}
+
+\item{sun}{Logical. Calculate sun rise/set? If by_feeder = FALSE, returns
+median sun rise/set across all feeders for each day.}
+
+\item{keep_all}{Logical. Keep all individuals, even ones with less than 24hrs of data.}
+
+\item{pass}{Logical. Pass 'extra' columns through the function and append them to the output.}
 }
 \description{
 This function will take feeding bouts and calculate activity status (active
