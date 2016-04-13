@@ -12,6 +12,7 @@ devtools::install_github("steffilazerte/feedr")
 ```
 
 ## Help
+
 An overview of this package and how to use the functions is accessible [here](http://steffi.ca/thinkR/feedr.html).
 
 For documentation and examples on how to use a particular function use the `?` R command. For example:
@@ -22,6 +23,7 @@ For documentation and examples on how to use a particular function use the `?` R
 ```
 
 ## Demos
+
 And there is one demo for using `map.leaflet()` which you can run as follows:
 
 ```r
