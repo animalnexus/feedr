@@ -4,10 +4,10 @@
 \alias{map.ggmap}
 \title{Map data using ggmap}
 \usage{
-map.ggmap(f, m, locs, f.scale = 1, m.scale = 1, f.title = "Feeding time",
-  m.title = "Path use", f.pal = c("yellow", "red"), m.pal = c("yellow",
-  "red"), maptype = "satellite", mapsource = "google", zoom = 17,
-  which = NULL)
+map.ggmap(f = NULL, m = NULL, locs, f.scale = 1, m.scale = 1,
+  f.title = "Feeding time", m.title = "Path use", f.pal = c("yellow",
+  "red"), m.pal = c("yellow", "red"), maptype = "satellite",
+  mapsource = "google", zoom = 17, which = NULL)
 }
 \arguments{
 \item{f}{Dataframe. Contains raw reads from an RFID reader with colums
@@ -85,8 +85,8 @@ m.indiv <- ddply(m, .(bird_id, move_path), summarise,
 
 # Look at individual summary maps (note that Leaflet just stacks individuals
 one on top of the other)
-map.leaflet(f = f.indiv, m = m.all, locs = l)
-map.ggmap(f = f.indiv, m = m.all, locs = l)
+map.leaflet(f = f.indiv, m = m.indiv, locs = l)
+map.ggmap(f = f.indiv, m = m.indiv, locs = l, f.scale = 0.7, m.scale = 0.05)
 }
 }
 
