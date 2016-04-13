@@ -4,56 +4,115 @@ author: "Steffi LaZerte"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Loading in Data}
+  %\VignetteIndexEntry{feedr}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-
+<a id = "top"></a>
 <!--
 rmarkdown::render("navigation.Rmd", output_file = paste0("../Reports/Final Reports/NAVIGATION.html"))
 -->
 
 This is an overview of how to use functions in the `feedr` package to transform and visual your RFID data.
 
-## A couple of notes
+## Order of operations
+This package contains functions to perform three broad services: 
 
-__A note about folders:__
-Throughout this document all examples assume that you have stored your R scripts in a folder called 'Scripts', and your data in a folder called 'Data' and that both of these folders are located in the same project file. You can organize your scripts and data how you like, but remember to modify the file paths to match your organization. 
+1. __Loading/Importing Data__  
+    Raw data downloaded from the feeders or from the birdmoves website 
+2. __Housekeeping__  
+    Functions for checking and correcting errors before you transform the data
+3. __Transformations__  
+    When raw data is transformed into visit data, feeding data, etc. which are the output of the `visits()`, `feeding()`, etc. functions
+4. __Visualizations__  
+    Static or interactive maps produced by the mapping functions which visualize the movement and feeding patterns around your feeders.
 
-__A note about terminology:__
-Throughout this document we will be using several different terms in a specific context.
 
-- __raw__ data is the data downloaded from the feeders or from the birdmoves website. This data is in the format of reads in which each line represents an RFID read moment, with two or three pieces of information: Time of the read, ID of the RFID tag, and, optionally, the ID of the feeder.
-- __visits__ data is the output of the `visits()` function and is the smallest transformed data.
-- __visualizations__ are static or interactive maps produced by the mapping functions which visualize the movement and feeding patterns around your feeders.
+As such, several functions depend on the output of other functions.
 
-Namely, the read data always needs to be loaded first [reads tutorial](./tutorial_reads.html) and the `visits` function always needs to be run first.
+For example, to get daily activity patterns, you could get your data from the web with `get.data()`, turn this raw data to visits data with `visits()`, turn visits data to activity data with `activity()` and finally, turn activity data into daily activity patterns with `daily()`.
 
-## Functions
-
-1. [Visits Function](./function_visits.html)
-2. [Displacements Function](./function_displacements.html)
-3. [Dominance Function](./function_dominance.html)
-4. [Movements](./function_movement.html)
-5. [Feeding bouts](./function_feeding.html)
-
-## 
-This is a diagrammatic representation of which functions depend on which:
-```{r, echo = F}
+```{r, echo = F, fig.align='center'}
 DiagrammeR::grViz("
-digraph rmarkdown {
-node[shape = box]
-visits -> displacements
-visits -> movements
-visits -> feeding
-displacements -> dominance
+digraph order {
 
-feeding -> activity
-activity -> 'daily activity'
+graph [overlap = true, compound = true]
 
-feeding -> mapping
-movements -> mapping
+node[shape = Mrecord]
+edge[arrowhead = vee]
+
+load[label = '{Loading/Importing Data | {load.raw.all() | load.web() | get.data()}}']
+
+hk[label = '{Housekeeping (Optional) | {check.ids() | check.problems()}}', width = 3]
+
+load -> hk
+hk -> visits
+load -> visits
+
+visits[label = 'visits()']
+disp[label = 'disp()']
+dom[label = 'dom()']
+move[label = 'move()']
+feed[label = 'feeding()']
+act[label = 'activity()']
+daily[label = 'daily()']
+
+visits-> {disp, move, feed}
+feed -> act
+disp -> dom
+act -> daily
+
+map[label = '{Visualizations | {map.ggmap() | map.leaflet()}}']
+
+{feed; move} -> map
+
+#A -> e [ltail = cluster0, lhead = cluster1]
+#f -> 'visits()' [ltail = cluster1, lhead = cluster2]
+#'move()' -> 'map.leaflet()' [ltail = cluster2, lhead = cluster3]
+
 }
-", height = 600)
+", width = 500)
 ```
 
+## Tutorial Data
+A data frame called 'finches' is included in this package for the purpose of demonstration. You can access this package by mearly typing in `finches`.
+
+- [Loading/Importing data](load.hml)
+- Checking data
+- Transforming data
+- Visualizing data
+
+
+## Function Index
+
+### [Loading/Importing Data](load.html)
+
+- __load.raw():__ Load in a single file of raw feeder data
+- __load.raw.all():__ Load in and combine multiple files of raw feeder data
+- __load.web():__ Load in csv file previously downloaded
+- __load.web.legacy():__ Load in csv file previously downloaded (old web version)
+- __get.data():__ Download and load data directly from the birdmoves website
+
+### [Housekeeping](housekeeping.html)
+
+- __check.ids():__ Remove known bad ids (i.e. errors, wands, etc.)
+- __check.problems():__ Fix known id problems
+
+### [Transformations](transformations.html)
+
+- __visits():__ Turn raw data into visits data
+- __move():__ Turn visits data into movements between feeders
+- __feeding():__ Turn visits data into feeding bouts
+- __disp():__ Turn visits data into displacements
+- __dom():__ Turn displacements into dominance matrices and hierarchies
+- __activity():__ Turn visits data into activity data
+- __daily():__ Turn activity data into daily activity patterns
+
+## [Visualizations](maps.html)
+
+- __map.ggmap():__ Visualize movements and/or feeding bouts with ggmap (static)
+- __map.leaflet():__ Visualize movements and/or feeding bouts with leaflet (interactive)
+
+-----------------------------------------
+Back to [top](#top)  
+Continue with [loading/importing data](load.html)
