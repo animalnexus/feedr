@@ -51,19 +51,6 @@ r <- load.raw("2300_2015_12_01.csv", feeder_pattern = "[0-9]{4}")
 # Extract extra data to be stored in another column:
 r <- load.raw("2300.csv", extra_pattern = "exp[0-9]{1}", extra_name = experiment)
 
-# Load and combine multiple files at once:
-
-# First list the files in a folder called Data:
-l <- list.files("./Data", full.names = TRUE)
-
-# Use lapply to apply the load.raw function to each file in l, then use
-do.call to rbind them all together r <- do.call('rbind', lapply(l, load.raw))
-
-# All together now:
-r <- do.call('rbind',
-             lapply(l, load.raw,
-                       extra_pattern = "exp[0-9]{1}",
-                       extra_name = "experiment"))
 }
 }
 
