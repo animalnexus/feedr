@@ -4,7 +4,7 @@
 \alias{feeding}
 \title{'Visits' to 'feeding bouts' for a single bird_id}
 \usage{
-feeding(v1, bw = 15)
+feeding(v1, bw = 15, pass = TRUE)
 }
 \arguments{
 \item{v1}{Dataframe. A visits data frame containing only \strong{one} unique
@@ -14,18 +14,18 @@ bird id. From the output of \code{visits}. Must contain columns
 \item{bw}{Numeric. The minimum number of minutes between visits for two
 successive visits to be considered separate feeding bouts. When \code{bw} =
 NULL only visits to another feeder are scored as a separate feeding bout.}
+
+\item{pass}{Logical. Pass 'extra' columns through the function and append
+them to the output.}
 }
 \value{
 A data frame of feeding bouts. A feeding bout is defined as the bout
   of time spent making regular visits to a feeder, in which each visit
   occurrred within some cutoff time of the last. This data frame has the
-  following columns:
-  \itemize{
-    \item ID of the bird (\code{bird_id})
-    \item ID of the feeder(\code{feeder_id})
-    \item Time of the start of the feeding bout (\code{feed.start})
-    \item Time of the end of the feeding bout (\code{feed.end})
-  }
+  following columns: \itemize{ \item ID of the bird (\code{bird_id}) \item ID
+  of the feeder(\code{feeder_id}) \item Time of the start of the feeding bout
+  (\code{feed.start}) \item Time of the end of the feeding bout
+  (\code{feed.end}) }
 }
 \description{
 For a single \code{bird_id}, turns visits at mulitple feeders into feeding
@@ -34,21 +34,21 @@ NULL}). If \code{bw} is not \code{NULL}, they are separated by switching
 feeders or by \code{bw} minutes.
 }
 \examples{
- \dontrun{
 
- v <- visits(r)
+ v <- visits(finches)
 
  # One bird at a time:
- f <- feed(v[v$bird_id == "062000039D",])
+ f <- feeding(v[v$bird_id == "0620000514",])
 
- # Split a data frame by \\code{bird_id} with \\code{plyr}, then apply \\code{move}.
+ # Split a data frame by \\code{bird_id} with \\code{plyr}, then
+ # apply \\code{move}.
  library(plyr)
- f <- ddply(v, c("bird_id"), feed)
+ f <- ddply(v, c("bird_id"), feeding)
 
  # Summarize a movement dataframe
  library(plyr)
- f.totals <- ddply(m, c("bird_id", "feeder_id"), summarise,
+ f.totals <- ddply(f, c("bird_id", "feeder_id"), summarise,
                    feed_length = sum(feed_length))
- }
+
 }
 
