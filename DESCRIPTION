@@ -2,7 +2,7 @@ Package: feedr
 Type: Package
 Title: Transforming Raw RFID Data
 Version: 0.5
-Date: 2016-02-11
+Date: 2016-04-12
 Authors@R: person("LaZerte", "Stefanie E.", email = "stefanie.lazerte@unbc.ca", role = c("aut","cre"))
 URL: https://github.com/steffilazerte/feedr
 Description: This packages is designed to help turn raw RFID read data into data
@@ -11,16 +11,16 @@ License: GPL-3
 LazyData: TRUE
 Depends: R (>= 3.2.2)
 Imports:
-    RCurl,
-    ggplot2,
-    ggmap,
-    htmltools,
-    leaflet,
-    lubridate,
-    maptools,
-    plyr,
-    reshape2,
-    stringr
+    RCurl(>= 1.95-4.8),
+    ggplot2 (>= 2.1.0),
+    ggmap (>= 2.6.1),
+    htmltools (>= 0.3.5),
+    leaflet (>= 1.0.1),
+    lubridate (>= 1.5.6),
+    maptools (>= 0.8-39),
+    plyr (>= 1.8.3),
+    reshape2 (>= 1.4.1),
+    stringr (>= 1.0.0)
 Suggests:
     DiagrammeR,
     testthat,
