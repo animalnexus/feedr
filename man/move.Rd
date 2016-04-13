@@ -4,45 +4,56 @@
 \alias{move}
 \title{'Visits' to 'movements' for a single bird_id}
 \usage{
-move(v1, all = FALSE)
+move(v1, all = FALSE, pass = TRUE)
 }
 \arguments{
-\item{v1}{Dataframe. A visits data frame containing only \strong{one} unique bird id. From the output of \code{visits}. Must contain columns \code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.}
+\item{v1}{Dataframe. A visits data frame containing only \strong{one} unique
+bird id. From the output of \code{visits}. Must contain columns
+\code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.}
 
-\item{all}{Logical. Should all bird_ids be returned, even if the bird made no movements? If TRUE, a data frame with NAs for all columns except \code{bird_id} will be returned, if FALSE, an empty data frame will be returned.}
+\item{all}{Logical. Should all bird_ids be returned, even if the bird made no
+movements? If TRUE, a data frame with NAs for all columns except
+\code{bird_id} will be returned, if FALSE, an empty data frame will be
+returned.}
+
+\item{pass}{Logical. Pass 'extra' columns through the function and append
+them to the output.}
 }
 \value{
-A data frame of movements. These are defined as the bout of time from leaving one feeder to arriving at a second one. The data contain:
+A data frame of movements. These are defined as the bout of time from
+  leaving one feeder to arriving at a second one. Each movement bout consists
+  of two rows of data containing:
 \itemize{
 \item ID of the bird (\code{bird_id})
-\item Time of leaving the 1st feeder (\code{left})
-\item Time of arriving at the 2nd feeder (\code{arrived})
-\item The ID of the first feeder (\code{feeder_id1})
-\item The ID of the second feeder (\code{feeder_id2})
-\item The ID of the unique track between those two feeders (\code{feeder_path})
-\item This is simply the IDs of the two feeders alphabetized
+\item Time of event (\code{time})
+\item The ID of feeders involved (\code{feeder_id})
+\item The movement path including direction (\code{move_dir})
+\item The movement path independent of direction (\code{move_path})
+\item The 'strength' of the connection (inverse of time taken to move
+between; \code{strength})
+\item Information on whether left/arrived (\code{direction})
+\item Any extra columns \code{pass}ed through
 }
 }
 \description{
-For a single \code{bird_id}, turns visits to mulitple feeders into movements between feeders
+For a single \code{bird_id}, turns visits to mulitple feeders into movements
+between feeders
 }
 \examples{
 
-\dontrun{
-
-v <- visits(r)
+v <- visits(finches)
 
 # One bird at a time:
-m <- move(v[v$bird_id == "062000039D",])
+m <- move(v[v$bird_id == "0620000514",])
 
-# Split a data frame by \\code{bird_id} with \\code{plyr}, then apply \\code{move}.
+# Split a data frame by \\code{bird_id} with \\code{plyr}, then
+# apply \\code{move}.
 library(plyr)
 m <- ddply(v, c("bird_id"), move)
 
-# Summarize a movement dataframe
+# Summarize a movement dataframe (divide by 2 because 2 rows for each event)
 library(plyr)
 m.totals <- ddply(m, c("bird_id", "move_path"), summarise,
-                  n_path = length(move_path))
-}
+                  n_path = length(move_path) / 2)
 }
 
