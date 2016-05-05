@@ -86,7 +86,7 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE){
   check.format(r)
 
   # Check for NAs, remove if specified by na.rm = TRUE
-  if(any(is.na(r))) {
+  if(any(is.na(r[, c("bird_id", "feeder_id", "time")]))){
     if(na.rm == FALSE) stop("NAs found. To automatically remove NAs, specify 'na.rm = TRUE'.")
     if(na.rm == TRUE) r <- r[rowSums(is.na(r)) == 0,]
   }
