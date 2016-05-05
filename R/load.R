@@ -315,21 +315,31 @@ get.data <- function(start = NULL,
 
 # Internal function: Format data
 # Formats data for the loading function.
+#' @export
 load.format <- function(r, tz){
 
   # Trim leading or trailing whitespace
   r <- plyr::ddply(r, c(), plyr::colwise(trimws))[ , -1]
 
   # Extract Proper Date and Times
-  names(r)[names(r) == "timezone"] <- "time"
-  r$time <- lubridate::ymd_hms(r$time, tz = tz)
+  if("timezone" %in% names(r)) names(r)[names(r) == "timezone"] <- "time"
+  if("time" %in% names(r)) r$time <- lubridate::ymd_hms(r$time, tz = tz)
 
   # Make sure all factors are factors:
-  r$bird_id <- as.factor(r$bird_id)
-  r$feeder_id <- as.factor(r$feeder_id)
+  if(any(names(r) == "bird_id")) r$bird_id <- as.factor(r$bird_id)
+  if(any(names(r) == "feeder_id")) r$feeder_id <- as.factor(r$feeder_id)
+
+  # If locs present convert now
+  if("loc" %in% names(r)) {
+    r$lon <- as.numeric(gsub("\\(([-0-9.]+),[-0-9.]+\\)", "\\1", r$loc))
+    r$lat <- as.numeric(gsub("\\([-0-9.]+,([-0-9.]+)\\)", "\\1", r$loc))
+    r <- r[, names(r) != "loc",]
+  }
 
   # Reorder columns
-  r <- col.order(r, c("bird_id", "time", "feeder_id"))
+  cols <- c("bird_id", "time", "feeder_id")
+  cols <- cols[which(cols %in% names(r))]
+  r <- col.order(r, cols)
 
   return(r)
 }
