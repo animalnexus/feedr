@@ -42,8 +42,6 @@ map.prep <- function(locs, f = NULL, m = NULL) {
   }
 
   if(!is.null(m)){
-    m <- cbind(m, stringr::str_split_fixed(m$move_path, "_", 2))
-    m <- suppressWarnings(reshape2::melt(m, measure.vars = c("1","2"), value.name = "feeder_id", variable.name = "feeder"))
     m <- merge(m, locs, by = "feeder_id", all.x = T, all.y = F)
     if(nrow(m[is.na(m$lat) | is.na(m$lon),]) > 0) message(paste0("Removed ", nrow(m[is.na(m$lat) | is.na(m$lon),]), " movement paths due to at least one missing lat or lon."))
     m <- plyr::ddply(m, c("move_path"), .fun = function(x) if(any(is.na(x[,c('lat','lon')]))) return(data.frame()) else return(x))
@@ -137,7 +135,6 @@ map.leaflet <- function(f = NULL, m = NULL, locs,
   # Final Data Prep
   if(!is.null(f)){
     # Sort and Scale
-    u <- units(f$feed_length)
     f$feed_length <- as.numeric(f$feed_length)
     f <- f[order(f$feed_length, decreasing = TRUE),]
     f$feed_length2 <- smart.scale(f$feed_length, f.scale)
@@ -194,8 +191,7 @@ map.leaflet <- function(f = NULL, m = NULL, locs,
                 pal = f.pal,
                 values = f$feed_length,
                 bins = 5,
-                opacity = 1,
-                labFormat = labelFormat(suffix = paste0(" ",u)))
+                opacity = 1)
   }
 
   # If a movements data frame is specified
@@ -323,7 +319,7 @@ map.ggmap <- function(f = NULL, m = NULL, locs,
     if(is.null(which)) which <- as.character(unique(c(as.character(f$bird_id), as.character(m$bird_id))))
     bird_id <- unique(unlist(list(f$bird_id, m$bird_id)))
     if(length(bird_id) > 10 & length(which) > 10) {
-      stop("You have chosen to run this funciton on more than 10 birds. This may overload your system. I would recommend trying again using the 'which' argument to specify a subset of birds.")
+      stop("You have chosen to run this function on more than 10 birds. This may overload your system. I would recommend trying again using the 'which' argument to specify a subset of birds.")
     }
     f <- droplevels(f[f$bird_id %in% which,])
     m <- droplevels(m[m$bird_id %in% which,])
@@ -341,7 +337,6 @@ map.ggmap <- function(f = NULL, m = NULL, locs,
   # Final Data Prep
   if(!is.null(f)){
     # Sort and Scale
-    u <- units(f$feed_length)
     f$feed_length <- as.numeric(f$feed_length)
     f <- f[order(f$feed_length, decreasing = TRUE),]
     f$feed_length2 <- smart.scale(f$feed_length, f.scale * 0.7)
