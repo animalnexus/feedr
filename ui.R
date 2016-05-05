@@ -38,12 +38,27 @@ shinyUI(fluidPage(
              #################
             tabPanel("Visualizations",
                      column(3,
-                            uiOutput('speed_UI'),
-                            sliderInput("speed", "Animation Speed",
+                            h1("Data"), 
+                            radioButtons("birds", "Show data by:",
+                                         choices = c("Individual visits" = "visits",
+                                                     "Total visits" = "t_visits", 
+                                                     "Avg. visits per bird" = "b_visits", 
+                                                     "Total birds" = "t_birds")),
+                            radioButtons("image", "Pictures:",
+                                         choices = c("All birds", "Only birds with pictures")),
+                            
+                            textOutput("selection"),
+                                        
+                            h1("Animation"),
+                            sliderInput("speed", "Speed",
                                         min = 0, max = 100,
                                         post = "%",
-                                        value = 50)
-                                        
+                                        value = 50),
+                            sliderInput("interval", "Interval",
+                                        min = 1,
+                                        max = 24,
+                                        value = 1,
+                                        post = " hour(s)")
                      ),
                      column(9,
                             fluidRow(leafletOutput("map", height = 600)),
@@ -51,10 +66,10 @@ shinyUI(fluidPage(
                               shiny::column(8, offset = 2,
                                             uiOutput("time_UI")
                                             )
-                              )
-                     #fluidRow(
-                    #   DT::dataTableOutput("points")
-                    # )
+                              )#,
+                            #fluidRow(
+                            #         DT::dataTableOutput("points")
+                            #         )
                      )
                      
             )
