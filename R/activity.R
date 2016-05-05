@@ -74,8 +74,10 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
   # Calculate Activity only if > 24hrs of data
   if((max(f1$feed_end) - min(f1$feed_start)) < lubridate::dhours(24) & keep_all == FALSE) {
     message(paste0(f1$bird_id[1], ": Skipping. Individual has less than 24hrs of data"))
+    return(data.frame())
   } else if (all(f1$feed_length == 0))  {
     message(paste0(f1$bird_id[1], ": Skipping. All feeding bouts are 0 min. Consider increasing 'bw' in feeding()"))
+    return(data.frame())
   } else {
     ## ACCOUNT FOR MISSING!!!
 
