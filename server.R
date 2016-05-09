@@ -19,6 +19,8 @@ dbport <- 5432
 drv <- dbDriver("PostgreSQL")
 dbhost <- 'geoteach.tru.ca'
 
+imgs <- read.csv("./data/species.csv", colClasses = c("factor", "character"))
+
 scale_area <- function(r, val.max, min = 5, max = 105){
   r <- ((r-1) / (val.max - 1)) * (max - min)
   r[r >= 0] <- r[r >= 0] + min
