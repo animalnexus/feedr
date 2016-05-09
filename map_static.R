@@ -1,8 +1,6 @@
 output$map_static <- renderLeaflet({
   #pal <- colorNumeric(palette = colorRampPalette(c("blue", "green", "yellow","orange", "red"))(max(v_info()$n)), domain = 1:max(v_info()$n))
-  req(f, m, feeders, input$bird_id)
-  
-  map.leaflet(f = f[f$bird_id == input$bird_id, ], m = m[m$bird_id == input$bird_id,], locs = feeders)
+  map_static()
   # suppressMessages(
   #   leaflet(feeders) %>%
   #     addMarkers(group = "Feeders") %>%
