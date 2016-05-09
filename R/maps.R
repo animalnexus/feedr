@@ -10,7 +10,7 @@ smart.scale <- function(x, m) {
 
 # Prep data for mapping
 # A data prep function used by mapping functions
-map.prep <- function(locs, f = NULL, m = NULL) {
+map.prep <- function(f = NULL, m = NULL, locs = NULL) {
 
   # Check data
   if(!is.null(f)){

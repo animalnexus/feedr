@@ -4,7 +4,7 @@
 \alias{map.ggmap}
 \title{Map data using ggmap}
 \usage{
-map.ggmap(f = NULL, m = NULL, locs, f.scale = 1, m.scale = 1,
+map.ggmap(f = NULL, m = NULL, locs = NULL, f.scale = 1, m.scale = 1,
   f.title = "Feeding time", m.title = "Path use", f.pal = c("yellow",
   "red"), m.pal = c("yellow", "red"), maptype = "satellite",
   mapsource = "google", zoom = 17, which = NULL)
