@@ -97,19 +97,23 @@ shinyServer(function(input, output) {
   source("map_animated.R", local = TRUE)
   source("map_static.R", local = TRUE)
   
+  observeEvent(input$data_get, {
+    req(input$data_birdid, input$data_species, input$data_sitename)
+    values$current <- data.frame(sitename = input$data_sitename,
+                                 species = input$data_species,
+                                 bird_id = input$data_birdid)
+  })
+  
   ## Look at birds
   output$img_birds <- renderText({
-    
-    if(is.null(input$birds_rows_selected) | is.null(birds)) {
-      temp <-" https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Bird01.svg/442px-Bird01.svg.png"
+    req(imgs)
+    # Don't actually know what STRH stands for, assuming Sapphire-throated Hummingbird
+    if(is.null(input$dt_birds_rows_selected) | is.null(birds_sub())) {
+      temp <-imgs$url[imgs$species == "unknown"]
     } else {
-      r <- input$birds_rows_selected
-      
-      if(birds$species[r] == "House Finch") {
-      temp <- "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/House_Finch-27527-2.jpg/320px-House_Finch-27527-2.jpg"
-      } else if(birds$species[r] == "Mountain Chickadee") {
-      temp <- "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Poecile_gambeli%2C_Walden%2C_Colorado_1.jpg/320px-Poecile_gambeli%2C_Walden%2C_Colorado_1.jpg"
-      }
+      r <- input$dt_birds_rows_selected
+      temp <- imgs$url[imgs$species == as.character(birds_sub()$species[r])]
+      if(nchar(as.character(temp)) < 1) temp <-imgs$url[imgs$species == "unknown"]
     }
     paste("<img src='",temp,"' height = 300>")
     })
