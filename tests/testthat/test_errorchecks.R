@@ -32,4 +32,10 @@ test_that("check.format returns error if '_' in column values", {
                   feeder_id = c("456", "5678", "TR_567", "GH_563", "YU848", "56_67"))
   expect_message(check.format(d))
   expect_silent(check.format(d[1:2,]))
+
+  expect_message(check.format(d, map = TRUE), regexp = "Using '_' in feeder_id values conflicts with the mapping functions.\n$")
+  expect_message(check.format(d, map = TRUE), regexp = "Using '_' in bird_id values conflicts with the displacement/dominance functions. You should remove any '_'s if you plan to use these functions.\n")
+
+  expect_message(check.format(d, disp = TRUE), regexp = "Using '_' in feeder_id values conflicts with the mapping functions. You should remove any '_'s if you plan to use these functions.\n$")
+  expect_message(check.format(d, disp = TRUE), regexp = "Using '_' in bird_id values conflicts with the displacement/dominance functions.\n")
 })
