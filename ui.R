@@ -18,10 +18,32 @@ shinyUI(fluidPage(
              ## SETUP
              #################
              
-             #tabPanel("Selection",
-            #          h2("Selection"),
-            #          h3("Select Data")
-            # ),
+             tabPanel("Data Selection",
+                      fluidRow(
+                        column(6,
+                               h2("Data Selection"),
+                               h3("Select Data"),
+                               div("For now, can't select data from multiple sites at the same time"),
+                               uiOutput("UI_data_sitename"),
+                               uiOutput("UI_data_species"),
+                               uiOutput("UI_data_birdid"), 
+                               actionButton("data_get", "Get Data"),
+                               h3("To add:"),
+                               div("Feeder ID"),
+                               div("An idea of how many samples/individuals/feeders?"),
+                               div("Better Progress Indicators")
+                        ),
+                        column(6,
+                               h2("Current Data Selection"),
+                               #DT::dataTableOutput("dt_data_current"),
+                               htmlOutput("data_current_sitename"),
+                               htmlOutput("data_current_species"),
+                               htmlOutput("data_current_birdid")
+                        )
+                      ),
+                      fluidRow(
+                      )
+             ),
              #################
              ## Visualization
              #################
