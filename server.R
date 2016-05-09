@@ -83,6 +83,9 @@ shinyServer(function(input, output) {
   
   ## Load output UIs
   source("output_UI.R", local = TRUE)
+  
+  ## Load renderers
+  source("output_render.R", local = TRUE)
                 
   ## Load output data tables
   source("output_data.R", local = TRUE)
