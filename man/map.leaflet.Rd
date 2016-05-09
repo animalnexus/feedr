@@ -4,17 +4,21 @@
 \alias{map.leaflet}
 \title{Map data using leaflet}
 \usage{
-map.leaflet(f = NULL, m = NULL, locs, f.scale = 1, m.scale = 1,
+map.leaflet(f = NULL, m = NULL, locs = NULL, f.scale = 1, m.scale = 1,
   f.title = "Feeding time", m.title = "Path use", f.pal = c("yellow",
   "red"), m.pal = c("yellow", "red"))
 }
 \arguments{
-\item{f}{Dataframe. Contains raw reads from an RFID reader with colums
-\code{bird_id}, \code{feeder_id}, \code{time}.}
+\item{f}{Dataframe. Summarized feeding data with columns \code{feeder_id} and
+\code{feed_length}. It can also contain \code{bird_id} for individual-based
+data, and lat/lon instead of a locs argument.}
 
-\item{m}{Dataframe.}
+\item{m}{Dataframe. Summarized movement data with columns \code{feeder_id},
+\code{move_path}, and \code{path_use}. It can also contain \code{bird_id}
+for individual-based data, and lat/lon instead of a locs argument.}
 
-\item{locs}{Dataframe.}
+\item{locs}{Dataframe. Lat and long for each feeder_id, required if lat and
+lon not in either f or m.}
 
 \item{f.scale, m.scale}{Numerical. Scaling constants to increase (> 1) or
 decrease (< 1) the relative size of feeding (f) and movement (m) data.}

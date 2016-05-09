@@ -64,10 +64,14 @@ map.prep <- function(locs, f = NULL, m = NULL) {
 #' the manner that they wish to visualize it. This function can take invidiual
 #' bird data as well as grand summarise (see Details and Examples).
 #'
-#' @param f Dataframe. Contains raw reads from an RFID reader with colums
-#'   \code{bird_id}, \code{feeder_id}, \code{time}.
-#' @param m Dataframe.
-#' @param locs Dataframe.
+#' @param f Dataframe. Summarized feeding data with columns \code{feeder_id} and
+#'   \code{feed_length}. It can also contain \code{bird_id} for individual-based
+#'   data, and lat/lon instead of a locs argument.
+#' @param m Dataframe. Summarized movement data with columns \code{feeder_id},
+#'   \code{move_path}, and \code{path_use}. It can also contain \code{bird_id}
+#'   for individual-based data, and lat/lon instead of a locs argument.
+#' @param locs Dataframe. Lat and long for each feeder_id, required if lat and
+#'   lon not in either f or m.
 #' @param f.scale,m.scale Numerical. Scaling constants to increase (> 1) or
 #'   decrease (< 1) the relative size of feeding (f) and movement (m) data.
 #' @param f.title,m.title Character. Titles for the legends of feeding (f) and
@@ -118,7 +122,7 @@ map.prep <- function(locs, f = NULL, m = NULL) {
 #' }
 #' @export
 #' @import leaflet
-map.leaflet <- function(f = NULL, m = NULL, locs,
+map.leaflet <- function(f = NULL, m = NULL, locs = NULL,
                  f.scale = 1, m.scale = 1,
                  f.title = "Feeding time", m.title = "Path use",
                  f.pal = c("yellow","red"),
@@ -235,10 +239,14 @@ map.leaflet <- function(f = NULL, m = NULL, locs,
 #' that they wish to visualize it. This function can take invidiual bird data as
 #' well as grand summarise (see Details and Examples).
 #'
-#' @param f Dataframe. Contains raw reads from an RFID reader with colums
-#'   \code{bird_id}, \code{feeder_id}, \code{time}.
-#' @param m Dataframe.
-#' @param locs Dataframe.
+#' @param f Dataframe. Summarized feeding data with columns \code{feeder_id} and
+#'   \code{feed_length}. It can also contain \code{bird_id} for individual-based
+#'   data, and lat/lon instead of a locs argument.
+#' @param m Dataframe. Summarized movement data with columns \code{feeder_id},
+#'   \code{move_path}, and \code{path_use}. It can also contain \code{bird_id}
+#'   for individual-based data, and lat/lon instead of a locs argument.
+#' @param locs Dataframe. Lat and long for each feeder_id, required if lat and
+#'   lon not in either f or m.
 #' @param f.scale,m.scale Numerical. Scaling constants to increase (> 1) or
 #'   decrease (< 1) the relative size of feeding (f) and movement (m) data.
 #' @param f.title,m.title Character. Titles for the legends of feeding (f) and
@@ -298,7 +306,7 @@ map.leaflet <- function(f = NULL, m = NULL, locs,
 #' map.ggmap(f = f.indiv, m = m.indiv, locs = l, f.scale = 0.7, m.scale = 0.05)
 #' }
 #' @export
-map.ggmap <- function(f = NULL, m = NULL, locs,
+map.ggmap <- function(f = NULL, m = NULL, locs = NULL,
                  f.scale = 1, m.scale = 1,
                  f.title = "Feeding time", m.title = "Path use",
                  f.pal = c("yellow","red"),
