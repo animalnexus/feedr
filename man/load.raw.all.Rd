@@ -4,7 +4,7 @@
 \alias{load.raw.all}
 \title{Load and combine raw data files}
 \usage{
-load.raw.all(r_dir, pattern = "DATA", tz = "Canada/Pacific",
+load.raw.all(r_dir, pattern = "DATA", tz = "America/Vancouver",
   feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL,
   extra_name = NULL, sep = "", skip = 1)
 }

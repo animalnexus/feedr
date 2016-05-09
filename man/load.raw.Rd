@@ -4,7 +4,7 @@
 \alias{load.raw}
 \title{Load raw read data}
 \usage{
-load.raw(r_file, tz = "Canada/Pacific",
+load.raw(r_file, tz = "America/Vancouver",
   feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL,
   extra_name = NULL, sep = "", skip = 1)
 }

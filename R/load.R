@@ -17,7 +17,7 @@
 
 
 #' @export
-load.web.legacy <- function(r_file, tz = "Canada/Pacific", sep = ",") {
+load.web.legacy <- function(r_file, tz = "America/Vancouver", sep = ",") {
   r <- read.table(r_file, sep = ",", col.names = c("date","feeder_id","bird_id"), colClasses = "character")
   r$time <- as.POSIXct(strptime(r$date, "%m-%d-%yT%H:%M:%SZ", tz = "Zulu"))
   attributes(r$time)$tzone <- tz
@@ -50,7 +50,7 @@ load.web.legacy <- function(r_file, tz = "Canada/Pacific", sep = ",") {
 #' \dontrun{r <- load.web("downloaded_file.csv")}
 
 #' @export
-load.web <- function(r_file, tz = "Canada/Pacific", sep = ",") {
+load.web <- function(r_file, tz = "America/Vancouver", sep = ",") {
   r <- read.csv(r_file, strip.white = TRUE)
   r <- load.format(r, tz = tz)
   return(r)
@@ -95,7 +95,7 @@ load.web <- function(r_file, tz = "Canada/Pacific", sep = ",") {
 #'
 #' }
 #' @export
-load.raw <- function(r_file, tz = "Canada/Pacific", feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1) {
+load.raw <- function(r_file, tz = "America/Vancouver", feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1) {
     r <- read.table(r_file,
                     col.names = c("bird_id","date","time"),
                     colClasses = "character",
@@ -152,7 +152,7 @@ load.raw <- function(r_file, tz = "Canada/Pacific", feeder_pattern = "[GPR]{2,3}
 #' @export
 load.raw.all <- function(r_dir,
                          pattern = "DATA",
-                         tz = "Canada/Pacific",
+                         tz = "America/Vancouver",
                          feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
                          extra_pattern = NULL,
                          extra_name = NULL,

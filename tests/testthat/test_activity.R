@@ -23,7 +23,7 @@ test_that("activity() in general", {
 
    expect_equal(a$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
    expect_equal(a$feeder_id[1], factor(NA, levels = c("2100", "2200", "2400", "2700")))
-   expect_equal(a$time[1], as.POSIXct("2016-01-28"))
+   expect_equal(a$time[1], as.POSIXct("2016-01-28", tz = "America/Vancouver"))
    expect_equal(nrow(a), 386)
 })
 

@@ -4,7 +4,7 @@
 \alias{load.web}
 \title{Load read data from the web}
 \usage{
-load.web(r_file, tz = "Canada/Pacific", sep = ",")
+load.web(r_file, tz = "America/Vancouver", sep = ",")
 }
 \arguments{
 \item{r_file}{Character or Data frame. The location of a single file to load,

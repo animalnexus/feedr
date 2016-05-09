@@ -4,7 +4,7 @@
 \alias{load.web.legacy}
 \title{Load read data from the web (legacy)}
 \usage{
-load.web.legacy(r_file, tz = "Canada/Pacific", sep = ",")
+load.web.legacy(r_file, tz = "America/Vancouver", sep = ",")
 }
 \arguments{
 \item{r_file}{Character. The location of a single file to load.}
