@@ -85,7 +85,7 @@ shinyUI(fluidPage(
                             fluidRow(div("Click on the arrow to animate -->"))
                             #,
                             #fluidRow(
-                            #         DT::dataTableOutput("points")
+                            #         DT::dataTableOutput("dt_points")
                             #         )
                      )
                      
@@ -93,10 +93,11 @@ shinyUI(fluidPage(
             
             tabPanel("Paths (Static)",
                      column(3,
-                            div("Based on feedr package visualizations"),
                             h1("Data"), 
-                            uiOutput("UI_bird_id"),
-                            h1("Animation")
+                            uiOutput("UI_static_birdid"),
+                            h3("To Do:"),
+                            div("Based on feedr package visualizations"),
+                            div("Change feedr functions to have map and layers separate, so doesn't refresh entire map for each bird")
                             #sliderInput("speed", "Speed",
                             #            min = 0, max = 100,
                             #            post = "%",
@@ -111,7 +112,7 @@ shinyUI(fluidPage(
                             fluidRow(leafletOutput("map_static", height = 600))
                      ),
                      fluidRow(
-                              #DT::dataTableOutput("paths")
+                              #DT::dataTableOutput("dt_paths")
                               )
                             
             ),
@@ -119,19 +120,21 @@ shinyUI(fluidPage(
             ## DATA
             #################
             tabPanel("Birds",
-                     fluidRow(column(6, h3("Click on a row for more information")),
+                     fluidRow(column(6, 
+                                     h3("Click on a row for more information"),
+                                     div("Presumably, we could replace images these with the actual pictures that are stored in the database? Right now they all come from wikipedia")),
                               column(6, htmlOutput("img_birds"))),
-                     fluidRow(DT::dataTableOutput("birds"))
+                     fluidRow(DT::dataTableOutput("dt_birds"))
             ),
             tabPanel("Raw Data",
-                      DT::dataTableOutput("data")
+                      DT::dataTableOutput("dt_data")
             ),
             
             tabPanel("Visits Data",
-                     DT::dataTableOutput("v")
+                     DT::dataTableOutput("dt_v")
             )
                    #fluidRow(
-                   #         DT::dataTableOutput("points")
+                   #         DT::dataTableOutput("dt_points")
                    #         )
           
   )
