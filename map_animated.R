@@ -1,7 +1,8 @@
 
 ## Base Animated Map
 output$map_time <- renderLeaflet({
-  leaflet(feeders) %>%
+  withProgress(message = "Loading Map...",
+  leaflet(feeders_sub()) %>%
     addMarkers(lng = ~lon, lat = ~lat, group = "Feeders") %>%
     addTiles(group = "Default (Open Street Map)") %>%
     addProviderTiles("Stamen.Toner", group = "Black and White") %>%
@@ -13,6 +14,7 @@ output$map_time <- renderLeaflet({
                                     "Satelite",
                                     "Terrain"),
                      options = layersControlOptions(collapsed = FALSE))
+  )
 })
 
 ## Add Legends to Animated Map
