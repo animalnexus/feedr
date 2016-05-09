@@ -37,7 +37,7 @@ shinyServer(function(input, output) {
   #dbListTables(con)
   #dbExistsTable(con, c("raw", "visits"))
   #dbExistsTable(con, "testtz")
-  #data <- dbReadTable(con, c("testtz"))
+  #data <- dbReadTable(con, c("ages"))
   #feeders <- dbReadTable(con, c("feeders"))
   #dbGetQuery(con, statement = paste("SELECT *",
   #                                  "FROM feeders",
@@ -47,65 +47,28 @@ shinyServer(function(input, output) {
   # Allow data to update depending on selection
   
   #Sys.setenv(TZ = "")
+  
   con <- dbConnect(drv,host=dbhost,port=dbport,dbname=dbname,user=dbuser,password=dbpass)
-
-  #feeders <- dbGetQuery(con, statement = paste0("SELECT * FROM feeders")) %>%
-  #  mutate(loc = gsub("\\(|\\)", "", loc)) %>%
-  #  separate(loc, into = c("lon", "lat"), ",", convert = TRUE)
-  
-  birds <- dbGetQuery(con, statement = paste0("SELECT * FROM birds"))
-  
-  suppressWarnings(
-  data <- dbGetQuery(con, statement = paste("SELECT bird_id, feeder_id, time",
-                                            "FROM raw.visits",
-                                            "WHERE time > CURRENT_TIMESTAMP - INTERVAL '2 month'")) %>%
-    left_join(dbGetQuery(con, statement = "SELECT * FROM feeders"), by = "feeder_id") %>%
-    left_join(dbGetQuery(con, statement = "SELECT * FROM birds"), by = c("bird_id", "site_name")) %>%
-    load.format(., tz = "")
-  )
-  
+  #feeders <- dbGetQuery(con, statement = paste0("SELECT * FROM feeders"))
+  birds_all <- dbGetQuery(con, statement = paste0("SELECT * FROM birds")) %>% load.format(tz = "")
+  dates_all <- dbGetQuery(con, 
+                          statement = paste(
+                            "SELECT DISTINCT ON (raw.visits.time::date) 
+                            raw.visits.time::date, feeders.site_name",
+                            "FROM raw.visits, feeders",
+                            "WHERE raw.visits.feeder_id = feeders.feeder_id")) %>%
+    rename(date = time) %>%
+    load.format(tz = "")
   dbDisconnect(con)
   
-  feeders <- data %>%
-    select(feeder_id, site_name, lon, lat) %>%
-    unique(.)
+  
+  
+  
+  ## Fix
 
-  birds <- data %>%
-    select(bird_id, species, age, sex, tagged_on, site_name) %>%
-    unique(.)
   
-  # Data for animated maps
-  v <- visits(data) %>% 
-    mutate(day = as.Date(start)) %>%
-    group_by(day, feeder_id, lat, lon)
   
-  t_visits <- v %>%
-    summarize(n = length(start))
   
-  b_visits <- v %>%
-    group_by(bird_id, add = TRUE) %>%
-    summarize(n = length(start)) %>%
-    group_by(feeder_id, lat, lon) %>%
-    summarize(n = max(n))
-  
-  t_birds <- v %>%
-    summarize(n = length(unique(bird_id)))
-  
-  v <- v %>% group_by(feeder_id, lat, lon)
-  
-  # Data for static maps
-  m <- v %>% 
-    group_by(bird_id) %>% 
-    do(move(.)) %>%
-    group_by(bird_id, feeder_id, move_path) %>%
-    summarize(path_use = length(move_path)) %>%
-    arrange(bird_id, move_path)
-                
-  f <- v %>% 
-    group_by(bird_id) %>% 
-    do(feeding(.)) %>%
-    group_by(bird_id, feeder_id) %>%
-    summarize(feed_length = sum(feed_length))
 
   #   filter(bird_id == "0620000514")
   # 
