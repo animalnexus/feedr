@@ -1,22 +1,26 @@
 ## Data and Text Outputs
 
-output$data <- DT::renderDataTable(
-  DT::datatable(data, options = list(pageLength = 100))
+output$dt_data_current <- DT::renderDataTable(
+  DT::datatable(values$current)
 )
 
-output$birds <- DT::renderDataTable(
-  DT::datatable(birds, options = list(pageLength = 10), rownames = FALSE, selection = "single"), server = FALSE
+output$dt_data <- DT::renderDataTable(
+  DT::datatable(data(), options = list(pageLength = 100))
 )
 
-output$v <- DT::renderDataTable(
-  DT::datatable(v, rownames = FALSE)
+output$dt_birds <- DT::renderDataTable(
+  DT::datatable(birds_sub(), options = list(pageLength = 100), rownames = FALSE, selection = "single"), server = FALSE
 )
 
-output$points <- DT::renderDataTable(
+output$dt_v <- DT::renderDataTable(
+  DT::datatable(v(), rownames = FALSE)
+)
+
+output$dt_points <- DT::renderDataTable(
   DT::datatable(v_points(), rownames = FALSE)
 )
 
-output$paths <- DT::renderDataTable(
+output$dt_paths <- DT::renderDataTable(
   DT::datatable(m_paths(), rownames = FALSE)
 )
 
