@@ -73,6 +73,100 @@ map.prep <- function(f = NULL, m = NULL, locs = NULL) {
 }
 
 
+# Base map for leaflet
+map.leaflet.base <- function(locs = NULL) {
+
+  # Basic Map
+  leaflet(data = locs) %>%
+    addTiles(group = "Default (Open Street Map)") %>%
+    addProviderTiles("Stamen.Toner", group = "Black and White") %>%
+    addProviderTiles("Esri.WorldImagery", group = "Satelite") %>%
+    addProviderTiles("Esri.WorldTopoMap", group = "Terrain") %>%
+    addCircleMarkers(~lon, ~lat,
+                     radius = 3,
+                     opacity = 1,
+                     fillColor = "black",
+                     fillOpacity = 1,
+                     color = "black",
+                     popup  = ~ as.character(feeder_id),
+                     group = "Feeders")
+}
+
+# Base map for leaflet
+map.leaflet.layers <- function(maps, f = NULL, m = NULL,
+                               f.scale = 1, m.scale = 1,
+                               f.title = "Feeding time", m.title = "Path use",
+                               f.pal = c("yellow","red"),
+                               m.pal = c("yellow","red")) {
+
+  # Final Data Prep
+  if(!is.null(f)){
+    # Sort and Scale
+    f$feed_length <- as.numeric(f$feed_length)
+    f <- f[order(f$feed_length, decreasing = TRUE),]
+    f$feed_length2 <- smart.scale(f$feed_length, f.scale)
+  }
+
+  if(!is.null(m)){
+    # Sort and Scale
+    m <- m[order(m$path_use, decreasing = TRUE), ]
+    m$path_use2 <- smart.scale(m$path_use, m.scale)
+  }
+
+  # If a feeding data frame is specified:
+  if(!is.null(f)){
+
+    # Define palette to match range of scaled values
+    f.pal <- colorNumeric(palette = colorRampPalette(f.pal)(10), domain = f$feed_length)
+
+    # Add feeder use data to map
+    maps <- addCircleMarkers(maps,
+                             data = f,
+                             ~lon, ~lat,
+                             weight = 1,
+                             opacity = 1,
+                             fillOpacity = 0.75,
+                             radius = ~  sqrt(feed_length2*100/pi),
+                             color = "black",
+                             fillColor = ~f.pal(feed_length),
+                             popup = ~htmltools::htmlEscape(as.character(round(feed_length))),
+                             group = "Time") %>%
+      addLegend(title = f.title,
+                position = 'topright',
+                pal = f.pal,
+                values = f$feed_length,
+                bins = 5,
+                opacity = 1)
+  }
+
+  # If a movements data frame is specified
+  if(!is.null(m)){
+
+    # Define palette to match range of scaled values
+    m.pal <- colorNumeric(palette = colorRampPalette(m.pal)(10), domain = m$path_use)
+
+    # Add movement path lines to map
+    for(path in unique(m$move_path)) {
+      maps <- addPolylines(maps,
+                           data = m[m$move_path == path, ],
+                           ~lon, ~lat,
+                           weight = ~path_use2,
+                           opacity = 0.75,
+                           color = ~m.pal(path_use),
+                           group = "Movements",
+                           popup = ~htmltools::htmlEscape(as.character(round(path_use))))
+    }
+    maps <- maps %>% addLegend(title = m.title,
+                               position = 'topright',
+                               pal = m.pal,
+                               opacity = 1,
+                               values = m$path_use)
+  }
+
+    return(maps)
+
+}
+
 # ----------------------------------
 # map.leaflet()
 # ----------------------------------
@@ -155,93 +249,20 @@ map.leaflet <- function(f = NULL, m = NULL, locs = NULL,
   # Summaries or individual birds?
   if(any(names(f) == "bird_id", names(m) == "bird_id")) bird_id <- unique(unlist(list(f$bird_id, m$bird_id))) else bird_id = NULL
 
-  # Final Data Prep
-  if(!is.null(f)){
-    # Sort and Scale
-    f$feed_length <- as.numeric(f$feed_length)
-    f <- f[order(f$feed_length, decreasing = TRUE),]
-    f$feed_length2 <- smart.scale(f$feed_length, f.scale)
-  }
+  # BASE MAP
+  maps <- map.leaflet.base(locs = locs)
 
-  if(!is.null(m)){
-    # Sort and Scale
-    m <- m[order(m$path_use, decreasing = TRUE), ]
-    m$path_use2 <- smart.scale(m$path_use, m.scale)
-  }
+  # Layers
+  maps <- maps %>%
+    map.leaflet.layers(f = f, m = m, f.scale = f.scale, m.scale = m.scale,
+                       f.pal = f.pal, m.pal = m.pal, f.title = f.title, m.title = m.title)
 
-  # Get groups to display as layers
+  # Controls
   groups <- c("Feeders", "Time", "Movements")[c(TRUE, !is.null(f), !is.null(m))]
-  #if(!is.null(bird_id)) groups <- c(groups, as.character(bird_id))
-
-  # Basic Map
-  maps <- leaflet(data = locs) %>%
-    addTiles(group = "Default (Open Street Map)") %>%
-    addProviderTiles("Stamen.Toner", group = "Black and White") %>%
-    addProviderTiles("Esri.WorldImagery", group = "Satelite") %>%
-    addProviderTiles("Esri.WorldTopoMap", group = "Terrain") %>%
-    addCircleMarkers(~lon, ~lat,
-                     radius = 3,
-                     opacity = 1,
-                     fillColor = "black",
-                     fillOpacity = 1,
-                     color = "black",
-                     popup  = ~ as.character(feeder_id),
-                     group = "Feeders") %>%
+  maps <- maps %>%
     addLayersControl(overlayGroups = groups,
                      baseGroups = c("Default (Open Street Map)", "Black and White", "Satelite","Terrain"),
                      options = layersControlOptions(collapsed = FALSE))
-
-  # If a feeding data frame is specified:
-  if(!is.null(f)){
-
-    # Define palette to match range of scaled values
-    f.pal <- colorNumeric(palette = colorRampPalette(f.pal)(10), domain = f$feed_length)
-
-    # Add feeder use data to map
-    maps <- addCircleMarkers(maps,
-                             data = f,
-                             ~lon, ~lat,
-                             weight = 1,
-                             opacity = 1,
-                             fillOpacity = 0.75,
-                             radius = ~  sqrt(feed_length2*100/pi),
-                             color = "black",
-                             fillColor = ~f.pal(feed_length),
-                             popup = ~htmltools::htmlEscape(as.character(round(feed_length))),
-                             group = "Time") %>%
-      addLegend(title = f.title,
-                position = 'topright',
-                pal = f.pal,
-                values = f$feed_length,
-                bins = 5,
-                opacity = 1)
-  }
-
-  # If a movements data frame is specified
-  if(!is.null(m)){
-
-    # Define palette to match range of scaled values
-    m.pal <- colorNumeric(palette = colorRampPalette(m.pal)(10), domain = m$path_use)
-
-    # Add movement path lines to map
-    for(path in unique(m$move_path)) {
-      maps <- addPolylines(maps,
-                           data = m[m$move_path == path, ],
-                           ~lon, ~lat,
-                           weight = ~path_use2,
-                           opacity = 0.75,
-                           color = ~m.pal(path_use),
-                           group = "Movements",
-                           popup = ~htmltools::htmlEscape(as.character(round(path_use))))
-    }
-    maps <- addLegend(maps,
-                      title = m.title,
-                      position = 'topright',
-                      pal = m.pal,
-                      opacity = 1,
-                      values = m$path_use)
-  }
-
   maps <- hideGroup(maps, c("Feeders","Time","Movements"))
   maps <- showGroup(maps, c("Movements","Time","Feeders"))
 
