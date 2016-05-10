@@ -7,6 +7,25 @@ smart.scale <- function(x, m) {
   return(x)
 }
 
+rename.locs <- function(d) {
+  lat <- c("lat", "latitude")
+  lon <- c("lon", "long", "longitude")
+  names(d)[names(d) %in% lat] <- "lat"
+  names(d)[names(d) %in% lon] <- "lon"
+  return(d)
+}
+
+get.locs <- function(d) {
+  lat <- c("lat", "latitude")
+  lon <- c("lon", "long", "longitude")
+  if(any(lat %in% names(d)) & any(lon %in% names(d)) & "feeder_id" %in% names(d)) {
+    if(sum(lat %in% names(d)) > 1 | sum(lon %in% names(d)) > 1) stop(paste0("Muliple latitude or longitudes in feeding data possible. Looking for latitude (", paste0(lat, collapse = ", "), ") or longitude (", paste0(lon, collapse = ", "),")"))
+    d <- rename.locs(d)
+    locs <- d[ , c("feeder_id", "lat", "lon")]
+    return(locs)
+  } else return(data.frame())
+}
+
 
 # Prep data for mapping
 # A data prep function used by mapping functions
@@ -22,33 +41,33 @@ map.prep <- function(f = NULL, m = NULL, locs = NULL) {
   }
 
   # Check and format location data
+  # Lat / Lon needs to be in EITHER locs, f, OR m
+
   lat <- c("lat", "latitude")
   lon <- c("lon", "long", "longitude")
 
-  if(!(any(lat %in% names(locs)) & any(lon %in% names(locs)))) stop(paste0("Locations (locs) data.frame is missing either latitude (", paste0(lat, collapse = ", "), ") or longitude (", paste0(lon, collapse = ", "), ")"))
-
-  if(sum(lat %in% names(locs)) > 1 | sum(lon %in% names(locs)) > 1) stop(paste0("Muliple latitude or longitudes possible. Looking for latitude (", paste0(lat, collapse = ", "), ") or longitude (", paste0(lon, collapse = ", "),")"))
-
-  message(paste0("Using columns '", names(locs)[names(locs) %in% lat], "' and '", names(locs)[names(locs) %in% lon], "' as latitude and longitude respectively"))
-  names(locs)[names(locs) %in% lat] <- "lat"
-  names(locs)[names(locs) %in% lon] <- "lon"
-  locs <- locs[ , c("feeder_id","lat","lon")]
+  locs <- unique(rbind(get.locs(f), get.locs(m), get.locs(locs)))
+  if(nrow(locs) == 0) stop(paste0("Locations (locs) data.frame is missing either latitude (", paste0(lat, collapse = ", "), ") or longitude (", paste0(lon, collapse = ", "), "), or both."))
 
   # Get locations and alert if any missing
   if(!is.null(f)){
-    f <- merge(f, locs, by = c("feeder_id"), all.x = T, all.y = F)
+    f <- rename.locs(f)
+    n <- names(f)[names(f) %in% c("feeder_id", "lat", "lon")]
+    f <- merge(f, locs, by = n, all.x = T, all.y = F)
     if(nrow(f[is.na(f$lat) | is.na(f$lon),]) > 0) message(paste0("Removed ", nrow(f[is.na(f$lat) | is.na(f$lon),]), " feeders due to missing lat or lon."))
     f <- f[!(is.na(f$lat) | is.na(f$lon)),]
   }
 
   if(!is.null(m)){
-    m <- merge(m, locs, by = "feeder_id", all.x = T, all.y = F)
+    m <- rename.locs(m)
+    n <- names(m)[names(m) %in% c("feeder_id", "lat", "lon")]
+    m <- merge(m, locs, by = n, all.x = T, all.y = F)
     if(nrow(m[is.na(m$lat) | is.na(m$lon),]) > 0) message(paste0("Removed ", nrow(m[is.na(m$lat) | is.na(m$lon),]), " movement paths due to at least one missing lat or lon."))
     m <- plyr::ddply(m, c("move_path"), .fun = function(x) if(any(is.na(x[,c('lat','lon')]))) return(data.frame()) else return(x))
   }
 
-  if(!is.null(f)) if(nrow(f) == 0) stop("Missing 'f' lat/lon data, did you supply a correct 'locs' file?")
-  if(!is.null(m)) if(nrow(m) == 0) stop("Missing 'm' lat/lon data, did you supply a correct 'locs' file?")
+  if(!is.null(f)) if(nrow(f) == 0) stop("Missing 'f' lat/lon data, did you supply location data in either f, m, or locs?")
+  if(!is.null(m)) if(nrow(m) == 0) stop("Missing 'm' lat/lon data, did you supply location data in either f, m, or locs?")
 
   return(list('f' = f, 'm' = m, 'locs' = locs))
 }
