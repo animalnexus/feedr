@@ -1,3 +1,45 @@
+
+
+# Static
+output$UI_static_birdid <- renderUI({
+  selectInput("static_birdid", "Select bird",
+              choices = as.character(unique(data()$bird_id)))
+})
+
+
+# Data for static maps
+m <- reactive({
+  v <- v()
+  if(length(unique(v$feeder_id)) > 1){
+    m <- v() %>%
+      group_by(bird_id) %>% 
+      do(move(.)) %>%
+      group_by(bird_id, feeder_id, move_path) %>%
+      summarize(path_use = length(move_path)) %>%
+      arrange(bird_id, move_path)
+  } else m <- NULL
+  m
+})
+
+f <- reactive({
+  f <- v() %>% 
+    group_by(bird_id) %>% 
+    do(feeding(.)) %>%
+    group_by(bird_id, feeder_id) %>%
+    summarize(feed_length = sum(feed_length))
+  if(nrow(f[f$feed_length > 0,]) == 0) f <- NULL
+  f
+})
+
+map_static <- reactive({
+  req(input$static_birdid)
+  withProgress(message = "Calculating visits and movement paths...",
+               map.leaflet(f = f()[f()$bird_id == input$static_birdid, ], m = m()[m()$bird_id == input$static_birdid,], locs = feeders_sub())
+  )
+})
+
+
+
 output$map_static <- renderLeaflet({
   #pal <- colorNumeric(palette = colorRampPalette(c("blue", "green", "yellow","orange", "red"))(max(v_info()$n)), domain = 1:max(v_info()$n))
   map_static()
