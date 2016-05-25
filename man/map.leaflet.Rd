@@ -6,7 +6,7 @@
 \usage{
 map.leaflet(f = NULL, m = NULL, locs = NULL, f.scale = 1, m.scale = 1,
   f.title = "Feeding time", m.title = "Path use", f.pal = c("yellow",
-  "red"), m.pal = c("yellow", "red"))
+  "red"), m.pal = c("yellow", "red"), controls = TRUE)
 }
 \arguments{
 \item{f}{Dataframe. Summarized feeding data with columns \code{feeder_id} and
@@ -28,6 +28,8 @@ movement (m) data.}
 
 \item{f.pal, m.pal}{Character vectors. Colours used to construct gradients for
 feeding (f) and movement (m) data.}
+
+\item{controls}{Logical. Add controls to map (allows showing/hiding of different layers)}
 }
 \value{
 An interactive leaflet map with layers for feeding time, movement
