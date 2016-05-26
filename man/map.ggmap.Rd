@@ -4,31 +4,31 @@
 \alias{map.ggmap}
 \title{Map data using ggmap}
 \usage{
-map.ggmap(f = NULL, m = NULL, locs = NULL, f.scale = 1, m.scale = 1,
-  f.title = "Feeding time", m.title = "Path use", f.pal = c("yellow",
-  "red"), m.pal = c("yellow", "red"), maptype = "satellite",
+map.ggmap(u = NULL, p = NULL, locs = NULL, u.scale = 1, p.scale = 1,
+  u.title = "Feeding time", p.title = "Path use", u.pal = c("yellow",
+  "red"), p.pal = c("yellow", "red"), maptype = "satellite",
   mapsource = "google", zoom = 17, which = NULL)
 }
 \arguments{
-\item{f}{Dataframe. Summarized feeding data with columns \code{feeder_id} and
-\code{feed_length}. It can also contain \code{bird_id} for individual-based
+\item{u}{Dataframe. Summarized feeding data with columns \code{feeder_id} and
+\code{amount}. It can also contain \code{bird_id} for individual-based
 data, and lat/lon instead of a locs argument.}
 
-\item{m}{Dataframe. Summarized movement data with columns \code{feeder_id},
+\item{p}{Dataframe. Summarized movement data with columns \code{feeder_id},
 \code{move_path}, and \code{path_use}. It can also contain \code{bird_id}
 for individual-based data, and lat/lon instead of a locs argument.}
 
 \item{locs}{Dataframe. Lat and long for each feeder_id, required if lat and
-lon not in either f or m.}
+lon not in either u or p.}
 
-\item{f.scale, m.scale}{Numerical. Scaling constants to increase (> 1) or
-decrease (< 1) the relative size of feeding (f) and movement (m) data.}
+\item{u.scale, p.scale}{Numerical. Scaling constants to increase (> 1) or
+decrease (< 1) the relative size of use (u) and path (p) data.}
 
-\item{f.title, m.title}{Character. Titles for the legends of feeding (f) and
-movement (m) data.}
+\item{u.title, p.title}{Character. Titles for the legends of use (u) and
+path (p) data.}
 
-\item{f.pal, m.pal}{Character vectors. Colours used to construct gradients for
-feeding (f) and movement (m) data.}
+\item{u.pal, p.pal}{Character vectors. Colours used to construct gradients for
+use (u) and movement (p) data.}
 
 \item{maptype}{Character. The type of map to download. See \code{maptype}
 under \code{\link[ggmap]{get_map}} for more options.}
@@ -47,50 +47,40 @@ An interactive leaflet map with layers for feeding time, movement
   paths and feeder positions.
 }
 \description{
-Visualize feeding bout and movement data using ggmap in R. This produces a
-static map. The user must summarize feeding and movement data in the manner
+Visualize feeder use and path data using ggmap in R. This produces a
+static map. The user must summarize feeder use and path data in the manner
 that they wish to visualize it. This function can take invidiual bird data as
 well as grand summarise (see Details and Examples).
 }
 \examples{
 \dontrun{
 
-# Get feeding and movement data
-r <- loadWeb("downloaded_data.csv")
-
-v <- visits(r)
+v <- visits(finches)
 f <- ddply(v, .(bird_id), feeding, bw = 15)
 m <- ddply(v, .(bird_id), move)
 
-# Get feeder locations
-l <- read.csv("feeder index.csv")
-
-# If from web, lat/lon may be in the same column, extract it:
-l$lon <- as.numeric(gsub("\\\\(([-0-9.]+),[-0-9.]+\\\\)", "\\\\1", l$loc))
-l$lat <- as.numeric(gsub("\\\\([-0-9.]+,([-0-9.]+)\\\\)", "\\\\1", l$loc))
-
 # Summarise data for visualization (use totals):
 f.all <- ddply(f, .(feeder_id), summarise,
-           feed_length = sum(feed_length) / bird_n)
+           amount = sum(feed_length) / bird_n)
 
 m.all <- ddply(m, .(move_path), summarise,
            path_use = length(move_path) / bird_n)
 
 # Look at total summary maps
-map.leaflet(f = f.all, m = m.all, locs = l)
-map.ggmap(f = f.all, m = m.all, locs = l)
+map.leaflet(u = f.all, p = m.all)
+map.ggmap(u = f.all, p = m.all)
 
 # Summarise data for visualization (use individuals):
 f.indiv <- ddply(f, .(bird_id, feeder_id), summarise,
-           feed_length = sum(feed_length))
+           amount = sum(feed_length))
 
 m.indiv <- ddply(m, .(bird_id, move_path), summarise,
            path_use = length(move_path))
 
 # Look at individual summary maps (note that Leaflet just stacks individuals
 one on top of the other)
-map.leaflet(f = f.indiv, m = m.indiv, locs = l)
-map.ggmap(f = f.indiv, m = m.indiv, locs = l, f.scale = 0.7, m.scale = 0.05)
+map.leaflet(u = f.indiv, p = m.indiv)
+map.ggmap(u = f.indiv, p = m.indiv, u.scale = 0.7, p.scale = 0.05)
 }
 }
 

@@ -4,40 +4,40 @@
 \alias{map.leaflet}
 \title{Map data using leaflet}
 \usage{
-map.leaflet(f = NULL, m = NULL, locs = NULL, f.scale = 1, m.scale = 1,
-  f.title = "Feeding time", m.title = "Path use", f.pal = c("yellow",
-  "red"), m.pal = c("yellow", "red"), controls = TRUE)
+map.leaflet(u = NULL, p = NULL, locs = NULL, u.scale = 1, p.scale = 1,
+  u.title = "Feeding time", p.title = "Path use", u.pal = c("yellow",
+  "red"), p.pal = c("yellow", "red"), controls = TRUE)
 }
 \arguments{
-\item{f}{Dataframe. Summarized feeding data with columns \code{feeder_id} and
-\code{feed_length}. It can also contain \code{bird_id} for individual-based
+\item{u}{Dataframe. Summarized 'use' data with columns \code{feeder_id} and
+\code{amount}. It can also contain \code{bird_id} for individual-based
 data, and lat/lon instead of a locs argument.}
 
-\item{m}{Dataframe. Summarized movement data with columns \code{feeder_id},
+\item{p}{Dataframe. Summarized 'path' data with columns \code{feeder_id},
 \code{move_path}, and \code{path_use}. It can also contain \code{bird_id}
 for individual-based data, and lat/lon instead of a locs argument.}
 
 \item{locs}{Dataframe. Lat and long for each feeder_id, required if lat and
-lon not in either f or m.}
+lon not in either u or p.}
 
-\item{f.scale, m.scale}{Numerical. Scaling constants to increase (> 1) or
-decrease (< 1) the relative size of feeding (f) and movement (m) data.}
+\item{u.scale, p.scale}{Numerical. Scaling constants to increase (> 1) or
+decrease (< 1) the relative size of use (u) and path (p) data.}
 
-\item{f.title, m.title}{Character. Titles for the legends of feeding (f) and
-movement (m) data.}
+\item{u.title, p.title}{Character. Titles for the legends of use (u) and
+path (p) data.}
 
-\item{f.pal, m.pal}{Character vectors. Colours used to construct gradients for
-feeding (f) and movement (m) data.}
+\item{u.pal, p.pal}{Character vectors. Colours used to construct gradients for
+use (u) and path (p) data.}
 
-\item{controls}{Logical. Add controls to map (allows showing/hiding of different layers)}
+\item{controls}{Logical. Add controls to map (allows showing/hiding of
+different layers)}
 }
 \value{
-An interactive leaflet map with layers for feeding time, movement
-  paths and feeder positions.
+An interactive leaflet map with layers for use, paths and feeder positions.
 }
 \description{
-Visualize feeding bout and movement data using leaflet for R. This produces
-an interactive html map. The user must summarize feeding and movement data in
+Visualize feeder use and path data using leaflet for R. This produces
+an interactive html map. The user must summarize feeder use and path data in
 the manner that they wish to visualize it. This function can take invidiual
 bird data as well as grand summarise (see Details and Examples).
 }
@@ -58,26 +58,26 @@ l <- read.csv("feeder index.csv")
 
 # Summarise data for visualization (use totals):
 f.all <- ddply(f, .(feeder_id), summarise,
-           feed_length = sum(feed_length) / bird_n[1])
+           amount = sum(feed_length) / bird_n[1])
 
 m.all <- ddply(m, .(move_path), summarise,
            path_use = length(move_path) / bird_n[1])
 
 # Look at total summary maps
-map.leaflet(f = f.all, m = m.all, locs = l)
-map.ggmap(f = f.all, m = m.all, locs = l)
+map.leaflet(u = f.all, p = m.all, locs = l)
+map.ggmap(u = f.all, p = m.all, locs = l)
 
 # Summarise data for visualization (use individuals):
 f.indiv <- ddply(f, .(bird_id, feeder_id), summarise,
-           feed_length = sum(feed_length))
+           amount = sum(feed_length))
 
 m.indiv <- ddply(m, .(bird_id, move_path), summarise,
            path_use = length(move_path))
 
 # Look at individual summary maps (note that Leaflet just stacks individuals
   one on top of the other)
-map.leaflet(f = f.indiv, m = m.all, locs = l)
-map.ggmap(f = f.indiv, m = m.all, locs = l)
+map.leaflet(u = f.indiv, p = m.all, locs = l)
+map.ggmap(u = f.indiv, p = m.all, locs = l)
 }
 }
 

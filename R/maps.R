@@ -33,7 +33,7 @@ get.locs <- function(d) {
   lat <- c("lat", "latitude")
   lon <- c("lon", "long", "longitude")
   if(any(lat %in% names(d)) & any(lon %in% names(d)) & "feeder_id" %in% names(d)) {
-    if(sum(lat %in% names(d)) > 1 | sum(lon %in% names(d)) > 1) stop(paste0("Muliple latitude or longitudes in feeding data possible. Looking for latitude (", paste0(lat, collapse = ", "), ") or longitude (", paste0(lon, collapse = ", "),")"))
+    if(sum(lat %in% names(d)) > 1 | sum(lon %in% names(d)) > 1) stop(paste0("Muliple latitude or longitudes in data possible. Looking for latitude (", paste0(lat, collapse = ", "), ") or longitude (", paste0(lon, collapse = ", "),")"))
     d <- rename.locs(d)
     locs <- d[ , c("feeder_id", "lat", "lon")]
     return(locs)
@@ -43,47 +43,47 @@ get.locs <- function(d) {
 
 # Prep data for mapping
 # A data prep function used by mapping functions
-map.prep <- function(f = NULL, m = NULL, locs = NULL) {
+map.prep <- function(u = NULL, p = NULL, locs = NULL) {
 
   # Check data
-  if(!is.null(f)){
-    if(!all(c("feeder_id","feed_length") %in% names(f))) stop("The feeding dataframe (f) requires two columns: 'feeder_id' and 'feed_length'.")
+  if(!is.null(u)){
+    if(!all(c("feeder_id","amount") %in% names(u))) stop("The use dataframe (u) requires two columns: 'feeder_id' and 'amount'.")
   }
-  if(!is.null(m)){
-    if(!all(c("move_path","path_use") %in% names(m))) stop("The movement dataframe (m) requires two columns: 'move_path' and 'path_use'.")
-    if(any(stringr::str_count(m$move_path, "_") > 1)) stop("Using '_' in feeder_id names conflicts with the mapping functions. You should remove any '_'s.")
+  if(!is.null(p)){
+    if(!all(c("move_path","path_use") %in% names(p))) stop("The path dataframe (p) requires two columns: 'move_path' and 'path_use'.")
+    if(any(stringr::str_count(p$move_path, "_") > 1)) stop("Using '_' in feeder_id names conflicts with the mapping functions. You should remove any '_'s.")
   }
 
   # Check and format location data
-  # Lat / Lon needs to be in EITHER locs, f, OR m
+  # Lat / Lon needs to be in EITHER locs, u, OR p
 
   lat <- c("lat", "latitude")
   lon <- c("lon", "long", "longitude")
 
-  locs <- unique(rbind(get.locs(f), get.locs(m), get.locs(locs)))
-  if(nrow(locs) == 0) stop(paste0("Locations (locs) data.frame is missing either latitude (", paste0(lat, collapse = ", "), ") or longitude (", paste0(lon, collapse = ", "), "), or both."))
+  locs <- unique(rbind(get.locs(u), get.locs(p), get.locs(locs)))
+  if(nrow(locs) == 0) stop(paste0("Locations (locs) dataframe is missing either latitude (", paste0(lat, collapse = ", "), ") or longitude (", paste0(lon, collapse = ", "), "), or both."))
 
   # Get locations and alert if any missing
-  if(!is.null(f)){
-    f <- rename.locs(f)
-    n <- names(f)[names(f) %in% c("feeder_id", "lat", "lon")]
-    f <- merge(f, locs, by = n, all.x = T, all.y = F)
-    if(nrow(f[is.na(f$lat) | is.na(f$lon),]) > 0) message(paste0("Removed ", nrow(f[is.na(f$lat) | is.na(f$lon),]), " feeders due to missing lat or lon."))
-    f <- f[!(is.na(f$lat) | is.na(f$lon)),]
+  if(!is.null(u)){
+    u <- rename.locs(u)
+    n <- names(u)[names(u) %in% c("feeder_id", "lat", "lon")]
+    u <- merge(u, locs, by = n, all.x = TRUE, all.y = FALSE)
+    if(nrow(u[is.na(u$lat) | is.na(u$lon),]) > 0) message(paste0("Removed ", nrow(u[is.na(u$lat) | is.na(u$lon),]), " feeders due to missing lat or lon."))
+    u <- u[!(is.na(u$lat) | is.na(u$lon)),]
   }
 
-  if(!is.null(m)){
-    m <- rename.locs(m)
-    n <- names(m)[names(m) %in% c("feeder_id", "lat", "lon")]
-    m <- merge(m, locs, by = n, all.x = T, all.y = F)
-    if(nrow(m[is.na(m$lat) | is.na(m$lon),]) > 0) message(paste0("Removed ", nrow(m[is.na(m$lat) | is.na(m$lon),]), " movement paths due to at least one missing lat or lon."))
-    m <- plyr::ddply(m, c("move_path"), .fun = function(x) if(any(is.na(x[,c('lat','lon')]))) return(data.frame()) else return(x))
+  if(!is.null(p)){
+    p <- rename.locs(p)
+    n <- names(p)[names(p) %in% c("feeder_id", "lat", "lon")]
+    p <- merge(p, locs, by = n, all.x = TRUE, all.y = FALSE)
+    if(nrow(p[is.na(p$lat) | is.na(p$lon),]) > 0) message(paste0("Removed ", nrow(p[is.na(p$lat) | is.na(p$lon),]), " paths due to at least one missing lat or lon."))
+    p <- plyr::ddply(p, c("move_path"), .fun = function(x) if(any(is.na(x[,c('lat','lon')]))) return(data.frame()) else return(x))
   }
 
-  if(!is.null(f)) if(nrow(f) == 0) stop("Missing 'f' lat/lon data, did you supply location data in either f, m, or locs?")
-  if(!is.null(m)) if(nrow(m) == 0) stop("Missing 'm' lat/lon data, did you supply location data in either f, m, or locs?")
+  if(!is.null(u)) if(nrow(u) == 0) stop("Missing use lat/lon data, did you supply location data in either u, p, or locs?")
+  if(!is.null(p)) if(nrow(p) == 0) stop("Missing path lat/lon data, did you supply location data in either u, p, or locs?")
 
-  return(list('f' = f, 'm' = m, 'locs' = locs))
+  return(list('u' = u, 'p' = p, 'locs' = locs))
 }
 
 #' Base map for leaflet
@@ -108,35 +108,35 @@ map.leaflet.base <- function(locs, marker = "feeder_id", name = "Feeders", contr
 #'
 #' Designed for advanced use (see map.leaflet() for general mapping)
 #' @export
-move.layer <- function(map, m, m.scale = 1, m.title = "Path use", m.pal = c("yellow","red"), controls = TRUE) {
+path.layer <- function(map, p, p.scale = 1, p.title = "Path use", p.pal = c("yellow","red"), controls = TRUE) {
 
-  if(!(all(c("lat", "lon") %in% names(m)))) stop("Missing 'm' lat/lon data, did you supply location data?")
+  if(!(all(c("lat", "lon") %in% names(p)))) stop("Missing path lat/lon data, did you supply location data?")
 
-  m <- m[order(m$path_use, decreasing = TRUE), ]
+  p <- p[order(p$path_use, decreasing = TRUE), ]
 
   # Define palette
-  m.pal <- colorNumeric(palette = colorRampPalette(m.pal)(10), domain = m$path_use)
+  p.pal <- colorNumeric(palette = colorRampPalette(p.pal)(max(p$path_use)), domain = p$path_use)
 
   # Add movement path lines to map
-  for(path in unique(m$move_path)) {
+  for(path in unique(p$move_path)) {
     map <- addPolylines(map,
-                        data = m[m$move_path == path, ],
+                        data = p[p$move_path == path, ],
                         ~lon, ~lat,
-                        weight = ~smart.scale(path_use, m.scale),
+                        weight = ~smart.scale(path_use, p.scale),
                         opacity = 0.75,
-                        color = ~m.pal(path_use),
-                        group = m.title,
+                        color = ~p.pal(path_use),
+                        group = p.title,
                         popup = ~htmltools::htmlEscape(as.character(round(path_use))))
   }
-  map <- map %>% addLegend(title = m.title,
+  map <- map %>% addLegend(title = p.title,
                            position = 'topright',
-                           pal = m.pal,
+                           pal = p.pal,
                            opacity = 1,
-                           values = m$path_use) %>%
+                           values = p$path_use) %>%
     hideGroup("Feeders") %>%
     showGroup("Feeders")
 
-  if(controls) map <- controls(map, m.title)
+  if(controls) map <- controls(map, p.title)
 
   return(map)
 }
@@ -145,36 +145,36 @@ move.layer <- function(map, m, m.scale = 1, m.title = "Path use", m.pal = c("yel
 #'
 #' Designed for advanced use (see map.leaflet() for general mapping)
 #' @export
-feeding.layer <- function(map, f, f.scale = 1, f.title = "Feeding time", f.pal = c("yellow","red"), controls = TRUE) {
-  if(!(all(c("lat", "lon") %in% names(f)))) stop("Missing 'f' lat/lon data, did you supply location data?")
-  f$feed_length <- as.numeric(f$feed_length)
-  f <- f[order(f$feed_length, decreasing = TRUE),]
+use.layer <- function(map, u, u.scale = 1, u.title = "Feeding time", u.pal = c("yellow","red"), controls = TRUE) {
+  if(!(all(c("lat", "lon") %in% names(u)))) stop("Missing use lat/lon data, did you supply location data?")
+  u$amount <- as.numeric(u$amount)
+  u <- u[order(u$amount, decreasing = TRUE),]
 
   # Define palette
-  f.pal <- colorNumeric(palette = colorRampPalette(f.pal)(10), domain = f$feed_length)
+  u.pal <- colorNumeric(palette = colorRampPalette(u.pal)(max(u$amount)), domain = u$amount)
 
   # Add feeder use data to map
   map <- addCircleMarkers(map,
-                           data = f,
+                           data = u,
                            ~lon, ~lat,
                            weight = 1,
                            opacity = 1,
                            fillOpacity = 0.75,
-                           radius = ~  sqrt(smart.scale(feed_length, f.scale)*100/pi),
+                           radius = ~  sqrt(smart.scale(amount, u.scale)*100/pi),
                            color = "black",
-                           fillColor = ~f.pal(feed_length),
-                           popup = ~htmltools::htmlEscape(as.character(round(feed_length))),
-                           group = f.title) %>%
-    addLegend(title = f.title,
+                           fillColor = ~u.pal(amount),
+                           popup = ~htmltools::htmlEscape(as.character(round(amount))),
+                           group = u.title) %>%
+    addLegend(title = u.title,
               position = 'topright',
-              pal = f.pal,
-              values = f$feed_length,
+              pal = u.pal,
+              values = u$amount,
               bins = 5,
               opacity = 1) %>%
     hideGroup("Feeders") %>%
     showGroup("Feeders")
 
-  if(controls) map <- controls(map, f.title)
+  if(controls) map <- controls(map, u.title)
   return(map)
 }
 
@@ -183,29 +183,29 @@ feeding.layer <- function(map, f, f.scale = 1, f.title = "Feeding time", f.pal =
 # ----------------------------------
 #' Map data using leaflet
 #'
-#' Visualize feeding bout and movement data using leaflet for R. This produces
-#' an interactive html map. The user must summarize feeding and movement data in
+#' Visualize feeder use and path data using leaflet for R. This produces
+#' an interactive html map. The user must summarize feeder use and path data in
 #' the manner that they wish to visualize it. This function can take invidiual
 #' bird data as well as grand summarise (see Details and Examples).
 #'
-#' @param f Dataframe. Summarized feeding data with columns \code{feeder_id} and
-#'   \code{feed_length}. It can also contain \code{bird_id} for individual-based
+#' @param u Dataframe. Summarized 'use' data with columns \code{feeder_id} and
+#'   \code{amount}. It can also contain \code{bird_id} for individual-based
 #'   data, and lat/lon instead of a locs argument.
-#' @param m Dataframe. Summarized movement data with columns \code{feeder_id},
+#' @param p Dataframe. Summarized 'path' data with columns \code{feeder_id},
 #'   \code{move_path}, and \code{path_use}. It can also contain \code{bird_id}
 #'   for individual-based data, and lat/lon instead of a locs argument.
 #' @param locs Dataframe. Lat and long for each feeder_id, required if lat and
-#'   lon not in either f or m.
-#' @param f.scale,m.scale Numerical. Scaling constants to increase (> 1) or
-#'   decrease (< 1) the relative size of feeding (f) and movement (m) data.
-#' @param f.title,m.title Character. Titles for the legends of feeding (f) and
-#'   movement (m) data.
-#' @param f.pal,m.pal Character vectors. Colours used to construct gradients for
-#'   feeding (f) and movement (m) data.
-#' @param controls Logical. Add controls to map (allows showing/hiding of different layers)
+#'   lon not in either u or p.
+#' @param u.scale,p.scale Numerical. Scaling constants to increase (> 1) or
+#'   decrease (< 1) the relative size of use (u) and path (p) data.
+#' @param u.title,p.title Character. Titles for the legends of use (u) and
+#'   path (p) data.
+#' @param u.pal,p.pal Character vectors. Colours used to construct gradients for
+#'   use (u) and path (p) data.
+#' @param controls Logical. Add controls to map (allows showing/hiding of
+#'   different layers)
 #'
-#' @return An interactive leaflet map with layers for feeding time, movement
-#'   paths and feeder positions.
+#' @return An interactive leaflet map with layers for use, paths and feeder positions.
 #'
 #' @examples
 #' \dontrun{
@@ -224,51 +224,51 @@ feeding.layer <- function(map, f, f.scale = 1, f.title = "Feeding time", f.pal =
 #'
 #' # Summarise data for visualization (use totals):
 #' f.all <- ddply(f, .(feeder_id), summarise,
-#'            feed_length = sum(feed_length) / bird_n[1])
+#'            amount = sum(feed_length) / bird_n[1])
 #'
 #' m.all <- ddply(m, .(move_path), summarise,
 #'            path_use = length(move_path) / bird_n[1])
 #'
 #' # Look at total summary maps
-#' map.leaflet(f = f.all, m = m.all, locs = l)
-#' map.ggmap(f = f.all, m = m.all, locs = l)
+#' map.leaflet(u = f.all, p = m.all, locs = l)
+#' map.ggmap(u = f.all, p = m.all, locs = l)
 #'
 #' # Summarise data for visualization (use individuals):
 #' f.indiv <- ddply(f, .(bird_id, feeder_id), summarise,
-#'            feed_length = sum(feed_length))
+#'            amount = sum(feed_length))
 #'
 #' m.indiv <- ddply(m, .(bird_id, move_path), summarise,
 #'            path_use = length(move_path))
 #'
 #' # Look at individual summary maps (note that Leaflet just stacks individuals
 #'   one on top of the other)
-#' map.leaflet(f = f.indiv, m = m.all, locs = l)
-#' map.ggmap(f = f.indiv, m = m.all, locs = l)
+#' map.leaflet(u = f.indiv, p = m.all, locs = l)
+#' map.ggmap(u = f.indiv, p = m.all, locs = l)
 #' }
 #' @export
 #' @import leaflet
-map.leaflet <- function(f = NULL, m = NULL, locs = NULL,
-                 f.scale = 1, m.scale = 1,
-                 f.title = "Feeding time", m.title = "Path use",
-                 f.pal = c("yellow","red"),
-                 m.pal = c("yellow","red"),
+map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
+                 u.scale = 1, p.scale = 1,
+                 u.title = "Feeding time", p.title = "Path use",
+                 u.pal = c("yellow","red"),
+                 p.pal = c("yellow","red"),
                  controls = TRUE) {
 
-  data <- map.prep(f = f, m = m, locs = locs)
-  f <- data[['f']]
-  m <- data[['m']]
+  data <- map.prep(u = u, p = p, locs = locs)
+  u <- data[['u']]
+  p <- data[['p']]
   locs <- data[['locs']]
 
   # Summaries or individual birds?
-  if(any(names(f) == "bird_id", names(m) == "bird_id")) bird_id <- unique(unlist(list(f$bird_id, m$bird_id))) else bird_id = NULL
+  if(any(names(u) == "bird_id", names(p) == "bird_id")) bird_id <- unique(unlist(list(u$bird_id, p$bird_id))) else bird_id = NULL
 
   # BASE MAP
   map <- map.leaflet.base(locs = locs)
 
   # Layers
   map <- map %>%
-    move.layer(m = m, m.scale = m.scale, m.pal = m.pal, m.title = m.title) %>%
-    feeding.layer(f = f, f.scale = f.scale, f.pal = f.pal, f.title = f.title)
+    path.layer(p = p, p.scale = p.scale, p.pal = p.pal, p.title = p.title) %>%
+    use.layer(u = u, u.scale = u.scale, u.pal = u.pal, u.title = u.title)
 
   return(map)
 }
@@ -278,25 +278,25 @@ map.leaflet <- function(f = NULL, m = NULL, locs = NULL,
 # ----------------------------------
 #' Map data using ggmap
 #'
-#' Visualize feeding bout and movement data using ggmap in R. This produces a
-#' static map. The user must summarize feeding and movement data in the manner
+#' Visualize feeder use and path data using ggmap in R. This produces a
+#' static map. The user must summarize feeder use and path data in the manner
 #' that they wish to visualize it. This function can take invidiual bird data as
 #' well as grand summarise (see Details and Examples).
 #'
-#' @param f Dataframe. Summarized feeding data with columns \code{feeder_id} and
-#'   \code{feed_length}. It can also contain \code{bird_id} for individual-based
+#' @param u Dataframe. Summarized feeding data with columns \code{feeder_id} and
+#'   \code{amount}. It can also contain \code{bird_id} for individual-based
 #'   data, and lat/lon instead of a locs argument.
-#' @param m Dataframe. Summarized movement data with columns \code{feeder_id},
+#' @param p Dataframe. Summarized movement data with columns \code{feeder_id},
 #'   \code{move_path}, and \code{path_use}. It can also contain \code{bird_id}
 #'   for individual-based data, and lat/lon instead of a locs argument.
 #' @param locs Dataframe. Lat and long for each feeder_id, required if lat and
-#'   lon not in either f or m.
-#' @param f.scale,m.scale Numerical. Scaling constants to increase (> 1) or
-#'   decrease (< 1) the relative size of feeding (f) and movement (m) data.
-#' @param f.title,m.title Character. Titles for the legends of feeding (f) and
-#'   movement (m) data.
-#' @param f.pal,m.pal Character vectors. Colours used to construct gradients for
-#'   feeding (f) and movement (m) data.
+#'   lon not in either u or p.
+#' @param u.scale,p.scale Numerical. Scaling constants to increase (> 1) or
+#'   decrease (< 1) the relative size of use (u) and path (p) data.
+#' @param u.title,p.title Character. Titles for the legends of use (u) and
+#'   path (p) data.
+#' @param u.pal,p.pal Character vectors. Colours used to construct gradients for
+#'   use (u) and movement (p) data.
 #' @param maptype Character. The type of map to download. See \code{maptype}
 #'   under \code{\link[ggmap]{get_map}} for more options.
 #' @param mapsource Character. The source of the map to download. See
@@ -312,92 +312,82 @@ map.leaflet <- function(f = NULL, m = NULL, locs = NULL,
 #' @examples
 #' \dontrun{
 #'
-#' # Get feeding and movement data
-#' r <- loadWeb("downloaded_data.csv")
-#'
-#' v <- visits(r)
+#' v <- visits(finches)
 #' f <- ddply(v, .(bird_id), feeding, bw = 15)
 #' m <- ddply(v, .(bird_id), move)
 #'
-#' # Get feeder locations
-#' l <- read.csv("feeder index.csv")
-#'
-#' # If from web, lat/lon may be in the same column, extract it:
-#' l$lon <- as.numeric(gsub("\\(([-0-9.]+),[-0-9.]+\\)", "\\1", l$loc))
-#' l$lat <- as.numeric(gsub("\\([-0-9.]+,([-0-9.]+)\\)", "\\1", l$loc))
-#'
 #' # Summarise data for visualization (use totals):
 #' f.all <- ddply(f, .(feeder_id), summarise,
-#'            feed_length = sum(feed_length) / bird_n)
+#'            amount = sum(feed_length) / bird_n)
 #'
 #' m.all <- ddply(m, .(move_path), summarise,
 #'            path_use = length(move_path) / bird_n)
 #'
 #' # Look at total summary maps
-#' map.leaflet(f = f.all, m = m.all, locs = l)
-#' map.ggmap(f = f.all, m = m.all, locs = l)
+#' map.leaflet(u = f.all, p = m.all)
+#' map.ggmap(u = f.all, p = m.all)
 #'
 #' # Summarise data for visualization (use individuals):
 #' f.indiv <- ddply(f, .(bird_id, feeder_id), summarise,
-#'            feed_length = sum(feed_length))
+#'            amount = sum(feed_length))
 #'
 #' m.indiv <- ddply(m, .(bird_id, move_path), summarise,
 #'            path_use = length(move_path))
 #'
 #' # Look at individual summary maps (note that Leaflet just stacks individuals
 #' one on top of the other)
-#' map.leaflet(f = f.indiv, m = m.indiv, locs = l)
-#' map.ggmap(f = f.indiv, m = m.indiv, locs = l, f.scale = 0.7, m.scale = 0.05)
+#' map.leaflet(u = f.indiv, p = m.indiv)
+#' map.ggmap(u = f.indiv, p = m.indiv, u.scale = 0.7, p.scale = 0.05)
 #' }
 #' @export
-map.ggmap <- function(f = NULL, m = NULL, locs = NULL,
-                 f.scale = 1, m.scale = 1,
-                 f.title = "Feeding time", m.title = "Path use",
-                 f.pal = c("yellow","red"),
-                 m.pal = c("yellow","red"),
+map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
+                 u.scale = 1, p.scale = 1,
+                 u.title = "Feeding time", p.title = "Path use",
+                 u.pal = c("yellow","red"),
+                 p.pal = c("yellow","red"),
                  maptype = "satellite",
                  mapsource = "google",
                  zoom = 17,
                  which = NULL) {
 
   # Prep and Check Data
-  data <- map.prep(f = f, m = m, locs = locs)
-  f <- data[['f']]
-  m <- data[['m']]
+  data <- map.prep(u = u, p = p, locs = locs)
+  u <- data[['u']]
+  p <- data[['p']]
   locs <- data[['locs']]
 
   # Summaries or individual birds?
-  if(any(names(f) == "bird_id", names(m) == "bird_id")) {
-    if(is.null(which)) which <- as.character(unique(c(as.character(f$bird_id), as.character(m$bird_id))))
-    bird_id <- unique(unlist(list(f$bird_id, m$bird_id)))
+  if(any(names(u) == "bird_id", names(p) == "bird_id")) {
+    if(is.null(which)) which <- as.character(unique(c(as.character(u$bird_id), as.character(p$bird_id))))
+    bird_id <- unique(unlist(list(u$bird_id, p$bird_id)))
     if(length(bird_id) > 10 & length(which) > 10) {
-      stop("You have chosen to run this function on more than 10 birds. This may overload your system. I would recommend trying again using the 'which' argument to specify a subset of birds.")
+      stop("You have chosen to run this function on more than 10 birds. This may overload your system. We recommend trying again using the 'which' argument to specify a subset of birds.")
     }
-    f <- droplevels(f[f$bird_id %in% which,])
-    m <- droplevels(m[m$bird_id %in% which,])
+    u <- droplevels(u[u$bird_id %in% which,])
+    p <- droplevels(p[p$bird_id %in% which,])
 
-    temp.f <- plyr::ddply(f, "bird_id", summarize, sum = sum(feed_length))
-    temp.m <- plyr::ddply(m, "bird_id", summarize, sum = length(path_use))
-    keep.id <- intersect(temp.f$bird_id[temp.f$sum > 0], temp.m$bird_id[temp.m$sum > 0])
+    temp.u <- plyr::ddply(u, "bird_id", summarize, sum = sum(amount))
+    temp.p <- plyr::ddply(p, "bird_id", summarize, sum = length(path_use))
+    keep.id <- intersect(temp.u$bird_id[temp.u$sum > 0], temp.p$bird_id[temp.p$sum > 0])
     if(length(setdiff(which, keep.id)) > 0) {
       message(paste0("Some bird_ids removed due to lack of data: ", paste(setdiff(which, keep.id), collapse = ", ")))
-      f <- droplevels(f[f$bird_id %in% keep.id, ])
-      m <- droplevels(m[m$bird_id %in% keep.id, ])
+      u <- droplevels(u[u$bird_id %in% keep.id, ])
+      p <- droplevels(p[p$bird_id %in% keep.id, ])
     }
   } else bird_id = NULL
 
   # Final Data Prep
-  if(!is.null(f)){
+  if(!is.null(u)){
     # Sort and Scale
-    f$feed_length <- as.numeric(f$feed_length)
-    f <- f[order(f$feed_length, decreasing = TRUE),]
-    f$feed_length2 <- smart.scale(f$feed_length, f.scale * 0.7)
+    u$amount <- as.numeric(u$amount)
+    u <- u[order(u$amount, decreasing = TRUE),]
+    u$amount2 <- smart.scale(u$amount, u.scale * 0.7)
   }
 
-  if(!is.null(m)){
+  if(!is.null(p)){
     # Sort and Scale
-    m <- m[order(m$path_use, decreasing = TRUE), ]
-    m$path_use2 <- smart.scale(m$path_use, m.scale * 1.75)
+    p <- p[order(p$path_use, decreasing = TRUE), ]
+    p$path_use2 <- smart.scale(p$path_use, p.scale * 1.75)
   }
 
   # Basic Map (reverse order to make sure feeders are on top)
@@ -412,18 +402,18 @@ map.ggmap <- function(f = NULL, m = NULL, locs = NULL,
           ggplot2::labs(x = "Longitude", y = "Latitude")
 
   # If feeding data specified
-  if(!is.null(f)) {
+  if(!is.null(u)) {
     map <- map +
-      ggplot2::geom_point(data = f, ggplot2::aes(x = lon, y = lat, fill = feed_length, size = feed_length), shape = 21, alpha = 0.75) +
-      ggplot2::scale_fill_gradientn(name = f.title, colours = f.pal) +
-      ggplot2::scale_size(guide = FALSE, range = c(min(f$feed_length2), max(f$feed_length2))) #specify radius, as the scale has already been back calculated to represent area in the end (based on requirements for leaflet)
+      ggplot2::geom_point(data = u, ggplot2::aes(x = lon, y = lat, fill = amount, size = amount), shape = 21, alpha = 0.75) +
+      ggplot2::scale_fill_gradientn(name = u.title, colours = u.pal) +
+      ggplot2::scale_size(guide = FALSE, range = c(min(u$amount2), max(u$amount2))) #specify radius, as the scale has already been back calculated to represent area in the end (based on requirements for leaflet)
   }
 
   # If movement paths specified
-  if(!is.null(m)){
+  if(!is.null(p)){
     map <- map +
-      ggplot2::geom_path(data = m, ggplot2::aes(x = lon, y = lat, group = move_path, colour = path_use, size = path_use2), lineend = "round", alpha = 0.75) +
-      ggplot2::scale_colour_gradientn(name = m.title, colours = m.pal)
+      ggplot2::geom_path(data = p, ggplot2::aes(x = lon, y = lat, group = move_path, colour = path_use, size = path_use2), lineend = "round", alpha = 0.75) +
+      ggplot2::scale_colour_gradientn(name = p.title, colours = p.pal)
   }
 
   # Add feeder points
