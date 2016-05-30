@@ -1,10 +1,19 @@
 # Scaling feeding and movement data for maps
 # A scaling function used by mapping functions
-smart.scale <- function(x, m) {
-  x <- as.numeric(x)
-  x <- x - min(x) + 0.01
-  x <- (x / max(x)) * (25 * m)
-  return(x)
+# smart.scale <- function(x, m) {
+#   x <- as.numeric(x)
+#   x <- x - min(x) + 0.01
+#   x <- (x / max(x)) * (25 * m)
+#   return(x)
+# }
+
+scale.area <- function(r, val.max = max(r, na.rm = TRUE), min = 5, max = 105){
+  r <- as.numeric(r)
+  if(val.max == 1) val.max <- 5
+  r <- ((r-1) / (val.max - 1)) * (max - min)
+  r[r >= 0] <- r[r >= 0] + min
+  r[r < 0] <- 0
+  return(r)
 }
 
 controls <- function(map, group) {
@@ -122,7 +131,7 @@ path.layer <- function(map, p, p.scale = 1, p.title = "Path use", p.pal = c("yel
     map <- addPolylines(map,
                         data = p[p$move_path == path, ],
                         ~lon, ~lat,
-                        weight = ~smart.scale(path_use, p.scale),
+                        weight = ~scale.area(path_use, max = 105 * p.scale),
                         opacity = 0.75,
                         color = ~p.pal(path_use),
                         group = p.title,
@@ -160,7 +169,7 @@ use.layer <- function(map, u, u.scale = 1, u.title = "Feeding time", u.pal = c("
                            weight = 1,
                            opacity = 1,
                            fillOpacity = 0.75,
-                           radius = ~  sqrt(smart.scale(amount, u.scale)*100/pi),
+                           radius = ~ scale.area(amount, max = 105 * u.scale),
                            color = "black",
                            fillColor = ~u.pal(amount),
                            popup = ~htmltools::htmlEscape(as.character(round(amount))),
@@ -266,9 +275,8 @@ map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
   map <- map.leaflet.base(locs = locs)
 
   # Layers
-  map <- map %>%
-    path.layer(p = p, p.scale = p.scale, p.pal = p.pal, p.title = p.title) %>%
-    use.layer(u = u, u.scale = u.scale, u.pal = u.pal, u.title = u.title)
+  if(!is.null(p)) map <- path.layer(map, p = p, p.scale = p.scale, p.pal = p.pal, p.title = p.title)
+  if(!is.null(u)) map <- use.layer(map, u = u, u.scale = u.scale, u.pal = u.pal, u.title = u.title)
 
   return(map)
 }
@@ -381,13 +389,13 @@ map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
     # Sort and Scale
     u$amount <- as.numeric(u$amount)
     u <- u[order(u$amount, decreasing = TRUE),]
-    u$amount2 <- smart.scale(u$amount, u.scale * 0.7)
+    u$amount2 <- scale.area(u$amount, max = 105 * u.scale * 0.7)
   }
 
   if(!is.null(p)){
     # Sort and Scale
     p <- p[order(p$path_use, decreasing = TRUE), ]
-    p$path_use2 <- smart.scale(p$path_use, p.scale * 1.75)
+    p$path_use2 <- scale.area(p$path_use, max = 105 * p.scale * 1.75)
   }
 
   # Basic Map (reverse order to make sure feeders are on top)
