@@ -137,16 +137,16 @@ shinyUI(fluidPage(
                      column(10,
                             tabsetPanel(type = "tabs",
                                         tabPanel("Raw Data",
-                                                 br(), bsButton("data_dl_raw", "Download Raw Data", style = "success"), br(),
+                                                 br(), downloadButton("data_dl_raw", "Download Raw Data"), br(),
                                                  DT::dataTableOutput("dt_data")),
                                         tabPanel("Visits Data",
-                                                 br(), bsButton("data_dl_visits", "Download Visits Data", style = "success"), br(),
+                                                 br(), downloadButton("data_dl_visits", "Download Visits Data"), br(),
                                                  DT::dataTableOutput("dt_v")),
                                         tabPanel("Feeding Data",
-                                                 br(), bsButton("data_dl_feeding", "Download Feeding Data", style = "success"), br(),
+                                                 br(), downloadButton("data_dl_feeding", "Download Feeding Data"), br(),
                                                  DT::dataTableOutput("dt_f")),
                                         tabPanel("Movement Data",
-                                                 br(), bsButton("data_dl_movements", "Download Movements Data", style = "success"), br(),
+                                                 br(), downloadButton("data_dl_move", "Download Movements Data"), br(),
                                                  DT::dataTableOutput("dt_m"))
                             )
                      )

@@ -1,5 +1,5 @@
 ## shinyapps from github: devtools::install_github('rstudio/shinyapps')
-## library(shinyapps); shinyapps::deployApp("~/Projects/BirdMoves")
+## library(shinyapps); shinyapps::deployApp("~/Projects/BirdMoves/Scripts/birdMoves")
 
 
 ## devtools::install_github("steffilazerte/feedr")
@@ -137,11 +137,11 @@ shinyServer(function(input, output, session) {
   source("map_paths.R", local = TRUE)
   source("map_static.R", local = TRUE)
 
-  ## Load transformation data tables
-  source("output_data.R", local = TRUE)
-
   ## Load reactive expressions
   source("reactive.R", local = TRUE)
+  
+  ## Load transformation data tables
+  source("output_data.R", local = TRUE)
   
   ## Load inat
   source("inat.R", local = TRUE)
