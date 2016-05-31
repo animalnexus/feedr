@@ -2,161 +2,144 @@
 ## Output UIs
 ####################
 
-
-
-
-
-## Timer to allow user time to select multiple UI elements before updating
-
-observe({ ## If inputs change, reset submission
-  req(startup(input))
-  
-  input$data_sitename
-  input$data_species
-  input$data_date
-  input$data_birdid
-  input$data_feederid
-  
-  values$data_submit <- FALSE
-})
-
 observe({
   req(startup(input))
-  
-  ## Fire after 1 second
-  invalidateLater(500, session)
-  
-  ## Fire (and reset) any time the inputs change (set FALSE above, then TRUE here)
-  input$data_sitename
-  input$data_species
-  input$data_date
-  input$data_birdid
-  input$data_feederid
-  
-  input$data_get # Also update selection if "Get Data" button pressed
-  
-  if(isolate(values$data_submit)) {
-    #If data set to submit, send input values off (this happens at start)
-    values$data$sitename <- input$data_sitename
-    values$data$species <- input$data_species
-    values$data$date <- input$data_date
-    if("data_birdid" %in% names(input)) values$data$birdid <- input$data_birdid else values$data$birdid <- unique(counts$bird_id)
-    if("data_feederid" %in% names(input)) values$data$feederid <- input$data_feederid else values$data$feederid <- unique(counts$feeder_id)
+  if(!is.logical(all.equal(values_list(input), values$data))) {
+    updateButton(session, "data_get", disabled = TRUE)
   } else {
-    # If data NOT set to submit, set it to TRUE...
-    # This will refire 1 second later and will submit it then (as long as no inputs change)
-    isolate(values$data_submit <- TRUE)
+    updateButton(session, "data_get", disabled = FALSE)
   }
 })
 
+## Reset UI
+observeEvent(input$data_reset, {
+  updateCheckboxGroupInput(session, "data_site_name",
+                           choices = choices(counts_sum, "site_name"),
+                           selected = selected(counts_sum, "site_name"))
+  updateCheckboxGroupInput(session, "data_species",
+                           choices = choices(counts_sum, "species"),
+                           selected = selected(counts_sum, "species"))
+  updateDateRangeInput(session, "data_date",
+                       min = min(as.Date(counts_sum$choice[counts_sum$variable == "date"])),
+                       max = max(as.Date(counts_sum$choice[counts_sum$variable == "date"])),
+                       start = min(as.Date(counts_sum$choice[counts_sum$variable == "date"])),
+                       end = max(as.Date(counts_sum$choice[counts_sum$variable == "date"])))
+  updateCheckboxGroupInput(session, "data_bird_id",
+                           choices = choices(counts_sum, "bird_id"),
+                           selected = selected(counts_sum, "bird_id"))
+  updateCheckboxGroupInput(session, "data_feeder_id",
+                           choices = choices(counts_sum, "feeder_id"),
+                           selected = selected(counts_sum, "feeder_id"))
+  cat("Reset data selection...\n")
+  values$data <- values_list()
+})
+
+
+## Update date/time with plot selection
+observeEvent(input$plot_data_brush, {
+  req(input$plot_data_brush)
+  new_dates <- c(as.Date(input$plot_data_brush$xmin, lubridate::origin),
+                 as.Date(input$plot_data_brush$xmax, lubridate::origin))
+  if(new_dates[1] < min(counts$date)) new_dates[1] <- min(counts$date)
+  if(new_dates[2] > max(counts$date)) new_dates[2] <- max(counts$date)
+  updateDateRangeInput(session, "data_date", start = new_dates[1], end = new_dates[2])
+})
+
+## If update or get data buttons are pressed, reset UI and redo submitted values
+observeEvent(input$data_update, {
+  req(startup(input))
+  cat("Update values\n")
+  
+  values$data_previous <- values$data ## Save old
+  values$data <- values_list(input)   ## Save new
+})
 
 ## Subset of counts reflecting selections
 counts_sub <- reactive({
+  #req(startup(input))
+  cat("Calling counts_sub()...\n")
+  get_counts(counts, filter = values$data)
+})
+
+## Update UI
+observeEvent(values$data, {
   req(startup(input))
+  cat("Update data UI...\n")
   
-  d <- values$data
-  
-  counts %>% filter(site_name %in% d$sitename,
-                    species %in% d$species,
-                    date %within% interval(d$date[1], d$date[2]),
-                    bird_id %in% d$birdid,
-                    feeder_id %in% d$feederid)
+  #input$data_update
+
+  #if(isolate(!is.logical(all.equal(values_list(input), values$data)))){
+    isolate({
+      
+      #Save values
+      
+      v <- counts_sub() ## Get new counts
+      
+      ## Get options that were 're-checked'
+      added <- list('site_name' = setdiff(values$data$site_name, values$data_previous$site_name),
+                    'species' = setdiff(values$data$species, values$data_previous$species),
+                    'date' = if(any(values$data$date != values$data_previous$date)) values$data$date,
+                    'bird_id' = setdiff(values$data$bird_id, values$data_previous$bird_id),
+                    'feeder_id' = setdiff(values$data$feeder_id, values$data_previous$feeder_id))
+      added <- added[!sapply(added, is.null)]
+      
+      ## Add re-checked items back in
+      for(i in 1:length(added)) v <- unique(rbind(v, get_counts(c = counts, filter = added[i])))
+      
+      ## Get new totals for UI
+      sum <- rbind(
+        get_counts(c = v, summarize_by = "site_name"),
+        get_counts(c = v, summarize_by = "species"),
+        get_counts(c = v, summarize_by = "date"),
+        get_counts(c = v, summarize_by = "bird_id"),
+        get_counts(c = v, summarize_by = "feeder_id"))
+      
+      # Update values directly for mapping etc.
+      values$data <- values_list(sum)
+      values$reset <- FALSE
+      
+      # Update UIs to match
+      list(
+        updateCheckboxGroupInput(session, "data_site_name",
+                                 choices = choices(sum, "site_name"),
+                                 selected = selected(sum, "site_name")),
+        updateCheckboxGroupInput(session, "data_species",
+                                 choices = choices(sum, "species"),
+                                 selected = selected(sum, "species")),
+        updateDateRangeInput(session, "data_date",
+                             start = min(as.Date(sum$choices[sum$variable == "date"])),
+                             end = max(as.Date(sum$choices[sum$variable == "date"])))
+      )
+    })
 })
-  
 
 
 
-## Site_name
-output$UI_data_sitename <- renderUI({
-  sum <- counts %>% 
-    group_by(site_name) %>% 
-    summarize(sum = sum(count)) %>%
-    mutate(count = paste0(site_name, " (", sum, ") "))
   
-  choices <- as.character(sum$site_name)
-  names(choices) <- sum$count
-  
-  checkboxGroupInput("data_sitename", "Sites:",
-                     choices = choices,
-                     selected = isolate(values$data$sitename))
-})
 
-# Update site count totals but nothing else
-observe({
-  req(startup(input))
-  if(nrow(counts_sub()) > 0){
-    sum <- counts_sub()  %>%
-      group_by(site_name) %>%
-      summarize(sum = sum(count)) %>%
-      complete(site_name, fill = list(sum = 0)) %>%
-      arrange(site_name) %>%
-      mutate(count = paste0(site_name, " (", sum, ")"))
-  } else {
-    sum <- data.frame(site_name= unique(counts$site_name), sum = 0) %>% 
-      mutate(count = paste0(site_name, " (", sum, ")"))
-  }
+## Initial UI for Site_name, species, date
+output$UI_data <- renderUI({
+  cat("Initializing data selection UI...\n")
+  list(
+  #Site name
+  checkboxGroupInput("data_site_name", "Sites:",
+                     choices = choices(counts_sum, "site_name"),
+                     selected = selected(counts_sum, "site_name")),
   
-  choices <- as.character(sum$site_name)
-  names(choices) <- sum$count
-  
-  updateCheckboxGroupInput(session, "data_sitename", choices = choices, selected = isolate(values$data$sitename))
-})
-
-
-## Species
-output$UI_data_species <- renderUI({
-  sum <- counts %>% 
-    group_by(species) %>% 
-    summarize(sum = sum(count)) %>%
-    mutate(count = paste0(species, " (", sum, ")")) %>%
-    arrange(species)
-  
-  choices <- as.character(sum$species)
-  names(choices) <- sum$count
-  
+  #Species
   checkboxGroupInput("data_species", "Species to include (select all that apply):",
-                     choices = choices,
-                     selected = isolate(values$data$species))
-})
-
-# Update species count totals but nothing else
-observe({
-  req(startup(input))
-  if(nrow(counts_sub()) > 0){
-    sum <- counts_sub()  %>%
-      group_by(species) %>%
-      summarize(sum = sum(count)) %>%
-      complete(species, fill = list(sum = 0)) %>%
-      arrange(species) %>%
-      mutate(count = paste0(species, " (", sum, ")"))
-  } else {
-    sum <- data.frame(species = unique(counts$species), sum = 0) %>% 
-      mutate(count = paste0(species, " (", sum, ")"))
-  }
-
-  choices <- as.character(sum$species)
-  names(choices) <- sum$count
-
-  updateCheckboxGroupInput(session, "data_species", choices = choices, selected = isolate(values$data$species))
-})
-
-
-## Date Range
-output$UI_data_date <- renderUI({
-  sum <- counts %>% 
-    group_by(date) %>% 
-    summarize(sum = sum(count)) %>%
-    mutate(count = paste0(date, " (", sum, ")"))
-
-  #Starting values
-  isolate(values$data$date <- c(min(sum$date), max(sum$date)))
+                     choices = choices(counts_sum, "species"),
+                     selected = selected(counts_sum, "species")),
   
+  # Date Range
   dateRangeInput("data_date", "Dates to include:",
-                 min = min(sum$date),
-                 max = max(sum$date),
-                 start = min(sum$date),
-                 end = max(sum$date))
+                   min = min(as.Date(counts_sum$choice[counts_sum$variable == "date"])),
+                   max = max(as.Date(counts_sum$choice[counts_sum$variable == "date"])),
+                   start = min(as.Date(counts_sum$choice[counts_sum$variable == "date"])),
+                   end = max(as.Date(counts_sum$choice[counts_sum$variable == "date"])))
+  )
 })
+
 
 ## Look for button to toggle showing advanced options:
 
@@ -165,60 +148,40 @@ observeEvent(input$data_showadv, {
 })
 
 
-## Bird_ids
-output$UI_data_birdid <- renderUI({
-  isolate(values$data$birdid <- as.character(unique(counts$bird_id)))
-  checkboxGroupInput("data_birdid", "Select bird(s)",
-              choices = as.character(unique(counts$bird_id)),
-              selected = as.character(unique(counts$bird_id)))
+## Advanced UI 
+output$UI_data_adv <- renderUI({
+  checkboxGroupInput("data_bird_id", "Select bird(s)",
+              choices = choices(counts_sum, "bird_id"),
+              selected = selected(counts_sum, "bird_id"))
+  checkboxGroupInput("data_feeder_id", "Select feeder(s)",
+                     choices = choices(counts_sum, "feeder_id"),
+                     selected = selected(counts_sum, "feeder_id"))
 })
-
-# observe({
-#   sel <- as.character(intersect(input$data_birdid, unique(counts_sub()$bird_id)))
-#   updateSelectInput(session, "data_birdid", 
-#                     selected = sel, 
-#                     choices = as.character(unique(counts_sub()$bird_id)))
-# })
-
-## Feeder_ids
-output$UI_data_feederid <- renderUI({
-  isolate(values$data$feederid <- as.character(unique(counts$feeder_id)))
-  checkboxGroupInput("data_feederid", "Select feeder(s)",
-              choices = as.character(unique(counts$feeder_id)),
-              selected = as.character(unique(counts$feeder_id)))
-})
-
-# observe({
-#   sel <- as.character(intersect(input$data_feederid, unique(counts_sub()$feeder_id)))
-#   updateSelectInput(session, "data_feederid", 
-#                     selected = sel, 
-#                     choices = as.character(unique(counts_sub()$feeder_id)))
-# })
 
 #########################
 ## Monitor selected input
 #########################
 ## Monitor which Data is currently selected
-observeEvent(input$data_get, {
-  req(counts_sub())
-  values$current <- list(sitename = unique(counts_sub()$site_name),
-                         species = unique(counts_sub()$species),
-                         dates = c(min(counts_sub()$date), max(counts_sub()$date)),
-                         bird_id = unique(counts_sub()$bird_id),
-                         feeder_id = unique(counts_sub()$feeder_id))
-})
+# observeEvent(input$data_update, {
+#   req(counts_sub())
+#   values$current <- list(site_name = unique(counts_sub()$site_name),
+#                          species = unique(counts_sub()$species),
+#                          dates = c(min(counts_sub()$date), max(counts_sub()$date)),
+#                          bird_id = unique(counts_sub()$bird_id),
+#                          feeder_id = unique(counts_sub()$feeder_id))
+# })
 
 ## Render which data is currently selected
-output$data_current <- renderText({
-  req(values$current)
-  paste0(
-    "<strong>Site:</strong> ", paste0(as.character(values$current$sitename), collapse = ", "), "<br>",
-    "<strong>Species:</strong> ", paste0(as.character(values$current$species), collapse = ", "), "<br>",
-    "<strong>Dates:</strong> ", paste0(as.character(values$current$dates[1]), " to ", as.character(values$current$dates[2])), "<br>",
-    "<strong>Bird Ids:</strong> ", paste0(as.character(values$current$bird_id), collapse = ", "), "<br>",
-    "<strong>Feeder Ids:</strong> ", paste0(as.character(values$current$feeder_id), collapse = ", ")
-  )
-})
+# output$data_current <- renderText({
+#   req(values$current)
+#   paste0(
+#     "<strong>Site:</strong> ", paste0(as.character(values$current$site_name), collapse = ", "), "<br>",
+#     "<strong>Species:</strong> ", paste0(as.character(values$current$species), collapse = ", "), "<br>",
+#     "<strong>Dates:</strong> ", paste0(as.character(values$current$dates[1]), " to ", as.character(values$current$dates[2])), "<br>",
+#     "<strong>Bird Ids:</strong> ", paste0(as.character(values$current$bird_id), collapse = ", "), "<br>",
+#     "<strong>Feeder Ids:</strong> ", paste0(as.character(values$current$feeder_id), collapse = ", ")
+#   )
+# })
 
 
 ####################
@@ -228,6 +191,8 @@ output$data_current <- renderText({
 ## Download Selected Data
 data <- eventReactive(input$data_get, {
   req(counts_sub())
+  cat("Downloading selected data...\n")
+  
   con <- dbConnect(drv,host=dbhost,port=dbport,dbname=dbname,user=dbuser,password=dbpass)
   
   d <- counts_sub()
@@ -266,13 +231,13 @@ data <- eventReactive(input$data_get, {
 ## Feeders of current data
 feeders_sub <- reactive({
   data() %>%
-    select(feeder_id, site_name, lon, lat) %>%
+    dplyr::select(feeder_id, site_name, lon, lat) %>%
     unique(.)
 })
 
 ## Birds of current data
 birds_sub <- reactive({
   data() %>%
-    select(bird_id, species, age, sex, tagged_on, site_name) %>%
+    dplyr::select(bird_id, species, age, sex, tagged_on, site_name) %>%
     unique(.)
 })

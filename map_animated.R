@@ -1,3 +1,29 @@
+## Base Animations Map
+map_animation <- reactive({
+  map.leaflet.base(locs = feeders_all[feeders_all$site_name %in% data()$site_name,], marker = "feeder_id", name = "Feeders") %>% 
+    addScaleBar(position = "bottomright")
+  # leaflet() %>%
+  #   addMarkers(lng = ~lon, lat = ~lat, group = "Feeders") %>%
+  #   addTiles(group = "Open Street Map") %>%
+  #   addProviderTiles("Stamen.Toner", group = "Black and White") %>%
+  #   addProviderTiles("Esri.WorldTopoMap", group = "Terrain") %>%
+  #   addProviderTiles("Esri.WorldImagery", group = "Satelite") %>%
+  #   addLayersControl(overlayGroups = c("Feeders", "Visits"),
+  #                    baseGroups = c("Satelite",
+  #                                   "Terrain",
+  #                                   "Open Street Map", 
+  #                                   "Black and White"
+  #                    ),
+  #                    options = layersControlOptions(collapsed = FALSE))
+})
+
+## Render Animated Points Map
+output$map_points <- renderLeaflet({
+  withProgress(message = "Loading Map...",
+               map_animation()
+  )
+})
+
 # Time slider
 output$UI_anim_time <- renderUI({
   req(input$anim_speed, input$anim_interval)
@@ -12,33 +38,17 @@ output$UI_anim_time <- renderUI({
 })
 
 
-## Base Animated Map
-output$map_time <- renderLeaflet({
-  withProgress(message = "Loading Map...",
-  leaflet(feeders_sub()) %>%
-    addMarkers(lng = ~lon, lat = ~lat, group = "Feeders") %>%
-    addTiles(group = "Default (Open Street Map)") %>%
-    addProviderTiles("Stamen.Toner", group = "Black and White") %>%
-    addProviderTiles("Esri.WorldTopoMap", group = "Terrain") %>%
-    addProviderTiles("Esri.WorldImagery", group = "Satelite") %>%
-    addLayersControl(overlayGroups = c("Feeders", "Visits"),
-                     baseGroups = c("Default (Open Street Map)", 
-                                    "Black and White", 
-                                    "Satelite",
-                                    "Terrain"),
-                     options = layersControlOptions(collapsed = FALSE))
-  )
-})
+
 
 ## Add Legends to Animated Map
 observe({
+  req(input$anim_type, v_info())
   if(input$anim_type != "visits") {
-    
     if(max(v_info()$n) == 1) vals <- 1:5 else vals <- 1:max(v_info()$n)
     pal <- colorNumeric(palette = colorRampPalette(c("blue", "green", "yellow","orange", "red"))(max(vals)), 
                         domain = vals)
 
-    leafletProxy("map_time") %>% 
+    leafletProxy("map_points") %>% 
       addLegend(title = "Legend",
                 position = 'topright',
                 pal = pal,
@@ -47,7 +57,7 @@ observe({
                 opacity = 1,
                 layerId = "legend")
   } else {
-    leafletProxy("map_time") %>% removeControl(layerId = "legend")
+    leafletProxy("map_points") %>% removeControl(layerId = "legend")
   }
 })
 
@@ -56,12 +66,12 @@ observe({
   req(v_points(), v_info(), input$anim_type == "visits")
   
   if(nrow(v_points()) > 0){
-    leafletProxy("map_time") %>% 
+    leafletProxy("map_points") %>% 
       clearGroup(group = "Visits") %>%
       addCircleMarkers(data = v_points(), lat = ~lat, lng = ~lon, group = "Visits", 
                        stroke = FALSE, fillOpacity = 1)
   } else {
-    leafletProxy("map_time") %>% clearGroup(group = "Visits")
+    leafletProxy("map_points") %>% clearGroup(group = "Visits")
   }
 })
 
@@ -74,15 +84,17 @@ observe({
                       domain = vals)
 
   if(nrow(v_points()) > 0){
-    leafletProxy("map_time") %>% 
+    #leafletProxy("map_points") %>%
+    #  feeding.layer(
+    leafletProxy("map_points") %>% 
       clearGroup(group = "Visits") %>%
       addCircleMarkers(data = v_points(), lat = ~lat, lng = ~lon, group = "Visits",
                        stroke = FALSE,
                        fillOpacity = 1,
-                       radius = ~scale_area(n, val.max = max(v_info()$n)),
+                       radius = ~feedr:::scale.area(n, val.max = max(v_info()$n)),
                        fillColor = ~pal(n),
                        popup = ~htmltools::htmlEscape(as.character(round(n, 1))))
   } else {
-    leafletProxy("map_time") %>% clearGroup(group = "Visits")
+    leafletProxy("map_points") %>% clearGroup(group = "Visits")
   }
 })

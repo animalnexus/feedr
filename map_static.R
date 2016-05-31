@@ -1,8 +1,8 @@
 
 
 # Static
-output$UI_static_birdid <- renderUI({
-  selectInput("static_birdid", "Select bird",
+output$UI_static_bird_id <- renderUI({
+  selectInput("static_bird_id", "Select bird",
               choices = as.character(unique(data()$bird_id)))
 })
 
@@ -32,9 +32,9 @@ f <- reactive({
 })
 
 map_static <- reactive({
-  req(input$static_birdid)
+  req(input$static_bird_id)
   withProgress(message = "Calculating visits and movement paths...",
-               map.leaflet(f = f()[f()$bird_id == input$static_birdid, ], m = m()[m()$bird_id == input$static_birdid,], locs = feeders_sub())
+               map.leaflet(f = f()[f()$bird_id == input$static_bird_id, ], m = m()[m()$bird_id == input$static_bird_id,], locs = feeders_sub())
   )
 })
 
