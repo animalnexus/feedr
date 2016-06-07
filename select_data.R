@@ -225,6 +225,17 @@ data <- eventReactive(input$data_get, {
       left_join(feeders_all, by = c("feeder_id", "site_name"))
   } else data <- NULL
   
+  #Get weather data 
+  if(input$data_weather == "Yes" & any(unique(data$site_name) == "Kamloops, BC")){
+    withProgress(message = "Adding Weather Data...",
+                 w <- weather(station_ID = 51423, start = min(as.Date(data$time)), end = max(as.Date(data$time)), by = "hour") %>%
+                   mutate(hour = format(time, "%Y-%m-%d %H"))
+    )
+    data <- data %>%
+      mutate(hour = format(time, "%Y-%m-%d %H")) %>%
+      left_join(w[, c("hour", "temp", "temp_dew", "rel_hum", "hmdx", "pressure", "visib", "wind_chill", "wind_dir", "wind_spd")], by = "hour")
+  }
+  
   data
 })
 

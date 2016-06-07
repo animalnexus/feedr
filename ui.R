@@ -9,7 +9,7 @@ library(shiny)
 library(shinyjs)
 library(shinyBS)
 library(leaflet)
-library(ggvis)
+#library(ggvis)
 #library(shinyBS)
 
 shinyUI(fluidPage(
@@ -28,6 +28,8 @@ shinyUI(fluidPage(
                                h2("Data Selection"),
                                h3("Select Data"),
                                uiOutput("UI_data"),
+                               radioButtons("data_weather", label = "Include Weather?", 
+                                            choices = c("Yes", "No"), selected = "Yes"),
                                bsButton("data_update", "Update Selection", style = "primary"),
                                p(),
                                bsButton("data_reset", "Reset inputs", style = "danger"),
