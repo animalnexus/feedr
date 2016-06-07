@@ -3,6 +3,7 @@
 
 
 ## devtools::install_github("steffilazerte/feedr")
+## devtools::install_github("steffilazerte/envirocan")
 
 ## OR:
 #library(rsconnect)
