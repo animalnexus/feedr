@@ -98,3 +98,83 @@ observe({
     leafletProxy("map_points") %>% clearGroup(group = "Visits")
   }
 })
+
+## Add sunrise sunset to animate map
+observeEvent(input$anim_time, {
+  s <- sun(loc = c(mean(data()$lon), mean(data()$lat)), date = substr(input$anim_time, 1, 10))
+  lubridate::tz(s$rise) <- "UTC"
+  lubridate::tz(s$set) <- "UTC"
+  hour <- input$anim_time
+  #s <- sun(loc = c(mean(data$lon), mean(data$lat)), date = as.POSIXct("2016-01-01"))
+  #for(hour in seq(as.POSIXct("2016-01-01 00:00:00"), as.POSIXct("2016-01-02 01:00:00"), by = "hour")){
+  if(hour < (s$rise - 60*60) | hour > (s$set + 60*60)) a <- "set"
+  
+  if(hour >= (s$rise - 60*60) & hour < (s$rise)) a <- "rising1"
+  
+  if(hour <= (s$set + 60*60) & hour > (s$set)) a <- "setting"
+  
+  if(hour >= (s$rise) & hour < (s$rise + 60*60)) a <- "rising2"
+  if(hour <= (s$set) & hour > (s$set - 60*60)) a <- "setting2"
+  
+  if(hour > (s$rise + 60*60) & hour < (s$set - 60*60)) a <- "rise"
+  #print(paste0(hour, " - ", a))
+  #}
+  
+  coords <- matrix(c(c(min(data()$lon) - 0.25, 
+                       max(data()$lon) + 0.25,
+                       max(data()$lon) + 0.25,
+                       min(data()$lon) - 0.25),
+                     c(min(data()$lat) - 0.25, 
+                       min(data()$lat) - 0.25,
+                       max(data()$lat) + 0.25,
+                       max(data()$lat) + 0.25)), ncol = 2)
+  
+  
+  if(a == "rising1"){
+    leafletProxy("map_points", data = coords) %>%
+      removeShape("set1")
+  }
+  if(a == "rising2"){
+    leafletProxy("map_points", data = coords) %>%
+      removeShape(c("set1", "set2"))
+  }
+  if(a == "rise"){
+    leafletProxy("map_points", data = coords) %>%
+      removeShape(c("set1", "set2", "set3"))
+  }
+  if(a == "setting1"){
+    leafletProxy("map_points", data = coords) %>%
+      addPolygons(fillColor = "#000080",
+                  fillOpacity = 0.05,
+                  layerId = "set1",
+                  group = "Daylight")
+  }
+  
+  if(a == "setting2"){
+    leafletProxy("map_points", data = coords) %>%
+      addPolygons(fillColor = "#000080",
+                  fillOpacity = 0.05,
+                  layerId = "set1",
+                  group = "Daylight") %>%
+      addPolygons(fillColor = "#000080",
+                  fillOpacity = 0.05,
+                  layerId = "set2",
+                  group = "Daylight")
+  }
+  if(a == "set"){
+    leafletProxy("map_points", data = coords) %>%
+      addPolygons(fillColor = "#000080",
+                  fillOpacity = 0.05,
+                  layerId = "set1",
+                  group = "Daylight") %>%
+      addPolygons(fillColor = "#000080",
+                  fillOpacity = 0.05,
+                  layerId = "set2",
+                  group = "Daylight") %>%
+      addPolygons(fillColor = "#000080",
+                  fillOpacity = 0.05,
+                  layerId = "set3",
+                  group = "Daylight")
+  }
+  
+})
