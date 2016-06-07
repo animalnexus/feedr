@@ -233,7 +233,7 @@ daily <- function(a1){
 #' @export
 sun <- function(loc, date) {
   loc <- matrix(loc, nrow = 1)
-  date <- as.POSIXct(date)
+  date <- as.POSIXct(as.character(date))
   s <- data.frame(rise = maptools::sunriset(loc, date, direction = "sunrise", POSIXct.out = TRUE)$time,
                   set = maptools::sunriset(loc, date, direction = "sunset", POSIXct.out = TRUE)$time)
 
