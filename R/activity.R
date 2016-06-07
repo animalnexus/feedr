@@ -229,7 +229,8 @@ daily <- function(a1){
   return(d)
 }
 
-# Get sunrise/sunset times
+#' Get sunrise/sunset times
+#' @export
 sun <- function(loc, date) {
   loc <- as.matrix(loc, nrow = 1)
   date <- as.POSIXct(date)
