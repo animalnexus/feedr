@@ -120,3 +120,46 @@ check.problems <- function(r, problems){
   } else message("No bird ids needed to be fixed")
   return(r)
 }
+
+
+#' Get timezone from lat/lon
+#'
+#' @param coords Vector or Data frame. Lat, lon coordinates. Can be a vector for
+#'   a set of two, or a data frame or matrix for multiple. Provide either coords OR lat and lon
+#' @param lat Vector. One or more latitudes, must also provide longitude
+#' @param lon Vector. One or more longitudes, must also provide latitude
+#'
+#' @examples
+#'
+#' lat = 53.881857
+#' lon = -122.786271
+
+get.tz <- function(coords = NULL, lat = NULL, lon = NULL){
+  # Based on http://stackoverflow.com/a/23414695
+
+  if(!is.null(coords)) {
+    if(is.vector(coords)) {
+      x <- data.frame(lat = coords[1], lon = coords[2])
+    } else if(is.matrix(coords)) {
+      x <- data.frame(coords)
+    } else if(is.data.frame(coords)) x <- coords
+  } else if(all(!is.null(lat), !is.null(lon))) {
+    x <- data.frame(lat = lat, lon = lon)
+  } else stop("Must provide lat and lon either as vector to 'coords' or individual in both 'lat' and 'lon'")
+
+  if(!all(apply(x, 2, is.numeric))) stop("Coordinates must be numeric")
+
+  tz <- vector()
+  for(i in 1:nrow(x)) {
+    time1 <- Sys.time()
+  # https://developers.google.com/maps/documentation/timezone/
+    apiurl <- paste0("https://maps.googleapis.com/maps/api/timezone/xml?",
+                     "location=", x[i,1], ",", x[i,2], "&",
+                     "timestamp=", as.numeric(time1), "&",
+                     "sensor=false")
+    tz <- c(tz, XML::xmlParse(readLines(apiurl))[["string(//time_zone_id)"]])
+  }
+
+  return(tz)
+
+}
