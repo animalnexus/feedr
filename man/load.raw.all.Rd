@@ -16,8 +16,8 @@ be in subdirectories)}
 you wish to include. Defaults to "DATA" to include only DATA files and not
 NOTE files.}
 
-\item{tz}{Character. The time zone the date/times should be converted to
-(should match one of the zones produced by \code{OlsonNames())}.}
+\item{tz}{Character. The time zone the date/times are in (should match one of
+the zones produced by \code{OlsonNames())}.}
 
 \item{feeder_pattern}{Character. A regular expression matching the feeder id
 in the file name.}

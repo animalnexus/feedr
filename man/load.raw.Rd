@@ -11,8 +11,8 @@ load.raw(r_file, tz = "America/Vancouver",
 \arguments{
 \item{r_file}{Character. The location of a single file to load.}
 
-\item{tz}{Character. The time zone the date/times should be converted to
-(should match one of the zones produced by \code{OlsonNames())}.}
+\item{tz}{Character. The time zone the date/times are in (should match one of
+the zones produced by \code{OlsonNames())}.}
 
 \item{feeder_pattern}{Character. A regular expression matching the feeder id
 in the file name.}
