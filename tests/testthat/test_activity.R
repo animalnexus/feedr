@@ -1,10 +1,10 @@
 library(feedr)
-context("Transformations between data types")
+context("Transformations between data types: Activity")
 
 # activity()
 test_that("activity() in general", {
   f <- plyr::ddply(visits(finches), c("bird_id"), feeding)
-  a <- plyr::ddply(f, c("bird_id"), activity)
+  a <- plyr::ddply(f[f$bird_id %in% unique(f$bird_id)[4],], c("bird_id"), activity)
 
   expect_message(plyr::ddply(f, c("bird_id"), activity),
                  "041868D396: Skipping. Individual has less than 24hrs of data")

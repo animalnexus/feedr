@@ -1,5 +1,5 @@
 library(feedr)
-context("Transformations between data types")
+context("Transformations between data types: Visits")
 
 # visits()
 test_that("visits() returns appropriate, non-empty dataframe", {
