@@ -5,8 +5,8 @@
 \title{Load and combine raw data files}
 \usage{
 load.raw.all(r_dir, pattern = "DATA", tz = "America/Vancouver",
-  feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL,
-  extra_name = NULL, sep = "", skip = 1)
+  tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
+  extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1)
 }
 \arguments{
 \item{r_dir}{Character. The director that holds all your raw data files (can
@@ -18,6 +18,10 @@ NOTE files.}
 
 \item{tz}{Character. The time zone the date/times are in (should match one of
 the zones produced by \code{OlsonNames())}.}
+
+\item{tz_disp}{Character. The time zone the date/times should be displayed in
+(if not the same as \code{tz}; should match one of the zones produced by
+\code{OlsonNames())}.}
 
 \item{feeder_pattern}{Character. A regular expression matching the feeder id
 in the file name.}

@@ -4,7 +4,7 @@
 \alias{load.web}
 \title{Load read data from the web}
 \usage{
-load.web(r_file, tz = "America/Vancouver", sep = ",")
+load.web(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ",")
 }
 \arguments{
 \item{r_file}{Character or Data frame. The location of a single file to load,
@@ -12,6 +12,10 @@ or a data frame of raw reads to be formated.}
 
 \item{tz}{Character. The time zone the date/times are in (should match one of
 the zones produced by \code{OlsonNames())}.}
+
+\item{tz_disp}{Character. The time zone the date/times should be displayed in
+(if not the same as \code{tz}; should match one of the zones produced by
+\code{OlsonNames())}.}
 
 \item{sep}{Character. An override for the separator in the
 \code{read.table()} call (see \code{sep =} under \code{?read.table} for

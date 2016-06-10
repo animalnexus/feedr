@@ -4,6 +4,7 @@ context("Loading files")
 # load.web()
 test_that("load.web loads and formats data correctly", {
   load <- load.web("../data/test_load_web.csv")
+  load2 <- load.web("../data/test_load_web.csv", tz_disp = "America/Toronto")
   expect_is(load, "data.frame")
   expect_match(names(load)[1:3], "^bird_id$|^time$|^feeder_id$")
   expect_is(load$bird_id, "factor")
@@ -13,6 +14,7 @@ test_that("load.web loads and formats data correctly", {
   expect_equal(load$bird_id[1], factor("0620000514", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
   expect_equal(load$feeder_id[1], factor("2200", levels = c("2100", "2200", "2400", "2700")))
   expect_equal(load$time[1], as.POSIXct("2016-01-28 12:34:25", tz = "America/Vancouver"))
+  expect_equal(load2$time[1], as.POSIXct("2016-01-28 15:34:25", tz = "America/Toronto"))
 })
 
 # load.raw()
@@ -27,11 +29,13 @@ test_that("load.raw loads and formats data correctly", {
   expect_equal(load.raw(f)$bird_id[1], "06200004BB")
   expect_equal(load.raw(f)$feeder_id[1], "GR12")
   expect_equal(load.raw(f)$time[1], as.POSIXct("2015-12-09 15:20:59", tz = "America/Vancouver"))
+  expect_equal(load.raw(f, tz_disp = "America/Toronto")$time[1], as.POSIXct("2015-12-09 18:20:59", tz = "America/Toronto"))
 })
 
 # load.raw.all()
 test_that("load.raw.all loads and formats data correctly", {
   load <- load.raw.all(r_dir = "../data/raw_tests/", extra_pattern = "exp[0-9]{1,2}", extra_name = "Experiment")
+  load2 <- load.raw.all(r_dir = "../data/raw_tests/", extra_pattern = "exp[0-9]{1,2}", extra_name = "Experiment", tz_disp = "America/Toronto")
   expect_is(load, "data.frame")
   expect_match(names(load)[1:3], "^bird_id$|^time$|^feeder_id$")
   expect_is(load$bird_id, "factor")
@@ -41,11 +45,13 @@ test_that("load.raw.all loads and formats data correctly", {
   expect_equal(load$bird_id[1], factor("06200004BB", levels = c("06200001F0", "06200003C3", "0620000418", "06200004BB")))
   expect_equal(load$feeder_id[1], factor("GR12", levels = c("GR11","GR12")))
   expect_equal(load$time[1], as.POSIXct("2015-12-09 15:20:59", tz = "America/Vancouver"))
+  expect_equal(load2$time[1], as.POSIXct("2015-12-09 18:20:59", tz = "America/Toronto"))
 })
 
 # get.data()
 test_that("get.data loads and formats data correctly", {
   load <- get.data(start = "2016-01-01", end = "2016-02-01", sites = "Kamloops")
+  load2 <- get.data(start = "2016-01-01", end = "2016-02-01", sites = "Kamloops", tz_disp = "America/Toronto")
   expect_is(load, "data.frame")
   expect_match(names(load)[1:3], "^bird_id$|^time$|^feeder_id$")
   expect_is(load$bird_id, "factor")
@@ -55,4 +61,5 @@ test_that("get.data loads and formats data correctly", {
   expect_equal(load$bird_id[1], factor("0620000514", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
   expect_equal(load$feeder_id[1], factor("2200", levels = c("2100", "2200", "2400", "2700")))
   expect_equal(load$time[1], as.POSIXct("2016-01-28 12:34:25", tz = "America/Vancouver"))
+  expect_equal(load2$time[1], as.POSIXct("2016-01-28 15:34:25", tz = "America/Toronto"))
 })

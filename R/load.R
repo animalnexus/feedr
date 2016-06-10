@@ -14,6 +14,9 @@
 #'   or a data frame of raw reads to be formated.
 #' @param tz Character. The time zone the date/times are in (should match one of
 #'   the zones produced by \code{OlsonNames())}.
+#' @param tz_disp Character. The time zone the date/times should be displayed in
+#'   (if not the same as \code{tz}; should match one of the zones produced by
+#'   \code{OlsonNames())}.
 #' @param sep Character. An override for the separator in the
 #'   \code{read.table()} call (see \code{sep =} under \code{?read.table} for
 #'   more details).
@@ -22,9 +25,9 @@
 #' \dontrun{r <- load.web("downloaded_file.csv")}
 
 #' @export
-load.web <- function(r_file, tz = "America/Vancouver", sep = ",") {
+load.web <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ",") {
   r <- read.csv(r_file, strip.white = TRUE)
-  r <- load.format(r, tz = tz)
+  r <- load.format(r, tz = tz, tz_disp = tz_disp)
   return(r)
 }
 
@@ -38,6 +41,9 @@ load.web <- function(r_file, tz = "America/Vancouver", sep = ",") {
 #' @param r_file Character. The location of a single file to load.
 #' @param tz Character. The time zone the date/times are in (should match one of
 #'   the zones produced by \code{OlsonNames())}.
+#' @param tz_disp Character. The time zone the date/times should be displayed in
+#'   (if not the same as \code{tz}; should match one of the zones produced by
+#'   \code{OlsonNames())}.
 #' @param feeder_pattern Character. A regular expression matching the feeder id
 #'   in the file name.
 #' @param extra_pattern Character vector. A vector of regular expressions
@@ -67,7 +73,7 @@ load.web <- function(r_file, tz = "America/Vancouver", sep = ",") {
 #'
 #' }
 #' @export
-load.raw <- function(r_file, tz = "America/Vancouver", feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1) {
+load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1) {
     r <- read.table(r_file,
                     col.names = c("bird_id","date","time"),
                     colClasses = "character",
@@ -92,6 +98,8 @@ load.raw <- function(r_file, tz = "America/Vancouver", feeder_pattern = "[GPR]{2
     r$time <- lubridate::parse_date_time(paste(r$date, r$time), orders = "%m/%d/%y %H:%M:%S", tz = tz)
     r <- r[, names(r) != "date"]
 
+    if(!is.null(tz_disp)) r$time <- lubridate::with_tz(r$time, tz_disp)
+
     # Reorder columns
     r <- col.order(r, c("bird_id", "time", "feeder_id"))
     return(r)
@@ -109,6 +117,9 @@ load.raw <- function(r_file, tz = "America/Vancouver", feeder_pattern = "[GPR]{2
 #'   NOTE files.
 #' @param tz Character. The time zone the date/times are in (should match one of
 #'   the zones produced by \code{OlsonNames())}.
+#' @param tz_disp Character. The time zone the date/times should be displayed in
+#'   (if not the same as \code{tz}; should match one of the zones produced by
+#'   \code{OlsonNames())}.
 #' @param feeder_pattern Character. A regular expression matching the feeder id
 #'   in the file name.
 #' @param extra_pattern Character vector. A vector of regular expressions
@@ -125,6 +136,7 @@ load.raw <- function(r_file, tz = "America/Vancouver", feeder_pattern = "[GPR]{2
 load.raw.all <- function(r_dir,
                          pattern = "DATA",
                          tz = "America/Vancouver",
+                         tz_disp = NULL,
                          feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
                          extra_pattern = NULL,
                          extra_name = NULL,
@@ -146,7 +158,7 @@ load.raw.all <- function(r_dir,
                                extra_pattern = extra_pattern,
                                extra_name = extra_name,
                                sep = sep, skip = skip))
-  r <- load.format(r, tz = tz)
+  r <- load.format(r, tz = tz, tz_disp = tz_disp)
   return(r)
 }
 
@@ -239,8 +251,8 @@ get.data <- function(start = NULL,
 
   # Get data from website in GMT, if tz not in selection, then convert later
   if(!(tz_disp %in% c("America/Vancouver", "GMT", "America/Costa Rica"))) {
-    tz_web <- "GMT"
-  }
+    tz <- "GMT"
+  } else tz <- tz_disp
 
   # Stop if time is not in the correct format
 
@@ -272,17 +284,17 @@ get.data <- function(start = NULL,
   params <- append(params,
                    list(feeder_id = "1",
                         bird_id = "1",
-                        tz = tz_web,
+                        tz = tz,
                         qstart = t_start,
                         qend = t_end,
-                        qstarttz = tz_web,
-                        qendtz = tz_web))
+                        qstarttz = tz,
+                        qendtz = tz))
 
   g <- RCurl::getForm(url, .params = params)
 
   if(nchar(g) < 200) stop("There are no online data matching these parameters. Try different sites or a different date range.")
 
-  r <- load.format(read.csv(text = g, strip.white = TRUE, colClasses = "character"), tz = tz_web, tz_disp = tz_disp)
+  r <- load.format(read.csv(text = g, strip.white = TRUE, colClasses = "character"), tz = tz, tz_disp = tz_disp)
   return(r)
 }
 
@@ -297,7 +309,7 @@ load.format <- function(r, tz, tz_disp = NULL){
   # Extract Proper Date and Times
   if("timezone" %in% names(r)) names(r)[names(r) == "timezone"] <- "time"
   if("time" %in% names(r)) r$time <- lubridate::ymd_hms(r$time, tz = tz)
-  if(!is.null(tz_disp)) tz(r$time) <- tz_disp
+  if(!is.null(tz_disp)) r$time <- lubridate::with_tz(r$time, tz_disp)
 
   # Make sure all factors are factors:
   if(any(names(r) == "bird_id")) r$bird_id <- as.factor(r$bird_id)

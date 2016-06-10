@@ -4,7 +4,7 @@
 \alias{load.raw}
 \title{Load raw read data}
 \usage{
-load.raw(r_file, tz = "America/Vancouver",
+load.raw(r_file, tz = "America/Vancouver", tz_disp = NULL,
   feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL,
   extra_name = NULL, sep = "", skip = 1)
 }
@@ -13,6 +13,10 @@ load.raw(r_file, tz = "America/Vancouver",
 
 \item{tz}{Character. The time zone the date/times are in (should match one of
 the zones produced by \code{OlsonNames())}.}
+
+\item{tz_disp}{Character. The time zone the date/times should be displayed in
+(if not the same as \code{tz}; should match one of the zones produced by
+\code{OlsonNames())}.}
 
 \item{feeder_pattern}{Character. A regular expression matching the feeder id
 in the file name.}
