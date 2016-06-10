@@ -1,31 +1,3 @@
-
-#' Load read data from the web (legacy)
-#'
-#' Loads raw read data from csv files downloaded from the __old__ version of
-#' \url{http://gaia.tru.ca/birdMOVES/datadownload.html} website and formats them
-#' for use with the feedr functions. This is merely a wrapper function that does
-#' many things that you can do yourself. It's utility depends on how
-#' standardized your data is, and whether you have extra details you need to
-#' address.
-#'
-#' @param r_file Character. The location of a single file to load.
-#' @param tz Character. The time zone the date/times should be converted to (should match one of the zones produced by \code{OlsonNames())}.
-#' @param sep Character. An override for the separator in the \code{read.table()} call (see \code{sep =} under \code{?read.table} for more details).
-#'
-#' @examples
-#' \dontrun{r <- load.web.legacy("downloaded_file.csv")}
-
-
-#' @export
-load.web.legacy <- function(r_file, tz = "America/Vancouver", sep = ",") {
-  r <- read.table(r_file, sep = ",", col.names = c("date","feeder_id","bird_id"), colClasses = "character")
-  r$time <- as.POSIXct(strptime(r$date, "%m-%d-%yT%H:%M:%SZ", tz = "Zulu"))
-  attributes(r$time)$tzone <- tz
-
-  r <- load.format(r, tz = tz)
-  return(r)
-}
-
 #' Load read data from the web
 #'
 #' Loads raw read data from csv files downloaded from the __current__
