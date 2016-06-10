@@ -203,9 +203,8 @@ load.raw.all <- function(r_dir,
 #'   columns.
 #' @param bird_details Character vector. This specifies extra columns with
 #'   details about the birds to download. Use NULL to download no extra columns.
-#' @param tz Character vector. Timezone to use for specifying and downloading
-#'   data. Timezone must be one of "America/Vancouver" (default), "America/Costa
-#'   Rica", or "GMC".
+#' @param tz_disp Character vector. Timezone data should be displayed in (should match one of
+#'   the zones produced by \code{OlsonNames()})
 #' @param sites Character vector. Sites to download data from. Currently must be
 #'   one or more of "Kamloops" (default) or "Costa Rica".
 #'
@@ -235,25 +234,27 @@ get.data <- function(start = NULL,
                      url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
                      feeder_details = c("loc"),
                      bird_details = c("species"),
-                     tz = "America/Vancouver",
+                     tz_disp = "America/Vancouver",
                      sites = "Kamloops") {
 
-  # Stop if timezones different
-  if(!(tz %in% c("America/Vancouver", "GMT", "America/Costa Rica"))) stop("Timezone must be one of 'America/Vancouver', 'GMT', 'America/Costa Rica'. (You can change timezones after they've been downloaded.)")
+  # Get data from website in GMT, if tz not in selection, then convert later
+  if(!(tz_disp %in% c("America/Vancouver", "GMT", "America/Costa Rica"))) {
+    tz_web <- "GMT"
+  }
 
   # Stop if time is not in the correct format
 
-  t.start <- NULL
-  t.end <- NULL
+  t_start <- NULL
+  t_end <- NULL
   if(!is.null(start)) {
-    suppressWarnings(t.start <- lubridate::parse_date_time(start, orders = "ymd hms", truncated = 5))
-    if(is.na(t.start)) stop("Your start time is ambiguous. Format should be YYYY-MM-DD (HH:MM:SS is optional)")
-    t.start <- format(t.start, "%Y-%m-%d %H:%M:%S")
+    suppressWarnings(t_start <- lubridate::parse_date_time(start, orders = "ymd hms", truncated = 5))
+    if(is.na(t_start)) stop("Your start time is ambiguous. Format should be YYYY-MM-DD (HH:MM:SS is optional)")
+    t_start <- format(t_start, "%Y-%m-%d %H:%M:%S")
   }
   if(!is.null(end)) {
-    suppressWarnings(t.end <- lubridate::parse_date_time(end, orders = "ymd hms", truncated = 5))
-    if(is.na(t.end)) stop("Your end time is ambiguous. Format should be YYYY-MM-DD (HH:MM:SS is optional)")
-    t.end <- format(t.end, "%Y-%m-%d %H:%M:%S")
+    suppressWarnings(t_end <- lubridate::parse_date_time(end, orders = "ymd hms", truncated = 5))
+    if(is.na(t_end)) stop("Your end time is ambiguous. Format should be YYYY-MM-DD (HH:MM:SS is optional)")
+    t_end <- format(t_end, "%Y-%m-%d %H:%M:%S")
   }
 
   # Stop if url doesn't exist
@@ -271,24 +272,24 @@ get.data <- function(start = NULL,
   params <- append(params,
                    list(feeder_id = "1",
                         bird_id = "1",
-                        tz = tz,
-                        qstart = t.start,
-                        qend = t.end,
-                        qstarttz = tz,
-                        qendtz = tz))
+                        tz = tz_web,
+                        qstart = t_start,
+                        qend = t_end,
+                        qstarttz = tz_web,
+                        qendtz = tz_web))
 
   g <- RCurl::getForm(url, .params = params)
 
   if(nchar(g) < 200) stop("There are no online data matching these parameters. Try different sites or a different date range.")
 
-  r <- load.format(read.csv(text = g, strip.white = TRUE, colClasses = "character"), tz = tz)
+  r <- load.format(read.csv(text = g, strip.white = TRUE, colClasses = "character"), tz = tz_web, tz_disp = tz_disp)
   return(r)
 }
 
 # Internal function: Format data
 # Formats data for the loading function.
 #' @export
-load.format <- function(r, tz){
+load.format <- function(r, tz, tz_disp = NULL){
 
   # Trim leading or trailing whitespace
   r <- plyr::ddply(r, c(), plyr::colwise(trimws))[ , -1]
@@ -296,6 +297,7 @@ load.format <- function(r, tz){
   # Extract Proper Date and Times
   if("timezone" %in% names(r)) names(r)[names(r) == "timezone"] <- "time"
   if("time" %in% names(r)) r$time <- lubridate::ymd_hms(r$time, tz = tz)
+  if(!is.null(tz_disp)) tz(r$time) <- tz_disp
 
   # Make sure all factors are factors:
   if(any(names(r) == "bird_id")) r$bird_id <- as.factor(r$bird_id)

@@ -7,7 +7,7 @@
 get.data(start = NULL, end = NULL,
   url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
   feeder_details = c("loc"), bird_details = c("species"),
-  tz = "America/Vancouver", sites = "Kamloops")
+  tz_disp = "America/Vancouver", sites = "Kamloops")
 }
 \arguments{
 \item{start}{Character. This is the start date (with or without time) for the
@@ -29,9 +29,8 @@ columns.}
 \item{bird_details}{Character vector. This specifies extra columns with
 details about the birds to download. Use NULL to download no extra columns.}
 
-\item{tz}{Character vector. Timezone to use for specifying and downloading
-data. Timezone must be one of "America/Vancouver" (default), "America/Costa
-Rica", or "GMC".}
+\item{tz_disp}{Character vector. Timezone data should be displayed in (should match one of
+the zones produced by \code{OlsonNames()})}
 
 \item{sites}{Character vector. Sites to download data from. Currently must be
 one or more of "Kamloops" (default) or "Costa Rica".}
