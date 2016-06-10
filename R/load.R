@@ -36,8 +36,8 @@ load.web <- function(r_file, tz = "America/Vancouver", sep = ",") {
 #' extra details you need to address
 #'
 #' @param r_file Character. The location of a single file to load.
-#' @param tz Character. The time zone the date/times should be converted to
-#'   (should match one of the zones produced by \code{OlsonNames())}.
+#' @param tz Character. The time zone the date/times are in (should match one of
+#'   the zones produced by \code{OlsonNames())}.
 #' @param feeder_pattern Character. A regular expression matching the feeder id
 #'   in the file name.
 #' @param extra_pattern Character vector. A vector of regular expressions
@@ -107,8 +107,8 @@ load.raw <- function(r_file, tz = "America/Vancouver", feeder_pattern = "[GPR]{2
 #' @param pattern Character. A regular expression pattern that matches the files
 #'   you wish to include. Defaults to "DATA" to include only DATA files and not
 #'   NOTE files.
-#' @param tz Character. The time zone the date/times should be converted to
-#'   (should match one of the zones produced by \code{OlsonNames())}.
+#' @param tz Character. The time zone the date/times are in (should match one of
+#'   the zones produced by \code{OlsonNames())}.
 #' @param feeder_pattern Character. A regular expression matching the feeder id
 #'   in the file name.
 #' @param extra_pattern Character vector. A vector of regular expressions
