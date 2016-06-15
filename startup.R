@@ -41,7 +41,7 @@ qry <- function(x) paste0(x, collapse = "', '")
 #withProgress(message = "Connecting to server...", {
 suppressWarnings({
   cat("Connecting to server...\n")
-  con <- dbConnect(drv,host=dbhost,port=dbport,dbname=dbname,user=dbuser,password=dbpass)
+  con <- dbConnect(drv, host = dbhost, port = dbport, dbname = dbname, user = dbuser, password = dbpass)
   
   cat("Getting feeder data...\n")
   #   incProgress(1/5)
@@ -73,7 +73,7 @@ suppressWarnings({
                                           "FROM raw.visits ",
                                           "GROUP BY DATE(raw.visits.time), raw.visits.feeder_id, raw.visits.bird_id"#,
                        )) %>%
-    load.format(tz = "") %>%
+    load.format(tz = "UTC") %>%
     left_join(birds_all[, c("site_name", "species", "bird_id")], by = "bird_id") %>%
     mutate(date = as.Date(date),
            count = as.numeric(count),
@@ -83,6 +83,7 @@ suppressWarnings({
            feeder_id = factor(feeder_id, levels = sort(unique(feeders_all$feeder_id))))
   dbDisconnect(con)
 })
+
 
 #  incProgress(5/5)
 counts_sum <- bind_rows(
