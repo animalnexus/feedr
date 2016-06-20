@@ -263,14 +263,14 @@ move <- function(v1, all = FALSE, pass = TRUE){
       dplyr::filter((direction == "arrived" & type == "start") |
                     (direction == "left" & type == "end")) %>%
       dplyr::select(-value, -type) %>%
-      dplyr::arrange(direction, time) %>%
+      dplyr::arrange(time) %>%
       dplyr::mutate(n = sort(rep(1:(length(bird_id)/2),2))) %>%
       dplyr::group_by(n) %>%
-      dplyr::mutate(move_dir = paste0(feeder_id[direction == "left"], "_", feeder_id[direction == "arrived"]),
+      dplyr::mutate(move_dir = paste0(feeder_id, collapse = "_"),
                     move_path = factor(paste0(sort(feeder_id), collapse = "_"), levels = move_path),
                     strength = 1 / as.numeric(difftime(time[direction == "arrived"], time[direction == "left"], units = "hours"))) %>%
-      dplyr::select(-n) %>%
-      dplyr::ungroup()
+      dplyr::ungroup() %>%
+      dplyr::select(-n)
 
     # Add in extra cols
     if(pass == TRUE) m <- merge.extra(m, extra)
@@ -285,7 +285,7 @@ move <- function(v1, all = FALSE, pass = TRUE){
     m <- data.frame(bird_id = factor(v1$bird_id[1], levels = bird_id),
                     time = as.POSIXct(NA),
                     feeder_id = factor(NA, levels = feeder_id),
-                    direction = character(NA),
+                    direction = as.character(NA),
                     move_dir = factor(NA, levels = move_dir),
                     move_path = factor(NA, levels = move_path),
                     strength = as.numeric(NA))
