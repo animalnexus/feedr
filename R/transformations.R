@@ -211,6 +211,7 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE){
 #' m.totals <- ddply(m, c("bird_id", "move_path"), summarise,
 #'                   n_path = length(move_path) / 2)
 
+#' @import magrittr
 #' @export
 move <- function(v1, all = FALSE, pass = TRUE){
 
@@ -243,30 +244,48 @@ move <- function(v1, all = FALSE, pass = TRUE){
     v1$left[c(diff, FALSE)] <- TRUE
     v1$arrived[c(FALSE, diff)] <- TRUE
 
-    m <- reshape2::melt(v1[v1$left | v1$arrived,], measure.vars = c("left", "arrived"), variable.name = "direction")
-    m <- m[m$value, ]
-    m <- reshape2::melt(m, measure.vars = c("start", "end"), variable = "type", value.name = "time")
-    m <- m[(m$direction == "left" & m$type == "end") | (m$direction == "arrived" & m$type == "start"), !(names(m) %in% c("value", "type"))]
-    m <- m[order(m$direction, m$time),]
+    #m <- reshape2::melt(v1[v1$left | v1$arrived,], measure.vars = c("left", "arrived"), variable.name = "direction")
+    #m <- m[m$value, ]
+    #m <- reshape2::melt(m, measure.vars = c("start", "end"), variable = "type", value.name = "time")
+    #m <- m[(m$direction == "left" & m$type == "end") | (m$direction == "arrived" & m$type == "start"), !(names(m) %in% c("value", "type"))]
+    #m <- m[order(m$direction, m$time),]
 
-    m$move_dir <- rep(factor(paste0(m$feeder_id[m$direction == "left"], "_", m$feeder_id[m$direction == "arrived"]), levels = move_dir), 2)
-    m$strength <- 1 / as.numeric(difftime(m$time[m$direction == "arrived"], m$time[m$direction == "left"], units = "hours"))
-    m$move_path <- sapply(m$move_dir, FUN = mp)
-    m$move_path <- factor(m$move_path, levels = move_path)
+    #m$move_dir <- rep(factor(paste0(m$feeder_id[m$direction == "left"], "_", m$feeder_id[m$direction == "arrived"]), levels = move_dir), 2)
+    #m$strength <- 1 / as.numeric(difftime(m$time[m$direction == "arrived"], m$time[m$direction == "left"], units = "hours"))
+    #m$move_path <- sapply(m$move_dir, FUN = mp)
+    #m$move_path <- factor(m$move_path, levels = move_path)
 
+    m <- v1 %>%
+      dplyr::filter(left | arrived) %>%
+      tidyr::gather(direction, value, left, arrived) %>%
+      dplyr::filter(value) %>%
+      tidyr::gather(type, time, start, end) %>%
+      dplyr::filter((direction == "arrived" & type == "start") |
+                    (direction == "left" & type == "end")) %>%
+      dplyr::select(-value, -type) %>%
+      dplyr::arrange(direction, time) %>%
+      dplyr::mutate(n = sort(rep(1:(length(bird_id)/2),2))) %>%
+      dplyr::group_by(n) %>%
+      dplyr::mutate(move_dir = paste0(feeder_id[direction == "left"], "_", feeder_id[direction == "arrived"]),
+                    move_path = factor(paste0(sort(feeder_id), collapse = "_"), levels = move_path),
+                    strength = 1 / as.numeric(difftime(time[direction == "arrived"], time[direction == "left"], units = "hours"))) %>%
+      dplyr::select(-n) %>%
+      dplyr::ungroup()
 
     # Add in extra cols
     if(pass == TRUE) m <- merge.extra(m, extra)
 
     # Order
-    m <- m[order(m$bird_id, m$time),]
-    m <- col.order(m, c("bird_id", "time", "feeder_id", "move_dir", "move_path", "strength"))
+    m <- m %>%
+      dplyr::select(bird_id, time, feeder_id, direction, move_dir, move_path, strength, everything()) %>%
+      dplyr::arrange(bird_id, time)
 
   } else if (all == TRUE) {
     # Create the movement data frame for birds that didn't move between feeders
     m <- data.frame(bird_id = factor(v1$bird_id[1], levels = bird_id),
                     time = as.POSIXct(NA),
                     feeder_id = factor(NA, levels = feeder_id),
+                    direction = character(NA),
                     move_dir = factor(NA, levels = move_dir),
                     move_path = factor(NA, levels = move_path),
                     strength = as.numeric(NA))
@@ -275,7 +294,9 @@ move <- function(v1, all = FALSE, pass = TRUE){
     if(pass == TRUE) m <- merge.extra(m, extra)
 
     # Order
-    m <- col.order(m, c("bird_id", "time", "feeder_id", "move_dir", "move_path", "strength"))
+    m <- m %>%
+      dplyr::select(bird_id, time, feeder_id, direction, move_dir, move_path, strength, everything()) %>%
+      dplyr::arrange(bird_id, time)
 
   } else {
     # If there are no movements and all == FALSE, return an empty data.frame
