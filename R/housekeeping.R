@@ -133,8 +133,11 @@ check.problems <- function(r, problems){
 #'
 #' lat = 53.881857
 #' lon = -122.786271
+#'
+#' @import magrittr
+#' @export
 
-get.tz <- function(coords = NULL, lat = NULL, lon = NULL){
+get.tz <- function(coords = NULL, lat = NULL, lon = NULL, etc = FALSE){
   # Based on http://stackoverflow.com/a/23414695
 
   if(!is.null(coords)) {
@@ -150,6 +153,7 @@ get.tz <- function(coords = NULL, lat = NULL, lon = NULL){
   if(!all(apply(x, 2, is.numeric))) stop("Coordinates must be numeric")
 
   tz <- vector()
+  offset <- vector()
   for(i in 1:nrow(x)) {
     time1 <- Sys.time()
   # https://developers.google.com/maps/documentation/timezone/
@@ -157,9 +161,12 @@ get.tz <- function(coords = NULL, lat = NULL, lon = NULL){
                      "location=", x[i,1], ",", x[i,2], "&",
                      "timestamp=", as.numeric(time1), "&",
                      "sensor=false")
-    tz <- c(tz, XML::xmlParse(readLines(apiurl))[["string(//time_zone_id)"]])
+    tz <- c(tz, xml2::read_xml(apiurl) %>% xml2::xml_find_all("//time_zone_id") %>% xml2::xml_text())
+    offset <- c(offset, xml2::read_xml(apiurl) %>% xml2::xml_find_all("//raw_offset") %>% xml2::xml_text())
   }
 
-  return(tz)
+  offset <-  as.numeric(offset) / 60 / 60
+
+  return(list(tz, offset))
 
 }

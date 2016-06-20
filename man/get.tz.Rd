@@ -4,7 +4,7 @@
 \alias{get.tz}
 \title{Get timezone from lat/lon}
 \usage{
-get.tz(coords = NULL, lat = NULL, lon = NULL)
+get.tz(coords = NULL, lat = NULL, lon = NULL, etc = FALSE)
 }
 \arguments{
 \item{coords}{Vector or Data frame. Lat, lon coordinates. Can be a vector for
@@ -21,5 +21,6 @@ Get timezone from lat/lon
 
 lat = 53.881857
 lon = -122.786271
+
 }
 
