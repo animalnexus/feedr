@@ -77,6 +77,7 @@ merge.extra <- function(d, extra, only = NULL) {
 #' v <- visits(r)
 #' }
 
+#' @import magrittr
 #' @export
 visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE){
 
@@ -122,33 +123,38 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE){
   # - feeder after is not the same
 
   new_visit <- apply(cbind(diff.time, diff.bird, diff.feeder), 1, any)
-  r$end <- r$start <- as.POSIXct(NA)
+  r$end <- r$start <- as.POSIXct(NA, tz = tz)
   r$start[c(TRUE, new_visit)] <- r$time[c(TRUE, new_visit)]
   r$end[c(new_visit, TRUE)] <- r$time[c(new_visit, TRUE)]
 
   # Get visits
-  v <- r[!(is.na(r$start) & is.na(r$end)),c("feeder_id","bird_id","start","end")]
-  v <- reshape2::melt(v, measure.vars = c("start","end"))
-  v <- v[!is.na(v$value),]
-  v <- plyr::ddply(v[order(v$value),], c("feeder_id", "bird_id", "variable"), transform, n = 1:length(value))
-  v$value <- as.character(v$value)  ## To overcome a bug in dcast which has issues dealing with times
-  v <- reshape2::dcast(v, ... ~ variable, value.var = "value")
-  v$start <- as.POSIXct(v$start, tz = tz)
-  v$end <- as.POSIXct(v$end, tz = tz)
-  v <- v[, -grep("^n$",names(v))]
+  v <- r %>%
+    dplyr::filter(!(is.na(start) & is.na(end))) %>%
+    dplyr::select(feeder_id, bird_id, start, end) %>%
+    tidyr::gather(variable, value, start, end) %>%
+    dplyr::filter(!is.na(value)) %>%
+    dplyr::arrange(value) %>%
+    dplyr::group_by(feeder_id, bird_id, variable) %>%
+    dplyr::mutate(n = 1:length(value)) %>%
+    tidyr::spread(variable, value) %>%
+    dplyr::select(-n) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(feeder_id = factor(feeder_id),
+                  bird_id = factor(bird_id),
+                  bird_n = length(unique(bird_id)),         # Get sample sizes
+                  feeder_n = length(unique(feeder_id)))
 
-  # Get sample sizes
-  v$bird_n <- length(unique(v$bird_id))
-  v$feeder_n <- length(unique(v$feeder_id))
+  # Set timezone attributes
+  attr(v$start, "tzone") <- tz
+  attr(v$end, "tzone") <- tz
 
-  # Add in extra
+  # Add in extra variables
   if(pass == TRUE) v <- merge.extra(v, extra)
 
-  # Order and format data frame
-  v <- col.order(v, c("bird_id", "start", "end", "feeder_id", "bird_n", "feeder_n"))
-  v <- v[order(v$bird_id, v$start), ]
-  v$feeder_id <- factor(v$feeder_id)
-  v$bird_id <- factor(v$bird_id)
+  # Order data frame
+  v <- v %>%
+    dplyr::select(bird_id, start, end, feeder_id, bird_n, feeder_n, everything()) %>%
+    dplyr::arrange(bird_id, start)
 
   return(v)
 }
