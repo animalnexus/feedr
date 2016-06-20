@@ -450,7 +450,7 @@ feeding <- function(v1, bw = 15, pass = TRUE){
 #'  # Look at interactions (identical methods):
 #'  d[['interactions']][1:10,]
 #'  d$interactions[1:10,]
-
+#' @import magrittr
 #' @export
 disp <- function(v, bw = 5, pass = TRUE){
 
@@ -493,18 +493,24 @@ disp <- function(v, bw = 5, pass = TRUE){
   d <- d[order(d$left), ]
 
   ## Summarize totals
-  s <- plyr::ddply(d, c("role", "bird_id"), plyr::summarise,
-                   n = length(bird_id), .drop = FALSE)
-  s <- reshape2::dcast(s, ... ~ role, value.var = "n")
-  s$p_win <- s$displacer / (s$displacee + s$displacer)
-  s <- s[order(s$p_win, decreasing = TRUE),]
+  s <- d %>%
+    dplyr::group_by(role, bird_id) %>%
+    dplyr::summarize(n = length(bird_id)) %>%
+    tidyr::complete(bird_id, role, fill = list("n" = 0)) %>%
+    tidyr::spread(role, n) %>%
+    dplyr::mutate(p_win = displacer / (displacee + displacer)) %>%
+    dplyr::arrange(desc(p_win))
 
   ## Summarize interactions
-  t <- d
-  t$interaction <- paste(t$bird_id[t$role == "displacer"], t$bird_id[t$role == "displacee"], sep = "_")
-  t <- plyr::ddply(t, "interaction", plyr::summarise,
-                   n = length(interaction), .drop = FALSE)
-  t[, c("displacer", "displacee")] <- stringr::str_extract_all(t$interaction, paste0(bird_id, collapse = "|"), simplify = TRUE)
+  t <- d %>%
+    dplyr::select(left, bird_id, role) %>%
+    tidyr::spread(role, bird_id) %>%
+    dplyr::group_by(displacer, displacee) %>%
+    dplyr::summarize(n = length(displacee)) %>%
+    dplyr::ungroup() %>%
+    tidyr::complete(displacer, displacee, fill = list("n" = 0)) %>%
+    dplyr::filter(displacee != displacer)
+
   t <- t[order(match(t$displacer,s$bird_id)),]  ##Sort according to the p_win value from s
 
   return(list("displacements" = d, "summaries" = s, "interactions" = t[, names(t) != "interaction",]))
