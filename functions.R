@@ -28,13 +28,13 @@ get_counts <- function(c, filter = NULL, summarize_by = NULL) {
 # i = input (or reactive) means dealing with ui input values
 # i = anything else means dealing with selection values
 choices <- function(s, var){
-  c <- s$choice[s$var == var]
-  names(c) <- s$name[s$var == var]
+  c <- s$choices[s$variable == var]
+  names(c) <- s$name[s$variable == var]
   return(c)
 }
 
 selected <- function(s, var){
-  s <- s$choice[s$var == var & s$sum > 0]
+  s <- s$choices[s$variable == var & s$sum > 0]
   return(s)
 }
 
