@@ -20,8 +20,8 @@ check.format <- function(d, map = FALSE, disp = FALSE) {
   if(!map) msg_f <- paste0(msg_f, " You should remove any '_'s if you plan to use these functions.")
   if(!disp) msg_b <- paste0(msg_b, " You should remove any '_'s if you plan to use these functions.")
 
-  if(any(stringr::str_count(d$feeder_id, "_") > 0)) message(msg_f)
-  if(any(stringr::str_count(d$bird_id, "_") > 0)) message(msg_b)
+  if("feeder_id" %in% names(d)) if(any(stringr::str_count(d$feeder_id, "_") > 0)) message(msg_f)
+  if("bird_id" %in% names(d)) if(any(stringr::str_count(d$bird_id, "_") > 0)) message(msg_b)
 }
 
 
