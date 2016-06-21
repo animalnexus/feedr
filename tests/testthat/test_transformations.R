@@ -1,6 +1,6 @@
 library(feedr)
 library(magrittr)
-context("Transformations between data types: Visits")
+context("Transformations between data types")
 
 # visits()
 test_that("visits() returns appropriate, non-empty dataframe", {
@@ -65,5 +65,52 @@ test_that("move() returns appropriate, non-empty dataframe", {
   expect_length(m, 12)
   expect_equal(nrow(m), 1)
   expect_equal(m$bird_id[1], factor("062000043E", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
+
+})
+
+# disp()
+test_that("disp() returns appropriate, non-empty dataframe", {
+
+  ## Errors
+  expect_error(d <- visits(finches) %>% disp(.))
+
+  ## No errors
+  expect_silent(d <- visits(finches) %>% disp(., bw = 300))
+
+  ## Format
+  expect_is(d1 <- d[["displacements"]], "data.frame")
+  expect_is(d2 <- d[["summaries"]], "data.frame")
+  expect_is(d3 <- d[["interactions"]], "data.frame")
+
+  expect_length(d1, 10)
+  expect_length(d2, 4)
+  expect_length(d3, 3)
+
+  expect_equal(nrow(d1), 24)
+  expect_equal(nrow(d2), 5)
+  expect_equal(nrow(d3), 20)
+
+  expect_equal(sum(is.na(d1)), 0)
+  expect_equal(sum(is.na(d2)), 0)
+  expect_equal(sum(is.na(d3)), 0)
+
+  expect_match(names(d1)[1:3], "^bird_id$|^left$|^arrived$|^feeder_id$|^role$")
+  expect_is(d1$bird_id, "factor")
+  expect_is(d1$feeder_id, "factor")
+  expect_is(d1$left, "POSIXct")
+
+  ## Data
+  expect_equal(unique(d1$bird_id[1]), factor("041868D861", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
+  expect_equal(d1$feeder_id[1], factor(c("2200"), levels = c("2100", "2200", "2400", "2700")))
+  expect_equal(d1$left[1], as.POSIXct(c("2016-01-28 12:34:28"), tz = "America/Vancouver"))
+  expect_equal(d1$bird_n[1], 5)
+  expect_equal(d1$feeder_n[1], 4)
+  expect_equal(round(d1$lon[2], 4), -120.3612)
+  expect_equal(round(d1$lat[2], 5), 50.66778)
+  expect_equal(d1$role[1], "displacer")
+  expect_equal(d1$species[1], "House Finch")
+
+  expect_equal(d2$p_win[1], 1.00)
+  expect_equal(sum(d3$n == 0), 11)
 
 })

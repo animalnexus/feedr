@@ -539,11 +539,11 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
   check.format(d)
 
   # Start with best order
-  o <- merge(plyr::ddply(d, c("displacer"), plyr::summarise, win = sum(n)),
-             plyr::ddply(d, c("displacee"), plyr::summarise, loss = sum(n)),
-             by.x = "displacer", by.y = "displacee")
-  o$p.win <- o$win / (o$win + o$loss)
-  o <- o[order(o$p.win,decreasing = TRUE), ]
+  o <- dplyr::left_join(dplyr::group_by(d, displacer) %>% dplyr::summarize(win = sum(n)),
+                        dplyr::group_by(d, displacee) %>% dplyr::summarize(loss = sum(n)),
+                        by = c("displacer" = "displacee")) %>%
+    dplyr::mutate(p.win = win / (win + loss)) %>%
+    dplyr::arrange(desc(p.win))
 
   # Check sample sizes and warn if low
 
