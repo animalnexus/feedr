@@ -33,6 +33,7 @@
 #' @param keep_all Logical. Keep all individuals, even ones with less than 24hrs of data.
 #' @param pass Logical. Pass 'extra' columns through the function and append them to the output.
 #'
+#' @import magrittr
 #' @export
 
 activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE, keep_all = FALSE, pass = TRUE){
@@ -153,9 +154,11 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
         a <- merge(a, s[, c("feeder_id", "date", "rise", "set")],
                    by = c("feeder_id", "date"), all.x = TRUE, all.y = FALSE)
       } else {
-        s <- plyr::ddply(s, c("date"), plyr::summarise, rise = median(rise), set = median(set))
-        a <- merge(a, s[, c("date", "rise", "set")],
-                   by = "date", all.x = TRUE, all.y = FALSE)
+        s <- s %>%
+          dplyr::group_by(date) %>%
+          dplyr::summarize(rise = median(rise),
+                           set = median(set))
+        a <- dplyr::left_join(a, s[, c("date", "rise", "set")], by = "date")
       }
       f1 <- f1[, names(f1) != "date"]
     }
