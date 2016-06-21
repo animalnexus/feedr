@@ -207,11 +207,19 @@ daily <- function(a1){
 
   a1$time_c <- format(a1$time, "%H:%M:%S")
 
-  d <- plyr::ddply(a1, c("bird_id", "feeder_id", "time_c"), plyr::summarise,
-                   p_active = length(activity_c[activity_c == "active"]) / length(activity_c[activity_c != "unknown"]),
-                   p_inactive = length(activity_c[activity_c == "inactive"]) / length(activity_c[activity_c != "unknown"]),
-                   p_unknown = length(activity_c[activity_c == "unknown"]) / length(activity_c),
-                   p_total = 1 - p_unknown)
+  #d <- plyr::ddply(a1, c("bird_id", "feeder_id", "time_c"), plyr::summarise,
+  #                 p_active = length(activity_c[activity_c == "active"]) / length(activity_c[activity_c != "unknown"]),
+  #                 p_inactive = length(activity_c[activity_c == "inactive"]) / length(activity_c[activity_c != "unknown"]),
+  #                 p_unknown = length(activity_c[activity_c == "unknown"]) / length(activity_c),
+  #                 p_total = 1 - p_unknown)
+
+  d <- a1 %>%
+    dplyr::group_by(bird_id, feeder_id, time_c) %>%
+    dplyr::summarize(p_active = length(activity_c[activity_c == "active"]) / length(activity_c[activity_c != "unknown"]),
+                     p_inactive = length(activity_c[activity_c == "inactive"]) / length(activity_c[activity_c != "unknown"]),
+                     p_unknown = length(activity_c[activity_c == "unknown"]) / length(activity_c),
+                     p_total = 1 - p_unknown)
+
 
   d$time <- as.POSIXct(paste0(lubridate::origin, " ", d$time_c))
   lubridate::tz(d$time) <- "UTM"
@@ -219,8 +227,13 @@ daily <- function(a1){
   # Get sun/rise set if exist, and average
   if(any(names(a1) %in% c("rise", "set"))) {
     sun <- unique(a1[, c("date", "feeder_id", "rise", "set")])
-    sun <- plyr::ddply(sun, c("feeder_id"), plyr::summarise,
-                       rise = mean.clock(rise, origin = TRUE),
+    #sun <- plyr::ddply(sun, c("feeder_id"), plyr::summarise,
+    #                   rise = mean.clock(rise, origin = TRUE),
+    #                   set = mean.clock(set, origin = TRUE))
+
+    sun <- sun %>%
+      dplyr::group_by(feeder_id) %>%
+      dplyr::summarize(rise = mean.clock(rise, origin = TRUE),
                        set = mean.clock(set, origin = TRUE))
     d <- merge(d, sun, by = "feeder_id", all.x = TRUE, all.y = FALSE)
   }
