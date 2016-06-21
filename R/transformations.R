@@ -244,17 +244,6 @@ move <- function(v1, all = FALSE, pass = TRUE){
     v1$left[c(diff, FALSE)] <- TRUE
     v1$arrived[c(FALSE, diff)] <- TRUE
 
-    #m <- reshape2::melt(v1[v1$left | v1$arrived,], measure.vars = c("left", "arrived"), variable.name = "direction")
-    #m <- m[m$value, ]
-    #m <- reshape2::melt(m, measure.vars = c("start", "end"), variable = "type", value.name = "time")
-    #m <- m[(m$direction == "left" & m$type == "end") | (m$direction == "arrived" & m$type == "start"), !(names(m) %in% c("value", "type"))]
-    #m <- m[order(m$direction, m$time),]
-
-    #m$move_dir <- rep(factor(paste0(m$feeder_id[m$direction == "left"], "_", m$feeder_id[m$direction == "arrived"]), levels = move_dir), 2)
-    #m$strength <- 1 / as.numeric(difftime(m$time[m$direction == "arrived"], m$time[m$direction == "left"], units = "hours"))
-    #m$move_path <- sapply(m$move_dir, FUN = mp)
-    #m$move_path <- factor(m$move_path, levels = move_path)
-
     m <- v1 %>%
       dplyr::filter(left | arrived) %>%
       tidyr::gather(direction, value, left, arrived) %>%
