@@ -549,7 +549,6 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
 
   ## Setup the matrix
   d <- tidyr::spread(d, displacee, n)
-  #d <- reshape2::dcast(d, displacer ~ displacee, value.var = "n")
   row.names(d) <- d$displacer
   d <- as.matrix(d[,-grep("^displacer$", names(d))])
 
