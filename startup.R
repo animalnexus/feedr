@@ -86,6 +86,7 @@ suppressWarnings({
 
 
 #  incProgress(5/5)
+cat("Summarizing samples...\n")
 counts_sum <- bind_rows(
   get_counts(counts, summarize_by = "site_name"),
   get_counts(counts, summarize_by = "species"),

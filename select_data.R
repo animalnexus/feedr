@@ -20,10 +20,10 @@ observeEvent(input$data_reset, {
                            choices = choices(counts_sum, "species"),
                            selected = selected(counts_sum, "species"))
   updateDateRangeInput(session, "data_date",
-                       min = min(as.Date(counts_sum$choice[counts_sum$variable == "date"])),
-                       max = max(as.Date(counts_sum$choice[counts_sum$variable == "date"])),
-                       start = min(as.Date(counts_sum$choice[counts_sum$variable == "date"])),
-                       end = max(as.Date(counts_sum$choice[counts_sum$variable == "date"])))
+                       min = min(as.Date(counts_sum$choices[counts_sum$variable == "date"])),
+                       max = max(as.Date(counts_sum$choices[counts_sum$variable == "date"])),
+                       start = min(as.Date(counts_sum$choices[counts_sum$variable == "date"])),
+                       end = max(as.Date(counts_sum$choices[counts_sum$variable == "date"])))
   updateCheckboxGroupInput(session, "data_bird_id",
                            choices = choices(counts_sum, "bird_id"),
                            selected = selected(counts_sum, "bird_id"))
@@ -133,10 +133,10 @@ output$UI_data <- renderUI({
   
   # Date Range
   dateRangeInput("data_date", "Dates to include:",
-                   min = min(as.Date(counts_sum$choice[counts_sum$variable == "date"])),
-                   max = max(as.Date(counts_sum$choice[counts_sum$variable == "date"])),
-                   start = min(as.Date(counts_sum$choice[counts_sum$variable == "date"])),
-                   end = max(as.Date(counts_sum$choice[counts_sum$variable == "date"])))
+                   min = min(as.Date(counts_sum$choices[counts_sum$variable == "date"])),
+                   max = max(as.Date(counts_sum$choices[counts_sum$variable == "date"])),
+                   start = min(as.Date(counts_sum$choices[counts_sum$variable == "date"])),
+                   end = max(as.Date(counts_sum$choices[counts_sum$variable == "date"])))
   )
 })
 
