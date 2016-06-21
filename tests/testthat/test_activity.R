@@ -1,11 +1,12 @@
 library(feedr)
+library(dplyr)
 context("Transformations between data types: Activity")
 
 # activity()
 test_that("activity() in general", {
-  f <- plyr::ddply(visits(finches), c("bird_id"), feeding)
-  a <- plyr::ddply(f, c("bird_id"), activity)
-
+  f <- visits(finches) %>% dplyr::group_by(bird_id) %>% dplyr::do(feeding(.))
+  a <- dplyr::do(f, activity(.))
+  #a <- dplyr::do(f[f$bird_id == "06200004F8",], activity(.))
   expect_message(plyr::ddply(f, c("bird_id"), activity),
                  "041868D396: Skipping. Individual has less than 24hrs of data")
 
