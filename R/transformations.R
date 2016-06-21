@@ -478,6 +478,9 @@ disp <- function(v, bw = 5, pass = TRUE){
 
   d <- rbind(v[c(bird.diff & time.diff & feeder.diff, FALSE), c("bird_id", "feeder_id", "start", "end")],
              v[c(FALSE, bird.diff & time.diff & feeder.diff), c("bird_id", "feeder_id", "start", "end")])
+
+  if(nrow(d) == 0) stop(paste0("There are no displacement events with a bw = ", bw, ", stopping now"))
+
   d <- d[order(d$start), ]
   d$role <- c("displacee", "displacer")
   d <- d[order(d$role, d$start), ]
@@ -486,7 +489,7 @@ disp <- function(v, bw = 5, pass = TRUE){
   d$arrived <- rep(v$start[c(FALSE, bird.diff & time.diff & feeder.diff)], 2)
 
   d <- d[, !(names(d) %in% c("start", "end"))]
-  if(nrow(d) == 0) stop(paste0("There are no displacement events with a bw = ", bw, ", stopping now"))
+
 
   if(pass == TRUE) d <- merge.extra(d, extra)
   d <- col.order(d, c("bird_id", "left", "arrived", "feeder_id", "role"))
@@ -513,7 +516,7 @@ disp <- function(v, bw = 5, pass = TRUE){
 
   t <- t[order(match(t$displacer,s$bird_id)),]  ##Sort according to the p_win value from s
 
-  return(list("displacements" = d, "summaries" = s, "interactions" = t[, names(t) != "interaction",]))
+  return(list("displacements" = d, "summaries" = s, "interactions" = t))
 }
 
 #' 'displacements' to 'dominance'
