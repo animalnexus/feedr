@@ -43,7 +43,7 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
   check.time(f1, c("feed_start", "feed_end"))
   check.indiv(f1)
 
-  tz <- lubridate::tz(f1$feed_start)
+  tz <- attr(f1$feed_start, "tzone")
 
   if(!is.null(missing)){
     if(!is.data.frame(missing)) {
