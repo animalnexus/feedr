@@ -81,7 +81,7 @@ load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
                     sep = sep)
 
     # Trim leading or trailing whitespace
-    r <- plyr::ddply(r, c(), plyr::colwise(trimws))[ , -1]
+    r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
 
     # Get feeder Ids by matching patterns in file name
     r$feeder_id <- stringr::str_extract(r_file, feeder_pattern)
@@ -304,9 +304,9 @@ get.data <- function(start = NULL,
 load.format <- function(r, tz, tz_disp = NULL){
 
   # Trim leading or trailing whitespace
-  r <- plyr::ddply(r, c(), plyr::colwise(trimws))[ , -1]
+  r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
 
-  # Extract Proper Date and Times
+    # Extract Proper Date and Times
   if("timezone" %in% names(r)) names(r)[names(r) == "timezone"] <- "time"
   if("time" %in% names(r)) r$time <- lubridate::ymd_hms(r$time, tz = tz)
   if(!is.null(tz_disp)) r$time <- lubridate::with_tz(r$time, tz_disp)
