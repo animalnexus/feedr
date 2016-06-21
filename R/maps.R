@@ -86,7 +86,8 @@ map.prep <- function(u = NULL, p = NULL, locs = NULL) {
     n <- names(p)[names(p) %in% c("feeder_id", "lat", "lon")]
     p <- merge(p, locs, by = n, all.x = TRUE, all.y = FALSE)
     if(nrow(p[is.na(p$lat) | is.na(p$lon),]) > 0) message(paste0("Removed ", nrow(p[is.na(p$lat) | is.na(p$lon),]), " paths due to at least one missing lat or lon."))
-    p <- plyr::ddply(p, c("move_path"), .fun = function(x) if(any(is.na(x[,c('lat','lon')]))) return(data.frame()) else return(x))
+    p <- dplyr::group_by(p, move_path) %>%
+      dplyr::do(if(any(is.na(.[,c('lat','lon')]))) return(data.frame()) else return(.))
   }
 
   if(!is.null(u)) if(nrow(u) == 0) stop("Missing use lat/lon data, did you supply location data in either u, p, or locs?")
@@ -374,8 +375,11 @@ map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
     u <- droplevels(u[u$bird_id %in% which,])
     p <- droplevels(p[p$bird_id %in% which,])
 
-    temp.u <- plyr::ddply(u, "bird_id", summarize, sum = sum(amount))
-    temp.p <- plyr::ddply(p, "bird_id", summarize, sum = length(path_use))
+   # temp.u <- plyr::ddply(u, "bird_id", summarize, sum = sum(amount))
+    temp.u <- dplyr::group_by(u, bird_id) %>% summarize(sum = sum(amount))
+    #temp.p <- plyr::ddply(p, "bird_id", summarize, sum = length(path_use))
+    temp.p <- dplyr::group_by(p, bird_id) %>% summarize(sum = length(path_use))
+
     keep.id <- intersect(temp.u$bird_id[temp.u$sum > 0], temp.p$bird_id[temp.p$sum > 0])
     if(length(setdiff(which, keep.id)) > 0) {
       message(paste0("Some bird_ids removed due to lack of data: ", paste(setdiff(which, keep.id), collapse = ", ")))
