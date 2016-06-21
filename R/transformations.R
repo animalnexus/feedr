@@ -551,7 +551,7 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
     omit <- o$displacer[(o$win + o$loss) == 0]
     o <- o[!(o$displacer %in% omit), ]
     d <- d[!(d$displacee %in% omit) & !(d$displacer %in% omit), ]
-    message("bird_ids with zero interactions have been omitted: ", paste0(omit, collapse = ", "))
+    if(length(omit) > 0) message("bird_ids with zero interactions have been omitted: ", paste0(omit, collapse = ", "))
   }
 
   if(nrow(o[(o$win + o$loss) <= 2, ]) / nrow(o) > 0.5) message("More than 50% of your interactions (", round(nrow(d[d$n == 0, ]) / nrow(d)*100), "%) have 2 or fewer observations, this matrix may be founded on too little data.")
@@ -559,7 +559,8 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
   o <- list(as.character(unique(o$displacer)))
 
   ## Setup the matrix
-  d <- reshape2::dcast(d, displacer ~ displacee, value.var = "n")
+  d <- tidyr::spread(d, displacee, n)
+  #d <- reshape2::dcast(d, displacer ~ displacee, value.var = "n")
   row.names(d) <- d$displacer
   d <- as.matrix(d[,-grep("^displacer$", names(d))])
 
