@@ -72,10 +72,7 @@ merge.extra <- function(d, extra, only = NULL) {
 #'   also be passed through (i.e. age, sex, feeder location, etc.).
 #'
 #' @examples
-#' \dontrun{
-#' r <- get.data(start = "2016-03-06", end = "2016-03-08")
-#' v <- visits(r)
-#' }
+#' v <- visits(finches)
 
 #' @import magrittr
 #' @export

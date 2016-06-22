@@ -46,9 +46,6 @@ The function will return an error if impossible visits are detected (unless
   travels between feeders in less time than specified by \code{bw}.
 }
 \examples{
-\dontrun{
-r <- get.data(start = "2016-03-06", end = "2016-03-08")
-v <- visits(r)
-}
+v <- visits(finches)
 }
 
