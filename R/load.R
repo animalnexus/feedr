@@ -101,7 +101,8 @@ load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
     if(!is.null(tz_disp)) r$time <- lubridate::with_tz(r$time, tz_disp)
 
     # Reorder columns
-    r <- col.order(r, c("bird_id", "time", "feeder_id"))
+    r <- dplyr::select(r, bird_id, time, feeder_id, everything()) %>%
+      dplyr::arrange(bird_id, time)
     return(r)
 }
 
@@ -325,7 +326,7 @@ load.format <- function(r, tz, tz_disp = NULL){
   # Reorder columns
   cols <- c("bird_id", "time", "feeder_id")
   cols <- cols[which(cols %in% names(r))]
-  r <- col.order(r, cols)
+  r <- r[, c(cols, names(r)[!(names(r) %in% cols)])]
 
   return(r)
 }

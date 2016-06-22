@@ -484,8 +484,8 @@ disp <- function(v, bw = 5, pass = TRUE){
 
 
   if(pass == TRUE) d <- merge.extra(d, extra)
-  d <- col.order(d, c("bird_id", "left", "arrived", "feeder_id", "role"))
-  d <- d[order(d$left), ]
+  d <- dplyr::select(d, bird_id, left, arrived, feeder_id, role, everything()) %>%
+    dplyr::arrange(left)
 
   ## Summarize totals
   s <- d %>%
