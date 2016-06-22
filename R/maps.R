@@ -1,18 +1,20 @@
-# Scaling feeding and movement data for maps
 # A scaling function used by mapping functions
-# smart.scale <- function(x, m) {
-#   x <- as.numeric(x)
-#   x <- x - min(x) + 0.01
-#   x <- (x / max(x)) * (25 * m)
-#   return(x)
-# }
+scale.area <- function(r, radius = FALSE,
+                       min = 5, max = 105,
+                       val.max = NULL, val.min = NULL){
 
-scale.area <- function(r, val.max = max(r, na.rm = TRUE), min = 5, max = 105){
-  r <- as.numeric(r)
-  if(val.max == 1) val.max <- 5
-  r <- ((r-1) / (val.max - 1)) * (max - min)
-  r[r >= 0] <- r[r >= 0] + min
-  r[r < 0] <- 0
+  if(is.null(val.max)) val.max = max(r, na.rm = TRUE)
+  if(is.null(val.min)) val.min = min(r, na.rm = TRUE)
+
+   if(radius) {
+     min <- pi * (min)^2
+     max <- pi * (max)^2
+  }
+  r <- as.numeric(r) - val.min
+  r <- ((r / (val.max - val.min)) * (max - min)) + min
+
+  if(radius) r <- sqrt(r/pi)
+
   return(r)
 }
 
@@ -87,7 +89,8 @@ map.prep <- function(u = NULL, p = NULL, locs = NULL) {
     p <- merge(p, locs, by = n, all.x = TRUE, all.y = FALSE)
     if(nrow(p[is.na(p$lat) | is.na(p$lon),]) > 0) message(paste0("Removed ", nrow(p[is.na(p$lat) | is.na(p$lon),]), " paths due to at least one missing lat or lon."))
     p <- dplyr::group_by(p, move_path) %>%
-      dplyr::do(if(any(is.na(.[,c('lat','lon')]))) return(data.frame()) else return(.))
+      dplyr::do(if(any(is.na(.[,c('lat','lon')]))) return(data.frame()) else return(.)) %>%
+      dplyr::ungroup()
   }
 
   if(!is.null(u)) if(nrow(u) == 0) stop("Missing use lat/lon data, did you supply location data in either u, p, or locs?")
@@ -100,7 +103,7 @@ map.prep <- function(u = NULL, p = NULL, locs = NULL) {
 #'
 #' Designed for advanced use (see map.leaflet() for general mapping)
 #' @export
-map.leaflet.base <- function(locs, marker = "feeder_id", name = "Feeders", controls = TRUE) {
+map.leaflet.base <- function(locs, marker = "feeder_id", name = "Readers", controls = TRUE) {
   leaflet(data = locs) %>%
     addTiles(group = "Open Street Map") %>%
     addProviderTiles("Stamen.Toner", group = "Black and White") %>%
@@ -117,34 +120,42 @@ map.leaflet.base <- function(locs, marker = "feeder_id", name = "Feeders", contr
 #' Add movement layer to leaflet map
 #'
 #' Designed for advanced use (see map.leaflet() for general mapping)
+#'
+#' @import leaflet
 #' @export
-path.layer <- function(map, p, p.scale = 1, p.title = "Path use", p.pal = c("yellow","red"), controls = TRUE) {
+path.layer <- function(map, p,
+                       p.scale = 1, p.title = "Path use",
+                       p.pal = c("yellow","red"), controls = TRUE) {
 
   if(!(all(c("lat", "lon") %in% names(p)))) stop("Missing path lat/lon data, did you supply location data?")
 
-  p <- p[order(p$path_use, decreasing = TRUE), ]
+  p <- dplyr::arrange(p, desc(path_use))
+  p$use <- round(p$path_use, digits = if(max(p$path_use) < 10) 1 else 0)
 
   # Define palette
-  p.pal <- colorNumeric(palette = colorRampPalette(p.pal)(max(p$path_use)), domain = p$path_use)
+  p.pal <- colorNumeric(palette = colorRampPalette(p.pal)(15), domain = p$path_use)
 
   # Add movement path lines to map
   for(path in unique(p$move_path)) {
     map <- addPolylines(map,
                         data = p[p$move_path == path, ],
                         ~lon, ~lat,
-                        weight = ~scale.area(path_use, max = 105 * p.scale),
-                        opacity = 0.75,
+                        weight = ~scale.area(path_use, max = 50 * p.scale,
+                                             val.max = max(p$path_use),
+                                             val.min = min(p$path_use)),
+                        opacity = 0.5,
                         color = ~p.pal(path_use),
                         group = p.title,
-                        popup = ~htmltools::htmlEscape(as.character(round(path_use))))
+                        popup = ~htmltools::htmlEscape(as.character(use)))
   }
+
   map <- map %>% addLegend(title = p.title,
                            position = 'topright',
                            pal = p.pal,
                            opacity = 1,
                            values = p$path_use) %>%
-    hideGroup("Feeders") %>%
-    showGroup("Feeders")
+    hideGroup("Reader") %>%
+    showGroup("Reader")
 
   if(controls) map <- controls(map, p.title)
 
@@ -154,14 +165,16 @@ path.layer <- function(map, p, p.scale = 1, p.title = "Path use", p.pal = c("yel
 #' Add feeding layer to leaflet map
 #'
 #' Designed for advanced use (see map.leaflet() for general mapping)
+#'
+#' @import leaflet
 #' @export
-use.layer <- function(map, u, u.scale = 1, u.title = "Feeding time", u.pal = c("yellow","red"), controls = TRUE) {
+use.layer <- function(map, u, u.scale = 1, u.title = "Time", u.pal = c("yellow","red"), controls = TRUE) {
   if(!(all(c("lat", "lon") %in% names(u)))) stop("Missing use lat/lon data, did you supply location data?")
   u$amount <- as.numeric(u$amount)
   u <- u[order(u$amount, decreasing = TRUE),]
 
   # Define palette
-  u.pal <- colorNumeric(palette = colorRampPalette(u.pal)(max(u$amount)), domain = u$amount)
+  u.pal <- colorNumeric(palette = colorRampPalette(u.pal)(15), domain = u$amount)
 
   # Add feeder use data to map
   map <- addCircleMarkers(map,
@@ -169,8 +182,8 @@ use.layer <- function(map, u, u.scale = 1, u.title = "Feeding time", u.pal = c("
                            ~lon, ~lat,
                            weight = 1,
                            opacity = 1,
-                           fillOpacity = 0.75,
-                           radius = ~ scale.area(amount, max = 105 * u.scale),
+                           fillOpacity = 0.5,
+                           radius = ~ scale.area(amount, max = 50 * u.scale, radius = TRUE),
                            color = "black",
                            fillColor = ~u.pal(amount),
                            popup = ~htmltools::htmlEscape(as.character(round(amount))),
@@ -181,8 +194,8 @@ use.layer <- function(map, u, u.scale = 1, u.title = "Feeding time", u.pal = c("
               values = u$amount,
               bins = 5,
               opacity = 1) %>%
-    hideGroup("Feeders") %>%
-    showGroup("Feeders")
+    hideGroup("Readers") %>%
+    showGroup("Readers")
 
   if(controls) map <- controls(map, u.title)
   return(map)
@@ -222,6 +235,8 @@ use.layer <- function(map, u, u.scale = 1, u.title = "Feeding time", u.pal = c("
 #'
 #' # Get feeding and movement data
 #'
+#' library(plyr)
+#'
 #' v <- visits(finches)
 #' f <- ddply(v, .(bird_id), feeding, bw = 15)
 #' m <- ddply(v, .(bird_id), move)
@@ -236,7 +251,7 @@ use.layer <- function(map, u, u.scale = 1, u.title = "Feeding time", u.pal = c("
 #' f.all <- ddply(f, .(feeder_id), summarise,
 #'            amount = sum(feed_length) / bird_n[1])
 #'
-#' m.all <- ddply(m, .(move_path), summarise,
+#' m.all <- ddply(m, .(feeder_id, move_path), summarise,
 #'            path_use = length(move_path) / bird_n[1])
 #'
 #' # Look at total summary maps
@@ -247,7 +262,7 @@ use.layer <- function(map, u, u.scale = 1, u.title = "Feeding time", u.pal = c("
 #' f.indiv <- ddply(f, .(bird_id, feeder_id), summarise,
 #'            amount = sum(feed_length))
 #'
-#' m.indiv <- ddply(m, .(bird_id, move_path), summarise,
+#' m.indiv <- ddply(m, .(bird_id, feeder_id, move_path), summarise,
 #'            path_use = length(move_path))
 #'
 #' # Look at individual summary maps (note that Leaflet just stacks individuals
@@ -259,7 +274,7 @@ use.layer <- function(map, u, u.scale = 1, u.title = "Feeding time", u.pal = c("
 #' @import leaflet
 map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
                  u.scale = 1, p.scale = 1,
-                 u.title = "Feeding time", p.title = "Path use",
+                 u.title = "Time", p.title = "Path use",
                  u.pal = c("yellow","red"),
                  p.pal = c("yellow","red"),
                  controls = TRUE) {
@@ -351,7 +366,7 @@ map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
 #' @export
 map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
                  u.scale = 1, p.scale = 1,
-                 u.title = "Feeding time", p.title = "Path use",
+                 u.title = "Time", p.title = "Path use",
                  u.pal = c("yellow","red"),
                  p.pal = c("yellow","red"),
                  maptype = "satellite",
@@ -392,18 +407,18 @@ map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
   if(!is.null(u)){
     # Sort and Scale
     u$amount <- as.numeric(u$amount)
-    u <- u[order(u$amount, decreasing = TRUE),]
-    u$amount2 <- scale.area(u$amount, max = 105 * u.scale * 0.7)
+  #  u <- u[order(u$amount, decreasing = TRUE),]
+    u$amount2 <- scale.area(u$amount, max = 150 * u.scale)
   }
 
   if(!is.null(p)){
-    # Sort and Scale
+  #  # Sort and Scale
     p <- p[order(p$path_use, decreasing = TRUE), ]
-    p$path_use2 <- scale.area(p$path_use, max = 105 * p.scale * 1.75)
+    p$path_use2 <- scale.area(p$path_use, max = 1 * p.scale)
   }
 
   # Basic Map (reverse order to make sure feeders are on top)
-  visual <- ggmap::get_map(location = c(median(locs$lon),median(locs$lat)),
+  visual <- ggmap::get_map(location = c(median(locs$lon), median(locs$lat)),
                            zoom = zoom,
                            source = mapsource,
                            maptype = maptype)
@@ -416,15 +431,20 @@ map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
   # If feeding data specified
   if(!is.null(u)) {
     map <- map +
-      ggplot2::geom_point(data = u, ggplot2::aes(x = lon, y = lat, fill = amount, size = amount), shape = 21, alpha = 0.75) +
+      ggplot2::geom_point(data = u, ggplot2::aes(x = lon, y = lat, fill = amount, size = amount2), shape = 21, alpha = 0.75) +
       ggplot2::scale_fill_gradientn(name = u.title, colours = u.pal) +
-      ggplot2::scale_size(guide = FALSE, range = c(min(u$amount2), max(u$amount2))) #specify radius, as the scale has already been back calculated to represent area in the end (based on requirements for leaflet)
+      ggplot2::scale_size_area(guide = FALSE, max_size = 40)
   }
 
   # If movement paths specified
   if(!is.null(p)){
     map <- map +
-      ggplot2::geom_path(data = p, ggplot2::aes(x = lon, y = lat, group = move_path, colour = path_use, size = path_use2), lineend = "round", alpha = 0.75) +
+      ggplot2::geom_path(data = p, ggplot2::aes(x = lon,
+                                                y = lat,
+                                                group = move_path,
+                                                colour = path_use,
+                                                size = path_use2),
+                         lineend = "round", alpha = 0.75) +
       ggplot2::scale_colour_gradientn(name = p.title, colours = p.pal)
   }
 
