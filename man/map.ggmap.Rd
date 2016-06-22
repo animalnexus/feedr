@@ -5,9 +5,9 @@
 \title{Map data using ggmap}
 \usage{
 map.ggmap(u = NULL, p = NULL, locs = NULL, u.scale = 1, p.scale = 1,
-  u.title = "Feeding time", p.title = "Path use", u.pal = c("yellow",
-  "red"), p.pal = c("yellow", "red"), maptype = "satellite",
-  mapsource = "google", zoom = 17, which = NULL)
+  u.title = "Time", p.title = "Path use", u.pal = c("yellow", "red"),
+  p.pal = c("yellow", "red"), maptype = "satellite", mapsource = "google",
+  zoom = 17, which = NULL)
 }
 \arguments{
 \item{u}{Dataframe. Summarized feeding data with columns \code{feeder_id} and

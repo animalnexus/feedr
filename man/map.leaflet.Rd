@@ -5,8 +5,8 @@
 \title{Map data using leaflet}
 \usage{
 map.leaflet(u = NULL, p = NULL, locs = NULL, u.scale = 1, p.scale = 1,
-  u.title = "Feeding time", p.title = "Path use", u.pal = c("yellow",
-  "red"), p.pal = c("yellow", "red"), controls = TRUE)
+  u.title = "Time", p.title = "Path use", u.pal = c("yellow", "red"),
+  p.pal = c("yellow", "red"), controls = TRUE)
 }
 \arguments{
 \item{u}{Dataframe. Summarized 'use' data with columns \code{feeder_id} and

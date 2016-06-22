@@ -4,8 +4,8 @@
 \alias{use.layer}
 \title{Add feeding layer to leaflet map}
 \usage{
-use.layer(map, u, u.scale = 1, u.title = "Feeding time",
-  u.pal = c("yellow", "red"), controls = TRUE)
+use.layer(map, u, u.scale = 1, u.title = "Time", u.pal = c("yellow",
+  "red"), controls = TRUE)
 }
 \description{
 Designed for advanced use (see map.leaflet() for general mapping)
