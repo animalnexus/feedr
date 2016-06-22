@@ -46,6 +46,8 @@ bird data as well as grand summarise (see Details and Examples).
 
 # Get feeding and movement data
 
+library(plyr)
+
 v <- visits(finches)
 f <- ddply(v, .(bird_id), feeding, bw = 15)
 m <- ddply(v, .(bird_id), move)
@@ -60,7 +62,7 @@ l <- read.csv("feeder index.csv")
 f.all <- ddply(f, .(feeder_id), summarise,
            amount = sum(feed_length) / bird_n[1])
 
-m.all <- ddply(m, .(move_path), summarise,
+m.all <- ddply(m, .(feeder_id, move_path), summarise,
            path_use = length(move_path) / bird_n[1])
 
 # Look at total summary maps
@@ -71,7 +73,7 @@ map.ggmap(u = f.all, p = m.all, locs = l)
 f.indiv <- ddply(f, .(bird_id, feeder_id), summarise,
            amount = sum(feed_length))
 
-m.indiv <- ddply(m, .(bird_id, move_path), summarise,
+m.indiv <- ddply(m, .(bird_id, feeder_id, move_path), summarise,
            path_use = length(move_path))
 
 # Look at individual summary maps (note that Leaflet just stacks individuals
