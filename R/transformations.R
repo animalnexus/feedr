@@ -105,14 +105,20 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE){
   diff.feeder <- r$feeder_id[-nrow(r)] != r$feeder_id[-1]
 
   # Check for impossible combos: where less than bw, still the same bird, but a different feeder
-  impos <- which(rowSums(matrix(c(!diff.time, !diff.bird, diff.feeder), ncol = 3)) > 2)
-  impos <- r[unique(c(impos,impos+1)),]
-  if(nrow(impos) > 0 & allow.imp == FALSE) {
-      print(paste0("Potentially impossible reads found: Time between reads is less than 'bw' (", bw, "s) for a single individual, yet the reads occur at different feeders. You should fix, remove or allow (allow.imp = TRUE) these rows and try again."))
-      print(impos[order(impos$bird_id, impos$time),])
-      stop("Impossible visits found, no specification for how to handle.")
+  if(!allow.imp) {
+    impos <- which(rowSums(matrix(c(!diff.time, !diff.bird, diff.feeder), ncol = 3)) > 2)
+    impos <- r[unique(c(impos, impos + 1)), ]
+    if(nrow(impos) > 0) {
+      impos <- impos[order(impos$bird_id, impos$time), ]
+      end <- "hellow"
+      rows <- nrow(impos)
+      if(nrow(impos) > 5) {
+        rows <- 5
+        end <- "\n..."
+      }
+      stop("Impossible visits found, no specification for how to handle.\nTime between reads is less than 'bw' (", bw, "s) for a single individual, yet the\nreads occur at different feeders. You should fix, remove or\nallow (allow.imp = TRUE) these rows and try again.\n\n", paste0(capture.output(impos[1:rows, ]), collapse = "\n"))
+    }
   }
-
   # Start if
   # - time before is greater than 'bw' OR
   # - bird before is not the same OR
