@@ -60,7 +60,7 @@ f <- ddply(v, .(bird_id), feeding, bw = 15)
 m <- ddply(v, .(bird_id), move)
 
 # Summarise data for visualization (use totals):
-f.all <- ddply(f, .(feeder_id), summarise,
+f.all <- ddply(f, .(feeder_id, lat, lon), summarise,
            amount = sum(feed_length) / bird_n)
 
 m.all <- ddply(m, .(move_path), summarise,
@@ -71,7 +71,7 @@ map.leaflet(u = f.all, p = m.all)
 map.ggmap(u = f.all, p = m.all)
 
 # Summarise data for visualization (use individuals):
-f.indiv <- ddply(f, .(bird_id, feeder_id), summarise,
+f.indiv <- ddply(f, .(bird_id, feeder_id, lat, lon), summarise,
            amount = sum(feed_length))
 
 m.indiv <- ddply(m, .(bird_id, move_path), summarise,
@@ -80,7 +80,7 @@ m.indiv <- ddply(m, .(bird_id, move_path), summarise,
 # Look at individual summary maps (note that Leaflet just stacks individuals
 one on top of the other)
 map.leaflet(u = f.indiv, p = m.indiv)
-map.ggmap(u = f.indiv, p = m.indiv, u.scale = 0.7, p.scale = 0.05)
+map.ggmap(u = f.indiv, p = m.indiv)
 }
 }
 

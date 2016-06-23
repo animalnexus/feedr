@@ -47,5 +47,9 @@ The function will return an error if impossible visits are detected (unless
 }
 \examples{
 v <- visits(finches)
+head(v)
+
+v <- visits(finches, bw = 30)
+head(v)
 }
 

@@ -37,6 +37,10 @@
 #'
 #' @examples
 #' v <- visits(finches)
+#' head(v)
+#'
+#' v <- visits(finches, bw = 30)
+#' head(v)
 
 #' @import magrittr
 #' @export
@@ -167,16 +171,29 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE){
 #'
 #' # One bird at a time:
 #' m <- move(v[v$bird_id == "0620000514",])
+#' head(m)
 #'
-#' # Split a data frame by \code{bird_id} with \code{plyr}, then
-#' # apply \code{move}.
-#' library(plyr)
-#' m <- ddply(v, c("bird_id"), move)
+#' # Split a data frame by \code{bird_id} then apply \code{move}
 #'
-#' # Summarize a movement dataframe (divide by 2 because 2 rows for each event)
+#' # With plyr
 #' library(plyr)
-#' m.totals <- ddply(m, c("bird_id", "move_path"), summarise,
+#'
+#' # Split and apply move
+#' m <- plyr::ddply(v, c("bird_id"), move)
+#'
+#' # Summarize (divide by 2 because 2 rows per event)
+#' m.totals <- ddply(m, c("bird_id", "move_path"), summarize,
 #'                   n_path = length(move_path) / 2)
+#'
+#' # With dplyr
+#' library(dplyr)
+#'
+#' # Split and apply move
+#' m <- v %>%
+#'   group_by(bird_id) %>%
+#'   do(move(.)) %>%
+#'   group_by(bird_id, move_path) %>%
+#'   summarize(n_path = length(move_path) /2)
 
 #' @import magrittr
 #' @export

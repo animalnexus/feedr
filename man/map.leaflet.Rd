@@ -78,8 +78,8 @@ m.indiv <- ddply(m, .(bird_id, feeder_id, move_path), summarise,
 
 # Look at individual summary maps (note that Leaflet just stacks individuals
   one on top of the other)
-map.leaflet(u = f.indiv, p = m.all, locs = l)
-map.ggmap(u = f.indiv, p = m.all, locs = l)
+map.leaflet(u = f.indiv, p = m.indiv, locs = l)
+map.ggmap(u = f.indiv, p = m.indiv, locs = l)
 }
 }
 
