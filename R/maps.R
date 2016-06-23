@@ -267,8 +267,8 @@ use.layer <- function(map, u, u.scale = 1, u.title = "Time", u.pal = c("yellow",
 #'
 #' # Look at individual summary maps (note that Leaflet just stacks individuals
 #'   one on top of the other)
-#' map.leaflet(u = f.indiv, p = m.all, locs = l)
-#' map.ggmap(u = f.indiv, p = m.all, locs = l)
+#' map.leaflet(u = f.indiv, p = m.indiv, locs = l)
+#' map.ggmap(u = f.indiv, p = m.indiv, locs = l)
 #' }
 #' @export
 #' @import leaflet
@@ -341,7 +341,7 @@ map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
 #' m <- ddply(v, .(bird_id), move)
 #'
 #' # Summarise data for visualization (use totals):
-#' f.all <- ddply(f, .(feeder_id), summarise,
+#' f.all <- ddply(f, .(feeder_id, lat, lon), summarise,
 #'            amount = sum(feed_length) / bird_n)
 #'
 #' m.all <- ddply(m, .(move_path), summarise,
@@ -352,7 +352,7 @@ map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
 #' map.ggmap(u = f.all, p = m.all)
 #'
 #' # Summarise data for visualization (use individuals):
-#' f.indiv <- ddply(f, .(bird_id, feeder_id), summarise,
+#' f.indiv <- ddply(f, .(bird_id, feeder_id, lat, lon), summarise,
 #'            amount = sum(feed_length))
 #'
 #' m.indiv <- ddply(m, .(bird_id, move_path), summarise,
@@ -361,7 +361,7 @@ map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
 #' # Look at individual summary maps (note that Leaflet just stacks individuals
 #' one on top of the other)
 #' map.leaflet(u = f.indiv, p = m.indiv)
-#' map.ggmap(u = f.indiv, p = m.indiv, u.scale = 0.7, p.scale = 0.05)
+#' map.ggmap(u = f.indiv, p = m.indiv)
 #' }
 #' @export
 map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
