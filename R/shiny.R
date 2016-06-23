@@ -1,3 +1,4 @@
+#' @export
 birdmoves <- function() {
   appDir <- system.file("shiny-examples", "birdmoves", package = "feedr")
   if (appDir == "") {
