@@ -1,6 +1,5 @@
-library(feedr)
-library(dplyr)
-context("Transformations between data types: Activity")
+library(magrittr)
+context("Transformations to activity")
 
 # activity()
 test_that("activity() in general", {
@@ -22,7 +21,7 @@ test_that("activity() in general", {
    expect_is(a$feeder_id, "factor")
    expect_is(a$time, "POSIXct")
 
-   expect_equal(a$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
+   expect_equal(a$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
    expect_equal(a$feeder_id[1], factor(NA, levels = c("2100", "2200", "2400", "2700")))
    expect_equal(a$time[1], as.POSIXct("2016-01-28", tz = "America/Vancouver"))
    expect_equal(nrow(a), 386)
@@ -60,7 +59,7 @@ test_that("daily() by_feeder == FALSE", {
   a <- plyr::ddply(f, c("bird_id"), activity)
   d <- plyr::ddply(a, c("bird_id"), daily)
 
-  expect_equal(d$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
+  expect_equal(d$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
   expect_equal(d$feeder_id[1], factor(NA, levels = c("2100", "2200", "2400", "2700")))
   expect_equal(d$time[1], as.POSIXct("1970-01-01", tz = "UTM"))
   expect_equal(nrow(d), 192)
@@ -68,7 +67,7 @@ test_that("daily() by_feeder == FALSE", {
   a <- plyr::ddply(f, c("bird_id"), activity, by_feeder = TRUE)
   d <- plyr::ddply(a, c("bird_id"), daily)
 
-  expect_equal(d$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
+  expect_equal(d$bird_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
   expect_equal(d$feeder_id[1], factor(2100, levels = c("2100", "2200", "2400", "2700")))
   expect_equal(d$time[1], as.POSIXct("1970-01-01", tz = "UTM"))
   expect_equal(nrow(d), 768)

@@ -19,17 +19,16 @@ test_that("load.web loads and formats data correctly", {
 
 # load.raw()
 test_that("load.raw loads and formats data correctly", {
-  f <- "../data/raw_tests/exp1/GR12DATA.csv"
-  expect_is(load.raw(f), "data.frame")
-  expect_match(names(load.raw(f))[1:3], "^bird_id$|^time$|^feeder_id$")
-  expect_is(load.raw(f)$bird_id, "character")
-  expect_is(load.raw(f)$feeder_id, "character")
-  expect_is(load.raw(f)$time, "POSIXct")
+  expect_is(r <- load.raw("../data/raw_tests/exp1/GR12DATA.csv"), "data.frame")
+  expect_match(names(r)[1:3], "^bird_id$|^time$|^feeder_id$")
+  expect_is(r$bird_id, "character")
+  expect_is(r$feeder_id, "character")
+  expect_is(r$time, "POSIXct")
 
-  expect_equal(load.raw(f)$bird_id[1], "06200004BB")
-  expect_equal(load.raw(f)$feeder_id[1], "GR12")
-  expect_equal(load.raw(f)$time[1], as.POSIXct("2015-12-09 15:20:59", tz = "America/Vancouver"))
-  expect_equal(load.raw(f, tz_disp = "America/Toronto")$time[1], as.POSIXct("2015-12-09 18:20:59", tz = "America/Toronto"))
+  expect_equal(r$bird_id[1], "0620000418")
+  expect_equal(r$feeder_id[1], "GR12")
+  expect_equal(r$time[1], as.POSIXct("2015-12-10 09:17:54", tz = "America/Vancouver"))
+  expect_equal(load.raw("../data/raw_tests/exp1/GR12DATA.csv", tz_disp = "America/Toronto")$time[1], as.POSIXct("2015-12-10 12:17:54", tz = "America/Toronto"))
 })
 
 # load.raw.all()
@@ -42,10 +41,10 @@ test_that("load.raw.all loads and formats data correctly", {
   expect_is(load$feeder_id, "factor")
   expect_is(load$time, "POSIXct")
 
-  expect_equal(load$bird_id[1], factor("06200004BB", levels = c("06200001F0", "06200003C3", "0620000418", "06200004BB")))
+  expect_equal(load$bird_id[1], factor("0620000418", levels = c("06200001F0", "06200003C3", "0620000418", "06200004BB")))
   expect_equal(load$feeder_id[1], factor("GR12", levels = c("GR11","GR12")))
-  expect_equal(load$time[1], as.POSIXct("2015-12-09 15:20:59", tz = "America/Vancouver"))
-  expect_equal(load2$time[1], as.POSIXct("2015-12-09 18:20:59", tz = "America/Toronto"))
+  expect_equal(load$time[1], as.POSIXct("2015-12-10 09:17:54", tz = "America/Vancouver"))
+  expect_equal(load2$time[1], as.POSIXct("2015-12-10 12:17:54", tz = "America/Toronto"))
 })
 
 # get.data()

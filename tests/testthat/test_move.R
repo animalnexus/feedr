@@ -1,4 +1,3 @@
-library(feedr)
 library(magrittr)
 context("Transformations to movements")
 

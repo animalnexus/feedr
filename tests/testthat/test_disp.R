@@ -19,11 +19,11 @@ test_that("disp() returns appropriate, non-empty dataframe", {
   expect_length(d3, 3)
 
   expect_equal(nrow(d1), 24)
-  expect_equal(nrow(d2), 5)
-  expect_equal(nrow(d3), 20)
+  expect_equal(nrow(d2), 6)
+  expect_equal(nrow(d3), 30)
 
   expect_equal(sum(is.na(d1)), 0)
-  expect_equal(sum(is.na(d2)), 0)
+  expect_equal(sum(is.na(d2)), 1)
   expect_equal(sum(is.na(d3)), 0)
 
   expect_match(names(d1)[1:3], "^bird_id$|^left$|^arrived$|^feeder_id$|^role$")
@@ -57,7 +57,7 @@ test_that("disp() returns correct data", {
   expect_equal(d1$species[1], "House Finch")
 
   expect_equal(d2$p_win[1], 1.00)
-  expect_equal(sum(d3$n == 0), 12)
+  expect_equal(sum(d3$n == 0), 21)
 })
 
 test_that("disp() pass", {

@@ -1,4 +1,3 @@
-library(feedr)
 library(magrittr)
 context("Scaling by area for maps")
 
@@ -35,8 +34,8 @@ test_that("scale.area(radius = TRUE) returns correct min/max/length", {
       mx <- sample(100:10000, size = 1)
       mn <- sample(1:99, size = 1)
       r <- scale.area(n, radius = TRUE, max = mx, min = mn)
-      expect_equal(min(r), mn/2)
-      expect_equal(max(r), mx/2)
+      expect_equal(min(r), mn)
+      expect_equal(max(r), mx)
       expect_length(r, 5)
     }
   }
@@ -50,7 +49,7 @@ test_that("scale.area() returns expected values", {
             2:6)
 
   for(r in s) {
-    cat(r, "\n")
+    #cat(r, "\n")
     r <- scale.area(r)
     expect_equal(r, c(5, 30, 55, 80, 105))
   }
@@ -67,11 +66,11 @@ test_that("scale.area(radius) returns expected values", {
             2:6)
 
   for(r in s) {
-    cat(r, "\n")
+    #cat(r, "\n")
     r <- scale.area(r, radius = TRUE)
-    expect_equal(round(r, 5), c(2.50000, 26.33913, 37.16517, 45.48351, 52.50000))
+    expect_equal(round(r, 5), c(5.00000, 52.67827, 74.33034, 90.96703, 105.00000))
   }
 
-  expect_equal(round(scale.area(c(4,8,19,500,6000,30000)), 6),
-              c(5.000000, 5.013335, 5.050007, 6.653554, 24.989332, 105.000000))
+  expect_equal(round(scale.area(c(4,8,19,500,6000,30000), radius = TRUE), 6),
+              c(5.000000, 5.144595, 5.522747, 14.383703, 47.157465, 105.000000))
 })
