@@ -390,10 +390,8 @@ map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
     u <- droplevels(u[u$bird_id %in% which,])
     p <- droplevels(p[p$bird_id %in% which,])
 
-   # temp.u <- plyr::ddply(u, "bird_id", summarize, sum = sum(amount))
-    temp.u <- dplyr::group_by(u, bird_id) %>% summarize(sum = sum(amount))
-    #temp.p <- plyr::ddply(p, "bird_id", summarize, sum = length(path_use))
-    temp.p <- dplyr::group_by(p, bird_id) %>% summarize(sum = length(path_use))
+    temp.u <- dplyr::group_by(u, bird_id) %>% dplyr::summarize(sum = sum(amount))
+    temp.p <- dplyr::group_by(p, bird_id) %>% dplyr::summarize(sum = length(path_use))
 
     keep.id <- intersect(temp.u$bird_id[temp.u$sum > 0], temp.p$bird_id[temp.p$sum > 0])
     if(length(setdiff(which, keep.id)) > 0) {
