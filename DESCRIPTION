@@ -25,8 +25,9 @@ Imports:
     xml2 (>= 0.1.2)
 Suggests:
     DiagrammeR,
-    testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    shiny,
+    testthat
 RoxygenNote: 5.0.1
 VignetteBuilder: knitr
