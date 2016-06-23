@@ -1,3 +1,7 @@
+# feedr 0.6.0.9000
+
+
+
 # feedr 0.6.0 (2016-06-20)
 
 This update fixes a couple of small bugs and mostly involves rewriting code to use `dplyr`/`tidyr` as opposed to `plyr`/`reshape2`, and further includes `magrittr` as an import. 
