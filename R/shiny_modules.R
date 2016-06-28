@@ -47,7 +47,7 @@ map_animated <- function(input, output, session, data) {
     dplyr::mutate(time = lubridate::with_tz(time, tzone = tz_offset(attr(data$time, "tzone"), tz_name = TRUE)))
   attr(v$time, "tzone") <- "UTC"
 
-  v <- visits(v, allow.imp = TRUE) %>%
+  v <- visits(v, allow_imp = TRUE) %>%
     dplyr::mutate(day = as.Date(start)) %>%
     dplyr::group_by(feeder_id, lat, lon)
 
@@ -114,7 +114,7 @@ map_animated <- function(input, output, session, data) {
     pal <- colorNumeric(palette = colorRampPalette(c("blue", "green", "yellow","orange", "red"))(max(vals)),
                         domain = vals)
 
-    feedr::map.leaflet.base(locs = unique(data[, c("feeder_id", "lat", "lon")]),
+    feedr::map_leaflet_base(locs = unique(data[, c("feeder_id", "lat", "lon")]),
                             marker = "feeder_id",
                             name = "Feeders") %>%
       leaflet::addScaleBar(position = "bottomright") %>%
@@ -157,7 +157,7 @@ map_animated <- function(input, output, session, data) {
         addCircleMarkers(data = v_points(), lat = ~lat, lng = ~lon, group = "Visits",
                          stroke = FALSE,
                          fillOpacity = 1,
-                         radius = ~feedr:::scale.area(n),
+                         radius = ~feedr:::scale_area(n),
                          fillColor = ~pal(n),
                          popup = ~htmltools::htmlEscape(as.character(round(n, 1))))
     } else {
