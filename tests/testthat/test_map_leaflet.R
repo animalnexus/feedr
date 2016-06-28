@@ -1,8 +1,8 @@
 library(magrittr)
 context("leaflet maps")
 
-test_that("maps.leaflet.base return maps", {
-  expect_error(map <- map.leaflet.base(locs = unique(finches[, c("feeder_id", "lat", "lon")])), NA)
+test_that("maps_leaflet_base return maps", {
+  expect_error(map <- map_leaflet_base(locs = unique(finches[, c("feeder_id", "lat", "lon")])), NA)
   expect_is(map, c("leaflet", "htmlwidget"))
 
   expect_true(all(attr(map$x, "leafletData") == unique(finches[, c("feeder_id", "lat", "lon")])))
@@ -23,9 +23,9 @@ test_that("ggmap and leaflet map return map", {
     dplyr::summarize(path_use = length(move_path))
 
 
-  expect_error(map <- map.leaflet(u = f.indiv, p = m.indiv), NA)
+  expect_error(map <- map_leaflet(u = f.indiv, p = m.indiv), NA)
   expect_is(map, c("leaflet", "htmlwidget"))
 
-  expect_message(expect_error(map <- map.ggmap(u = f.indiv, p = m.indiv), NA), "(Some birds)|(Map from URL)|(You have specified)")
+  expect_message(expect_error(map <- map_ggmap(u = f.indiv, p = m.indiv), NA), "(Some birds)|(Map from URL)|(You have specified)")
   expect_is(map, c("gg", "ggplot"))
 })
