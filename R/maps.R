@@ -54,7 +54,7 @@ get.locs <- function(d) {
 
 # Prep data for mapping
 # A data prep function used by mapping functions
-map.prep <- function(u = NULL, p = NULL, locs = NULL) {
+map_prep <- function(u = NULL, p = NULL, locs = NULL) {
 
   # Check data
   if(!is.null(u)){
@@ -71,12 +71,12 @@ map.prep <- function(u = NULL, p = NULL, locs = NULL) {
   lat <- c("lat", "latitude")
   lon <- c("lon", "long", "longitude")
 
-  locs <- unique(rbind(get.locs(u), get.locs(p), get.locs(locs)))
+  locs <- unique(rbind(get_locs(u), get_locs(p), get_locs(locs)))
   if(nrow(locs) == 0) stop(paste0("Locations (locs) dataframe is missing either latitude (", paste0(lat, collapse = ", "), ") or longitude (", paste0(lon, collapse = ", "), "), or both."))
 
   # Get locations and alert if any missing
   if(!is.null(u)){
-    u <- rename.locs(u)
+    u <- rename_locs(u)
     n <- names(u)[names(u) %in% c("feeder_id", "lat", "lon")]
     u <- merge(u, locs, by = n, all.x = TRUE, all.y = FALSE)
     if(nrow(u[is.na(u$lat) | is.na(u$lon),]) > 0) message(paste0("Removed ", nrow(u[is.na(u$lat) | is.na(u$lon),]), " feeders due to missing lat or lon."))
@@ -84,7 +84,7 @@ map.prep <- function(u = NULL, p = NULL, locs = NULL) {
   }
 
   if(!is.null(p)){
-    p <- rename.locs(p)
+    p <- rename_locs(p)
     n <- names(p)[names(p) %in% c("feeder_id", "lat", "lon")]
     p <- merge(p, locs, by = n, all.x = TRUE, all.y = FALSE)
     if(nrow(p[is.na(p$lat) | is.na(p$lon),]) > 0) message(paste0("Removed ", nrow(p[is.na(p$lat) | is.na(p$lon),]), " paths due to at least one missing lat or lon."))
@@ -101,9 +101,9 @@ map.prep <- function(u = NULL, p = NULL, locs = NULL) {
 
 #' Base map for leaflet
 #'
-#' Designed for advanced use (see map.leaflet() for general mapping)
+#' Designed for advanced use (see map_leaflet() for general mapping)
 #' @export
-map.leaflet.base <- function(locs, marker = "feeder_id", name = "Readers", controls = TRUE) {
+map_leaflet_base <- function(locs, marker = "feeder_id", name = "Readers", controls = TRUE) {
   leaflet(data = locs) %>%
     addTiles(group = "Open Street Map") %>%
     addProviderTiles("Stamen.Toner", group = "Black and White") %>%
@@ -117,15 +117,38 @@ map.leaflet.base <- function(locs, marker = "feeder_id", name = "Readers", contr
                      options = layersControlOptions(collapsed = FALSE))
 }
 
+map.leaflet.base <- function(locs, marker = "feeder_id", name = "Readers", controls = TRUE) {
+  .Deprecated("map_leaflet_base")
+}
+
 #' Add movement layer to leaflet map
 #'
-#' Designed for advanced use (see map.leaflet() for general mapping)
+#' Designed for advanced use (see map_leaflet() for general mapping)
 #'
 #' @import leaflet
 #' @export
-path.layer <- function(map, p,
-                       p.scale = 1, p.title = "Path use",
-                       p.pal = c("yellow","red"), controls = TRUE) {
+path_layer <- function(map, p,
+                       p_scale = 1, p_title = "Path use",
+                       p_pal = c("yellow", "red"), controls = TRUE,
+                       p.scale, p.title, p.pal) {
+
+  if (!missing(p.scale)) {
+    warning("Argument p.scale is deprecated; please use p_scale instead.",
+            call. = FALSE)
+    p_scale <- p.scale
+  }
+
+  if (!missing(p.title)) {
+    warning("Argument p.title is deprecated; please use p_title instead.",
+            call. = FALSE)
+    p_title <- p.title
+  }
+
+  if (!missing(p.pal)) {
+    warning("Argument p.pal is deprecated; please use p_pal instead.",
+            call. = FALSE)
+    p_pal <- p.pal
+  }
 
   if(!(all(c("lat", "lon") %in% names(p)))) stop("Missing path lat/lon data, did you supply location data?")
 
@@ -133,48 +156,76 @@ path.layer <- function(map, p,
   p$use <- round(p$path_use, digits = if(max(p$path_use) < 10) 1 else 0)
 
   # Define palette
-  p.pal <- colorNumeric(palette = colorRampPalette(p.pal)(15), domain = p$path_use)
+  p_pal <- colorNumeric(palette = colorRampPalette(p_pal)(15), domain = p$path_use)
 
   # Add movement path lines to map
   for(path in unique(p$move_path)) {
     map <- addPolylines(map,
                         data = p[p$move_path == path, ],
                         ~lon, ~lat,
-                        weight = ~scale.area(path_use, max = 50 * p.scale,
-                                             val.max = max(p$path_use),
-                                             val.min = min(p$path_use)),
+                        weight = ~scale_area(path_use, max = 50 * p_scale,
+                                             val_max = max(p$path_use),
+                                             val_min = min(p$path_use)),
                         opacity = 0.5,
-                        color = ~p.pal(path_use),
-                        group = p.title,
+                        color = ~p_pal(path_use),
+                        group = p_title,
                         popup = ~htmltools::htmlEscape(as.character(use)))
   }
 
-  map <- map %>% addLegend(title = p.title,
+  map <- map %>% addLegend(title = p_title,
                            position = 'topright',
-                           pal = p.pal,
+                           pal = p_pal,
                            opacity = 1,
                            values = p$path_use) %>%
     hideGroup("Reader") %>%
     showGroup("Reader")
 
-  if(controls) map <- controls(map, p.title)
+  if(controls) map <- controls(map, p_title)
 
   return(map)
 }
 
+path.layer <- function(map, p,
+                       p_scale = 1, p_title = "Path use",
+                       p_pal = c("yellow","red"), p.scale, p.title, p.pal, controls = TRUE) {
+  .Deprecated("path_layer")
+}
+
 #' Add feeding layer to leaflet map
 #'
-#' Designed for advanced use (see map.leaflet() for general mapping)
+#' Designed for advanced use (see map_leaflet() for general mapping)
 #'
 #' @import leaflet
 #' @export
-use.layer <- function(map, u, u.scale = 1, u.title = "Time", u.pal = c("yellow","red"), controls = TRUE) {
+use_layer <- function(map, u,
+                      u_scale = 1, u_title = "Time", u_pal = c("yellow","red"),
+                      controls = TRUE,
+                      u.scale, u.title, u.pal) {
+  if (!missing(u.scale)) {
+    warning("Argument u.scale is deprecated; please use u_scale instead.",
+            call. = FALSE)
+    u_scale <- u.scale
+  }
+
+  if (!missing(u.title)) {
+    warning("Argument u.title is deprecated; please use u_title instead.",
+            call. = FALSE)
+    u_title <- u.title
+  }
+
+  if (!missing(u.pal)) {
+    warning("Argument u.pal is deprecated; please use u_pal instead.",
+            call. = FALSE)
+    u_pal <- u.pal
+  }
+
+
   if(!(all(c("lat", "lon") %in% names(u)))) stop("Missing use lat/lon data, did you supply location data?")
   u$amount <- as.numeric(u$amount)
   u <- u[order(u$amount, decreasing = TRUE),]
 
   # Define palette
-  u.pal <- colorNumeric(palette = colorRampPalette(u.pal)(15), domain = u$amount)
+  u_pal <- colorNumeric(palette = colorRampPalette(u_pal)(15), domain = u$amount)
 
   # Add feeder use data to map
   map <- addCircleMarkers(map,
@@ -183,26 +234,31 @@ use.layer <- function(map, u, u.scale = 1, u.title = "Time", u.pal = c("yellow",
                            weight = 1,
                            opacity = 1,
                            fillOpacity = 0.5,
-                           radius = ~ scale.area(amount, max = 50 * u.scale, radius = TRUE),
+                           radius = ~ scale_area(amount, max = 50 * u_scale, radius = TRUE),
                            color = "black",
-                           fillColor = ~u.pal(amount),
+                           fillColor = ~u_pal(amount),
                            popup = ~htmltools::htmlEscape(as.character(round(amount))),
-                           group = u.title) %>%
-    addLegend(title = u.title,
+                           group = u_title) %>%
+    addLegend(title = u_title,
               position = 'topright',
-              pal = u.pal,
+              pal = u_pal,
               values = u$amount,
               bins = 5,
               opacity = 1) %>%
     hideGroup("Readers") %>%
     showGroup("Readers")
 
-  if(controls) map <- controls(map, u.title)
+  if(controls) map <- controls(map, u_title)
   return(map)
 }
 
+use.layer <- function(map, u, u_scale = 1, u_title = "Time", u_pal = c("yellow","red"), controls = TRUE,
+                      u.scale, u.title, u.pal) {
+  .Deprecated("use_layer")
+}
+
 # ----------------------------------
-# map.leaflet()
+# map_leaflet()
 # ----------------------------------
 #' Map data using leaflet
 #'
@@ -219,14 +275,15 @@ use.layer <- function(map, u, u.scale = 1, u.title = "Time", u.pal = c("yellow",
 #'   for individual-based data, and lat/lon instead of a locs argument.
 #' @param locs Dataframe. Lat and long for each feeder_id, required if lat and
 #'   lon not in either u or p.
-#' @param u.scale,p.scale Numerical. Scaling constants to increase (> 1) or
+#' @param u_scale,p_scale Numerical. Scaling constants to increase (> 1) or
 #'   decrease (< 1) the relative size of use (u) and path (p) data.
-#' @param u.title,p.title Character. Titles for the legends of use (u) and
+#' @param u_title,p_title Character. Titles for the legends of use (u) and
 #'   path (p) data.
-#' @param u.pal,p.pal Character vectors. Colours used to construct gradients for
+#' @param u_pal,p_pal Character vectors. Colours used to construct gradients for
 #'   use (u) and path (p) data.
 #' @param controls Logical. Add controls to map (allows showing/hiding of
 #'   different layers)
+#' @param u.scale,p.scale,u.title,p.title,u.pal,p.pal Depreciated.
 #'
 #' @return An interactive leaflet map with layers for use, paths and feeder positions.
 #'
@@ -255,8 +312,8 @@ use.layer <- function(map, u, u.scale = 1, u.title = "Time", u.pal = c("yellow",
 #'            path_use = length(move_path) / bird_n[1])
 #'
 #' # Look at total summary maps
-#' map.leaflet(u = f.all, p = m.all, locs = l)
-#' map.ggmap(u = f.all, p = m.all, locs = l)
+#' map_leaflet(u = f.all, p = m.all, locs = l)
+#' map_ggmap(u = f.all, p = m.all, locs = l)
 #'
 #' # Summarise data for visualization (use individuals):
 #' f.indiv <- ddply(f, .(bird_id, feeder_id), summarise,
@@ -267,19 +324,51 @@ use.layer <- function(map, u, u.scale = 1, u.title = "Time", u.pal = c("yellow",
 #'
 #' # Look at individual summary maps (note that Leaflet just stacks individuals
 #'   one on top of the other)
-#' map.leaflet(u = f.indiv, p = m.indiv, locs = l)
-#' map.ggmap(u = f.indiv, p = m.indiv, locs = l)
+#' map_leaflet(u = f.indiv, p = m.indiv, locs = l)
+#' map_ggmap(u = f.indiv, p = m.indiv, locs = l)
 #' }
 #' @export
 #' @import leaflet
-map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
-                 u.scale = 1, p.scale = 1,
-                 u.title = "Time", p.title = "Path use",
-                 u.pal = c("yellow","red"),
-                 p.pal = c("yellow","red"),
-                 controls = TRUE) {
+map_leaflet <- function(u = NULL, p = NULL, locs = NULL,
+                 u_scale = 1, p_scale = 1,
+                 u_title = "Time", p_title = "Path use",
+                 u_pal = c("yellow","red"),
+                 p_pal = c("yellow","red"),
+                 controls = TRUE,
+                 u.scale, p.scale, u.title, p.title, u.pal, p.pal) {
 
-  data <- map.prep(u = u, p = p, locs = locs)
+  if (!missing(u.scale)) {
+    warning("Argument u.scale is deprecated; please use u_scale instead.",
+            call. = FALSE)
+    u_scale <- u.scale
+  }
+  if (!missing(u.title)) {
+    warning("Argument u.title is deprecated; please use u_title instead.",
+            call. = FALSE)
+    u_title <- u.title
+  }
+  if (!missing(u.pal)) {
+    warning("Argument u.pal is deprecated; please use u_pal instead.",
+            call. = FALSE)
+    u_pal <- u.pal
+  }
+  if (!missing(p.scale)) {
+    warning("Argument p.scale is deprecated; please use p_scale instead.",
+            call. = FALSE)
+    p_scale <- p.scale
+  }
+  if (!missing(p.title)) {
+    warning("Argument p.title is deprecated; please use p_title instead.",
+            call. = FALSE)
+    p_title <- p.title
+  }
+  if (!missing(p.pal)) {
+    warning("Argument p.pal is deprecated; please use p_pal instead.",
+            call. = FALSE)
+    p_pal <- p.pal
+  }
+
+  data <- map_prep(u = u, p = p, locs = locs)
   u <- data[['u']]
   p <- data[['p']]
   locs <- data[['locs']]
@@ -288,17 +377,27 @@ map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
   if(any(names(u) == "bird_id", names(p) == "bird_id")) bird_id <- unique(unlist(list(u$bird_id, p$bird_id))) else bird_id = NULL
 
   # BASE MAP
-  map <- map.leaflet.base(locs = locs)
+  map <- map_leaflet_base(locs = locs)
 
   # Layers
-  if(!is.null(p)) map <- path.layer(map, p = p, p.scale = p.scale, p.pal = p.pal, p.title = p.title)
-  if(!is.null(u)) map <- use.layer(map, u = u, u.scale = u.scale, u.pal = u.pal, u.title = u.title)
+  if(!is.null(p)) map <- path_layer(map, p = p, p_scale = p_scale, p_pal = p_pal, p_title = p_title)
+  if(!is.null(u)) map <- use_layer(map, u = u, u_scale = u_scale, u_pal = u_pal, u_title = u_title)
 
   return(map)
 }
 
+map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
+                        u_scale = 1, p_scale = 1,
+                        u_title = "Time", p_title = "Path use",
+                        u_pal = c("yellow","red"),
+                        p_pal = c("yellow","red"),
+                        controls = TRUE,
+                        u.scale, p.scale, u.title, p.title, u.pal, p.pal) {
+  .Deprecated("map_leaflet")
+}
+
 # ----------------------------------
-# map.ggmap()
+# map_ggmap()
 # ----------------------------------
 #' Map data using ggmap
 #'
@@ -315,11 +414,11 @@ map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
 #'   for individual-based data, and lat/lon instead of a locs argument.
 #' @param locs Dataframe. Lat and long for each feeder_id, required if lat and
 #'   lon not in either u or p.
-#' @param u.scale,p.scale Numerical. Scaling constants to increase (> 1) or
+#' @param u_scale,p_scale Numerical. Scaling constants to increase (> 1) or
 #'   decrease (< 1) the relative size of use (u) and path (p) data.
-#' @param u.title,p.title Character. Titles for the legends of use (u) and
+#' @param u_title,p_title Character. Titles for the legends of use (u) and
 #'   path (p) data.
-#' @param u.pal,p.pal Character vectors. Colours used to construct gradients for
+#' @param u_pal,p_pal Character vectors. Colours used to construct gradients for
 #'   use (u) and movement (p) data.
 #' @param maptype Character. The type of map to download. See \code{maptype}
 #'   under \code{\link[ggmap]{get_map}} for more options.
@@ -329,6 +428,7 @@ map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
 #'   under \code{\link[ggmap]{get_map}} for more options.
 #' @param which Character vector. A vector of bird ids specifying which to show.
 #'   Only applies when using individual data.
+#' @param u.scale,p.scale,u.title,p.title,u.pal,p.pal Depreciated.
 #'
 #' @return An interactive leaflet map with layers for feeding time, movement
 #'   paths and feeder positions.
@@ -348,8 +448,8 @@ map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
 #'            path_use = length(move_path) / bird_n)
 #'
 #' # Look at total summary maps
-#' map.leaflet(u = f.all, p = m.all)
-#' map.ggmap(u = f.all, p = m.all)
+#' map_leaflet(u = f.all, p = m.all)
+#' map_ggmap(u = f.all, p = m.all)
 #'
 #' # Summarise data for visualization (use individuals):
 #' f.indiv <- ddply(f, .(bird_id, feeder_id, lat, lon), summarise,
@@ -360,22 +460,55 @@ map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
 #'
 #' # Look at individual summary maps (note that Leaflet just stacks individuals
 #' one on top of the other)
-#' map.leaflet(u = f.indiv, p = m.indiv)
-#' map.ggmap(u = f.indiv, p = m.indiv)
+#' map_leaflet(u = f.indiv, p = m.indiv)
+#' map_ggmap(u = f.indiv, p = m.indiv)
 #' }
 #' @export
-map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
-                 u.scale = 1, p.scale = 1,
-                 u.title = "Time", p.title = "Path use",
-                 u.pal = c("yellow","red"),
-                 p.pal = c("yellow","red"),
-                 maptype = "satellite",
-                 mapsource = "google",
-                 zoom = 17,
-                 which = NULL) {
+map_ggmap <- function(u = NULL, p = NULL, locs = NULL,
+                      u_scale = 1, p_scale = 1,
+                      u_title = "Time", p_title = "Path use",
+                      u_pal = c("yellow","red"),
+                      p_pal = c("yellow","red"),
+                      maptype = "satellite",
+                      mapsource = "google",
+                      zoom = 17,
+                      which = NULL,
+                      u.scale, p.scale, u.title, p.title, u.pal, p.pal) {
+
+  if (!missing(u.scale)) {
+    warning("Argument u.scale is deprecated; please use u_scale instead.",
+            call. = FALSE)
+    u_scale <- u.scale
+  }
+  if (!missing(u.title)) {
+    warning("Argument u.title is deprecated; please use u_title instead.",
+            call. = FALSE)
+    u_title <- u.title
+  }
+  if (!missing(u.pal)) {
+    warning("Argument u.pal is deprecated; please use u_pal instead.",
+            call. = FALSE)
+    u_pal <- u.pal
+  }
+  if (!missing(p.scale)) {
+    warning("Argument p.scale is deprecated; please use p_scale instead.",
+            call. = FALSE)
+    p_scale <- p.scale
+  }
+  if (!missing(p.title)) {
+    warning("Argument p.title is deprecated; please use p_title instead.",
+            call. = FALSE)
+    p_title <- p.title
+  }
+  if (!missing(p.pal)) {
+    warning("Argument p.pal is deprecated; please use p_pal instead.",
+            call. = FALSE)
+    p_pal <- p.pal
+  }
+
 
   # Prep and Check Data
-  data <- map.prep(u = u, p = p, locs = locs)
+  data <- map_prep(u = u, p = p, locs = locs)
   u <- data[['u']]
   p <- data[['p']]
   locs <- data[['locs']]
@@ -390,14 +523,14 @@ map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
     u <- droplevels(u[u$bird_id %in% which,])
     p <- droplevels(p[p$bird_id %in% which,])
 
-    temp.u <- dplyr::group_by(u, bird_id) %>% dplyr::summarize(sum = sum(amount))
-    temp.p <- dplyr::group_by(p, bird_id) %>% dplyr::summarize(sum = length(path_use))
+    temp_u <- dplyr::group_by(u, bird_id) %>% dplyr::summarize(sum = sum(amount))
+    temp_p <- dplyr::group_by(p, bird_id) %>% dplyr::summarize(sum = length(path_use))
 
-    keep.id <- intersect(temp.u$bird_id[temp.u$sum > 0], temp.p$bird_id[temp.p$sum > 0])
-    if(length(setdiff(which, keep.id)) > 0) {
-      message(paste0("Some bird_ids removed due to lack of data: ", paste(setdiff(which, keep.id), collapse = ", ")))
-      u <- droplevels(u[u$bird_id %in% keep.id, ])
-      p <- droplevels(p[p$bird_id %in% keep.id, ])
+    keep_id <- intersect(temp_u$bird_id[temp_u$sum > 0], temp_p$bird_id[temp_p$sum > 0])
+    if(length(setdiff(which, keep_id)) > 0) {
+      message(paste0("Some bird_ids removed due to lack of data: ", paste(setdiff(which, keep_id), collapse = ", ")))
+      u <- droplevels(u[u$bird_id %in% keep_id, ])
+      p <- droplevels(p[p$bird_id %in% keep_id, ])
     }
   } else bird_id = NULL
 
@@ -406,13 +539,13 @@ map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
     # Sort and Scale
     u$amount <- as.numeric(u$amount)
   #  u <- u[order(u$amount, decreasing = TRUE),]
-    u$amount2 <- scale.area(u$amount, max = 150 * u.scale)
+    u$amount2 <- scale_area(u$amount, max = 150 * u_scale)
   }
 
   if(!is.null(p)){
   #  # Sort and Scale
     p <- p[order(p$path_use, decreasing = TRUE), ]
-    p$path_use2 <- scale.area(p$path_use, max = 1 * p.scale)
+    p$path_use2 <- scale_area(p$path_use, max = 1 * p_scale)
   }
 
   # Basic Map (reverse order to make sure feeders are on top)
@@ -430,7 +563,7 @@ map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
   if(!is.null(u)) {
     map <- map +
       ggplot2::geom_point(data = u, ggplot2::aes(x = lon, y = lat, fill = amount, size = amount2), shape = 21, alpha = 0.75) +
-      ggplot2::scale_fill_gradientn(name = u.title, colours = u.pal) +
+      ggplot2::scale_fill_gradientn(name = u_title, colours = u_pal) +
       ggplot2::scale_size_area(guide = FALSE, max_size = 40)
   }
 
@@ -443,7 +576,7 @@ map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
                                                 colour = path_use,
                                                 size = path_use2),
                          lineend = "round", alpha = 0.75) +
-      ggplot2::scale_colour_gradientn(name = p.title, colours = p.pal)
+      ggplot2::scale_colour_gradientn(name = p_title, colours = p_pal)
   }
 
   # Add feeder points
@@ -456,3 +589,15 @@ map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
   }
   return(map)
 }
+
+map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
+                      u_scale = 1, p_scale = 1,
+                      u_title = "Time", p_title = "Path use",
+                      u_pal = c("yellow","red"),
+                      p_pal = c("yellow","red"),
+                      maptype = "satellite",
+                      mapsource = "google",
+                      zoom = 17,
+                      which = NULL,
+                      u.scale, p.scale, u.title, p.title, u.pal, p.pal) {
+ .Deprecated("map_ggmap")

@@ -37,12 +37,12 @@
 #' @export
 
 activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE, keep_all = FALSE, pass = TRUE){
-  #v <- visits(get.data(start = "2016-03-05", end = "2016-03-07"))
+  #v <- visits(dl_data(start = "2016-03-05", end = "2016-03-07"))
   #f1 <- feeding(v[v$bird_id == "0620000514",])
 
-  check.name(f1, c("bird_id", "feeder_id", "feed_start", "feed_end"))
-  check.time(f1, c("feed_start", "feed_end"))
-  check.indiv(f1)
+  check_name(f1, c("bird_id", "feeder_id", "feed_start", "feed_end"))
+  check_time(f1, c("feed_start", "feed_end"))
+  check_indiv(f1)
 
   tz <- attr(f1$feed_start, "tzone")
 
@@ -83,15 +83,15 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
     ## ACCOUNT FOR MISSING!!!
 
     # Check proportion of time active, warn if really low
-    p.active <- as.numeric(sum(f1$feed_length)) / as.numeric(difftime(max(f1$feed_end), min(f1$feed_start), units = "mins"))
-    if(p.active < 0.05) message(paste0(f1$bird_id[1], ": Active less than 5% of the total time period..."))
+    p_active <- as.numeric(sum(f1$feed_length)) / as.numeric(difftime(max(f1$feed_end), min(f1$feed_start), units = "mins"))
+    if(p_active < 0.05) message(paste0(f1$bird_id[1], ": Active less than 5% of the total time period..."))
 
     # Override by_feeder if only one feeder_id to keep extra columns
     if(length(unique(f1$feeder_id)) == 1) by_feeder <- TRUE
 
     # Keep extra cols
     if(by_feeder == FALSE) only <- "bird_id" else only <- c("feeder_id", "bird_id")
-    extra <- keep.extra(f1, n = c("feed_start", "feed_end", "feed_length"), only = only)
+    extra <- keep_extra(f1, n = c("feed_start", "feed_end", "feed_length"), only = only)
 
     # Get activity
     prob <- round(length(f1$feed_length[f1$feed_length < res]) / nrow(f1) * 100, 2)
@@ -121,13 +121,13 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
     }
 
     # Fill with active/inactive
-    for(f.id in levels(f1$feeder_id)){
-      f <- f1[f1$feeder_id == f.id, ]
+    for(f_id in levels(f1$feeder_id)){
+      f <- f1[f1$feeder_id == f_id, ]
       for(i in 1:nrow(f)) {
         if(by_feeder == FALSE) {
           a$activity_c[a$time >= f$feed_start[i] & a$time <= f$feed_end[i]] <- "active"
         } else {
-          a$activity_c[a$feeder_id == f.id & a$time >= f$feed_start[i] & a$time <= f$feed_end[i]] <- "active"
+          a$activity_c[a$feeder_id == f_id & a$time >= f$feed_start[i] & a$time <= f$feed_end[i]] <- "active"
         }
       }
     }
@@ -164,7 +164,7 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
     }
 
     # Merge extra and order
-    a <- merge.extra(a, extra)
+    a <- merge_extra(a, extra)
     a <- dplyr::select(a, bird_id, date, time, activity, activity_c, feeder_id, everything()) %>%
       dplyr::arrange(bird_id, date, time)
 
@@ -192,19 +192,19 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
 #' @export
 daily <- function(a1){
 
-  #v <- visits(get.data(start = "2016-03-05", end = "2016-03-07"))
+  #v <- visits(dl_data(start = "2016-03-05", end = "2016-03-07"))
   #f1 <- feeding(v[v$bird_id == "0620000514",])
   #f1 <- f1[f1$feeder_id == "1500",]
   #a1 <- activity(f1, res = 1, by_feeder = FALSE, sun = TRUE)
   #a1 <- activity(f1, res = 1, by_feeder = TRUE, sun = TRUE)
 
-  check.name(a1, c("bird_id", "date", "time", "activity", "activity_c", "feeder_id"))
-  check.time(a1, c("date", "time"))
-  check.indiv(a1)
+  check_name(a1, c("bird_id", "date", "time", "activity", "activity_c", "feeder_id"))
+  check_time(a1, c("date", "time"))
+  check_indiv(a1)
 
   # Get extra
   if(all(is.na(a1$feeder_id))) only <- "bird_id" else only <- c("feeder_id", "bird_id")
-  extra <- keep.extra(a1, c("time", "activity", "activity_c"), only = only)
+  extra <- keep_extra(a1, c("time", "activity", "activity_c"), only = only)
 
   a1$time_c <- format(a1$time, "%H:%M:%S")
 
@@ -229,18 +229,18 @@ daily <- function(a1){
   if(any(names(a1) %in% c("rise", "set"))) {
     sun <- unique(a1[, c("date", "feeder_id", "rise", "set")])
     #sun <- plyr::ddply(sun, c("feeder_id"), plyr::summarise,
-    #                   rise = mean.clock(rise, origin = TRUE),
-    #                   set = mean.clock(set, origin = TRUE))
+    #                   rise = mean_clock(rise, origin = TRUE),
+    #                   set = mean_clock(set, origin = TRUE))
 
     sun <- sun %>%
       dplyr::group_by(feeder_id) %>%
-      dplyr::summarize(rise = mean.clock(rise, origin = TRUE),
-                       set = mean.clock(set, origin = TRUE))
+      dplyr::summarize(rise = mean_clock(rise, origin = TRUE),
+                       set = mean_clock(set, origin = TRUE))
     d <- merge(d, sun, by = "feeder_id", all.x = TRUE, all.y = FALSE)
   }
 
   # Merge extra and order
-  d <- merge.extra(d, extra)
+  d <- merge_extra(d, extra)
   d <- dplyr::select(d, bird_id, time, time_c, feeder_id, everything()) %>%
     dplyr::arrange(bird_id, time)
   return(d)
@@ -259,9 +259,9 @@ sun <- function(loc, date) {
 }
 
 # Average clock time
-mean.clock <- function(time, origin = FALSE) {
+mean_clock <- function(time, origin = FALSE) {
   tz <- lubridate::tz(time[1])
-  mean.time <- format(mean(as.POSIXct(paste("1970-01-01", format(time, "%H:%M:%S")))), "%H:%M:%S")
-  mean.date <- ifelse(origin, "1970-01-01", as.character(as.Date(mean(time))))
-  return(as.POSIXct(paste(mean.date, mean.time), tz = tz))
+  mean_time <- format(mean(as.POSIXct(paste("1970-01-01", format(time, "%H:%M:%S")))), "%H:%M:%S")
+  mean_date <- ifelse(origin, "1970-01-01", as.character(as.Date(mean(time))))
+  return(as.POSIXct(paste(mean_date, mean_time), tz = tz))
 }

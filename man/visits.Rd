@@ -4,7 +4,8 @@
 \alias{visits}
 \title{'Raw' data to 'visits' data}
 \usage{
-visits(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE)
+visits(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE,
+  allow.imp, na.rm)
 }
 \arguments{
 \item{r}{Dataframe. Contains raw reads from an RFID reader with colums
@@ -13,14 +14,16 @@ visits(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE)
 \item{bw}{Numerical. The minimum interval, in seconds, between reads for two
 successive reads to be considered separate visits.}
 
-\item{allow.imp}{Logical. Whether impossible visits should be allowed (see
+\item{allow_imp}{Logical. Whether impossible visits should be allowed (see
 details).}
 
-\item{na.rm}{Logical. Whether NA values should be automatically omited.
+\item{na_rm}{Logical. Whether NA values should be automatically omited.
 Otherwise an error is returned.}
 
 \item{pass}{Logical. Pass 'extra' columns through the function and append
 them to the output.}
+
+\item{allow.imp, na.rm}{Depreciated.}
 }
 \value{
 A data frame with visits specifying \code{bird_id} and
@@ -42,7 +45,7 @@ Visits are defined by three pieces of data:
 }
 
 The function will return an error if impossible visits are detected (unless
-  \code{allow.imp = TRUE}) . A visit is deemed impossible if a single bird
+  \code{allow_imp = TRUE}) . A visit is deemed impossible if a single bird
   travels between feeders in less time than specified by \code{bw}.
 }
 \examples{

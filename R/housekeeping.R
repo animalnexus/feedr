@@ -32,7 +32,7 @@
 #' r <- check.ids(r, bird_ids = b)
 #' }
 #' @export
-check.ids <- function(r, bird_ids, omit_bird = c("wand", "error")){
+check_ids <- function(r, bird_ids, omit_bird = c("wand", "error")){
   if(length(bird_ids) > 1 & !is.data.frame(bird_ids)) stop("bird_ids should either be the name of a comma separated file (csv) OR should be a data frame. In either case, the data should contain headers 'bird_id' and 'species'")
 
   if(!is.data.frame(bird_ids)) bird_ids <- read.csv(bird_ids)
@@ -61,6 +61,11 @@ check.ids <- function(r, bird_ids, omit_bird = c("wand", "error")){
 }
 
 
+check.ids <- function(r, bird_ids, omit_bird = c("wand", "error")){
+  .Deprecated("check_ids")
+  check_ids(r, birds_ids, omit_bird)
+}
+
 #' Check for and correct odd bird ids
 #'
 #' This function compares the bird ids in your data file to those in a problem
@@ -82,7 +87,7 @@ check.ids <- function(r, bird_ids, omit_bird = c("wand", "error")){
 #'   user of any corrections made.
 #'
 #' @export
-check.problems <- function(r, problems){
+check_problems <- function(r, problems){
   if(length(problems) > 1 & !is.data.frame(problems)) stop("Problems should either be the name of a comma separated file (csv) OR should be a data frame. In either case, the data should contain headers 'original_id' and 'corrected_id'")
 
   # Get factor categories for bird_id
@@ -121,5 +126,8 @@ check.problems <- function(r, problems){
   return(r)
 }
 
-
+check.problems <- function(r, problems){
+  .Deprecated("check_problems")
+  check_ids(r, problems)
+}
 

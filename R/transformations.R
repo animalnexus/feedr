@@ -16,19 +16,20 @@
 #' }
 #'
 #' The function will return an error if impossible visits are detected (unless
-#'   \code{allow.imp = TRUE}) . A visit is deemed impossible if a single bird
+#'   \code{allow_imp = TRUE}) . A visit is deemed impossible if a single bird
 #'   travels between feeders in less time than specified by \code{bw}.
 #'
 #' @param r Dataframe. Contains raw reads from an RFID reader with colums
 #'   \code{bird_id}, \code{feeder_id}, \code{time}.
 #' @param bw Numerical. The minimum interval, in seconds, between reads for two
 #'   successive reads to be considered separate visits.
-#' @param allow.imp Logical. Whether impossible visits should be allowed (see
+#' @param allow_imp Logical. Whether impossible visits should be allowed (see
 #'   details).
-#' @param na.rm Logical. Whether NA values should be automatically omited.
+#' @param na_rm Logical. Whether NA values should be automatically omited.
 #'   Otherwise an error is returned.
 #' @param pass Logical. Pass 'extra' columns through the function and append
 #'   them to the output.
+#' @param allow.imp,na.rm Depreciated.
 #'
 #' @return A data frame with visits specifying \code{bird_id} and
 #'   \code{feeder_id} as well as the \code{start} and \code{end} of the visit.
@@ -44,34 +45,46 @@
 
 #' @import magrittr
 #' @export
-visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE){
+visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, allow.imp, na.rm){
+  if (!missing(allow.imp)) {
+    warning("Argument allow.imp is deprecated; please use allow_imp instead.",
+            call. = FALSE)
+    allow_imp <- allow.imp
+  }
+
+  if (!missing(na.rm)) {
+    warning("Argument na.rm is deprecated; please use na_rm instead.",
+            call. = FALSE)
+    na_rm <- na.rm
+  }
+
 
   # Confirm that expected columns and formats are present
-  check.name(r, n = c("bird_id", "feeder_id", "time"))
-  check.time(r, n = "time", internal = FALSE)
-  check.format(r)
+  check_name(r, n = c("bird_id", "feeder_id", "time"))
+  check_time(r, n = "time", internal = FALSE)
+  check_format(r)
 
-  # Check for NAs, remove if specified by na.rm = TRUE
+  # Check for NAs, remove if specified by na_rm = TRUE
   if(any(is.na(r[, c("bird_id", "feeder_id", "time")]))){
-    if(na.rm == FALSE) stop("NAs found. To automatically remove NAs, specify 'na.rm = TRUE'.")
-    if(na.rm == TRUE) r <- r[rowSums(is.na(r)) == 0,]
+    if(na_rm == FALSE) stop("NAs found. To automatically remove NAs, specify 'na_rm = TRUE'.")
+    if(na_rm == TRUE) r <- r[rowSums(is.na(r)) == 0,]
   }
 
   # Grab unique extra cols
-  if(pass == TRUE) extra <- keep.extra(r, n = "time")
+  if(pass == TRUE) extra <- keep_extra(r, n = "time")
 
   # Grab the timezone
   tz <- attr(r$time, "tzone")
 
   # Get spacing between visits, whether same bird or not, and whether same feeder or not
   r <- r[order(r$time),]
-  diff.time <- (r$time[-1] - r$time[-nrow(r)]) > bw
-  diff.bird <- r$bird_id[-nrow(r)] != r$bird_id[-1]
-  diff.feeder <- r$feeder_id[-nrow(r)] != r$feeder_id[-1]
+  diff_time <- (r$time[-1] - r$time[-nrow(r)]) > bw
+  diff_bird <- r$bird_id[-nrow(r)] != r$bird_id[-1]
+  diff_feeder <- r$feeder_id[-nrow(r)] != r$feeder_id[-1]
 
   # Check for impossible combos: where less than bw, still the same bird, but a different feeder
-  if(!allow.imp) {
-    impos <- which(rowSums(matrix(c(!diff.time, !diff.bird, diff.feeder), ncol = 3)) > 2)
+  if(!allow_imp) {
+    impos <- which(rowSums(matrix(c(!diff_time, !diff_bird, diff_feeder), ncol = 3)) > 2)
     impos <- r[unique(c(impos, impos + 1)), ]
     if(nrow(impos) > 0) {
       impos <- impos[order(impos$bird_id, impos$time), ]
@@ -81,7 +94,7 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE){
         rows <- 5
         end <- "\n..."
       }
-      stop("Impossible visits found, no specification for how to handle.\nTime between reads is less than 'bw' (", bw, "s) for a single individual, yet the\nreads occur at different feeders. You should fix, remove or\nallow (allow.imp = TRUE) these rows and try again.\n\n", paste0(capture.output(impos[1:rows, ]), collapse = "\n"))
+      stop("Impossible visits found, no specification for how to handle.\nTime between reads is less than 'bw' (", bw, "s) for a single individual, yet the\nreads occur at different feeders. You should fix, remove or\nallow (allow_imp = TRUE) these rows and try again.\n\n", paste0(capture.output(impos[1:rows, ]), collapse = "\n"))
     }
   }
   # Start if
@@ -93,7 +106,7 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE){
   # - bird after is not the same OR
   # - feeder after is not the same
 
-  new_visit <- apply(cbind(diff.time, diff.bird, diff.feeder), 1, any)
+  new_visit <- apply(cbind(diff_time, diff_bird, diff_feeder), 1, any)
   r$end <- r$start <- as.POSIXct(NA, tz = tz)
   r$start[c(TRUE, new_visit)] <- r$time[c(TRUE, new_visit)]
   r$end[c(new_visit, TRUE)] <- r$time[c(new_visit, TRUE)]
@@ -120,7 +133,7 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE){
   attr(v$end, "tzone") <- tz
 
   # Add in extra variables
-  if(pass == TRUE) v <- merge.extra(v, extra)
+  if(pass == TRUE) v <- merge_extra(v, extra)
 
   # Order data frame
   v <- v %>%
@@ -200,10 +213,10 @@ visits <- function(r, bw = 3, allow.imp = FALSE, na.rm = FALSE, pass = TRUE){
 move <- function(v1, all = FALSE, pass = TRUE){
 
   # Check for correct formatting
-  check.name(v1, c("bird_id", "feeder_id", "start", "end"))
-  check.time(v1)
-  check.indiv(v1)
-  check.format(v1)
+  check_name(v1, c("bird_id", "feeder_id", "start", "end"))
+  check_time(v1)
+  check_indiv(v1)
+  check_format(v1)
 
   # Get factor levels
   bird_id <- levels(v1$bird_id)
@@ -216,7 +229,7 @@ move <- function(v1, all = FALSE, pass = TRUE){
   move_path <- unique(sapply(move_dir, FUN = mp))
 
   # Get extra columns
-  if(pass == TRUE) extra <- keep.extra(v1, n = c("start", "end"))
+  if(pass == TRUE) extra <- keep_extra(v1, n = c("start", "end"))
 
   if(length(unique(v1$feeder_id)) > 1) { # Only proceed if there are actual data!
 
@@ -246,7 +259,7 @@ move <- function(v1, all = FALSE, pass = TRUE){
       dplyr::select(-n)
 
     # Add in extra cols
-    if(pass == TRUE) m <- merge.extra(m, extra)
+    if(pass == TRUE) m <- merge_extra(m, extra)
 
     # Order
     m <- m %>%
@@ -264,7 +277,7 @@ move <- function(v1, all = FALSE, pass = TRUE){
                     strength = as.numeric(NA))
 
     # Add in extra cols
-    if(pass == TRUE) m <- merge.extra(m, extra)
+    if(pass == TRUE) m <- merge_extra(m, extra)
 
     # Order
     m <- m %>%
@@ -304,8 +317,8 @@ move <- function(v1, all = FALSE, pass = TRUE){
 #'   occurrred within some cutoff time of the last. This data frame has the
 #'   following columns: \itemize{ \item ID of the bird (\code{bird_id}) \item ID
 #'   of the feeder(\code{feeder_id}) \item Time of the start of the feeding bout
-#'   (\code{feed.start}) \item Time of the end of the feeding bout
-#'   (\code{feed.end}) }
+#'   (\code{feed_start}) \item Time of the end of the feeding bout
+#'   (\code{feed_end}) }
 #'
 #' @examples
 #'
@@ -329,17 +342,17 @@ move <- function(v1, all = FALSE, pass = TRUE){
 feeding <- function(v1, bw = 15, pass = TRUE){
 
   ## Check for correct formatting
-  check.name(v1, c("bird_id","feeder_id", "start","end"))
-  check.time(v1)
-  check.indiv(v1)
-  check.format(v1)
+  check_name(v1, c("bird_id","feeder_id", "start","end"))
+  check_time(v1)
+  check_indiv(v1)
+  check_format(v1)
 
   # Get factor levels
   bird_id <- levels(v1$bird_id)
   feeder_id <- levels(v1$feeder_id)
 
   # Keep extra cols
-  if(pass == TRUE) extra <- keep.extra(v1, n = c("start", "end"))
+  if(pass == TRUE) extra <- keep_extra(v1, n = c("start", "end"))
 
   v1 <- v1[order(v1$start),]
   feeder_diff <- v1$feeder_id[-1] != v1$feeder_id[-nrow(v1)]
@@ -362,7 +375,7 @@ feeding <- function(v1, bw = 15, pass = TRUE){
                   feed_length = difftime(v1$end[v1$feed_end == TRUE], v1$start[v1$feed_start == TRUE], units = "mins"))
 
   # Get extra columns and add in
-  if(pass == TRUE) f <- merge.extra(f, extra)
+  if(pass == TRUE) f <- merge_extra(f, extra)
   f <- f[order(f$bird_id, f$feed_start), ]
 
   return(f)
@@ -428,9 +441,9 @@ feeding <- function(v1, bw = 15, pass = TRUE){
 disp <- function(v, bw = 5, pass = TRUE){
 
   ## Check for correct formatting
-  check.name(v, c("bird_id", "feeder_id", "start", "end"))
-  check.time(v)
-  check.format(v)
+  check_name(v, c("bird_id", "feeder_id", "start", "end"))
+  check_time(v)
+  check_format(v)
 
   bird_id <- levels(v$bird_id)
   feeder_id <- levels(v$feeder_id)
@@ -438,19 +451,19 @@ disp <- function(v, bw = 5, pass = TRUE){
   v <- v[order(v$start), ]
 
   # Keep extra columns
-  if(pass == TRUE) extra <- keep.extra(v, n = c("start", "end"))
+  if(pass == TRUE) extra <- keep_extra(v, n = c("start", "end"))
 
   ## Define displacee and displacer by
   #  (a) whether subsequent visit was a different bird, AND
   #  (b) the arrival of the 2nd bird occurred within 'bw' seconds of the
   #      departure of the 1st
   #  (c) all of this occurs at the same feeder
-  bird.diff <- v$bird_id[-1] != v$bird_id[-nrow(v)]
-  time.diff <- (v$start[-1] - v$end[-nrow(v)]) < bw
-  feeder.diff <- v$feeder_id[-1] == v$feeder_id[-nrow(v)]
+  bird_diff <- v$bird_id[-1] != v$bird_id[-nrow(v)]
+  time_diff <- (v$start[-1] - v$end[-nrow(v)]) < bw
+  feeder_diff <- v$feeder_id[-1] == v$feeder_id[-nrow(v)]
 
-  d <- rbind(v[c(bird.diff & time.diff & feeder.diff, FALSE), c("bird_id", "feeder_id", "start", "end")],
-             v[c(FALSE, bird.diff & time.diff & feeder.diff), c("bird_id", "feeder_id", "start", "end")])
+  d <- rbind(v[c(bird_diff & time_diff & feeder_diff, FALSE), c("bird_id", "feeder_id", "start", "end")],
+             v[c(FALSE, bird_diff & time_diff & feeder_diff), c("bird_id", "feeder_id", "start", "end")])
 
   if(nrow(d) == 0) stop(paste0("There are no displacement events with a bw = ", bw, ", stopping now"))
 
@@ -458,13 +471,13 @@ disp <- function(v, bw = 5, pass = TRUE){
   d$role <- c("displacee", "displacer")
   d <- d[order(d$role, d$start), ]
 
-  d$left <- rep(v$end[c(bird.diff & time.diff & feeder.diff, FALSE)], 2)
-  d$arrived <- rep(v$start[c(FALSE, bird.diff & time.diff & feeder.diff)], 2)
+  d$left <- rep(v$end[c(bird_diff & time_diff & feeder_diff, FALSE)], 2)
+  d$arrived <- rep(v$start[c(FALSE, bird_diff & time_diff & feeder_diff)], 2)
 
   d <- d[, !(names(d) %in% c("start", "end"))]
 
 
-  if(pass == TRUE) d <- merge.extra(d, extra)
+if(pass == TRUE) d <- merge_extra(d, extra)
   d <- dplyr::select(d, bird_id, left, arrived, feeder_id, role, everything()) %>%
     dplyr::arrange(left)
 
@@ -508,15 +521,15 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
   if(!is.data.frame(d)) d <- d$interactions
 
   # Check for Correct formating
-  check.name(d, c("displacer","displacee","n"))
-  check.format(d)
+  check_name(d, c("displacer","displacee","n"))
+  check_format(d)
 
   # Start with best order
   o <- dplyr::left_join(dplyr::group_by(d, displacer) %>% dplyr::summarize(win = sum(n)),
                         dplyr::group_by(d, displacee) %>% dplyr::summarize(loss = sum(n)),
                         by = c("displacer" = "displacee")) %>%
-    dplyr::mutate(p.win = win / (win + loss)) %>%
-    dplyr::arrange(desc(p.win))
+    dplyr::mutate(p_win = win / (win + loss)) %>%
+    dplyr::arrange(desc(p_win))
 
   # Check sample sizes and warn if low
 
@@ -538,19 +551,19 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
 
   ## Setup Loop
   try <- 0
-  o.l <- o
+  o_l <- o
   rev <- list()
   done <- FALSE  ## Are we done this iteration?
   prev <- vector()
 
   while(done == FALSE & try < tries){
 
-    for(i in 1:length(o.l)){
-      new.o <- o.l[[i]]
+    for(i in 1:length(o_l)){
+      new_o <- o_l[[i]]
       temp <- d
 
-      ## Sort matrix by dominance hierarchy (new.o)
-      temp <- temp[order(match(rownames(temp),new.o)),order(match(colnames(temp),new.o))]
+      ## Sort matrix by dominance hierarchy (new_o)
+      temp <- temp[order(match(rownames(temp),new_o)),order(match(colnames(temp),new_o))]
 
       ## CHECK (TODO set to stop script if this doesn't work)
       all(diag(temp)==0)
@@ -570,11 +583,11 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
     if(length(rev) > 0){
       n <- sapply(rev, nrow)
       rev <- rev[n == min(n)]
-      o.l <- o.l[n == min(n)]
+      o_l <- o_l[n == min(n)]
     }
 
     # Compare with previous matrix, if the same, we're done
-    if(identical(prev, o.l)) done <- TRUE else prev <- o.l
+    if(identical(prev, o_l)) done <- TRUE else prev <- o_l
 
     if(length(rev) > 0 & length(rev[[1]]) > 0 & done == FALSE){
       ## Add the new reversal switches to our list of options and try again
@@ -582,7 +595,7 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
         for(i in 1:nrow(rev[[j]])){
           a <- rev[[j]][i,2]  ## Which individuals to move up
           b <- rev[[j]][i,1]  ## Where to move it
-          o.l[[length(o.l)+1]] <- c(new.o[1:(b-1)], new.o[a], new.o[-c(1:(b-1), a)])
+          o_l[[length(o_l)+1]] <- c(new_o[1:(b-1)], new_o[a], new_o[-c(1:(b-1), a)])
         }
       }
     } else done <- TRUE
@@ -590,21 +603,21 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
     ## Loop controls
     if(done == FALSE){
       try <- try + 1
-      o.l <- unique(o.l)
+      o_l <- unique(o_l)
       rev <- list()
     }
   }
   #print(paste0("Started with: ",paste0(unlist(o), collapse = ", ")))
-  message(paste0("Tried ",try," times. Found ",length(o.l), " 'best' matrices, with ",nrow(rev[[1]])," reversal(s) per matrix"))
+  message(paste0("Tried ",try," times. Found ",length(o_l), " 'best' matrices, with ",nrow(rev[[1]])," reversal(s) per matrix"))
 
   m <- list()
   r <- list()
-  for(i in 1:length(o.l)) {
-    m[[length(m)+1]] <- d[order(match(rownames(d),o.l[[i]])),order(match(colnames(d),o.l[[i]]))]
+  for(i in 1:length(o_l)) {
+    m[[length(m)+1]] <- d[order(match(rownames(d),o_l[[i]])),order(match(colnames(d),o_l[[i]]))]
     if(length(rev[[i]]) > 0) r[[length(r)+1]] <- c(rownames(m[[i]])[rev[[i]][1]], colnames(m[[i]])[rev[[i]][2]])
   }
 
-  return(list(dominance = o.l, reversals = r, matrices = m))
+  return(list(dominance = o_l, reversals = r, matrices = m))
 }
 
 
