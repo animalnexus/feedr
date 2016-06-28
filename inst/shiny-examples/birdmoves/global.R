@@ -10,9 +10,9 @@ library(ggplot2)
 ##library(ggvis)
 
 ## Data manip
+library(feedr)
 library(tidyr)
 library(dplyr)
-library(feedr)
 library(lubridate)
 
 ## Data aquisition
@@ -42,20 +42,20 @@ qry <- function(x) paste0(x, collapse = "', '")
 suppressWarnings({
   cat("Connecting to server...\n")
   con <- dbConnect(drv, host = dbhost, port = dbport, dbname = dbname, user = dbuser, password = dbpass)
-  
+
   cat("Getting feeder data...\n")
   #   incProgress(1/5)
   feeders_all <- dbGetQuery(con, statement = paste0("SELECT feeder_id, site_name, loc FROM feeders")) %>%
     load.format(tz = "") %>%
     mutate(site_name = factor(site_name))
-  
+
   cat("Getting site data...\n")
   #    incProgress(2/5)
   sites_all <- feeders_all %>%
     group_by(site_name) %>%
     summarize(lon = mean(lon), lat = mean(lat)) %>%
     mutate(site_name = factor(site_name))
-  
+
   cat("Getting bird data...\n")
   #  incProgress(3/5)
   birds_all <- dbGetQuery(con, statement = paste0("SELECT DISTINCT raw.visits.bird_id FROM raw.visits")) %>%
@@ -64,7 +64,7 @@ suppressWarnings({
     mutate(species = factor(species),
            site_name = factor(site_name),
            bird_id = factor(bird_id))
-  
+
   cat("Getting sample information...\n")
   #    incProgress(4/5)
   counts <- dbGetQuery(con,
