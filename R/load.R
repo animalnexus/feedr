@@ -7,7 +7,7 @@
 #' standardized your data is, and whether you have extra details you need to
 #' address. This is updated to work with newer data download formats.
 #'
-#' This function is also used by \code{\link{get.data}} and so can accept a data
+#' This function is also used by \code{\link{dl_data}} and so can accept a data
 #' frame in place of a file location.
 #'
 #' @param r_file Character or Data frame. The location of a single file to load,
@@ -22,13 +22,17 @@
 #'   more details).
 #'
 #' @examples
-#' \dontrun{r <- load.web("downloaded_file.csv")}
+#' \dontrun{r <- load_web("downloaded_file.csv")}
 
 #' @export
-load.web <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ",") {
+load_web <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ",") {
   r <- read.csv(r_file, strip.white = TRUE)
-  r <- load.format(r, tz = tz, tz_disp = tz_disp)
+  r <- load_format(r, tz = tz, tz_disp = tz_disp)
   return(r)
+}
+
+load.web <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ",") {
+ .Deprecated("load_web")
 }
 
 #' Load raw read data
@@ -58,22 +62,22 @@ load.web <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ","
 #'
 #' @examples
 #' \dontrun{
-#' # Load a single raw file: r <- load.raw("GPR13DATA_2015_12_01.csv")
+#' # Load a single raw file: r <- load_raw("GPR13DATA_2015_12_01.csv")
 #'
 #' # Load a single raw file where the feeder id is not the default, and is
 #' rather something like: 2300, 2500, 2550
-#' r <- load.raw("2300.csv", feeder_pattern = "[0-9]{4}")
+#' r <- load_raw("2300.csv", feeder_pattern = "[0-9]{4}")
 #'
 #' # Note that the following won't work because the pattern matches both the
 #' feeder id as well as the year:
-#' r <- load.raw("2300_2015_12_01.csv", feeder_pattern = "[0-9]{4}")
+#' r <- load_raw("2300_2015_12_01.csv", feeder_pattern = "[0-9]{4}")
 #'
 #' # Extract extra data to be stored in another column:
-#' r <- load.raw("2300.csv", extra_pattern = "exp[0-9]{1}", extra_name = experiment)
+#' r <- load_raw("2300.csv", extra_pattern = "exp[0-9]{1}", extra_name = experiment)
 #'
 #' }
 #' @export
-load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1) {
+load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1) {
     r <- read.table(r_file,
                     col.names = c("bird_id","date","time"),
                     colClasses = "character",
@@ -106,6 +110,10 @@ load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
     return(r)
 }
 
+load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1){
+  .Deprecated("load_raw")
+}
+
 #' Load and combine raw data files
 #'
 #' This is a wrapper function which loads and combines all raw data files from a
@@ -134,7 +142,7 @@ load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
 #'   call (see \code{skip =} under \code{?read.table} for more details).
 #'
 #' @export
-load.raw.all <- function(r_dir,
+load_raw_all <- function(r_dir,
                          pattern = "DATA",
                          tz = "America/Vancouver",
                          tz_disp = NULL,
@@ -153,24 +161,34 @@ load.raw.all <- function(r_dir,
 
   # Load in data and assign extra colums
   r <- do.call('rbind', lapply(r_list,
-                               load.raw,
+                               load_raw,
                                tz = tz,
                                feeder_pattern = feeder_pattern,
                                extra_pattern = extra_pattern,
                                extra_name = extra_name,
                                sep = sep, skip = skip))
-  r <- load.format(r, tz = tz, tz_disp = tz_disp)
+  r <- load_format(r, tz = tz, tz_disp = tz_disp)
   return(r)
 }
 
-
+load.raw.all <- function(r_dir,
+                         pattern = "DATA",
+                         tz = "America/Vancouver",
+                         tz_disp = NULL,
+                         feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
+                         extra_pattern = NULL,
+                         extra_name = NULL,
+                         sep = "",
+                         skip = 1) {
+ .Deprecated("load_raw_all")
+}
 
 #' Download data from BirdMoves website.
 #'
 #' This function uses RCurl to submit an HTML form and retrieve the csv file.
 #' This is simply a convenience function to replace going to the website
 #' yourself (http://gaia.tru.ca/birdMOVES/datadownload.html) and then running
-#' the data frame through \code{\link{load.web}}.
+#' the data frame through \code{\link{load_web}}.
 #'
 #' Note that while the website requires a date in the format of YYYY-MM-DD
 #' HH:MM:SS, this function is a bit more flexible. Using
@@ -224,25 +242,25 @@ load.raw.all <- function(r_dir,
 #' @examples
 #' \dontrun{
 #' # Get all Kamloops data (may take a couple minutes)
-#' r <- get.data()
+#' r <- dl_data()
 #'
 #' # Get all Costa Rica data (may take a couple minutes)
-#' r <- get.data(sites = "Costa Rica")
+#' r <- dl_data(sites = "Costa Rica")
 #'
 #' # Get all data (may take a couple minutes)
-#' r <- get.data(sites = c("Kamloops", "Costa Rica"))
+#' r <- dl_data(sites = c("Kamloops", "Costa Rica"))
 #'
 #' # Get all 2016 data
-#' r <- get.date(start = "2016")
+#' r <- dl_date(start = "2016")
 #'
 #' # Get specific data
-#' r <- get.data(start = "2016-01-01 09:34:12",
+#' r <- dl_data(start = "2016-01-01 09:34:12",
 #'               end = "2016-02-01",
 #'               bird_details = c("species", "age", "sex", "tagged_on"))
 #' }
 #'
 #' @export
-get.data <- function(start = NULL,
+dl_data <- function(start = NULL,
                      end = NULL,
                      url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
                      feeder_details = c("loc"),
@@ -295,14 +313,24 @@ get.data <- function(start = NULL,
 
   if(nchar(g) < 200) stop("There are no online data matching these parameters. Try different sites or a different date range.")
 
-  r <- load.format(read.csv(text = g, strip.white = TRUE, colClasses = "character"), tz = tz, tz_disp = tz_disp)
+  r <- load_format(read.csv(text = g, strip.white = TRUE, colClasses = "character"), tz = tz, tz_disp = tz_disp)
   return(r)
+}
+
+get.data <- function(start = NULL,
+                     end = NULL,
+                     url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
+                     feeder_details = c("loc"),
+                     bird_details = c("species"),
+                     tz_disp = "America/Vancouver",
+                     sites = "Kamloops") {
+  .Deprecated("dl_data")
 }
 
 # Internal function: Format data
 # Formats data for the loading function.
 #' @export
-load.format <- function(r, tz, tz_disp = NULL){
+load_format <- function(r, tz, tz_disp = NULL){
 
   # Trim leading or trailing whitespace
   r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
@@ -331,3 +359,6 @@ load.format <- function(r, tz, tz_disp = NULL){
   return(r)
 }
 
+load.format <- function(r, tz, tz_disp = NULL) {
+ .Deprecated("load_format")
+}

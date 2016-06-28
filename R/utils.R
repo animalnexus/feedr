@@ -1,3 +1,11 @@
+dep <- function(x){
+  if (exists(x)) {
+    warning("Argument ", x, " is deprecated; please use ", gsub("\\.", "_", x), " instead.",
+            call. = FALSE)
+  }
+}
+
+
 #' Get timezone offset from UTC
 #'
 #' @export
@@ -16,7 +24,7 @@ tz_offset <- function(tz, dst = FALSE, tz_name = FALSE) {
 mp <- function(x) paste0(sort(unlist(strsplit(as.character(x), "_"))), collapse = "_")
 
 # Grab extra columns unique only
-keep.extra <- function(d, n, only = c("bird_id", "feeder_id")){
+keep_extra <- function(d, n, only = c("bird_id", "feeder_id")){
 
   d <- unique(d[, setdiff(names(d), n)])
 
@@ -44,7 +52,7 @@ keep.extra <- function(d, n, only = c("bird_id", "feeder_id")){
   return(list(both = both, bird_id = bird_id, feeder_id = feeder_id))
 }
 
-merge.extra <- function(d, extra, only = NULL) {
+merge_extra <- function(d, extra, only = NULL) {
   if(!is.null(extra$both)) d <- merge(d, extra$both, by = c("bird_id", "feeder_id"), all.x = TRUE, all.y = FALSE)
   if(!is.null(extra$bird_id)) d <- merge(d, extra$bird_id, by = "bird_id", all.x = TRUE, all.y = FALSE)
   if(!is.null(extra$feeder_id)) d <- merge(d, extra$feeder_id, by = "feeder_id", all.x = TRUE, all.y = FALSE)

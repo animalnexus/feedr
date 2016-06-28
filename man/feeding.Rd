@@ -24,8 +24,8 @@ A data frame of feeding bouts. A feeding bout is defined as the bout
   occurrred within some cutoff time of the last. This data frame has the
   following columns: \itemize{ \item ID of the bird (\code{bird_id}) \item ID
   of the feeder(\code{feeder_id}) \item Time of the start of the feeding bout
-  (\code{feed.start}) \item Time of the end of the feeding bout
-  (\code{feed.end}) }
+  (\code{feed_start}) \item Time of the end of the feeding bout
+  (\code{feed_end}) }
 }
 \description{
 For a single \code{bird_id}, turns visits at mulitple feeders into feeding
