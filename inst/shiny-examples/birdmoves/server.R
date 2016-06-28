@@ -1,21 +1,3 @@
-## shinyapps from github: devtools::install_github('rstudio/shinyapps')
-## library(shinyapps); shinyapps::deployApp("~/Projects/BirdMoves/Scripts/birdMoves")
-
-
-## devtools::install_github("steffilazerte/feedr")
-## devtools::install_github("steffilazerte/envirocan")
-
-## OR:
-#library(rsconnect)
-
-# This is the server logic for a Shiny web application.
-# You can find out more about building applications with Shiny here:
-#
-# http://shiny.rstudio.com
-#
-
-source("startup.R")
-
 shinyServer(function(input, output, session) {
 
 
@@ -38,10 +20,10 @@ shinyServer(function(input, output, session) {
 
   ## Load reactive expressions
   source("reactive.R", local = TRUE)
-  
+
   ## Load transformation data tables
   source("output_data.R", local = TRUE)
-  
+
   ## Load inat
   source("inat.R", local = TRUE)
   source("homerange.R", local = TRUE)

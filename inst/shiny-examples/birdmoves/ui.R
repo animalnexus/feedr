@@ -1,23 +1,15 @@
-
-# This is the user-interface definition of a Shiny web application.
-# You can find out more about building applications with Shiny here:
-#
-# http://shiny.rstudio.com
-#
-
 library(shiny)
 library(shinyjs)
 library(shinyBS)
 library(leaflet)
 #library(ggvis)
-#library(shinyBS)
 
 shinyUI(fluidPage(
 
   shinyjs::useShinyjs(),
-  
+
   navbarPage(title = HTML("bird<strong>moves</strong>"),
-             
+
              #################
              ## SETUP
              #################
@@ -28,7 +20,7 @@ shinyUI(fluidPage(
                                h2("Data Selection"),
                                h3("Select Data"),
                                uiOutput("UI_data"),
-                               radioButtons("data_weather", label = "Include Weather?", 
+                               radioButtons("data_weather", label = "Include Weather?",
                                             choices = c("Yes", "No"), selected = "Yes"),
                                bsButton("data_update", "Update Selection", style = "primary"),
                                p(),
