@@ -17,13 +17,13 @@ m.all <- m %>%
   summarize(path_use = length(move_path) / bird_n[1])
 
 # Map Prep
-prep <- feedr:::map.prep(p = m.all, u = f.all)
-map <- map.leaflet.base(locs = prep[['locs']])
+prep <- feedr:::map_prep(p = m.all, u = f.all)
+map <- map_leaflet_base(locs = prep[['locs']])
 
-path.layer(map, p = prep[['p']])
-use.layer(map, u = prep[['u']])
+path_layer(map, p = prep[['p']])
+use_layer(map, u = prep[['u']])
 
 # Look at total summary maps
-map.leaflet(u = f.all, p = m.all)
-map.ggmap(u = f.all, p = m.all)
+map_leaflet(u = f.all, p = m.all)
+map_ggmap(u = f.all, p = m.all)
 
