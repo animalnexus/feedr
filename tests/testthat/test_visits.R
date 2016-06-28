@@ -35,17 +35,17 @@ test_that("visits() returns correct data", {
   expect_equal(nrow(v[v$end != v$start,]), 49) ## 49 visits > 0 seconds
 })
 
-test_that("visits() allow.imp", {
+test_that("visits() allow_imp", {
   f <- rbind(finches, finches[1:5,] %>% dplyr::mutate(feeder_id = "2400"))
   expect_error(visits(f), "Impossible")
-  expect_silent(visits(f, allow.imp = TRUE))
+  expect_silent(visits(f, allow_imp = TRUE))
 })
 
-test_that("visits() na.rm", {
+test_that("visits() na_rm", {
   f <- finches
   f[4, 'time'] <- NA
   expect_error(visits(f), "NAs")
-  expect_silent(v2 <- visits(f, na.rm = TRUE))
+  expect_silent(v2 <- visits(f, na_rm = TRUE))
   expect_equal(nrow(v2) + 1, nrow(visits(finches)))
 })
 

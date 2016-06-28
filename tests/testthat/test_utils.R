@@ -1,7 +1,7 @@
 library(feedr)
 context("Timezone offset")
 
-# load.web()
+# tz_offset()
 test_that("tz_offset returns correct offset number", {
   expect_is(tz_offset("America/Vancouver"), "numeric")
   expect_equal(tz_offset("America/Vancouver"), -8)
