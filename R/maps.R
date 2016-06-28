@@ -110,7 +110,7 @@ map.leaflet.base <- function(locs, marker = "feeder_id", name = "Readers", contr
     addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
     addProviderTiles("Esri.WorldTopoMap", group = "Terrain") %>%
     addMarkers(~lon, ~lat,
-                     popup  = ~ htmltools::htmlEscape(marker),
+                     popup  = htmltools::htmlEscape(locs[, marker]),
                      group = name) %>%
     addLayersControl(baseGroups = c("Satellite", "Terrain", "Open Street Map", "Black and White"),
                      overlayGroups = name,
