@@ -34,7 +34,7 @@ shinyUI(fluidPage(
                         ),
                         column(8,
                                leafletOutput("map_data", height = 600),
-                               plotOutput("plot_data_ggplot", 
+                               plotOutput("plot_data_ggplot",
                                           brush = brushOpts(
                                             id = "plot_data_brush",
                                             direction = "x",
@@ -153,16 +153,16 @@ shinyUI(fluidPage(
                             uiOutput("UI_hr_plot"),
                             bsButton("homerange", "Calculate and Display", style = "success"),
                             hr(),
-                            fluidRow(div(strong(textOutput("hr_message")),  
+                            fluidRow(div(strong(textOutput("hr_message")),
                                          style="text-align:center; padding: 10px"),
                                      style = "border: 1px solid silver; margin-right: 7px")
-                          
+
                      ),
                      column(8,
                             fluidRow(leafletOutput("map_hr", height = 600))
                             # fluidRow(column(8, offset = 2, uiOutput("UI_inat_time")))
                      )
-                     
+
             ),
             tabPanel("iNaturalist (testing)",
                      column(4,
@@ -183,7 +183,7 @@ shinyUI(fluidPage(
                             fluidRow(leafletOutput("map_inat", height = 600))#,
                            # fluidRow(column(8, offset = 2, uiOutput("UI_inat_time")))
                      )
-                  
+
             )
   )
 ))

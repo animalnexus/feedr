@@ -5,49 +5,49 @@
 #   addProviderTiles("Esri.WorldImagery", group = "Satelite") %>%
 #   addLayersControl(baseGroups = c("Satelite",
 #                                   "Terrain",
-#                                   "Open Street Map", 
+#                                   "Open Street Map",
 #                                   "Black and White"),
 #                    options = layersControlOptions(collapsed = FALSE)) %>%
 #    %>%
-#   addMarkers(data = sites_all %>% mutate(name = site_name), 
-#              lng = ~lon, lat = ~lat, 
+#   addMarkers(data = sites_all %>% mutate(name = site_name),
+#              lng = ~lon, lat = ~lat,
 #              group = "Sites", popup = ~htmlEscape(name))
 
 ## Map of data points
 output$map_data <- renderLeaflet({
   req(counts)
   cat("Initializing data map...\n")
-  
+
   #Get counts summed across all dates
   suppressWarnings(
     s <- get_counts(counts, summarize_by = "site_name") %>%
       left_join(sites_all, by = c("choices" = "site_name"))
   )
-  
-  map.leaflet.base(locs = sites_all %>% mutate(name = site_name), marker = "name", name = "Sites") %>% 
+
+  map.leaflet.base(locs = sites_all %>% mutate(name = site_name), marker = "name", name = "Sites") %>%
     addScaleBar(position = "bottomright") %>%
     setView(lng = -98.857903, lat = 21.363297, zoom = 2) %>%
-    addCircleMarkers(data = s, lng = ~lon, lat = ~lat, group = "Points", 
-                     radius = ~feedr:::scale.area(sum, max = 50),
-                     fillOpacity = 0.7, 
+    addCircleMarkers(data = s, lng = ~lon, lat = ~lat, group = "Points",
+                     radius = ~feedr:::scale.area(sum, val.min = 0),
+                     fillOpacity = 0.7,
                      fillColor = "orange")
 })
 
 # observeEvent(input$data_reset, {
 #   d <- counts_sum[counts_sum$variable == "site_name", c("sum", "choices", "name")] %>%
 #     left_join(sites_all, by = c("choices" = "site_name"))
-# 
+#
 #   leafletProxy("map_data") %>%
 #     clearGroup(group = "Sites") %>%
 #     clearGroup(group = "Points") %>%
 #     setView(lng = -98.857903, lat = 21.363297, zoom = 2) %>%
-#     addMarkers(data = sites_all, 
-#                lng = ~lon, lat = ~lat, 
+#     addMarkers(data = sites_all,
+#                lng = ~lon, lat = ~lat,
 #                group = "Sites", popup = ~htmlEscape(site_name)) %>%
 #     addCircleMarkers(data = d,
-#                      lng = ~lon, lat = ~lat, group = "Points", 
-#                      radius = ~feedr:::scale.area(sum, max = 50),
-#                      fillOpacity = 0.7, 
+#                      lng = ~lon, lat = ~lat, group = "Points",
+#                      radius = ~feedr:::scale.area(sum, val.min = 0),
+#                      fillOpacity = 0.7,
 #                      fillColor = "orange")
 # })
 
@@ -62,7 +62,7 @@ observeEvent(counts_sub(), {
         if(unique(d$site_name) == "Kamloops, BC") zoom <- 17
         if(unique(d$site_name) == "Costa Rica") zoom <- 12
         suppressWarnings(
-          d <- d %>% 
+          d <- d %>%
             left_join(feeders_all, by = "feeder_id") %>%
             mutate(name = feeder_id)
         )
@@ -82,7 +82,7 @@ observeEvent(counts_sub(), {
     }
   })
 })
-  
+
 
 # Add circle markers for sample sizes
 observeEvent(counts_sub(), {
@@ -94,10 +94,10 @@ observeEvent(counts_sub(), {
     if(nrow(c) > 0) {
       #Get counts summed across all dates
       if(length(unique(c$site_name)) > 1) {
-        suppressWarnings(
+        suppressWarnings({
           s <- get_counts(c, summarize_by = "site_name") %>%
             left_join(sites_all, by = c("choices" = "site_name"))
-        )
+        })
       } else {
         suppressWarnings(
           s <- get_counts(c, summarize_by = "feeder_id") %>%
@@ -106,9 +106,9 @@ observeEvent(counts_sub(), {
       }
       leafletProxy("map_data") %>%
         clearGroup(group = "Points") %>%
-        addCircleMarkers(data = s, lng = ~lon, lat = ~lat, group = "Points", 
-                         radius = ~feedr:::scale.area(sum, max = 50),
-                         fillOpacity = 0.7, 
+        addCircleMarkers(data = s, lng = ~lon, lat = ~lat, group = "Points",
+                         radius = ~feedr:::scale.area(sum, val.min = 0),
+                         fillOpacity = 0.7,
                          fillColor = "orange")
     } else {
       leafletProxy("map_data") %>%
@@ -121,9 +121,9 @@ observeEvent(counts_sub(), {
 ## GGPLOT: Plot of counts overtime
 plot_data_ggplot <- eventReactive(counts_sub(), {
   cat("Refreshing Time Plot...\n")
-  
+
   c <- counts_sub()
-  
+
   isolate({
     if(nrow(c) > 0) {
       if(length(unique(c$site_name)) > 1) type <- "site_name" else type <- "feeder_id"
@@ -131,11 +131,11 @@ plot_data_ggplot <- eventReactive(counts_sub(), {
         geom_bar(stat = "identity", position = "dodge")
     } else {
       g <- ggplot(data = data.frame(date = values$data$date, count = 0), aes(x = date, y = count)) +
-        geom_blank() + 
+        geom_blank() +
         scale_y_continuous(limits = c(0, 1))
     }
-    
-    g + 
+
+    g +
       theme_bw() +
       theme(legend.position = "none") +
       labs(x = "Date", y = "Total visits")
@@ -150,10 +150,10 @@ output$plot_data_ggplot <- renderPlot({
 
 ## For animation
 output$plot_anim <- renderPlot({
-  lim <- c(as.Date(floor_date(min(v()$start), unit = "day")), 
+  lim <- c(as.Date(floor_date(min(v()$start), unit = "day")),
            as.Date(ceiling_date(max(v()$start), unit = "day")))
   plot_data_ggplot() +
-    scale_x_date(date_labels = "%Y %b %d", 
+    scale_x_date(date_labels = "%Y %b %d",
                  limits = lim,
                  breaks = seq(lim[1],lim[2], length.out = 5))
   }, height = 150, width = 550)
