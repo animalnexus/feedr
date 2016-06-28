@@ -1,3 +1,18 @@
+#' Get timezone offset from UTC
+#'
+#' @export
+tz_offset <- function(tz, dst = FALSE, tz_name = FALSE) {
+  if(!dst) t <- as.numeric(difftime(as.POSIXct("2016-01-01 00:00:00", tz = "UTC"),
+                                    as.POSIXct("2016-01-01 00:00:00", tz = tz), units = "hours"))
+  if(dst) t <- as.numeric(difftime(as.POSIXct("2016-06-01 00:00:00", tz = "UTC"),
+                                   as.POSIXct("2016-06-01 00:00:00", tz = tz), units = "hours"))
+  if(tz_name) {
+    if(t > 0) t <- paste0("Etc/GMT-", t)
+    if(t <= 0) t <- paste0("Etc/GMT+", abs(t))
+  }
+  return(t)
+}
+
 mp <- function(x) paste0(sort(unlist(strsplit(as.character(x), "_"))), collapse = "_")
 
 # Grab extra columns unique only
