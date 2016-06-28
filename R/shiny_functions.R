@@ -1,3 +1,4 @@
+#' Launch local birdmoves site
 #' @export
 birdmoves <- function() {
   appDir <- system.file("shiny-examples", "birdmoves", package = "feedr")
@@ -8,6 +9,8 @@ birdmoves <- function() {
   shiny::runApp(appDir, display.mode = "normal")
 }
 
+#' Animate map with leaflet
+#'
 #' @export
 map_animate <- function(data) {
   app <- shiny::shinyApp(ui = shiny::fluidPage(UI_map_animated("standalone")),
