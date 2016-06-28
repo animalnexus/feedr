@@ -24,10 +24,15 @@ Imports:
     tidyr (>= 0.5.1),
     xml2 (>= 0.1.2)
 Suggests:
-    DiagrammeR,
+    envirocan,
+    KernSmooth,
     knitr,
+    rinat,
     rmarkdown,
+    RPostgreSQL,
     shiny,
+    shinyjs,
+    sp,
     testthat
 RoxygenNote: 5.0.1
 VignetteBuilder: knitr
