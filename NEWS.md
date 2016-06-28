@@ -1,5 +1,7 @@
 # feedr 0.6.0.9000
 
+- Added birdmoves shiny app to feedr package (`birdmoves()`)
+
 
 
 # feedr 0.6.0 (2016-06-20)
