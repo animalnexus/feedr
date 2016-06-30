@@ -3,7 +3,8 @@
 ## Animated map - UI
 #' @import shiny
 #' @import magrittr
-UI_map_animated <- function(id) {
+#' @export
+mod_UI_map_animate <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
 
@@ -36,15 +37,16 @@ UI_map_animated <- function(id) {
 # Module server function
 #' @import shiny
 #' @import magrittr
-map_animated <- function(input, output, session, data) {
+#' @export
+mod_map_animate <- function(input, output, session, raw) {
 
   ns <- session$ns
 
   # Data
 
   # Fix time zone to LOOK like local non-DST, but to APPEAR as UTC (for timezone slider
-  v <- data %>%
-    dplyr::mutate(time = lubridate::with_tz(time, tzone = tz_offset(attr(data$time, "tzone"), tz_name = TRUE)))
+  v <- raw %>%
+    dplyr::mutate(time = lubridate::with_tz(time, tzone = tz_offset(attr(raw$time, "tzone"), tz_name = TRUE)))
   attr(v$time, "tzone") <- "UTC"
 
   v <- visits(v, allow_imp = TRUE) %>%
@@ -114,7 +116,7 @@ map_animated <- function(input, output, session, data) {
     pal <- colorNumeric(palette = colorRampPalette(c("blue", "green", "yellow","orange", "red"))(max(vals)),
                         domain = vals)
 
-    feedr::map_leaflet_base(locs = unique(data[, c("feeder_id", "lat", "lon")]),
+    feedr::map_leaflet_base(locs = unique(raw[, c("feeder_id", "lat", "lon")]),
                             marker = "feeder_id",
                             name = "Feeders") %>%
       leaflet::addScaleBar(position = "bottomright") %>%
@@ -164,5 +166,87 @@ map_animated <- function(input, output, session, data) {
       leafletProxy(ns("map")) %>% clearGroup(group = "Visits")
     }
   })
+
+  ## Add sunrise sunset to animate map
+  observeEvent(input$anim_time, {
+    s <- sun(loc = c(mean(raw$lon), mean(raw$lat)), date = substr(input$anim_time, 1, 10))
+    lubridate::tz(s$rise) <- "UTC"
+    lubridate::tz(s$set) <- "UTC"
+    hour <- input$anim_time
+
+    if(hour < (s$rise - 60*60) | hour > (s$set + 60*60)) a <- "set"
+
+    if(hour >= (s$rise - 60*60) & hour < (s$rise)) a <- "rising1"
+
+    if(hour <= (s$set + 60*60) & hour > (s$set)) a <- "setting"
+
+    if(hour >= (s$rise) & hour < (s$rise + 60*60)) a <- "rising2"
+    if(hour <= (s$set) & hour > (s$set - 60*60)) a <- "setting2"
+
+    if(hour > (s$rise + 60*60) & hour < (s$set - 60*60)) a <- "rise"
+    #print(paste0(hour, " - ", a))
+    #}
+
+    coords <- matrix(c(c(min(raw$lon) - 0.25,
+                         max(raw$lon) + 0.25,
+                         max(raw$lon) + 0.25,
+                         min(raw$lon) - 0.25),
+                       c(min(raw$lat) - 0.25,
+                         min(raw$lat) - 0.25,
+                         max(raw$lat) + 0.25,
+                         max(raw$lat) + 0.25)), ncol = 2)
+
+
+    if(a == "rising1"){
+      leafletProxy(ns("map"), data = coords) %>%
+        removeShape("set1")
+    }
+    if(a == "rising2"){
+      leafletProxy(ns("map"), data = coords) %>%
+        removeShape(c("set1", "set2"))
+    }
+    if(a == "rise"){
+      leafletProxy(ns("map"), data = coords) %>%
+        removeShape(c("set1", "set2", "set3"))
+    }
+    if(a == "setting1"){
+      leafletProxy(ns("map"), data = coords) %>%
+        addPolygons(fillColor = "#000080",
+                    fillOpacity = 0.05,
+                    layerId = "set1",
+                    group = "Daylight")
+    }
+
+    if(a == "setting2"){
+      leafletProxy(ns("map"), data = coords) %>%
+        addPolygons(fillColor = "#000080",
+                    fillOpacity = 0.05,
+                    layerId = "set1",
+                    group = "Daylight") %>%
+        addPolygons(fillColor = "#000080",
+                    fillOpacity = 0.05,
+                    layerId = "set2",
+                    group = "Daylight")
+    }
+    if(a == "set"){
+      leafletProxy(ns("map"), data = coords) %>%
+        addPolygons(fillColor = "#000080",
+                    fillOpacity = 0.05,
+                    layerId = "set1",
+                    group = "Daylight") %>%
+        addPolygons(fillColor = "#000080",
+                    fillOpacity = 0.05,
+                    layerId = "set2",
+                    group = "Daylight") %>%
+        addPolygons(fillColor = "#000080",
+                    fillOpacity = 0.05,
+                    layerId = "set3",
+                    group = "Daylight")
+    }
+
+  })
+
+
+
 }
 
