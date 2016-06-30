@@ -46,7 +46,7 @@ suppressWarnings({
   cat("Getting feeder data...\n")
   #   incProgress(1/5)
   feeders_all <- dbGetQuery(con, statement = paste0("SELECT feeder_id, site_name, loc FROM feeders")) %>%
-    load.format(tz = "") %>%
+    load_format(tz = "") %>%
     mutate(site_name = factor(site_name))
 
   cat("Getting site data...\n")
@@ -60,7 +60,7 @@ suppressWarnings({
   #  incProgress(3/5)
   birds_all <- dbGetQuery(con, statement = paste0("SELECT DISTINCT raw.visits.bird_id FROM raw.visits")) %>%
     left_join(dbGetQuery(con, statement = paste0("SELECT bird_id, species, site_name, age, sex, tagged_on FROM birds")), by = "bird_id") %>%
-    load.format(tz = "") %>%
+    load_format(tz = "") %>%
     mutate(species = factor(species),
            site_name = factor(site_name),
            bird_id = factor(bird_id))
@@ -73,7 +73,7 @@ suppressWarnings({
                                           "FROM raw.visits ",
                                           "GROUP BY DATE(raw.visits.time), raw.visits.feeder_id, raw.visits.bird_id"#,
                        )) %>%
-    load.format(tz = "UTC") %>%
+    load_format(tz = "UTC") %>%
     left_join(birds_all[, c("site_name", "species", "bird_id")], by = "bird_id") %>%
     mutate(date = as.Date(date),
            count = as.numeric(count),

@@ -1,18 +1,3 @@
-# leaflet() %>%
-#   addTiles(group = "Open Street Map") %>%
-#   addProviderTiles("Stamen.Toner", group = "Black and White") %>%
-#   addProviderTiles("Esri.WorldTopoMap", group = "Terrain") %>%
-#   addProviderTiles("Esri.WorldImagery", group = "Satelite") %>%
-#   addLayersControl(baseGroups = c("Satelite",
-#                                   "Terrain",
-#                                   "Open Street Map",
-#                                   "Black and White"),
-#                    options = layersControlOptions(collapsed = FALSE)) %>%
-#    %>%
-#   addMarkers(data = sites_all %>% mutate(name = site_name),
-#              lng = ~lon, lat = ~lat,
-#              group = "Sites", popup = ~htmlEscape(name))
-
 ## Map of data points
 output$map_data <- renderLeaflet({
   req(counts)
@@ -24,11 +9,11 @@ output$map_data <- renderLeaflet({
       left_join(sites_all, by = c("choices" = "site_name"))
   )
 
-  map.leaflet.base(locs = sites_all %>% mutate(name = site_name), marker = "name", name = "Sites") %>%
+  map_leaflet_base(locs = sites_all %>% mutate(name = site_name), marker = "name", name = "Sites") %>%
     addScaleBar(position = "bottomright") %>%
     setView(lng = -98.857903, lat = 21.363297, zoom = 2) %>%
     addCircleMarkers(data = s, lng = ~lon, lat = ~lat, group = "Points",
-                     radius = ~feedr:::scale.area(sum, val.min = 0),
+                     radius = ~feedr:::scale_area(sum, val_min = 0),
                      fillOpacity = 0.7,
                      fillColor = "orange")
 })
@@ -46,15 +31,18 @@ output$map_data <- renderLeaflet({
 #                group = "Sites", popup = ~htmlEscape(site_name)) %>%
 #     addCircleMarkers(data = d,
 #                      lng = ~lon, lat = ~lat, group = "Points",
-#                      radius = ~feedr:::scale.area(sum, val.min = 0),
+#                      radius = ~feedr:::scale_area(sum, val_min = 0),
 #                      fillOpacity = 0.7,
 #                      fillColor = "orange")
 # })
 
-# Update site/feeder markers
-observeEvent(counts_sub(), {
+
+
+# Update site/feeder markers on counts change
+observeEvent(values$map_update, {
   req(startup(input))
   cat("Updating markers...\n")
+  counts_site()
   d <- counts_sub()
   isolate({
     if(nrow(d) > 0) {
@@ -85,7 +73,7 @@ observeEvent(counts_sub(), {
 
 
 # Add circle markers for sample sizes
-observeEvent(counts_sub(), {
+observeEvent(values$map_update, {
   req(startup(input))
   c <- counts_sub()
   cat("Refreshing Map...\n")
@@ -107,7 +95,7 @@ observeEvent(counts_sub(), {
       leafletProxy("map_data") %>%
         clearGroup(group = "Points") %>%
         addCircleMarkers(data = s, lng = ~lon, lat = ~lat, group = "Points",
-                         radius = ~feedr:::scale.area(sum, val.min = 0),
+                         radius = ~feedr:::scale_area(sum, val_min = 0),
                          fillOpacity = 0.7,
                          fillColor = "orange")
     } else {
@@ -119,7 +107,7 @@ observeEvent(counts_sub(), {
 
 
 ## GGPLOT: Plot of counts overtime
-plot_data_ggplot <- eventReactive(counts_sub(), {
+plot_data_ggplot <- eventReactive(values$map_update, {
   cat("Refreshing Time Plot...\n")
 
   c <- counts_sub()

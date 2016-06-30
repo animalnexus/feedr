@@ -3,23 +3,24 @@ shinyServer(function(input, output, session) {
 
   values <- reactiveValues(
     reset = FALSE,
-    data = values_list(),
+    data = list(),
     data_initial = values_list(),
-    data_previous = NULL,
+    #data_previous = NULL,
     hr_message = "",
-    map_hr = FALSE)
+    map_hr = FALSE,
+    updateUI = FALSE)
 
   ## Select Data
   source("select_data.R", local = TRUE)
   source("map_data.R", local = TRUE)
 
   ### Visualizations
-  source("map_animated.R", local = TRUE)
-  source("map_paths.R", local = TRUE)
-  source("map_static.R", local = TRUE)
+ # source("map_animated.R", local = TRUE)
+ # source("map_paths.R", local = TRUE)
+ # source("map_static.R", local = TRUE)
 
   ## Load reactive expressions
-  source("reactive.R", local = TRUE)
+  #source("reactive.R", local = TRUE)
 
   ## Load transformation data tables
   source("output_data.R", local = TRUE)
@@ -28,24 +29,11 @@ shinyServer(function(input, output, session) {
   source("inat.R", local = TRUE)
   source("homerange.R", local = TRUE)
 
-  # Get initial Data
-  #con <- dbConnect(drv,host=dbhost,port=dbport,dbname=dbname,user=dbuser,password=dbpass)
-
-  # dates_all <- reactive({
-  #   req(values$map_data)
-  #     con <- dbConnect(drv,host=dbhost,port=dbport,dbname=dbname,user=dbuser,password=dbpass)
-  #     d <- dbGetQuery(con,
-  #                statement = paste(
-  #                           "SELECT DISTINCT ON (raw.visits.time::date)
-  #                           raw.visits.time::date, feeders.site_name",
-  #                           "FROM raw.visits, feeders",
-  #                           "WHERE raw.visits.feeder_id = feeders.feeder_id")) %>%
-  #       rename(date = time) %>%
-  #       load.format(tz = "")
-  #     dbDisconnect(con)
-  #     d
-  # })
-
+  ## Shiny modules
+  observe({
+    d <- data()
+    callModule(mod_map_animate, "anim", raw = d)
+  })
 
   ## Look at birds
   output$img_birds <- renderText({

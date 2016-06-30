@@ -12,11 +12,11 @@ birdmoves <- function() {
 #' Animate map with leaflet
 #'
 #' @export
-map_animate <- function(data) {
-  app <- shiny::shinyApp(ui = shiny::fluidPage(UI_map_animated("standalone")),
+map_animate <- function(raw) {
+  app <- shiny::shinyApp(ui = shiny::fluidPage(mod_UI_map_animate("standalone")),
                          server = function(input, output, session) {
-                           shiny::callModule(map_animated, "standalone",
-                                             data = data)
+                           shiny::callModule(mod_map_animate, "standalone",
+                                             raw = raw)
                          }
   )
   shiny::runApp(app, display.mode = "normal")

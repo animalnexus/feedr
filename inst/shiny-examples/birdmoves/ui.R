@@ -19,6 +19,7 @@ shinyUI(fluidPage(
                         column(4,
                                h2("Data Selection"),
                                h3("Select Data"),
+                               uiOutput("UI_data_site_name"),
                                uiOutput("UI_data"),
                                radioButtons("data_weather", label = "Include Weather?",
                                             choices = c("Yes", "No"), selected = "Yes"),
@@ -53,38 +54,7 @@ shinyUI(fluidPage(
             ## Visualization
             #################
             tabPanel("Visualizations",
-                     column(4,
-                            h1("Data"),
-                            radioButtons("anim_type", "Show data by:",
-                                         choices = c("Individual visits" = "visits",
-                                                     "Total visits" = "t_visits",
-                                                     "Avg. visits per bird" = "b_visits",
-                                                     "Total birds" = "t_birds")),
-                            h1("Animation"),
-                            sliderInput("anim_speed", "Speed",
-                                        min = 0, max = 100,
-                                        post = "%",
-                                        value = 50),
-                            sliderInput("anim_interval", "Interval",
-                                        min = 1,
-                                        max = 24,
-                                        value = 12,
-                                        post = " hour(s)"),
-                            h3("To Do:"),
-                            div("Make the Date plot scale with the map?"),
-                            hr(),
-                            h1("Potential Options:"),
-                            bsButton("data_dl_screenshot", "Download Screenshot", style = "success")
-                     ),
-                     column(8,
-                            tabsetPanel(type = "tabs",
-                                        tabPanel("Points",
-                                                 fluidRow(leafletOutput("map_points", height = 600))),
-                                        tabPanel("Paths",
-                                                 fluidRow(leafletOutput("map_paths", height = 600)))),
-                            fluidRow(column(8, offset = 2, uiOutput("UI_anim_time"))),
-                            fluidRow(column(8, offset = 1, plotOutput("plot_anim")))
-                     )
+                     mod_UI_map_animate("anim")
             ),
 
             # tabPanel("Paths (Static)",
