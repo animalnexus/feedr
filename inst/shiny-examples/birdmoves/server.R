@@ -2,13 +2,17 @@ shinyServer(function(input, output, session) {
 
 
   values <- reactiveValues(
+    keep = NULL,
+    keep_previous = NULL,
+    recalc_UI = FALSE,
     reset = FALSE,
-    data = list(),
-    data_initial = values_list(),
+    input = list(),
+    input_previous = list(),
     #data_previous = NULL,
     hr_message = "",
     map_hr = FALSE,
     updateUI = FALSE)
+
 
   ## Select Data
   source("select_data.R", local = TRUE)

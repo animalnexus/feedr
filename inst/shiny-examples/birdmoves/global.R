@@ -100,8 +100,8 @@ startup <- function(x) {
   #require that input objects were at least created (first pass)
   all(c("data_site_name",
         "data_species",
-        "data_date"#,
-        #"data_bird_id",
-        #"data_feeder_id"
+        "data_date",
+        "data_bird_id",
+        "data_feeder_id"
   ) %in% names(x))
 }

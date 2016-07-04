@@ -39,11 +39,11 @@ output$map_data <- renderLeaflet({
 
 
 # Update site/feeder markers on counts change
-observeEvent(values$map_update, {
+observeEvent(input$map_update, {
   req(startup(input))
   cat("Updating markers...\n")
   counts_site()
-  d <- counts_sub()
+  d <- values$keep
   isolate({
     if(nrow(d) > 0) {
       if(length(unique(d$site_name)) == 1) {
@@ -73,9 +73,9 @@ observeEvent(values$map_update, {
 
 
 # Add circle markers for sample sizes
-observeEvent(values$map_update, {
+observeEvent(input$map_update, {
   req(startup(input))
-  c <- counts_sub()
+  c <- values$keep
   cat("Refreshing Map...\n")
   isolate({
     #cat(print(values$data))
@@ -107,27 +107,34 @@ observeEvent(values$map_update, {
 
 
 ## GGPLOT: Plot of counts overtime
-plot_data_ggplot <- eventReactive(values$map_update, {
+plot_data_ggplot <- reactive({
+  req(startup(input), input$data_bird_id, input$data_feeder_id)
   cat("Refreshing Time Plot...\n")
+  total <- counts_site() %>%
+    mutate(selected = factor("unselected", levels = c("unselected", "selected")),
+           selected = replace(selected,
+                              species %in% input$data_species &
+                                date %within% interval(input$data_date[1], input$data_date[2]) &
+                                bird_id %in% input$data_bird_id &
+                                feeder_id %in% input$data_feeder_id,
+                              "selected")) %>%
+    group_by(species, date, selected) %>%
+    summarize(count = length(bird_id))
 
-  c <- counts_sub()
+  if(nrow(total) > 0) {
+    g <- ggplot(data = total, aes(x = date, y = count, fill = species, alpha = selected)) +
+      geom_bar(stat = "identity") +
+      scale_alpha_manual(values = c(0.1, 1), drop = FALSE)
+  } else {
+    g <- ggplot(data = data.frame(date = values$input$date, count = 0), aes(x = date, y = count)) +
+      geom_blank() +
+      scale_y_continuous(limits = c(0, 1))
+  }
 
-  isolate({
-    if(nrow(c) > 0) {
-      if(length(unique(c$site_name)) > 1) type <- "site_name" else type <- "feeder_id"
-      g <- ggplot(data = c, aes_string(x = 'date', y = 'count', fill = type)) +
-        geom_bar(stat = "identity", position = "dodge")
-    } else {
-      g <- ggplot(data = data.frame(date = values$data$date, count = 0), aes(x = date, y = count)) +
-        geom_blank() +
-        scale_y_continuous(limits = c(0, 1))
-    }
-
-    g +
-      theme_bw() +
-      theme(legend.position = "none") +
-      labs(x = "Date", y = "Total visits")
-  })
+  g +
+    theme_bw() +
+    theme(legend.position = "none") +
+    labs(x = "Date", y = "No. Individuals")
 })
 
 ## For data selection
