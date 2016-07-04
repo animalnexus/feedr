@@ -31,7 +31,7 @@ shinyUI(fluidPage(
                                tableOutput("data_selection"),
                                hr(),
                                h3("Advanced Options"),
-                               bsButton("data_pause", "pause", style = "primary"),
+                               #bsButton("data_pause", "pause", style = "primary"),
                                actionButton("data_showadv", "Show Advanced Options"),
                                hidden(div(id = "advanced",
                                           uiOutput("UI_data_bird_id"),
