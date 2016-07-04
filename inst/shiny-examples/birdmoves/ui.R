@@ -2,6 +2,7 @@ library(shiny)
 library(shinyjs)
 library(shinyBS)
 library(leaflet)
+library(feedr)
 #library(ggvis)
 
 shinyUI(fluidPage(
