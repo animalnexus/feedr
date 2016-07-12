@@ -40,7 +40,7 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
   #v <- visits(dl_data(start = "2016-03-05", end = "2016-03-07"))
   #f1 <- feeding(v[v$bird_id == "0620000514",])
 
-  check_name(f1, c("bird_id", "feeder_id", "feed_start", "feed_end"))
+  check_name(f1, c("bird_id", "feeder_id", "feed_start", "feed_end"), "feeding")
   check_time(f1, c("feed_start", "feed_end"))
   check_indiv(f1)
 
@@ -198,7 +198,7 @@ daily <- function(a1){
   #a1 <- activity(f1, res = 1, by_feeder = FALSE, sun = TRUE)
   #a1 <- activity(f1, res = 1, by_feeder = TRUE, sun = TRUE)
 
-  check_name(a1, c("bird_id", "date", "time", "activity", "activity_c", "feeder_id"))
+  check_name(a1, c("bird_id", "date", "time", "activity", "activity_c", "feeder_id"), "activity")
   check_time(a1, c("date", "time"))
   check_indiv(a1)
 

@@ -60,7 +60,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 
 
   # Confirm that expected columns and formats are present
-  check_name(r, n = c("bird_id", "feeder_id", "time"))
+  check_name(r, n = c("bird_id", "feeder_id", "time"), "raw RFID")
   check_time(r, n = "time", internal = FALSE)
   check_format(r)
 
@@ -521,7 +521,7 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
   if(!is.data.frame(d)) d <- d$interactions
 
   # Check for Correct formating
-  check_name(d, c("displacer","displacee","n"))
+  check_name(d, c("displacer","displacee","n"), type = "displacement")
   check_format(d)
 
   # Start with best order
