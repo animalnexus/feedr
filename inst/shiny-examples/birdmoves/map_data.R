@@ -18,26 +18,6 @@ output$map_data <- renderLeaflet({
                      fillColor = "orange")
 })
 
-# observeEvent(input$data_reset, {
-#   d <- counts_sum[counts_sum$variable == "site_name", c("sum", "choices", "name")] %>%
-#     left_join(sites_all, by = c("choices" = "site_name"))
-#
-#   leafletProxy("map_data") %>%
-#     clearGroup(group = "Sites") %>%
-#     clearGroup(group = "Points") %>%
-#     setView(lng = -98.857903, lat = 21.363297, zoom = 2) %>%
-#     addMarkers(data = sites_all,
-#                lng = ~lon, lat = ~lat,
-#                group = "Sites", popup = ~htmlEscape(site_name)) %>%
-#     addCircleMarkers(data = d,
-#                      lng = ~lon, lat = ~lat, group = "Points",
-#                      radius = ~feedr:::scale_area(sum, val_min = 0),
-#                      fillOpacity = 0.7,
-#                      fillColor = "orange")
-# })
-
-
-
 # Update site/feeder markers on counts change
 observeEvent(input$map_update, {
   req(startup(input))
@@ -92,6 +72,7 @@ observeEvent(input$map_update, {
             left_join(feeders_all, by = c("choices" = "feeder_id"))
         )
       }
+      s <- s[s$sum > 0, ]
       leafletProxy("map_data") %>%
         clearGroup(group = "Points") %>%
         addCircleMarkers(data = s, lng = ~lon, lat = ~lat, group = "Points",
