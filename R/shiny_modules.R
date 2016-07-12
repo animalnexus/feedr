@@ -159,7 +159,7 @@ mod_map_animate <- function(input, output, session, raw) {
         addCircleMarkers(data = v_points(), lat = ~lat, lng = ~lon, group = "Visits",
                          stroke = FALSE,
                          fillOpacity = 1,
-                         radius = ~feedr:::scale_area(n),
+                         radius = 50,
                          fillColor = ~pal(n),
                          popup = ~htmltools::htmlEscape(as.character(round(n, 1))))
     } else {
