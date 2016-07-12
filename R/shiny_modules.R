@@ -246,6 +246,36 @@ mod_map_animate <- function(input, output, session, raw) {
 
   })
 
+  ## For animation
+
+  total <- v %>%
+    mutate(time = floor_date(start, unit = "hour")) %>%
+    group_by(species, time) %>%
+    summarize(count = length(bird_id))
+
+  lim <- c(floor_date(min(v$start), unit = "day"),
+           ceiling_date(max(v$start), unit = "day"))
+
+  g_time <- ggplot(data = total, aes(x = time, y = count, fill = species)) +
+    geom_bar(stat = "identity") +
+    scale_alpha_manual(values = c(0.1, 1), drop = FALSE) +
+
+    #annotate("rect", xmin = raw$time[1], xmax = raw$time[1] + 60 * 60 * 1, ymin = -Inf, ymax = +Inf, alpha = 0.5) +
+    theme_bw() +
+    theme(legend.position = "none") +
+    labs(x = "Time", y = "No. Individuals") +
+    scale_y_continuous(expand = c(0,0)) +
+    scale_x_datetime(date_labels = "%Y %b %d %H",
+                     limits = lim,
+                     breaks = seq(lim[1],lim[2], length.out = 5),
+                     expand = c(0,0))
+
+
+  output$plot_time <- renderPlot({
+  g_time# + annotate("rect", xmin = input$anim_time[1], xmax = input$anim_time[1] + 60 * 60 * input$anim_interval, ymin = -Inf, ymax = +Inf, alpha = 0.5)
+
+  }, height = 150, width = 550)
+
 
 
 }
