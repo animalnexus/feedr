@@ -3,7 +3,7 @@
 # Static
 output$UI_static_bird_id <- renderUI({
   selectInput("static_bird_id", "Select bird",
-              choices = as.character(unique(data()$bird_id)))
+              choices = as.character(unique(raw()$bird_id)))
 })
 
 
@@ -12,7 +12,7 @@ m <- reactive({
   v <- v()
   if(length(unique(v$feeder_id)) > 1){
     m <- v() %>%
-      group_by(bird_id) %>% 
+      group_by(bird_id) %>%
       do(move(.)) %>%
       group_by(bird_id, feeder_id, move_path) %>%
       summarize(path_use = length(move_path)) %>%
@@ -22,8 +22,8 @@ m <- reactive({
 })
 
 f <- reactive({
-  f <- v() %>% 
-    group_by(bird_id) %>% 
+  f <- v() %>%
+    group_by(bird_id) %>%
     do(feeding(.)) %>%
     group_by(bird_id, feeder_id) %>%
     summarize(feed_length = sum(feed_length))

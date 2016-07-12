@@ -186,7 +186,7 @@ observeEvent(input$plot_data_brush, {
 ####################
 
 ## Download Selected Data
-data <- eventReactive(input$data_get, {
+raw <- eventReactive(input$data_get, {
   req(values$keep)
   cat("Downloading selected data...\n")
 
@@ -239,14 +239,14 @@ data <- eventReactive(input$data_get, {
 
 ## Feeders of current data
 feeders_sub <- reactive({
-  data() %>%
+  raw() %>%
     dplyr::select(feeder_id, site_name, lon, lat) %>%
     unique(.)
 })
 
 ## Birds of current data
 birds_sub <- reactive({
-  data() %>%
+  raw() %>%
     dplyr::select(bird_id, species, age, sex, tagged_on, site_name) %>%
     unique(.)
 })

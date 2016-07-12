@@ -1,30 +1,66 @@
 ## Data and Text Outputs
 
+## Get only publically available data
+birds_dl <- reactive({
+  birds_sub()[birds_sub()$site_name %in% unique(feeders_all$site_name[feeders_all$dataaccess == 0]),]
+})
+
+raw_dl <- reactive({
+  raw_dl <- raw()[raw()$site_name %in% unique(feeders_all$site_name[feeders_all$dataaccess == 0]),]
+})
+
+v_dl <- reactive({
+  v_dl <- v()[v()$site_name %in% unique(feeders_all$site_name[feeders_all$dataaccess == 0]),]
+})
+
+f_dl <- reactive({
+  f_dl <- f()[f()$site_name %in% unique(feeders_all$site_name[feeders_all$dataaccess == 0]),]
+})
+
+m_dl <- reactive({
+
+})
+
+disp <- reactive({
+
+})
+
+dom_dl <- reactive({
+
+})
+
+a_dl <- reactive({
+
+})
+
+da_dl <- reactive({
+
+})
 
 ## Raw
-output$dt_data <- DT::renderDataTable(
-  DT::datatable(data(), 
+output$dt_raw <- DT::renderDataTable(
+  DT::datatable(raw_dl(),
                 filter = "top",
                 options = list(pageLength = 100),
                 rownames = FALSE,
-                colnames = gsub("_", " ", names(data())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE)
+                colnames = gsub("_", " ", names(data_dl())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE)
                 )
 )
 
 output$data_dl_raw <- downloadHandler(
   filename = paste0('raw_', Sys.Date(), '.csv'),
   content = function(file) {
-    write.csv(data(), file, row.names = FALSE)
+    write.csv(raw_dl(), file, row.names = FALSE)
   }
 )
 
 ## Birds
 output$dt_birds <- DT::renderDataTable(
-  DT::datatable(birds_sub(), 
+  DT::datatable(birds_dl(),
                 filter = "top",
-                options = list(pageLength = 100), 
-                rownames = FALSE, 
-                colnames = gsub("_", " ", names(birds_sub())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE),
+                options = list(pageLength = 100),
+                rownames = FALSE,
+                colnames = gsub("_", " ", names(birds_dl())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE),
                 selection = "single"
   ), server = FALSE
 )
@@ -32,29 +68,29 @@ output$dt_birds <- DT::renderDataTable(
 
 ## Visits
 output$dt_v <- DT::renderDataTable(
-  DT::datatable(v(), 
+  DT::datatable(v_dl(),
                 filter = "top",
                 options = list(pageLength = 100),
                 rownames = FALSE,
-                colnames = gsub("_", " ", names(v())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE)
+                colnames = gsub("_", " ", names(v_dl())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE)
   )
 )
 
 output$data_dl_visits <- downloadHandler(
   filename = paste0('visits_', Sys.Date(), '.csv'),
   content = function(file) {
-    write.csv(v(), file, row.names = FALSE)
+    write.csv(v_dl(), file, row.names = FALSE)
   }
 )
 
 
 ## Feeding
 output$dt_f <- DT::renderDataTable(
-  DT::datatable(f(), 
+  DT::datatable(f_dl(),
                 filter = "top",
                 options = list(pageLength = 100),
                 rownames = FALSE,
-                colnames = gsub("_", " ", names(f())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE)
+                colnames = gsub("_", " ", names(f_dl())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE)
   )
 )
 
@@ -62,34 +98,6 @@ output$dt_f <- DT::renderDataTable(
 output$data_dl_feeding <- downloadHandler(
   filename = paste0('feeding_', Sys.Date(), '.csv'),
   content = function(file) {
-    write.csv(f(), file, row.names = FALSE)
+    write.csv(f_dl(), file, row.names = FALSE)
   }
 )
-
-
-
-
-
-
-
-
-
-
-
-output$dt_points <- DT::renderDataTable(
-  DT::datatable(v_points(), 
-                filter = "top",
-                options = list(pageLength = 100),
-                rownames = FALSE),
-                colnames = gsub("_", " ", names(v_points())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE)
-)
-
-output$dt_paths <- DT::renderDataTable(
-  DT::datatable(m_paths(), 
-                filter = "top",
-                options = list(pageLength = 100),
-                rownames = FALSE),
-                colnames = gsub("_", " ", names(m_paths())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE)
-)
-
-#output$selection <- renderText({input$birds})
