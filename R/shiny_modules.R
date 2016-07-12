@@ -23,13 +23,13 @@ mod_UI_map_animate <- function(id) {
            sliderInput(ns("anim_interval"), "Interval",
                        min = 1,
                        max = 24,
-                       value = 12,
+                       value = 1,
                        post = " hour(s)")
     ),
     column(8,
            fluidRow(leafletOutput(ns("map"), height = 600)),
-           fluidRow(column(8, offset = 2, uiOutput(ns("UI_anim_time"))))#,
-           #fluidRow(column(8, offset = 1, plotOutput(ns("plot_anim"))))
+           fluidRow(column(8, uiOutput(ns("UI_anim_time")))),
+           fluidRow(column(8, plotOutput(ns("plot_time"))))
     )
   )
 }
@@ -104,8 +104,8 @@ mod_map_animate <- function(input, output, session, raw) {
                 value = lubridate::floor_date(min(v$start), unit = "day"),
                 step = 60 * 60 * input$anim_interval,
                 timezone = tz,
-                animate = animationOptions(interval = 1000 * (1 - input$anim_speed/100), loop = TRUE),
-                width = "100%")
+                animate = animationOptions(interval = 500 * (1 - (input$anim_speed/100)) + 50, loop = TRUE),
+                width = "550px")
   })
 
   ## Render Base Map
