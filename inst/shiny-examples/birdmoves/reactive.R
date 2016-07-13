@@ -4,6 +4,9 @@
 
 ############
 
+v <- reactive({
+  visits(raw(), allow_imp = TRUE)
+})
 
 
 m <- reactive({
@@ -17,7 +20,9 @@ m <- reactive({
 
 f <- reactive({
   req(v())
-  v() %>%
-    group_by(bird_id) %>%
-    do(feeding(.))
+  withProgress({
+    v() %>%
+      group_by(bird_id) %>%
+      do(feeding(.))
+  }, message = "Calculating feeding time")
 })
