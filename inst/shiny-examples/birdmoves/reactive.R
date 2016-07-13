@@ -6,12 +6,13 @@
 
 
 
-
-
-
-m_paths <- reactive({
-  req(input$bird_id)
-  m() %>% filter(bird_id == input$bird_id) %>% arrange(move_path)
+m <- reactive({
+  req(v())
+  withProgress({
+    v() %>%
+      group_by(bird_id) %>%
+      do(move(.))
+  }, message = "Calculating movements")
 })
 
 f <- reactive({

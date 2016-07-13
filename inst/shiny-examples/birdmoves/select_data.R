@@ -50,6 +50,13 @@ output$data_selection <- renderTable({
     select("Species" = choices, "Total" = sum)
 }, digits = 0, include.rownames = FALSE)
 
+output$data_access <- renderText({
+  req(startup(input), db_access)
+
+  if(sites_all$dataaccess[sites_all$site_name == input$data_site_name] == 0) return("Fully Public")
+  if(sites_all$dataaccess[sites_all$site_name == input$data_site_name] == 1) return("Visualizations Only")
+})
+
 
 ## Subset of counts reflecting ALL selections
 #counts_sub <- reactive({
