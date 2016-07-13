@@ -9,6 +9,25 @@ shinyUI(fluidPage(
 
   shinyjs::useShinyjs(),
 
+  ## CSS Styling
+
+  tags$head(
+    tags$style(HTML("
+      .shiny-output-error-validation {
+        padding: 1em;
+        font-weight: bold;
+        color: green;
+      }
+      .shiny-progress .progress-text {
+        background-color: orange;
+      }
+      .shiny-progress .progress-text .progress-message {
+        font-size: 100%;
+        color: #03F;
+      }
+    "))
+  ),
+
   navbarPage(title = HTML("bird<strong>moves</strong>"),
 
              #################
