@@ -4,7 +4,7 @@
 
 # Fires when selection complete
 observe({
-  req(startup(input))
+  req(startup(input), db_access)
 
   isolate(values$previous <- values$input)
   values$input <- values_list(input)
@@ -45,7 +45,7 @@ counts_species <- reactive({
 
 ## Table showing current selection
 output$data_selection <- renderTable({
-  req(startup(input))
+  req(startup(input), db_access)
   get_counts(values$keep, summarize_by = "species") %>%
     select("Species" = choices, "Total" = sum)
 }, digits = 0, include.rownames = FALSE)
@@ -53,7 +53,7 @@ output$data_selection <- renderTable({
 
 ## Subset of counts reflecting ALL selections
 #counts_sub <- reactive({
-#  req(startup(input))
+#  req(startup(input), db_access)
 #  cat("Calculating counts_sub()...\n")
 #  get_counts(counts_species(), filter = values_list(input))
 #})
@@ -62,7 +62,7 @@ output$data_selection <- renderTable({
 ## Reset all with reset button
 ####################
 observeEvent(input$data_reset, {
-  req(startup(input))
+  req(startup(input), db_access)
   cat("Reset data selection...\n")
   values$input <- values$input_previous <- list()
   updateSelectInput(session, "data_site_name",
@@ -106,6 +106,7 @@ observe({
 
 ## UI Site_name
 output$UI_data_site_name <- renderUI({
+  req(db_access)
   selectInput("data_site_name", "Sites:",
               choices = c(c("Choose site" = ""), choices(counts_sum, "site_name")))
 })

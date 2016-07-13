@@ -37,6 +37,7 @@ shinyUI(fluidPage(
                                bsButton("data_reset", "Reset inputs", style = "danger"),
                                bsButton("data_get", "Get Data"),
                                hr(),
+                               strong("Data Access: "), textOutput("data_access", inline = TRUE),
                                tableOutput("data_selection"),
                                bsTooltip("data_selection", "Number of visits per species given the options selected.",
                                          "right", options = list(container = "body")),

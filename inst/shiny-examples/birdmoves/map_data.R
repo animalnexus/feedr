@@ -1,6 +1,6 @@
 ## Map of data points
 output$map_data <- renderLeaflet({
-  req(counts)
+  req(db_access)
   cat("Initializing data map...\n")
 
   #Get counts summed across all dates
@@ -20,7 +20,7 @@ output$map_data <- renderLeaflet({
 
 # Update site/feeder markers on counts change
 observeEvent(input$map_update, {
-  req(startup(input))
+  req(startup(input), db_access)
   cat("Updating markers...\n")
   counts_site()
   d <- values$keep
@@ -54,7 +54,7 @@ observeEvent(input$map_update, {
 
 # Add circle markers for sample sizes
 observeEvent(input$map_update, {
-  req(startup(input))
+  req(startup(input), db_access)
   c <- values$keep
   cat("Refreshing Map...\n")
   isolate({
@@ -89,7 +89,7 @@ observeEvent(input$map_update, {
 
 ## GGPLOT: Plot of counts overtime
 plot_data_ggplot <- reactive({
-  req(startup(input), input$data_bird_id, input$data_feeder_id)
+  req(startup(input), db_access, input$data_bird_id, input$data_feeder_id)
   cat("Refreshing Time Plot...\n")
   total <- counts_site() %>%
     mutate(selected = factor("unselected", levels = c("unselected", "selected")),
