@@ -38,20 +38,21 @@ mod_UI_map_animate <- function(id) {
 #' @import shiny
 #' @import magrittr
 #' @export
-mod_map_animate <- function(input, output, session, raw) {
+mod_map_animate <- function(input, output, session, v) {
 
   ns <- session$ns
 
   # Data
 
   # Fix time zone to LOOK like local non-DST, but to APPEAR as UTC (for timezone slider
-  v <- raw %>%
-    dplyr::mutate(time = lubridate::with_tz(time, tzone = tz_offset(attr(raw$time, "tzone"), tz_name = TRUE)))
-  attr(v$time, "tzone") <- "UTC"
-
-  v <- visits(v, allow_imp = TRUE) %>%
-    dplyr::mutate(day = as.Date(start)) %>%
+  v <- v %>%
+    dplyr::mutate(start = lubridate::with_tz(start, tzone = tz_offset(attr(v$start, "tzone"), tz_name = TRUE)),
+                  end = lubridate::with_tz(end, tzone = tz_offset(attr(v$end, "tzone"), tz_name = TRUE)),
+                  day = as.Date(start)) %>%
     dplyr::group_by(feeder_id, lat, lon)
+
+  attr(v$start, "tzone") <- "UTC"
+  attr(v$end, "tzone") <- "UTC"
 
   t_visits <- v %>%
     dplyr::group_by(day, add = TRUE) %>%
@@ -116,7 +117,7 @@ mod_map_animate <- function(input, output, session, raw) {
     pal <- colorNumeric(palette = colorRampPalette(c("blue", "green", "yellow","orange", "red"))(max(vals)),
                         domain = vals)
 
-    feedr::map_leaflet_base(locs = unique(raw[, c("feeder_id", "lat", "lon")]),
+    feedr::map_leaflet_base(locs = unique(v[, c("feeder_id", "lat", "lon")]),
                             marker = "feeder_id",
                             name = "Feeders") %>%
       leaflet::addScaleBar(position = "bottomright") %>%
@@ -169,7 +170,7 @@ mod_map_animate <- function(input, output, session, raw) {
 
   ## Add sunrise sunset to animate map
   observeEvent(input$anim_time, {
-    s <- sun(loc = c(mean(raw$lon), mean(raw$lat)), date = substr(input$anim_time, 1, 10))
+    s <- sun(loc = c(mean(v$lon), mean(v$lat)), date = substr(input$anim_time, 1, 10))
     lubridate::tz(s$rise) <- "UTC"
     lubridate::tz(s$set) <- "UTC"
     hour <- input$anim_time
@@ -187,14 +188,14 @@ mod_map_animate <- function(input, output, session, raw) {
     #print(paste0(hour, " - ", a))
     #}
 
-    coords <- matrix(c(c(min(raw$lon) - 0.25,
-                         max(raw$lon) + 0.25,
-                         max(raw$lon) + 0.25,
-                         min(raw$lon) - 0.25),
-                       c(min(raw$lat) - 0.25,
-                         min(raw$lat) - 0.25,
-                         max(raw$lat) + 0.25,
-                         max(raw$lat) + 0.25)), ncol = 2)
+    coords <- matrix(c(c(min(v$lon) - 0.25,
+                         max(v$lon) + 0.25,
+                         max(v$lon) + 0.25,
+                         min(v$lon) - 0.25),
+                       c(min(v$lat) - 0.25,
+                         min(v$lat) - 0.25,
+                         max(v$lat) + 0.25,
+                         max(v$lat) + 0.25)), ncol = 2)
 
 
     if(a == "rising1"){
@@ -260,7 +261,7 @@ mod_map_animate <- function(input, output, session, raw) {
     geom_bar(stat = "identity") +
     scale_alpha_manual(values = c(0.1, 1), drop = FALSE) +
 
-    #annotate("rect", xmin = raw$time[1], xmax = raw$time[1] + 60 * 60 * 1, ymin = -Inf, ymax = +Inf, alpha = 0.5) +
+    #annotate("rect", xmin = v$time[1], xmax = v$time[1] + 60 * 60 * 1, ymin = -Inf, ymax = +Inf, alpha = 0.5) +
     theme_bw() +
     theme(legend.position = "none") +
     labs(x = "Time", y = "No. Individuals") +
