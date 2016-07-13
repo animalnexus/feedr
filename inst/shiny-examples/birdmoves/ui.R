@@ -131,46 +131,6 @@ shinyUI(fluidPage(
                                                  DT::dataTableOutput("dt_m"))
                             )
                      )
-            ),
-            tabPanel("Home Range (testing)",
-                     column(4,
-                            h3("Homerange calculation"),
-                            uiOutput("UI_hr"),
-                            uiOutput("UI_hr_bandwidth"),
-                            uiOutput("UI_hr_plot"),
-                            bsButton("homerange", "Calculate and Display", style = "success"),
-                            hr(),
-                            fluidRow(div(strong(textOutput("hr_message")),
-                                         style="text-align:center; padding: 10px"),
-                                     style = "border: 1px solid silver; margin-right: 7px")
-
-                     ),
-                     column(8,
-                            fluidRow(leafletOutput("map_hr", height = 600))
-                            # fluidRow(column(8, offset = 2, uiOutput("UI_inat_time")))
-                     )
-
-            ),
-            tabPanel("iNaturalist (testing)",
-                     column(4,
-                            h1("Which Data?"),
-                            radioButtons("inat_species", "Species:",
-                                         choices = c("House Finch" = "Haemorhous mexicanus",
-                                                     "Mountain Chickadee" = "Poecile gambeli",
-                                                     "Dark-eyed Junco" = "Junco hyemalis")),
-                            dateRangeInput("inat_date", label = "Observation Dates",
-                                           start = as.Date("2010-01-01"),
-                                           end = Sys.Date()),
-                            bsButton("inat_data", "Get Data from iNaturalist", style = "success"),
-                            hr(),
-                            h1("Photos"),
-                            htmlOutput("inat_photo")
-                     ),
-                     column(8,
-                            fluidRow(leafletOutput("map_inat", height = 600))#,
-                           # fluidRow(column(8, offset = 2, uiOutput("UI_inat_time")))
-                     )
-
             )
   )
 ))
