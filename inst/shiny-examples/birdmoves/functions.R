@@ -1,3 +1,13 @@
+startup <- function(x) {
+  #require that input objects were at least created (first pass)
+  all(c("data_site_name",
+        "data_species",
+        "data_date",
+        "data_bird_id",
+        "data_feeder_id"
+  ) %in% names(x))
+}
+
 get_counts <- function(c, filter = NULL, summarize_by = NULL) {
 
   if(!is.null(filter)){
