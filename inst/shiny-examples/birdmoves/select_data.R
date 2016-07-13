@@ -239,14 +239,14 @@ raw <- eventReactive(input$data_get, {
 })
 
 ## Feeders of current data
-feeders_sub <- reactive({
+feeders <- reactive({
   raw() %>%
     dplyr::select(feeder_id, site_name, lon, lat) %>%
     unique(.)
 })
 
 ## Birds of current data
-birds_sub <- reactive({
+birds <- reactive({
   raw() %>%
     dplyr::select(bird_id, species, age, sex, tagged_on, site_name) %>%
     unique(.)

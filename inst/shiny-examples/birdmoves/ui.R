@@ -119,7 +119,7 @@ shinyUI(fluidPage(
                             tabsetPanel(type = "tabs",
                                         tabPanel("Raw Data",
                                                  br(), downloadButton("data_dl_raw", "Download Raw Data"), br(),
-                                                 DT::dataTableOutput("dt_data")),
+                                                 DT::dataTableOutput("dt_raw")),
                                         tabPanel("Visits Data",
                                                  br(), downloadButton("data_dl_visits", "Download Visits Data"), br(),
                                                  DT::dataTableOutput("dt_v")),

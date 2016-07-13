@@ -34,7 +34,7 @@ f <- reactive({
 map_static <- reactive({
   req(input$static_bird_id)
   withProgress(message = "Calculating visits and movement paths...",
-               map.leaflet(f = f()[f()$bird_id == input$static_bird_id, ], m = m()[m()$bird_id == input$static_bird_id,], locs = feeders_sub())
+               map.leaflet(f = f()[f()$bird_id == input$static_bird_id, ], m = m()[m()$bird_id == input$static_bird_id,], locs = feeders())
   )
 })
 

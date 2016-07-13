@@ -43,9 +43,8 @@ output$dt_raw <- DT::renderDataTable(
                 filter = "top",
                 options = list(pageLength = 100),
                 rownames = FALSE,
-                colnames = gsub("_", " ", names(data_dl())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE)
-                )
-)
+                colnames = gsub("_", " ", names(raw_dl())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE))
+})
 
 output$data_dl_raw <- downloadHandler(
   filename = paste0('raw_', Sys.Date(), '.csv'),
