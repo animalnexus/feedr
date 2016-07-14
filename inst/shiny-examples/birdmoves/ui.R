@@ -25,6 +25,13 @@ shinyUI(fluidPage(
         font-size: 100%;
         color: #03F;
       }
+     img {
+        border: 1;
+        max-width: 100%;
+     }
+     element.style {
+        width: 33.33%;
+     }
     "))
   ),
 
@@ -34,10 +41,10 @@ shinyUI(fluidPage(
              ## SETUP
              #################
              tabPanel("Select Data",
-                      fluidRow(div(img(src = "logo.jpg", width = 600), style="text-align: center;")),
                       fluidRow(
-                        h2("Data Selection"),
                         column(4,
+                               div(img(src = "logo.jpg", width = 400), style="text-align: left;"),
+                               h2("Data Selection"),
                                h3("Select Data"),
                                uiOutput("UI_data_site_name"),
                                bsTooltip("data_site_name", "Site to grab data from",
