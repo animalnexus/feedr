@@ -86,6 +86,17 @@ shinyUI(fluidPage(
             #          htmlOutput("data_current"),
             #          div("DATA TABLE")
             # ),
+
+            #################
+            ## Watch Now
+            #################
+            tabPanel("Current Activity",
+                     bsButton("current_update", "Update Now"),
+                     leafletOutput("map_current", height = 600),
+                     htmlOutput('current_time')
+
+            ),
+
             #################
             ## Visualization
             #################
