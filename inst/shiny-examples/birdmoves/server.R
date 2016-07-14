@@ -2,17 +2,10 @@ shinyServer(function(input, output, session) {
 
   values <- reactiveValues(
     db_access = db_access,
-    timer = NULL,
-    keep = NULL,
-    keep_previous = NULL,
-    recalc_UI = FALSE,
-    reset = FALSE,
-    input = list(),
-    input_previous = list(),
-    #data_previous = NULL,
-    hr_message = "",
-    map_hr = FALSE,
-    updateUI = FALSE)
+    map_data = NULL,          # Stores values which displayed on map
+    keep = NULL,              # Stores data selected for download
+    input = list(),           # Stores selection options
+    input_previous = list())  # Stores previous selection options (for comparison)
 
   ## Select Data
   source("select_data.R", local = TRUE)

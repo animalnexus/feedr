@@ -11,7 +11,6 @@ observe({
 
   isolate({
     if(!is.logical(all.equal(values$input, values$input_previous))) {
-      values$keep_previous <- values$keep
       values$keep <- get_counts(counts_site(), filter = values_list(input))
 
       ## Added to current selection:
@@ -91,7 +90,6 @@ observeEvent(input$data_site_name, {
   values$input_previous <- values$input
 
   values$keep <- counts_site()
-  values$keep_previous <- values$keep
 })
 
 ####################
