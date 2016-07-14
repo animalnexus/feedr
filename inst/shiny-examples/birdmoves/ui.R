@@ -161,6 +161,17 @@ shinyUI(fluidPage(
                                                  DT::dataTableOutput("dt_m"))
                             )
                      )
+            ),
+            tabPanel("About",
+                     h1("Project"),
+                     "If you're interested in contruting functions and/or coding to this project, check out our project on ", a("github", href = "http://github.org/steffilazerte/feedr/"),
+
+                     h1("People"),
+                     "Stefanie LaZerte",
+                     "Matt Reudink",
+                     "David Hill",
+                     "Etc."
+
             )
   )
 ))
