@@ -30,9 +30,9 @@ source("functions.R", local = TRUE)
 imgs <- read.csv("./data/species.csv", colClasses = c("factor", "character"))
 
 db_access <- FALSE
-if(file.exists(system.file("shiny-examples", "birdmoves", "db_full.R", package = "feedr"))) {
+if(file.exists("/usr/local/share/feedr/db_full.R")) {
   db_access <- TRUE
-  source(system.file("shiny-examples", "birdmoves", "db_full.R", package = "feedr"))
+  source("/usr/local/share/feedr/db_full.R")
   drv <- dbDriver("PostgreSQL")
 
   qry <- function(x) paste0(x, collapse = "', '")
