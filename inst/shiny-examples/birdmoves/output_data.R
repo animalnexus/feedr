@@ -29,11 +29,20 @@ m_dl <- reactive({
 
 #da_dl <- reactive({})
 
+msg_select <- c("Please select data first:\n
+                - On the 'Select Data' tab, make your selection\n
+                - Be sure to click on the 'Get Data' button\n
+                - Data is available when the the 'Retrieving Data' message has disappeared")
+
+msg_private <- "None of the currently selected data is available for download.\n
+Some of our data is restricted to visualizations only to protect the hard work of scientists until they've had a chance to publish their findings."
+
+
 ## Raw
 output$dt_raw <- DT::renderDataTable({
-  validate(need(input$data_get > 0, "Please select data first"))
+  validate(need(input$data_get > 0, msg_select))
   req(raw())
-  validate(need(sum(raw()$dataaccess==0) > 0, "None of the selected data is available for download."))
+  validate(need(sum(raw()$dataaccess==0) > 0, msg_private))
 
   DT::datatable(raw_dl(),
                 filter = "top",
@@ -51,7 +60,7 @@ output$data_dl_raw <- downloadHandler(
 
 ## Birds
 output$dt_birds <- DT::renderDataTable({
-  validate(need(input$data_get > 0, "Please select data first"))
+  validate(need(input$data_get > 0, msg_select))
   req(birds())
 
   DT::datatable(birds_dl(),
@@ -65,9 +74,9 @@ output$dt_birds <- DT::renderDataTable({
 
 ## Visits
 output$dt_v <- DT::renderDataTable({
-  validate(need(input$data_get > 0, "Please select data first"))
+  validate(need(input$data_get > 0, msg_select))
   req(raw())
-  validate(need(sum(raw()$dataaccess==0) > 0, "None of the selected data is available for download."))
+  validate(need(sum(raw()$dataaccess==0) > 0, msg_private))
 
   DT::datatable(v_dl(),
                 filter = "top",
@@ -86,9 +95,9 @@ output$data_dl_visits <- downloadHandler(
 
 ## Feeding
 output$dt_f <- DT::renderDataTable({
-  validate(need(input$data_get > 0, "Please select data first"))
+  validate(need(input$data_get > 0, msg_select))
   req(raw())
-  validate(need(sum(raw()$dataaccess==0) > 0, "None of the selected data is available for download."))
+  validate(need(sum(raw()$dataaccess==0) > 0, msg_private))
 
   DT::datatable(f_dl(),
                 filter = "top",
@@ -107,9 +116,9 @@ output$data_dl_feeding <- downloadHandler(
 
 ## Movements
 output$dt_m <- DT::renderDataTable({
-  validate(need(input$data_get > 0, "Please select data first"))
+  validate(need(input$data_get > 0, msg_select))
   req(raw())
-  validate(need(sum(raw()$dataaccess == 0) > 0, "None of the selected data is available for download."))
+  validate(need(sum(raw()$dataaccess == 0) > 0, msg_private))
 
   DT::datatable(m_dl(),
                 filter = "top",
