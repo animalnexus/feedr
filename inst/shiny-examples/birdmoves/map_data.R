@@ -97,7 +97,7 @@ observe({
 ## GGPLOT: Plot of counts overtime
 plot_data_ggplot <- reactive({
   #req(startup(input), db_access, input$data_bird_id, input$data_feeder_id)
-  req(startup(input), db_access)
+  req(startup(input), db_access, !is.null(input$data_date))
   cat("Refreshing Time Plot...\n")
 
   i <- values$input
