@@ -276,8 +276,4 @@ mod_map_animate <- function(input, output, session, v) {
   g_time# + annotate("rect", xmin = input$anim_time[1], xmax = input$anim_time[1] + 60 * 60 * input$anim_interval, ymin = -Inf, ymax = +Inf, alpha = 0.5)
 
   }, height = 150, width = 550)
-
-
-
 }
-
