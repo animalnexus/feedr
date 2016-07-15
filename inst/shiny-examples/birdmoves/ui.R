@@ -53,9 +53,9 @@ shinyUI(fluidPage(
                                bsTooltip("UI_data_species", "Species(s) to include/exclude",
                                          "right", options = list(container = "body")),
                                uiOutput("UI_data_date"),
-                               radioButtons("data_weather", label = "Include Weather?",
-                                            choices = c("Yes", "No"), selected = "Yes"),
-                               bsTooltip("data_weather", "Should weather data be downloaded from Environment Canada and merged in?",
+                               radioButtons("data_weather", label = "Include Weather?  (Canada only) (In Development)",
+                                            choices = c("No"), selected = "No", inline = TRUE),
+                               bsTooltip("data_weather", "Should weather data be added from Environment Canada?",
                                          "right", options = list(container = "body")),
 
                                bsButton("map_update", "Update map", style = "primary"),
