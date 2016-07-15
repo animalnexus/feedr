@@ -27,6 +27,8 @@ library(envirocan)
 ## Functions
 source("functions.R", local = TRUE)
 
+Sys.setenv(R_ZIPCMD="/usr/bin/zip")
+
 imgs <- read.csv("./data/species.csv", colClasses = c("factor", "character"))
 
 db_access <- FALSE
