@@ -120,12 +120,23 @@ observeEvent(input$data_site_name, {
 ## Format buttons
 ####################
 
+## Get data when Selection made
 observe({
-  req(startup(input), counts_site())
-  if(!is.logical(all.equal(values_list(input), values$input))) {
-    updateButton(session, "data_get", disabled = TRUE)
+  req(startup(input))
+  if(input$data_site_name != ""){
+    updateButton(session, "data_get", disabled = FALSE, style = "success")
+    updateButton(session, "data_reset", disabled = FALSE, style = "danger")
   } else {
-    updateButton(session, "data_get", disabled = FALSE)
+    updateButton(session, "data_get", disabled = TRUE, style = "default")
+    updateButton(session, "data_reset", disabled = TRUE, style = "default")
+  }
+})
+
+observe({
+  if(!is.logical(all.equal(values$keep, values$data_map))) {
+    updateButton(session, "map_update", disabled = FALSE, style = "primary")
+  } else {
+    updateButton(session, "map_update", disabled = TRUE, style = "default")
   }
 })
 
