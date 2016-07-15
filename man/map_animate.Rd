@@ -4,7 +4,7 @@
 \alias{map_animate}
 \title{Animate map with leaflet}
 \usage{
-map_animate(data)
+map_animate(v)
 }
 \description{
 Animate map with leaflet
