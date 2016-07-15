@@ -44,8 +44,8 @@ shinyServer(function(input, output, session) {
       temp <- imgs$url[imgs$species == as.character(database$species[which])]
       if(nchar(as.character(temp)) < 1) temp <- imgs$url[imgs$species == "unknown"]
     } else {
-      temp <- imgs$url[imgs$species == as.character(unique(database$species[database$bird_id == which]))]
-      if(nchar(as.character(temp)) < 1) temp <- imgs$url[imgs$species == "unknown"]
+      temp <- imgs$url[match(as.character(database$species[database$bird_id == which]),imgs$species)]
+      temp[is.na(temp)] <- imgs$url[imgs$species == "unknown"]
     }
     return(paste("<img src='",temp,"' height = ", size, ">"))
   }
