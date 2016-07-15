@@ -90,4 +90,21 @@ values_list <- function(i = NULL){
 
 }
 
+circle <- function(point, data, radius = 0.5){
+
+  n <- seq(0, by = 360/nrow(data), length.out = nrow(data))
+
+  temp <- data.frame(do.call("rbind", lapply(n, FUN = function(x) {
+    maptools::gcDestination(lon = point$lon,
+                            lat = point$lat,
+                            bearing = x,
+                            dist = radius, dist.units = "km", model = "WGS84")
+  })), row.names = NULL)
+
+  names(temp) <- c("lon", "lat")
+
+  circle <- cbind(data, temp)
+  return(circle)
+}
+
 
