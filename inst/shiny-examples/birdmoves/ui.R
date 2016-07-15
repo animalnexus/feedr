@@ -50,7 +50,7 @@ shinyUI(fluidPage(
                                bsTooltip("data_site_name", "Site to grab data from",
                                          "right", options = list(container = "body")),
                                uiOutput("UI_data_species"),
-                               bsTooltip("data_species", "Species(s) to include/exclude",
+                               bsTooltip("UI_data_species", "Species(s) to include/exclude",
                                          "right", options = list(container = "body")),
                                uiOutput("UI_data_date"),
                                radioButtons("data_weather", label = "Include Weather?",
