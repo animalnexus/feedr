@@ -161,7 +161,8 @@ shinyUI(fluidPage(
                      column(2,
                             "This is where you can download your data",
                             br(),
-                            bsButton("data_dl_all", "Download All", style = "success")
+                            #bsButton("data_dl_all", "Download All", style = "success")
+                            downloadButton('data_dl', 'Download All')
                             ),
                      column(10,
                             tabsetPanel(type = "tabs",

@@ -29,6 +29,13 @@ m_dl <- reactive({
 
 #da_dl <- reactive({})
 
+all <- reactive({
+  list(raw = raw_dl(),
+       visits = v_dl(),
+       feeding = f_dl(),
+       movements = m_dl())
+})
+
 msg_select <- c("Please select data first:\n
                 - On the 'Select Data' tab, make your selection\n
                 - Be sure to click on the 'Get Data' button\n
@@ -133,4 +140,24 @@ output$data_dl_move <- downloadHandler(
   content = function(file) {
     write.csv(m_dl(), file, row.names = FALSE)
   }
+)
+
+## Download All
+
+output$data_dl <- downloadHandler(
+  filename = paste0("feedr_all_", Sys.Date(), ".zip"),
+  content = function(file) {
+    tmpdir <- tempdir()
+    setwd(tempdir())
+    cat(tempdir())
+
+    fs <- paste0(names(all()), "_", Sys.Date(), ".csv")
+    for(d in 1:length(all())){
+      write.csv(all()[[d]], file = fs[d], row.names = FALSE)
+    }
+    cat(fs)
+
+    zip(zipfile = file, files = fs)
+  },
+  contentType = "application/zip"
 )
