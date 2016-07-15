@@ -16,13 +16,13 @@ library(dplyr)
 library(lubridate)
 
 ## Data aquisition
-library(rinat)
+#library(rinat)
 library(RPostgreSQL)
 library(envirocan)
 
 ## Homerange
-library(sp)
-library(KernSmooth)
+#library(sp)
+#library(KernSmooth)
 
 ## Functions
 source("functions.R", local = TRUE)
