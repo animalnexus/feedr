@@ -23,16 +23,19 @@ current <- reactive({
                                               "AND (birds.bird_id = raw.visits.bird_id) ",
                                               "AND feeders.site_name IN ( 'Kamloops, BC' ) ",
                                               #"AND raw.visits.time::timestamp > (CURRENT_TIMESTAMP - INTERVAL '7 minutes') ",
-                                              "AND raw.visits.time::timestamp > ('2016-05-25 15:23:30'::timestamp - INTERVAL '7 minutes') "))
+                                              "AND raw.visits.time::timestamp > ('2016-03-25 15:23:30'::timestamp - INTERVAL '7 minutes') "))
       })
       dbDisconnect(con)
 
       if(nrow(data) > 0) {
         data <- data %>%
           load_format(., tz = "UTC", tz_disp = "America/Vancouver") %>%
+          visits(.) %>%
           group_by(bird_id, feeder_id, species, age, sex, lon, lat) %>%
           summarize(n = length(bird_id),
-                    time = as.numeric(max(time) - min(time))/60)
+                    time = sum(end - start)/60) %>%
+          group_by(feeder_id) %>%
+          do(circle(point = unique(.[, c("lat", "lon")]), data = ., radius = 0.01))
       } else data <- NULL
     })
     data
@@ -59,17 +62,30 @@ observeEvent(current(), {
   if(nrow(current()) > 0) {
     leafletProxy("map_current") %>%
       clearGroup(group = "Activity") %>%
-      addMarkers(data = current(),
-                 popup = ~paste0("<strong>Bird ID:</strong> ", bird_id, "<br>",
-                                 "<strong>No. RFID reads:</strong> ", n, "<br>",
-                                 "<strong>Total time:</strong> ", time, "min <br>",
-                                 get_image(current(), bird_id, 100, imgs)),
-                 lng = ~jitter(lon, factor = 0.0001),
-                 lat = ~jitter(lat, factor = 0.0001), group = "Activity")
+      #addMarkers(data = current(),
+      addAwesomeMarkers(data = current(),
+                        icon = makeAwesomeIcon(icon = "star",
+                                               markerColor = "orange",
+                                               iconColor = "blue"),
+                        popup = ~paste0("<strong>Bird ID:</strong> ", bird_id, "<br>",
+                                        "<strong>No. RFID reads:</strong> ", n, "<br>",
+                                        "<strong>Total time:</strong> ", time, "min <br>",
+                                        get_image(current(), bird_id, 100, imgs)),
+                        lng = ~lon, lat = ~lat, group = "Activity")
   } else {
     leafletProxy("map_data") %>%
       clearGroup(group = "Activity")
   }
 })
 
+
+output$summary_current <- renderText({
+  req(current())
+  paste0("<strong>Time:</strong> ", Sys.time(), "<br>",
+         "<strong>Interval:</strong> 7 minutes", "<br>",
+         "<strong>No. birds:</strong> ", length(unique(current()$bird_id)), "<br>",
+         "<strong>No. feeders:</strong> ", length(unique(current()$feeder_id)), "<br>",
+         "<strong>Total feeding time:</strong> ", sum(current()$time), " minutes", "<br>"
+  )
+})
 

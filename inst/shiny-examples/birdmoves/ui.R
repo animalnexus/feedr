@@ -102,9 +102,16 @@ shinyUI(fluidPage(
             ## Watch Now
             #################
             tabPanel("Current Activity",
-                     bsButton("current_update", "Update Now"),
-                     leafletOutput("map_current", height = 600),
-                     htmlOutput('current_time')
+                     fluidRow(
+                       column(2,
+                              h3("Summary"),
+                              bsButton("current_update", "Update Now"),
+                              htmlOutput("summary_current")),
+                       column(10,
+                              leafletOutput("map_current", height = 600),
+                              htmlOutput('current_time')
+                       )
+                     )
 
             ),
 
