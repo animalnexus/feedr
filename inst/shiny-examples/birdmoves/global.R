@@ -30,9 +30,9 @@ source("functions.R", local = TRUE)
 imgs <- read.csv("./data/species.csv", colClasses = c("factor", "character"))
 
 db_access <- FALSE
-if(file.exists("../../../db_full.R")) {
+if(file.exists("db_full.R")) {
   db_access <- TRUE
-  source("../../../db_full.R")
+  source("db_full.R")
   drv <- dbDriver("PostgreSQL")
 
   qry <- function(x) paste0(x, collapse = "', '")
