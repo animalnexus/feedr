@@ -89,15 +89,20 @@ observeEvent(input$map_update, {
 
 ## GGPLOT: Plot of counts overtime
 plot_data_ggplot <- reactive({
-  req(startup(input), db_access, input$data_bird_id, input$data_feeder_id)
+  #req(startup(input), db_access, input$data_bird_id, input$data_feeder_id)
+  req(startup(input), db_access)
   cat("Refreshing Time Plot...\n")
+
+  i <- values$input
+  #browser()
+
   total <- counts_site() %>%
     mutate(selected = factor("unselected", levels = c("unselected", "selected")),
            selected = replace(selected,
-                              species %in% input$data_species &
-                                date %within% interval(input$data_date[1], input$data_date[2]) &
-                                bird_id %in% input$data_bird_id &
-                                feeder_id %in% input$data_feeder_id,
+                              species %in% i$species &
+                                date %within% interval(as.Date(i$date[1]), as.Date(i$date[2])) &
+                                bird_id %in% i$bird_id &
+                                feeder_id %in% i$feeder_id,
                               "selected")) %>%
     group_by(species, date, selected) %>%
     summarize(count = length(bird_id))
@@ -105,16 +110,16 @@ plot_data_ggplot <- reactive({
   if(nrow(total) > 0) {
     g <- ggplot(data = total, aes(x = date, y = count, fill = species, alpha = selected)) +
       geom_bar(stat = "identity") +
-      scale_alpha_manual(values = c(0.1, 1), drop = FALSE)
-  } else {
-    g <- ggplot(data = data.frame(date = values$input$date, count = 0), aes(x = date, y = count)) +
-      geom_blank() +
-      scale_y_continuous(limits = c(0, 1))
-  }
+      scale_alpha_manual(values = c(0.1, 1), drop = FALSE, guide = FALSE)
+  }# else {
+  #  g <- ggplot(data = data.frame(date = values$input$date, count = 0), aes(x = date, y = count)) +
+  #    geom_blank() +
+  #    scale_y_continuous(limits = c(0, 1))
+  #}
 
   g +
     theme_bw() +
-    theme(legend.position = "none") +
+    theme(legend.position = "top") +
     labs(x = "Date", y = "No. Individuals")
 })
 
@@ -122,14 +127,3 @@ plot_data_ggplot <- reactive({
 output$plot_data_ggplot <- renderPlot({
     plot_data_ggplot() +
       scale_x_date(date_labels = "%Y %b %d")
-  }, height = 150)
-
-## For animation
-output$plot_anim <- renderPlot({
-  lim <- c(as.Date(floor_date(min(v()$start), unit = "day")),
-           as.Date(ceiling_date(max(v()$start), unit = "day")))
-  plot_data_ggplot() +
-    scale_x_date(date_labels = "%Y %b %d",
-                 limits = lim,
-                 breaks = seq(lim[1],lim[2], length.out = 5))
-  }, height = 150, width = 550)

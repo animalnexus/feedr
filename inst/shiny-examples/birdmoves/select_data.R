@@ -6,10 +6,19 @@
 observe({
   req(startup(input), db_access)
 
-  isolate(values$previous <- values$input)
-  values$input <- values_list(input)
+  ## Invalidate only on the following inputs
+  input$data_species
+  input$data_date
+  input$plot_data_brush
+  input$data_bird_id
+  input$data_feeder_id
+
+  #browser()
 
   isolate({
+    values$input_previous <- values$input  ## Save old inputs
+    values$input <- values_list(input)     ## Get new inputs
+
     if(!is.logical(all.equal(values$input, values$input_previous))) {
       values$keep <- get_counts(counts_site(), filter = values_list(input))
 
@@ -23,8 +32,24 @@ observe({
       ## Force added back in:
       if(length(added) > 0) values$keep <- unique(rbind(values$keep, get_counts(counts_site(), filter = added)))
 
+      #browser()
+
       ## Reset all values
-      values$input <- values$input_previous <- values_list(input)
+      #values$input <- values$input_previous <- values_list(input)
+
+      ## Update time (but only if needs to be updated)
+      if(min(values$keep$date) != input$data_date[1] | max(values$keep$date) != input$data_date[2]){
+          updateDateRangeInput(session, "data_date",
+                               start = min(values$keep$date),
+                               end = max(values$keep$date))
+      }
+
+      ## Uncheck species boxes if counts == 0 (But only if still checked)
+      cnts <- get_counts(c = values$keep, summarize_by = "species")
+      if(any(cnts$choices[cnts$sum == 0] %in% input$data_species)){
+        updateCheckboxGroupInput(session, "data_species",
+                                 selected = selected(cnts, "species"))
+      }
     }
   })
 })
@@ -120,16 +145,18 @@ output$UI_data_site_name <- renderUI({
 output$UI_data_species <- renderUI({
   req(input$data_site_name)
   #if(is.null(input$data_species)) c <- counts_site() else c <- values$keep
-  cnts <- get_counts(c = counts_site() , summarize_by = "species")
-  checkboxGroupInput("data_species", NULL,
+  cnts <- get_counts(c = counts_site(), summarize_by = "species")
+  #sel <- get_counts(c = values$keep, summarize_by = "species")
+  checkboxGroupInput("data_species", "Species",
                      choices = choices(cnts, "species"),
                      selected = selected(cnts, "species"))
 })
 
 ## UI Date range
 output$UI_data_date <- renderUI({
-  req(input$data_site_name, counts_species())
-  if(is.null(input$data_date) | nrow(values$keep) == 0) c <- counts_site() else c <- values$keep
+  req(input$data_site_name)
+  #if(is.null(input$data_date) | nrow(values$keep) == 0) c <- counts_site() else c <- values$keep
+  c <- counts_site()
   cnts <- get_counts(c = c, summarize_by = "date")
   dateRangeInput("data_date", "Dates to include:",
                  min = min(as.Date(cnts$choices[cnts$variable == "date"])),
@@ -178,14 +205,17 @@ outputOptions(output, 'UI_data_feeder_id', suspendWhenHidden=FALSE)
 ####################
 
 ## Update date/time with plot selection
-observeEvent(input$plot_data_brush, {
-  req(input$plot_data_brush)
-  new_dates <- c(as.Date(input$plot_data_brush$xmin, lubridate::origin),
-                 as.Date(input$plot_data_brush$xmax, lubridate::origin))
-  if(new_dates[1] < min(counts$date)) new_dates[1] <- min(counts$date)
-  if(new_dates[2] > max(counts$date)) new_dates[2] <- max(counts$date)
-  updateDateRangeInput(session, "data_date", start = new_dates[1], end = new_dates[2])
-})
+#observeEvent(input$plot_data_brush, {
+#  req(input$plot_data_brush)
+#  browser()
+#  new_dates <- c(as.Date(input$plot_data_brush$xmin, lubridate::origin),
+#                 as.Date(input$plot_data_brush$xmax, lubridate::origin))
+#
+#  ## Can't select less than available
+#  if(new_dates[1] < min(counts$date)) new_dates[1] <- min(counts$date)
+#  if(new_dates[2] > max(counts$date)) new_dates[2] <- max(counts$date)
+#  updateDateRangeInput(session, "data_date", start = new_dates[1], end = new_dates[2])
+#})
 
 ####################
 ## Get DATA
