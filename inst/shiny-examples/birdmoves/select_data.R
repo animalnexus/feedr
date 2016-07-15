@@ -200,7 +200,7 @@ output$UI_data_feeder_id <- renderUI({
 
 ## Toggle advanced options
 observeEvent(input$data_showadv, {
-  toggle(id = "advanced")
+  if(input$data_showadv) shinyjs::show(id = "advanced") else shinyjs::hide(id = "advanced")
 })
 
 ## Render UIs even when hidden
