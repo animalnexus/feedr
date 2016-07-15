@@ -57,25 +57,20 @@ shinyUI(fluidPage(
                                             choices = c("No"), selected = "No", inline = TRUE),
                                bsTooltip("data_weather", "Should weather data be added from Environment Canada?",
                                          "right", options = list(container = "body")),
-
-                               bsButton("map_update", "Update map", style = "primary"),
-                               p(),
-                               bsButton("data_reset", "Reset inputs", style = "danger"),
-                               bsButton("data_get", "Get Data"),
                                hr(),
+                               h3("Selected Data"),
                                strong("Data Access: "), textOutput("data_access", inline = TRUE),
                                tableOutput("data_selection"),
                                bsTooltip("data_selection", "Number of visits per species given the options selected.",
                                          "right", options = list(container = "body")),
-                               hr(),
-                               h3("Advanced Options"),
-                               #bsButton("data_pause", "pause", style = "primary"),
-                               actionButton("data_showadv", "Show Advanced Options"),
-                               hidden(div(id = "advanced",
-                                          uiOutput("UI_data_bird_id"),
-                                          uiOutput("UI_data_feeder_id")))
+                               p(),
+                               bsButton("data_get", "Get Data", style = "default", disabled = TRUE),
+                               p(),
+                               bsButton("data_reset", "Reset inputs", style = "default", disabled = TRUE)
                         ),
                         column(8,
+                               div(bsButton("map_update", "Update map", style = "default", disabled = TRUE), style = "text-align: center"),
+                               p(),
                                leafletOutput("map_data", height = 600),
                                bsPopover("map_data", "Sampling", "Circle area depicts the amount of visits recorded per site or feeder given the options selected", placement = "top", trigger = "hover"),
                                plotOutput("plot_data_ggplot",
@@ -86,6 +81,15 @@ shinyUI(fluidPage(
                                div(strong("Drag and select a date range to further refine the data selection"), style = "text-align: center;")
                                #ggvisOutput("plot_data_ggvis")
                         )
+                      ),
+                      fluidRow(
+                        hr(),
+                        h3("Advanced Options"),
+                        #bsButton("data_pause", "pause", style = "primary"),
+                        bsButton("data_showadv", "Show Advanced Options", type = "toggle", value = FALSE),
+                        hidden(div(id = "advanced",
+                                   uiOutput("UI_data_bird_id"),
+                                   uiOutput("UI_data_feeder_id")))
                       )
               ),
             # tabPanel("Current Data",

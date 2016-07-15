@@ -182,7 +182,7 @@ output$UI_data_bird_id <- renderUI({
   cnts <- get_counts(c = counts_species(), summarize_by = "bird_id")
   checkboxGroupInput("data_bird_id", "Select bird ids",
                      choices = choices(cnts, "bird_id"),
-                     selected = selected(cnts, "bird_id"))
+                     selected = selected(cnts, "bird_id"), inline = TRUE)
 })
 
 
@@ -195,7 +195,7 @@ output$UI_data_feeder_id <- renderUI({
   cnts <- get_counts(c = counts_species(), summarize_by = "feeder_id")
   checkboxGroupInput("data_feeder_id", "Select feeder ids",
                      choices = choices(cnts, "feeder_id"),
-                     selected = selected(cnts, "feeder_id"))
+                     selected = selected(cnts, "feeder_id"), inline = TRUE)
 })
 
 ## Toggle advanced options

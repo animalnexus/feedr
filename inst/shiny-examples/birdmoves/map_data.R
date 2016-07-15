@@ -134,3 +134,4 @@ plot_data_ggplot <- reactive({
 output$plot_data_ggplot <- renderPlot({
     plot_data_ggplot() +
       scale_x_date(date_labels = "%Y %b %d")
+  }, height = 200)
