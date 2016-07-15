@@ -2,7 +2,7 @@ shinyServer(function(input, output, session) {
 
   values <- reactiveValues(
     db_access = db_access,
-    map_data = NULL,          # Stores values which displayed on map
+    data_map = NULL,          # Stores values which displayed on map
     keep = NULL,              # Stores data selected for download
     input = list(),           # Stores selection options
     input_previous = list())  # Stores previous selection options (for comparison)

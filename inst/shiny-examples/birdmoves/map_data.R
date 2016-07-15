@@ -1,4 +1,4 @@
-## Map of data points
+## Render Map
 output$map_data <- renderLeaflet({
   req(db_access)
   cat("Initializing data map...\n")
@@ -18,47 +18,54 @@ output$map_data <- renderLeaflet({
                      fillColor = "orange")
 })
 
-# Update site/feeder markers on counts change
-observeEvent(input$map_update, {
-  req(startup(input), db_access)
-  cat("Updating markers...\n")
-  counts_site()
-  d <- values$keep
-  isolate({
-    if(nrow(d) > 0) {
-      if(length(unique(d$site_name)) == 1) {
-        if(unique(d$site_name) == "Kamloops, BC") zoom <- 17
-        if(unique(d$site_name) == "Costa Rica") zoom <- 12
-        suppressWarnings(
-          d <- d %>%
-            left_join(feeders_all, by = "feeder_id") %>%
-            mutate(name = feeder_id)
-        )
-      } else {
-        zoom <- 2
-        d <- sites_all %>% mutate(name = site_name)
-      }
-      leafletProxy("map_data") %>%
-        clearGroup(group = "Sites") %>%
-        addMarkers(data = d, lng = ~lon, lat = ~lat, group = "Sites", popup = ~htmlEscape(name)) %>%
-        setView(lat = mean(d$lat, na.rm = TRUE), lng = mean(d$lon, na.rm = TRUE), zoom = zoom, options = list('animate' = TRUE))
-    } else {
-      leafletProxy("map_data") %>%
-        clearGroup(group = "Sites") %>%
-        clearGroup(group = "Points") %>%
-        setView(lng = -98.857903, lat = 21.363297, zoom = 2)
-    }
-  })
+## Reset map on Reset Button
+observeEvent(input$data_reset, {
+  req(db_access)
+  leafletProxy("map_data") %>%
+    clearGroup(group = "Points") %>%
+    clearGroup(group = "Sites") %>%
+    setView(lng = -98.857903, lat = 21.363297, zoom = 2) %>%
+    addMarkers(data = sites_all,
+               lng = ~lon, lat = ~lat,
+               popup  = htmltools::htmlEscape(sites_all$site_name),
+               group = "Sites") %>%
+    addCircleMarkers(data = suppressWarnings(get_counts(counts, summarize_by = "site_name") %>% left_join(sites_all, by = c("choices" = "site_name"))),
+                     lng = ~lon, lat = ~lat,
+                     group = "Points",
+                     radius = ~feedr:::scale_area(sum, val_min = 0),
+                     fillOpacity = 0.7,
+                     fillColor = "orange")
 })
 
 
+# Update map feeder sites automatically on site selection
+observeEvent(input$data_site_name, {
+  req(db_access, input$data_site_name != "")
+  cat("Updating markers...\n")
+  f <- feeders_all[feeders_all$site_name == input$data_site_name, ]
+  if(nrow(f) > 0) {
+    if(unique(f$site_name) == "Kamloops, BC") zoom <- 17
+    if(unique(f$site_name) == "Costa Rica") zoom <- 12
+    leafletProxy("map_data") %>%
+      clearGroup(group = "Sites") %>%
+      addMarkers(data = f, lng = ~lon, lat = ~lat, group = "Sites", popup = ~htmlEscape(feeder_id)) %>%
+      setView(lat = mean(f$lat, na.rm = TRUE), lng = mean(f$lon, na.rm = TRUE), zoom = zoom, options = list('animate' = TRUE))
+  }
+})
+
 # Add circle markers for sample sizes
-observeEvent(input$map_update, {
-  req(startup(input), db_access)
-  c <- values$keep
-  cat("Refreshing Map...\n")
+observe({
+  req(startup(input), db_access, input$data_site_name != "")
+
+  ## Watch for changes in either of these
+  input$map_update
+  input$data_site_name
+
   isolate({
-    #cat(print(values$data))
+    values$data_map <- values$keep  ## Keep track of current map values
+    c <- values$keep
+
+    cat("Refreshing Map...\n")
     if(nrow(c) > 0) {
       #Get counts summed across all dates
       if(length(unique(c$site_name)) > 1) {
