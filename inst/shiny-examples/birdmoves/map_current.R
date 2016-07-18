@@ -33,7 +33,7 @@ current <- reactive({
           visits(.) %>%
           group_by(bird_id, feeder_id, species, age, sex, lon, lat) %>%
           summarize(n = length(bird_id),
-                    time = sum(end - start)/60) %>%
+                    time = round(sum(end - start)/60, 2)) %>%
           group_by(feeder_id) %>%
           do(circle(point = unique(.[, c("lat", "lon")]), data = ., radius = 0.01))
       } else data <- NULL
