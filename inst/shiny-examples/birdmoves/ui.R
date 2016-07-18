@@ -32,6 +32,25 @@ shinyUI(fluidPage(
      element.style {
         width: 33.33%;
      }
+
+     .bird-img {
+        position:relative;
+        width:100%;
+     }
+     .wiki-watermark {
+        background: rgb(0, 0, 0); /* fallback color */
+        background: rgba(0, 0, 0, 0.7);
+        position:absolute;
+        left:0px;
+        bottom:0px;
+        padding: 5px;
+        color:white;
+        font-weight:bold;
+        font-size: 75%;
+     }
+     .wiki-watermark a:link, .wiki-watermark a:visited, .wiki-watermark a:hover, .wiki-watermark a:active, .wiki-watermark a:focus {
+        color:white;
+     }
     "))
   ),
 
@@ -152,8 +171,7 @@ shinyUI(fluidPage(
             #################
             tabPanel("Birds",
                      fluidRow(column(6,
-                                     h3("Click on a row for more information"),
-                                     div("Presumably, we could replace images these with the actual pictures that are stored in the database? Right now they all come from wikipedia")),
+                                     h3("Click on a row for more information")),
                               column(6, htmlOutput("img_birds"))),
                      fluidRow(DT::dataTableOutput("dt_birds"))
             ),

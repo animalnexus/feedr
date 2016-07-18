@@ -29,7 +29,9 @@ source("functions.R", local = TRUE)
 
 Sys.setenv(R_ZIPCMD="/usr/bin/zip")
 
-imgs <- read.csv("./data/species.csv", colClasses = c("factor", "character"))
+imgs_wiki <- read.csv("./data/species.csv", colClasses = c("factor", "character"))
+imgs <- read.csv("./data/img_index.csv")
+
 
 db_access <- FALSE
 if(file.exists("/usr/local/share/feedr/db_full.R")) {

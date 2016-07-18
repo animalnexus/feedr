@@ -58,16 +58,31 @@ output$map_current <- renderLeaflet({
 observeEvent(current(), {
   req(imgs)
 
+  sp_icons <- awesomeIconList(
+    "Mountain Chickadee" = makeAwesomeIcon(icon = "star",
+                                           marker = "green",
+                                           iconColor = "white"),
+    "House Finch" = makeAwesomeIcon(icon = "star",
+                                    marker = "red",
+                                    iconColor = "white"),
+    "Dark-eyed Junco" = makeAwesomeIcon(icon = "star",
+                                        marker = "darkpurple",
+                                        iconColor = "white"))
+
+
+
   cat("Refreshing map of current activity...\n")
   if(nrow(current()) > 0) {
     leafletProxy("map_current") %>%
       clearGroup(group = "Activity") %>%
       #addMarkers(data = current(),
       addAwesomeMarkers(data = current(),
-                        icon = makeAwesomeIcon(icon = "star",
-                                               markerColor = "orange",
-                                               iconColor = "blue"),
-                        popup = ~paste0("<strong>Bird ID:</strong> ", bird_id, "<br>",
+                        #icon = #makeAwesomeIcon(icon = "star",
+                               #                markerColor = "orange",
+                               #                iconColor = "blue"),
+                        icon = ~sp_icons[species],
+                        popup = ~paste0("<strong>Species:</strong> ", species, "<br>",
+                                        "<strong>Bird ID:</strong> ", bird_id, "<br>",
                                         "<strong>No. RFID reads:</strong> ", n, "<br>",
                                         "<strong>Total time:</strong> ", time, "min <br>",
                                         get_image(current(), bird_id, 100, imgs)),
