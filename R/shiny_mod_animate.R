@@ -1,5 +1,3 @@
-## Shiny Modules
-
 ## Animated map - UI
 #' @import shiny
 #' @import magrittr
