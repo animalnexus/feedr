@@ -1,7 +1,7 @@
 ## Get current data
 
 current <- reactive({
-  req(db_access)
+  req(db_access, values$current_map)
   invalidateLater(5 * 60 * 1000)
   input$current_update
 
@@ -47,8 +47,8 @@ output$current_time <- renderText(as.character(values$current_time))
 
 ## Map of current activity
 output$map_current <- renderLeaflet({
-  cat("Initializing map of current activity...\n")
-
+  cat("Initializing map of current activity (", as.character(Sys.time()), ") ...\n")
+  values$current_map <- TRUE
   map_leaflet_base(locs = feeders_all %>% filter(site_name == "Kamloops, BC") %>% mutate(name = feeder_id), marker = "name", name = "Feeders") %>%
     addScaleBar(position = "bottomright")
 })
@@ -56,7 +56,7 @@ output$map_current <- renderLeaflet({
 ## Add activity points
 # Add circle markers for sample sizes
 observeEvent(current(), {
-  req(imgs)
+  req(imgs, values$current_map)
 
   sp_icons <- awesomeIconList(
     "Mountain Chickadee" = makeAwesomeIcon(icon = "star",
@@ -71,7 +71,7 @@ observeEvent(current(), {
 
 
 
-  cat("Refreshing map of current activity...\n")
+  cat("Refreshing map of current activity (", as.character(Sys.time()), ") ...\n")
   if(nrow(current()) > 0) {
     leafletProxy("map_current") %>%
       clearGroup(group = "Activity") %>%
