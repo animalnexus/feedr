@@ -13,8 +13,8 @@ m <- reactive({
   req(v())
   withProgress({
     v() %>%
-      group_by(bird_id) %>%
-      do(move(.))
+      dplyr::group_by(bird_id) %>%
+      dplyr::do(move(.))
   }, message = "Calculating movements")
 })
 
@@ -22,7 +22,7 @@ f <- reactive({
   req(v())
   withProgress({
     v() %>%
-      group_by(bird_id) %>%
-      do(feeding(.))
+      dplyr::group_by(bird_id) %>%
+      dplyr::do(feeding(.))
   }, message = "Calculating feeding time")
 })
