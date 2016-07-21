@@ -20,7 +20,7 @@ test_that("load_web loads and formats data correctly", {
 # load_raw()
 test_that("load_raw loads and formats data correctly", {
   f <- system.file("extdata", "raw", "exp1", "GR12DATA_2015_12_24.TXT", package = "feedr")
-  expect_is(r <- load_raw(f), "data.frame")
+  expect_is(r <- load_raw(r_file = f), "data.frame")
   expect_match(names(r)[1:3], "^bird_id$|^time$|^feeder_id$")
   expect_is(r$bird_id, "character")
   expect_is(r$feeder_id, "character")
@@ -30,6 +30,13 @@ test_that("load_raw loads and formats data correctly", {
   expect_equal(r$feeder_id[1], "GR12")
   expect_equal(r$time[1], as.POSIXct("2015-12-15 11:16:08", tz = "America/Vancouver"))
   expect_equal(load_raw(f, tz_disp = "America/Toronto")$time[1], as.POSIXct("2015-12-15 14:16:08", tz = "America/Toronto"))
+})
+
+# load_raw() empty file
+test_that("load_raw handles empty files gracefully", {
+  f <- system.file("extdata", "raw", "exp2", "GR10DATA_2016_01_18.TXT", package = "feedr")
+  expect_message(r <- load_raw(r_file = f))
+  expect_null(r, NULL)
 })
 
 # load_raw_all()
