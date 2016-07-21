@@ -13,6 +13,8 @@ devtools::install_github("steffilazerte/feedr")
 
 ## Help
 
+** Note: ** These tutorials are woefully out of data. Function use and names has been updated and the tutorials will be updated to match soon.
+
 An overview of this package and how to use the functions is accessible [here](http://steffi.ca/thinkR/feedr.html).
 
 This is also accessible as a vignette in R, provided you install the package with vignettes built:
@@ -24,13 +26,13 @@ devtools::install_github("steffilazerte/feedr", build_vignettes = TRUE)
 For documentation and examples on how to use a particular function use the `?` R command. For example:
 
 ```r
-?load.raw.all
+?load_raw_all
 ?visits
 ```
 
 ## Demos
 
-And there is one demo for using `map.leaflet()` which you can run as follows:
+And there is one demo for using `map_leaflet()` which you can run as follows:
 
 ```r
 demo("demo-leaflet", package = "feedr")
