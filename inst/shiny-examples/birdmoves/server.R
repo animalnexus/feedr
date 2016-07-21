@@ -11,7 +11,7 @@ shinyServer(function(input, output, session) {
   imgs <- read.csv(system.file("extdata", "shiny-data", "img_index.csv", package = "feedr"))
 
   ## Select Data
-  raw <- callModule(mod_db_data, "access", db = db)
+  raw <- callModule(feedr:::mod_db_data, "access", db = db)
 
   ## Feeders of current data
   feeders <- reactive({
@@ -28,7 +28,7 @@ shinyServer(function(input, output, session) {
   })
 
   ## Current activity
-  callModule(mod_map_current, "current", db = db)
+  callModule(feedr:::mod_map_current, "current", db = db)
 
   ### Visualizations
  # source("map_paths.R", local = TRUE)

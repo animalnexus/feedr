@@ -60,14 +60,14 @@ shinyUI(fluidPage(
              ## SETUP
              #################
              tabPanel("Select Data",
-                      mod_UI_db_data("access")
+                      feedr:::mod_UI_db_data("access")
               ),
 
             #################
             ## Watch Now
             #################
             tabPanel("Current Activity",
-                     mod_UI_map_current("current")
+                     feedr:::mod_UI_map_current("current")
                      # fluidRow(
                      #   column(2,
                      #          h3("Summary"),
