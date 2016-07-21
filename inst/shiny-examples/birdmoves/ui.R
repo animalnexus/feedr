@@ -145,14 +145,27 @@ shinyUI(fluidPage(
             ),
             tabPanel("About",
                      h1("Project"),
-                     "If you're interested in contruting functions and/or coding to this project, check out our project on ", a("github", href = "http://github.org/steffilazerte/feedr/"),
+                     p(HTML("The bird<strong>moves</strong> project is large collaborative effort to develop tools for the observation, visualization, and analysis of animal movements registered by RFID feeders or other static recording stations.")),
+
+                     p("We hope that this project will be useful to scientists, citizen scientists, students and educators alike."),
+                     p("Our goals are to provide a tool that is easy to use, yet powerful."),
+                     p(),
+                     "If you're interested in contruting functionality and/or coding to this project, check out our project on ", HTML(paste0("<a href = 'http://github.org/steffilazerte/feedr/' target = 'blank'>GitHub <img src = 'GitHub-Mark-32px.png'></a>")), "We welcome all involvement!",
 
                      h1("People"),
+                     "Project Blurbs and Pictures",
                      "Stefanie LaZerte",
                      "Matt Reudink",
                      "David Hill",
                      "Etc."
 
+            ),
+            tabPanel("References",
+                     h1("FAQ"),
+                     h1("Caveats and Disclaimers"),
+                     h1("Tutorials"),
+                     h1("Glossary")
             )
+
   )
 ))
