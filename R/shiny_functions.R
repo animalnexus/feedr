@@ -27,5 +27,3 @@ map_animate <- function(v) {
   )
   shiny::runApp(app, display.mode = "normal")
 }
-
-
