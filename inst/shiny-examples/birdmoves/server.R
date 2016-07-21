@@ -1,4 +1,6 @@
 shinyServer(function(input, output, session) {
+  library(feedr)
+
   values <- reactiveValues(
     current_map = NULL)
 
@@ -28,7 +30,7 @@ shinyServer(function(input, output, session) {
   })
 
   ## Current activity
-  callModule(feedr:::mod_map_current, "current", db = db)
+  callModule(module = feedr:::mod_map_current, id = "current", db = db)
 
   ### Visualizations
  # source("map_paths.R", local = TRUE)
