@@ -105,7 +105,7 @@ load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
     if(!is.null(tz_disp)) r$time <- lubridate::with_tz(r$time, tz_disp)
 
     # Reorder columns
-    r <- dplyr::select(r, bird_id, time, feeder_id, everything()) %>%
+    r <- dplyr::select(r, bird_id, time, feeder_id, dplyr:::everything()) %>%
       dplyr::arrange(bird_id, time)
     return(r)
 }
