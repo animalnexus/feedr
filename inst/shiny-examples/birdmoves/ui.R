@@ -60,77 +60,24 @@ shinyUI(fluidPage(
              ## SETUP
              #################
              tabPanel("Select Data",
-                      fluidRow(
-                        column(4,
-                               div(img(src = "logo.jpg", width = 400), style="text-align: left;"),
-                               h2("Data Selection"),
-                               h3("Select Data"),
-                               uiOutput("UI_data_site_name"),
-                               bsTooltip("data_site_name", "Site to grab data from",
-                                         "right", options = list(container = "body")),
-                               uiOutput("UI_data_species"),
-                               bsTooltip("UI_data_species", "Species(s) to include/exclude",
-                                         "right", options = list(container = "body")),
-                               uiOutput("UI_data_date"),
-                               radioButtons("data_weather", label = "Include Weather?  (Canada only) (In Development)",
-                                            choices = c("No"), selected = "No", inline = TRUE),
-                               bsTooltip("data_weather", "Should weather data be added from Environment Canada?",
-                                         "right", options = list(container = "body")),
-                               hr(),
-                               h3("Selected Data"),
-                               strong("Data Access: "), textOutput("data_access", inline = TRUE),
-                               tableOutput("data_selection"),
-                               bsTooltip("data_selection", "Number of visits per species given the options selected.",
-                                         "right", options = list(container = "body")),
-                               p(),
-                               bsButton("data_get", "Get Data", style = "default", disabled = TRUE),
-                               p(),
-                               bsButton("data_reset", "Reset inputs", style = "default", disabled = TRUE)
-                        ),
-                        column(8,
-                               div(bsButton("map_update", "Update map", style = "default", disabled = TRUE), style = "text-align: center"),
-                               p(),
-                               leafletOutput("map_data", height = 600),
-                               bsPopover("map_data", "Sampling", "Circle area depicts the amount of visits recorded per site or feeder given the options selected", placement = "top", trigger = "hover"),
-                               plotOutput("plot_data_ggplot",
-                                          brush = brushOpts(
-                                            id = "plot_data_brush",
-                                            direction = "x",
-                                            resetOnNew = TRUE),height = "100%"),
-                               div(strong("Drag and select a date range to further refine the data selection"), style = "text-align: center;")
-                               #ggvisOutput("plot_data_ggvis")
-                        )
-                      ),
-                      fluidRow(
-                        hr(),
-                        h3("Advanced Options"),
-                        #bsButton("data_pause", "pause", style = "primary"),
-                        bsButton("data_showadv", "Show Advanced Options", type = "toggle", value = FALSE),
-                        hidden(div(id = "advanced",
-                                   uiOutput("UI_data_bird_id"),
-                                   uiOutput("UI_data_feeder_id")))
-                      )
+                      mod_UI_db_data("access")
               ),
-            # tabPanel("Current Data",
-            #          h1("Current Data Selection"),
-            #          htmlOutput("data_current"),
-            #          div("DATA TABLE")
-            # ),
 
             #################
             ## Watch Now
             #################
             tabPanel("Current Activity",
-                     fluidRow(
-                       column(2,
-                              h3("Summary"),
-                              bsButton("current_update", "Update Now"),
-                              htmlOutput("summary_current")),
-                       column(10,
-                              leafletOutput("map_current", height = 600),
-                              htmlOutput('current_time')
-                       )
-                     )
+                     mod_UI_map_current("current")
+                     # fluidRow(
+                     #   column(2,
+                     #          h3("Summary"),
+                     #          bsButton("current_update", "Update Now"),
+                     #          htmlOutput("summary_current")),
+                     #   column(10,
+                     #          leafletOutput("map_current", height = 600),
+                     #          htmlOutput('current_time')
+                     #   )
+                     # )
 
             ),
 
