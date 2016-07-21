@@ -65,7 +65,7 @@ Some of our data is restricted to visualizations only to protect the hard work o
 
 ## Raw
 output$dt_raw <- DT::renderDataTable({
-  validate(need(input$data_get > 0, msg_select))
+  validate(need(try(nrow(raw()) > 0, silent = TRUE), msg_select))
   req(raw())
   validate(need(sum(raw()$dataaccess==0) > 0, msg_private))
 
@@ -85,7 +85,7 @@ output$data_dl_raw <- downloadHandler(
 
 ## Birds
 output$dt_birds <- DT::renderDataTable({
-  validate(need(input$data_get > 0, msg_select))
+  validate(need(try(nrow(raw()) > 0, silent = TRUE), msg_select))
   req(birds())
 
   DT::datatable(birds_dl(),
@@ -99,7 +99,7 @@ output$dt_birds <- DT::renderDataTable({
 
 ## Visits
 output$dt_v <- DT::renderDataTable({
-  validate(need(input$data_get > 0, msg_select))
+  validate(need(try(nrow(raw()) > 0, silent = TRUE), msg_select))
   req(raw())
   validate(need(sum(raw()$dataaccess==0) > 0, msg_private))
 
@@ -120,7 +120,7 @@ output$data_dl_visits <- downloadHandler(
 
 ## Feeding
 output$dt_f <- DT::renderDataTable({
-  validate(need(input$data_get > 0, msg_select))
+  validate(need(try(nrow(raw()) > 0, silent = TRUE), msg_select))
   req(raw())
   validate(need(sum(raw()$dataaccess==0) > 0, msg_private))
 
@@ -141,7 +141,7 @@ output$data_dl_feeding <- downloadHandler(
 
 ## Movements
 output$dt_m <- DT::renderDataTable({
-  validate(need(input$data_get > 0, msg_select))
+  validate(need(try(nrow(raw()) > 0, silent = TRUE), msg_select))
   req(raw())
   validate(need(sum(raw()$dataaccess == 0) > 0, msg_private))
 
