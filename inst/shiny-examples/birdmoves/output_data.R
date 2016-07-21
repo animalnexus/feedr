@@ -36,6 +36,24 @@ all <- reactive({
        movements = m_dl())
 })
 
+## Activate/deactivate buttons depending on whether there is any data to download:
+observe({
+  req(raw_dl)
+  if(is.null(raw_dl()) || nrow(raw_dl()) == 0){
+    shinyjs::disable(id = "data_dl_raw")
+    shinyjs::disable(id = "data_dl_visits")
+    shinyjs::disable(id = "data_dl_feeding")
+    shinyjs::disable(id = "data_dl_move")
+    shinyjs::disable(id = "data_dl")
+  } else {
+    shinyjs::enable(id = "data_dl_raw")
+    shinyjs::enable(id = "data_dl_visits")
+    shinyjs::enable(id = "data_dl_feeding")
+    shinyjs::enable(id = "data_dl_move")
+    shinyjs::enable(id = "data_dl")
+  }
+})
+
 msg_select <- c("Please select data first:\n
                 - On the 'Select Data' tab, make your selection\n
                 - Be sure to click on the 'Get Data' button\n
