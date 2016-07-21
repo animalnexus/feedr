@@ -1,21 +1,36 @@
 shinyServer(function(input, output, session) {
-
   values <- reactiveValues(
-    db_access = db_access,
-    data_map = NULL,          # Stores values which displayed on map
-    keep = NULL,              # Stores data selected for download
-    input = list(),           # Stores selection options
-    input_previous = list())  # Stores previous selection options (for comparison)
+    current_map = NULL)
+
+  ## Get Database access if we have it
+  if(file.exists("/usr/local/share/feedr/db_full.R")) {
+    source("/usr/local/share/feedr/db_full.R")
+  } else db <- NULL
+
+  imgs_wiki <- read.csv(system.file("extdata", "shiny-data", "species.csv", package = "feedr"), colClasses = c("factor", "character"))
+  imgs <- read.csv(system.file("extdata", "shiny-data", "img_index.csv", package = "feedr"))
 
   ## Select Data
-  source("select_data.R", local = TRUE)
-  source("map_data.R", local = TRUE)
+  raw <- callModule(mod_db_data, "access", db = db)
+
+  ## Feeders of current data
+  feeders <- reactive({
+    raw() %>%
+      dplyr::select(feeder_id, site_name, lon, lat) %>%
+      unique(.)
+  })
+
+  ## Birds of current data
+  birds <- reactive({
+    raw() %>%
+      dplyr::select(bird_id, species, age, sex, tagged_on, site_name) %>%
+      unique(.)
+  })
 
   ## Current activity
-  source("map_current.R", local = TRUE)
+  callModule(mod_map_current, "current", db = db)
 
   ### Visualizations
- # source("map_animated.R", local = TRUE)
  # source("map_paths.R", local = TRUE)
  # source("map_static.R", local = TRUE)
 
@@ -25,55 +40,32 @@ shinyServer(function(input, output, session) {
   ## Load transformation data tables
   source("output_data.R", local = TRUE)
 
-  ## Load inat
-  #source("inat.R", local = TRUE)
-  #source("homerange.R", local = TRUE)
+  ## Add weather data
+  #Get weather data
+  # if(input$data_weather == "Yes" & any(unique(data$site_name) == "Kamloops, BC")){
+  #   withProgress(message = "Adding Weather Data...",
+  #                w <- weather(station_id = 51423, start = min(as.Date(data$time)), end = max(as.Date(data$time)), timeframe = "hour") %>%
+  #                  dplyr::mutate(hour = format(time, "%Y-%m-%d %H"))
+  #   )
+  #   data <- data %>%
+  #     dplyr::mutate(hour = format(time, "%Y-%m-%d %H")) %>%
+  #     dplyr::left_join(w[, c("hour", "temp", "temp_dew", "rel_hum", "hmdx", "pressure", "visib", "wind_chill", "wind_dir", "wind_spd")], by = "hour")
+  # }
 
-  ## Shiny modules
+
+  ## Animate Data
   observe({
     r <- raw()
     callModule(mod_map_animate, "anim", v = v())
   })
 
-  ## Get bird image
-
-  get_image <- function(database, which, size, imgs){
-    ## Get the bird_id
-    if(is.null(which) | is.null(database)) {  # No ID
-      bird <- data.frame(bird_id = NA, species = NA)
-    } else if (is.numeric(which)) {  # ID by database location
-      bird <- database[which, c("bird_id", "species")]
-      if(nchar(as.character(bird$bird_id)) < 1) bird$bird_id <- NA
-    } else {  # Actual ID
-      bird <- database[database$bird_id %in% which, c("bird_id", "species")]
-    }
-    ## Keep row orders
-    bird$id <- 1:nrow(bird)
-    suppressWarnings(bird <- left_join(bird, imgs[, c("bird_id", "img")], by = "bird_id"))
-
-    bird$img[!is.na(bird$img)] <- paste0("http://gaia.tru.ca/birdMOVES/img.kl/", bird$img[!is.na(bird$img)], ".jpg")
-
-    ## No specific image, but we know the species:
-    bird$species <- as.character(bird$species)
-    bird$species[is.na(bird$species)] <- "unknown"
-    suppressWarnings(bird <- left_join(bird, imgs_wiki, by = "species"))
-
-    bird$css <- paste0("<div class = \"wiki-watermark\">Wiki: <a href = \"",bird$page,"\" target=\"blank\">",bird$author,"</a></div>")
-    bird$css[!is.na(bird$img)] <- NA
-    bird$img[is.na(bird$img)] <- bird$url[is.na(bird$img)]
-
-    html <- paste("<div class = \"bird-img\"><img src='", bird$img, "' height = ", size, ">")
-    html[!is.na(bird$css)] <- paste0(html, "\n", bird$css[!is.na(bird$css)], "</div>")
-    html[is.na(bird$css)] <- paste0(html, "\n", "/div>")
-    return(html)
-  }
 
   ## Look at birds
 
   output$img_birds <- renderText({
-    req(imgs)
+    req(imgs, birds())
     # Don't actually know what STRH stands for, assuming Sapphire-throated Hummingbird
-    get_image(birds(), input$dt_birds_rows_selected, 300, imgs)
+    get_image(birds(), input$dt_birds_rows_selected, 300, imgs, imgs_wiki)
     })
 
 
