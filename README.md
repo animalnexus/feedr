@@ -13,7 +13,7 @@ devtools::install_github("steffilazerte/feedr")
 
 ## Help
 
-** Note: ** These tutorials are woefully out of data. Function use and names has been updated and the tutorials will be updated to match soon.
+** Note: ** These tutorials are in the process of being updated.
 
 An overview of this package and how to use the functions is accessible [here](http://steffi.ca/thinkR/feedr.html).
 
