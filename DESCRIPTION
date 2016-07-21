@@ -26,6 +26,7 @@ Imports:
 Suggests:
     envirocan,
     knitr,
+    lazyeval,
     rmarkdown,
     RPostgreSQL,
     shiny,
