@@ -31,6 +31,11 @@ load_web <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ","
   return(r)
 }
 
+#' Depreciated: Load read data from the web
+#'
+#' Depreciated use \link{\code{load_web}} instead.
+#'
+#' @export
 load.web <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ",") {
  .Deprecated("load_web")
 }
@@ -110,6 +115,11 @@ load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
     return(r)
 }
 
+#'  Depreciated: Load raw read data
+#'
+#'  Depreciated, see \link{\code{load_raw}}.
+#'
+#' @export
 load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1){
   .Deprecated("load_raw")
 }
@@ -171,6 +181,11 @@ load_raw_all <- function(r_dir,
   return(r)
 }
 
+#' Depreciated: Load and combine raw data files
+#'
+#' Depreciated, see \link{\code{load_raw_all}}.
+#'
+#' @export
 load.raw.all <- function(r_dir,
                          pattern = "DATA",
                          tz = "America/Vancouver",
@@ -317,6 +332,11 @@ dl_data <- function(start = NULL,
   return(r)
 }
 
+#' Depreciated: Download data from BirdMoves website.
+#'
+#' Depreciated use \link{\code{dl_data}} instead.
+#'
+#' @export
 get.data <- function(start = NULL,
                      end = NULL,
                      url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
@@ -327,8 +347,10 @@ get.data <- function(start = NULL,
   .Deprecated("dl_data")
 }
 
-# Internal function: Format data
-# Formats data for the loading function.
+#' Internal function: Format data
+#'
+#' Formats data for the loading function.
+#'
 #' @export
 load_format <- function(r, tz, tz_disp = NULL){
 
@@ -359,6 +381,11 @@ load_format <- function(r, tz, tz_disp = NULL){
   return(r)
 }
 
+#' Depreciated: Internal function: Format data
+#'
+#' Depreciated use \link{\code{load_format}} instead.
+#'
+#' @export
 load.format <- function(r, tz, tz_disp = NULL) {
  .Deprecated("load_format")
 }
