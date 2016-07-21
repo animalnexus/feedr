@@ -25,12 +25,11 @@ Imports:
     xml2 (>= 0.1.2)
 Suggests:
     envirocan,
-    KernSmooth,
     knitr,
-    rinat,
     rmarkdown,
     RPostgreSQL,
     shiny,
+    shinyBS,
     shinyjs,
     sp,
     testthat
