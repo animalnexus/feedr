@@ -165,7 +165,7 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
 
     # Merge extra and order
     a <- merge_extra(a, extra)
-    a <- dplyr::select(a, bird_id, date, time, activity, activity_c, feeder_id, dplyr:::everything()) %>%
+    a <- dplyr::select(a, bird_id, date, time, activity, activity_c, feeder_id, everything()) %>%
       dplyr::arrange(bird_id, date, time)
 
     return(a)
@@ -241,7 +241,7 @@ daily <- function(a1){
 
   # Merge extra and order
   d <- merge_extra(d, extra)
-  d <- dplyr::select(d, bird_id, time, time_c, feeder_id, dplyr:::everything()) %>%
+  d <- dplyr::select(d, bird_id, time, time_c, feeder_id, everything()) %>%
     dplyr::arrange(bird_id, time)
   return(d)
 }

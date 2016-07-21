@@ -137,7 +137,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 
   # Order data frame
   v <- v %>%
-    dplyr::select(bird_id, start, end, feeder_id, bird_n, feeder_n, dplyr:::everything()) %>%
+    dplyr::select(bird_id, start, end, feeder_id, bird_n, feeder_n, everything()) %>%
     dplyr::arrange(bird_id, start)
 
   return(v)
@@ -263,7 +263,7 @@ move <- function(v1, all = FALSE, pass = TRUE){
 
     # Order
     m <- m %>%
-      dplyr::select(bird_id, time, feeder_id, direction, move_dir, move_path, strength, dplyr:::everything()) %>%
+      dplyr::select(bird_id, time, feeder_id, direction, move_dir, move_path, strength, everything()) %>%
       dplyr::arrange(bird_id, time)
 
   } else if (all == TRUE) {
@@ -281,7 +281,7 @@ move <- function(v1, all = FALSE, pass = TRUE){
 
     # Order
     m <- m %>%
-      dplyr::select(bird_id, time, feeder_id, direction, move_dir, move_path, strength, dplyr:::everything()) %>%
+      dplyr::select(bird_id, time, feeder_id, direction, move_dir, move_path, strength, everything()) %>%
       dplyr::arrange(bird_id, time)
 
   } else {
@@ -478,7 +478,7 @@ disp <- function(v, bw = 5, pass = TRUE){
 
 
 if(pass == TRUE) d <- merge_extra(d, extra)
-  d <- dplyr::select(d, bird_id, left, arrived, feeder_id, role, dplyr:::everything()) %>%
+  d <- dplyr::select(d, bird_id, left, arrived, feeder_id, role, everything()) %>%
     dplyr::arrange(left)
 
   ## Summarize totals
