@@ -1,12 +1,12 @@
 ## Get current data
 
 current <- reactive({
-  req(db_access, values$current_map)
+  req(!is.null(db), values$current_map)
   invalidateLater(5 * 60 * 1000)
   input$current_update
 
     isolate({
-    con <- dbConnect(drv, host = dbhost, port = dbport, dbname = dbname, user = dbuser, password = dbpass)
+    con <- dbConnect(drv, host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
 
     #con <- src_postgres(dbname = dbname, host = dbhost, port = dbport, user = dbuser, password = dbpass)
     #now <- Sys.time() - 7 *
