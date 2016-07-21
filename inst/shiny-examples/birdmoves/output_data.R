@@ -2,23 +2,23 @@
 
 ## Get only publically available data
 birds_dl <- reactive({
-  birds()#[birds()$site_name %in% unique(feeders_all$site_name[feeders_all$dataaccess == 0]),]
+  birds()
 })
 
 raw_dl <- reactive({
-  raw()[raw()$site_name %in% unique(feeders_all$site_name[feeders_all$dataaccess == 0]),]
+  raw()[raw()$dataaccess == 0, ]
 })
 
 v_dl <- reactive({
-  v()[v()$site_name %in% unique(feeders_all$site_name[feeders_all$dataaccess == 0]),]
+  v()[v()$dataaccess == 0, ]
 })
 
 f_dl <- reactive({
-  f()[f()$site_name %in% unique(feeders_all$site_name[feeders_all$dataaccess == 0]),]
+  f()[f()$dataaccess == 0, ]
 })
 
 m_dl <- reactive({
-  m()[m()$site_name %in% unique(feeders_all$site_name[feeders_all$dataaccess == 0]),]
+  m()[m()$dataaccess == 0, ]
   })
 
 #disp <- reactive({})
