@@ -30,7 +30,7 @@ This package contains functions to perform three broad services:
 
 As such, several functions depend on the output of other functions.
 
-For example, to get daily activity patterns, you could get your data from the web with `get.data()`, turn this raw data to visits data with `visits()`, turn visits data to activity data with `activity()` and finally, turn activity data into daily activity patterns with `daily()`.
+For example, to get daily activity patterns, you could get your data from the web with `dl_data()`, turn this raw data to visits data with `visits()`, turn visits data to activity data with `activity()` and finally, turn activity data into daily activity patterns with `daily()`.
 
 ```{r, echo = F, fig.align='center'}
 DiagrammeR::grViz("
@@ -41,9 +41,9 @@ graph [overlap = true, compound = true]
 node[shape = Mrecord]
 edge[arrowhead = vee]
 
-load[label = '{Loading/Importing Data | {load.raw.all() | load.web() | get.data()}}']
+load[label = '{Loading/Importing Data | {load_raw_all() | load_web() | dl_data()}}']
 
-hk[label = '{Housekeeping (Optional) | {check.ids() | check.problems()}}', width = 3]
+hk[label = '{Housekeeping (Optional) | {check_ids() | check_problems()}}', width = 3]
 
 load -> hk
 hk -> visits
@@ -62,13 +62,13 @@ feed -> act
 disp -> dom
 act -> daily
 
-map[label = '{Visualizations | {map.ggmap() | map.leaflet()}}']
+map[label = '{Visualizations | {map_ggmap() | map_leaflet()}}']
 
 {feed; move} -> map
 
 #A -> e [ltail = cluster0, lhead = cluster1]
 #f -> 'visits()' [ltail = cluster1, lhead = cluster2]
-#'move()' -> 'map.leaflet()' [ltail = cluster2, lhead = cluster3]
+#'move()' -> 'map_leaflet()' [ltail = cluster2, lhead = cluster3]
 
 }
 ", width = 500)
@@ -87,16 +87,15 @@ A data frame called 'finches' is included in this package for the purpose of dem
 
 ### [Loading/Importing Data](load.html)
 
-- __load.raw():__ Load in a single file of raw feeder data
-- __load.raw.all():__ Load in and combine multiple files of raw feeder data
-- __load.web():__ Load in csv file previously downloaded
-- __load.web.legacy():__ Load in csv file previously downloaded (old web version)
-- __get.data():__ Download and load data directly from the birdmoves website
+- __load_raw():__ Load in a single file of raw feeder data
+- __load_raw_all():__ Load in and combine multiple files of raw feeder data
+- __load_web():__ Load in csv file previously downloaded
+- __dl_data():__ Download and load data directly from the birdmoves website
 
 ### [Housekeeping](housekeeping.html)
 
-- __check.ids():__ Remove known bad ids (i.e. errors, wands, etc.)
-- __check.problems():__ Fix known id problems
+- __check_ids():__ Remove known bad ids (i.e. errors, wands, etc.)
+- __check_problems():__ Fix known id problems
 
 ### [Transformations](transformations.html)
 
@@ -110,8 +109,8 @@ A data frame called 'finches' is included in this package for the purpose of dem
 
 ## [Visualizations](maps.html)
 
-- __map.ggmap():__ Visualize movements and/or feeding bouts with ggmap (static)
-- __map.leaflet():__ Visualize movements and/or feeding bouts with leaflet (interactive)
+- __map_ggmap():__ Visualize movements and/or feeding bouts with ggmap (static)
+- __map_leaflet():__ Visualize movements and/or feeding bouts with leaflet (interactive)
 
 -----------------------------------------
 Back to [top](#top)  

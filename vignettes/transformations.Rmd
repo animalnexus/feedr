@@ -47,8 +47,8 @@ feed -> act
 disp -> dom
 act -> daily
 
-map1[label = 'map.ggmap()', URL = '#mapggmap', tooltip = 'Visualize with a static map']
-map2[label = 'map.leaflet()', URL = '#mapleaflet', tooltip = 'Visualize with an interactive map']
+map1[label = 'map_ggmap()', URL = '#mapggmap', tooltip = 'Visualize with a static map']
+map2[label = 'map_leaflet()', URL = '#mapleaflet', tooltip = 'Visualize with an interactive map']
 
 {feed; move} -> {map1; map2}
 
@@ -104,7 +104,7 @@ Another thing to be aware of is the possibility of 'impossible visits'. This may
 Because both missing values (NAs) and impossible visits likely indicate a greater, underlying problem, you have to specifically tell the function to ignore them (or omit them, in the case of NAs).
 
 ```{r eval = FALSE}
-v <- visits(finches, allow.imp = TRUE, na.rm = TRUE)
+v <- visits(finches, allow_imp = TRUE, na_rm = TRUE)
 ```
 
 ### Summarizing visit data
@@ -118,15 +118,15 @@ v$day <- as.Date(v$start)
 ```
 Next we'll summarize.
 
-Here we've told ddply to split the data frame `v` by `bird_id`, and then to create 4 new columns (`n.feeders`, `n.visits`, `n.days`, `mean.visit.length`). In each case, we have defined how we want ddply to fill these new columns.
+Here we've told ddply to split the data frame `v` by `bird_id`, and then to create 4 new columns (`n_feeders`, `n_visits`, `n_days`, `mean_visit_length`). In each case, we have defined how we want ddply to fill these new columns.
 
 ```{r}
 library(plyr)
 s <- ddply(v, c("bird_id"), summarise,
-           n.feeders = length(unique(feeder_id)),
-           n.visits = length(start),
-           n.days = length(unique(day)),
-           mean.visit.length = mean(end - start))
+           n_feeders = length(unique(feeder_id)),
+           n_visits = length(start),
+           n_days = length(unique(day)),
+           mean_visit_length = mean(end - start))
 s
 ```
 The result is a data frame with one row for each bird\_id, giving us information on how many feeders that bird has used (total), how visits (total), how many days (total) and what the average visit length was.
@@ -135,7 +135,7 @@ If we wanted to plot this data, the package `ggplot2` is a great option:
 
 ```{r, fig.width = 6, fig.height = 3}
 library(ggplot2)
-ggplot(data = s, aes(x = bird_id, y = mean.visit.length)) +
+ggplot(data = s, aes(x = bird_id, y = mean_visit_length)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #rotate and shift id labels
   geom_bar(stat = "identity") +
   labs(x = "Bird ID", y = "Average visit length (s)")
@@ -180,7 +180,7 @@ However, an interval of 15s is pretty long and probably doesn't constitute a rea
 So let's look at some different data:
 
 ```{r}
-r <- get.data(start = "2016-03-07", end = "2016-03-11")
+r <- dl_data(start = "2016-03-07", end = "2016-03-11")
 v <- visits(r)
 d <- disp(v)
 class(d)
@@ -243,7 +243,7 @@ In addition to the 'best guess' dominance matrices (`dm$matrices`), the function
 
 Let's work with a slightly larger data set but concentrate on one feeder only:
 ```{r}
-r <- get.data(start = "2016-03-07", end = "2016-03-31")
+r <- dl_data(start = "2016-03-07", end = "2016-03-31")
 r <- droplevels(r[r$feeder_id == 2300, ])
 ```
 
@@ -318,8 +318,10 @@ head(m)
 
 This function returns a lot of information for each movement event.
 
-- `feeder_left` id of the originating feeder
-- `feeder_arrived` id of the destination feeder
+- `bird_id` id of the bird making the move
+- `time` time at which a feeder was left or arrived at
+- `feeder_id` the feeder left or arrived at
+- `direction` leaving or arriving
 - `move_dir` category indicating direction and feeders involved
 - `move_path` category indicating the feeders involved (no directionality)
 - `strength` a metric indicating how 'easily' individuals move been feeders, it represents 1/time between feeders
@@ -346,10 +348,12 @@ Once again we can summarize our movement data using `ddply()` from the plyr pack
 
 Are certain paths used more often?
 ```{r}
-s <- ddply(m, c("move_path"), summarize,
+s <- ddply(m, c("feeder_id", "move_path"), summarize,
            n = length(move_path))
 s
 ```
+Note that because there are two rows per movement event (leaving and arriving), we can group by feeder_id to summarize individually by feeder. This will acount for the 2 rows and keep feeder ids in the final data frame (required for mapping later on).
+
 
 ```{r, fig.width = 6}
 ggplot(data = s, aes(x = move_path, y = n)) +
@@ -358,7 +362,7 @@ ggplot(data = s, aes(x = move_path, y = n)) +
 
 Are certain directions on particular paths used more often?
 ```{r}
-s <- ddply(m, c("move_path", "move_dir"), summarize,
+s <- ddply(m, c("feeder_id", "move_path", "move_dir"), summarize,
            n = length(move_path))
 s
 ```
@@ -370,7 +374,7 @@ ggplot(data = s, aes(x = move_path, y = n, fill = move_dir)) +
 
 Is there a relationship between use of a path and the average 'strength'?
 ```{r}
-s <- ddply(m, c("move_path"), summarize,
+s <- ddply(m, c("feeder_id", "move_path"), summarize,
            n = length(move_path),
            strength = mean(strength, na.rm = TRUE))
 s
@@ -384,12 +388,12 @@ ggplot(data = s, aes(x = strength, y = n)) +
 
 Do some birds move more than others?
 ```{r}
-s <- ddply(m, c("bird_id"), summarize,
+s <- ddply(m, c("feeder_id", "bird_id"), summarize,
            n = length(move_path[!is.na(move_path)]))
 s
 ```
 
-Note that we have a zero for 062000043E because we made sure to include all individuals in the analysis (all = TRUE, above) and because we specified ddply to count only non-NA paths (`is.na(move_path)`).
+Note that we have a zero for 062000043E because we made sure to include all individuals in the analysis (all = TRUE, above) and because we specified ddply to count only non-NA paths (`(move_path)`).
 
 ```{r, fig.width = 6}
 ggplot(data = s, aes(x = bird_id, y = n)) +

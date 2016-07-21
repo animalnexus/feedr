@@ -17,8 +17,8 @@ library(feedr)
 
 This is a quick tutorial covering a couple functions you can use to clean and fix problems in your data.
 
-- [`check.ids()`](#checkids)
-- [`check.problems()`](#checkproblems)
+- [`check_ids()`](#checkids)
+- [`check_problems()`](#checkproblems)
 
 These functions can be skipped, or used one after the other. It's up to you. Basically, they are wrapper functions for cleaning your data while maintaining appropriate categorical (factor) levels.
 
@@ -30,7 +30,7 @@ head(finches)
 
 <a id = "checkids"></a>
 
-## `check.ids()`
+## `check_ids()`
 This function can be used to remove any bird\_ids that are present, but which you know aren't really birds. For example, if you use a 'wand' to test the deployment of your feeders, this is a bird\_id that you should remove prior to analysis. Further, occasionally there are bird\_ids that are error codes (e.g. 0000000000), you may wish to determine why these are present, but once again, for analysis they should be removed.
 
 This function works by comparing the list of bird\_ids in the data to an external, bird\_id dataset. The dataset is expected to have at least two columns: bird\_id and species. The species column should either contain species identity (e.g. House Finch) or the error code (e.g. wand, or error).
@@ -53,7 +53,7 @@ bird_index
 
 You need to give this function a data set, and it will return a cleaned data set. Here we'll save it as r.clean:
 ```{r}
-r.clean <- check.ids(finches, bird_ids = bird_index)
+r.clean <- check_ids(finches, bird_ids = bird_index)
 ```
 
 This output shows that all the bird\_ids in the data are also in the index and vice versa. Further, there were no omitted ids (error or wand ids).
@@ -69,7 +69,7 @@ bird_index
 ```
 
 ```{r}
-r.clean <- check.ids(finches, bird_ids = bird_index)
+r.clean <- check_ids(finches, bird_ids = bird_index)
 ```
 
 Here we omited the two bird\_ids associated with a wand (0620000514) and with an error (041868D861).  
@@ -83,13 +83,13 @@ bird_index
 ```
 
 ```{r}
-r.clean <- check.ids(finches, bird_ids = bird_index)
+r.clean <- check_ids(finches, bird_ids = bird_index)
 ```
 
 
 <a id = "checkproblems"></a>
 
-## `check.problems()`
+## `check_problems()`
 
 This function is only necessary if for some reason, you're getting errors in the bird\_ids in your data set.
 
@@ -112,7 +112,7 @@ finches$bird_id[1:5]
 
 Fix problems and new bird\_ids:
 ```{r}
-r.clean <- check.problems(finches, problems = problems)
+r.clean <- check_problems(finches, problems = problems)
 r.clean$bird_id[1:5]
 ```
 
