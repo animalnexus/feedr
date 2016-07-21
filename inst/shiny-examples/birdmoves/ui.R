@@ -114,7 +114,7 @@ shinyUI(fluidPage(
             #
             # ),
             #################
-            ## DATA
+            ## BIRDS
             #################
             tabPanel("Birds",
                      fluidRow(column(6,
@@ -122,27 +122,24 @@ shinyUI(fluidPage(
                               column(6, htmlOutput("img_birds"))),
                      fluidRow(DT::dataTableOutput("dt_birds"))
             ),
+            #################
+            ## DATA
+            #################
             tabPanel("Data Transformations",
-                     column(2,
-                            "This is where you can download your data",
-                            br(),
-                            #bsButton("data_dl_all", "Download All", style = "success")
-                            downloadButton('data_dl', 'Download All')
-                            ),
-                     column(10,
+                     column(3,
+                            h2("Downloads"),
+                            p(shinyjs::disabled(downloadButton('data_dl', 'Download All'))),
+                            p(shinyjs::disabled(downloadButton("data_dl_raw", "Raw"))),
+                            p(shinyjs::disabled(downloadButton("data_dl_visits", "Visits"))),
+                            p(shinyjs::disabled(downloadButton("data_dl_feeding", "Feeding"))),
+                            p(shinyjs::disabled(downloadButton("data_dl_move", "Movements")))
+                     ),
+                     column(9,
                             tabsetPanel(type = "tabs",
-                                        tabPanel("Raw Data",
-                                                 br(), downloadButton("data_dl_raw", "Download Raw Data"), br(),
-                                                 DT::dataTableOutput("dt_raw")),
-                                        tabPanel("Visits Data",
-                                                 br(), downloadButton("data_dl_visits", "Download Visits Data"), br(),
-                                                 DT::dataTableOutput("dt_v")),
-                                        tabPanel("Feeding Data",
-                                                 br(), downloadButton("data_dl_feeding", "Download Feeding Data"), br(),
-                                                 DT::dataTableOutput("dt_f")),
-                                        tabPanel("Movement Data",
-                                                 br(), downloadButton("data_dl_move", "Download Movements Data"), br(),
-                                                 DT::dataTableOutput("dt_m"))
+                                        tabPanel("Raw Data", DT::dataTableOutput("dt_raw")),
+                                        tabPanel("Visits Data", DT::dataTableOutput("dt_v")),
+                                        tabPanel("Feeding Data", DT::dataTableOutput("dt_f")),
+                                        tabPanel("Movement Data", DT::dataTableOutput("dt_m"))
                             )
                      )
             ),
