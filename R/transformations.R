@@ -546,8 +546,8 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
 
   ## Setup the matrix
   d <- tidyr::spread(d, displacee, n)
-  row.names(d) <- d$displacer
   d <- as.matrix(d[,-grep("^displacer$", names(d))])
+  rownames(d) <- colnames(d)
 
   ## Setup Loop
   try <- 0
@@ -576,7 +576,9 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
       lower[lower.tri(lower, diag = TRUE)] <- NA
 
       ## Get reversals
-      rev[[length(rev)+1]] <- which(upper < lower, arr.ind = TRUE)
+      if(length(which(upper < lower, arr.ind = TRUE)) > 0){
+        rev[[length(rev)+1]] <- which(upper < lower, arr.ind = TRUE)
+      }
     }
 
     ## Keep only the orders with the fewest reversals
@@ -589,7 +591,7 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
     # Compare with previous matrix, if the same, we're done
     if(identical(prev, o_l)) done <- TRUE else prev <- o_l
 
-    if(length(rev) > 0 & length(rev[[1]]) > 0 & done == FALSE){
+    if(length(rev) > 0 && length(rev[[1]]) > 0 && done == FALSE){
       ## Add the new reversal switches to our list of options and try again
       for(j in 1:length(rev)){
         for(i in 1:nrow(rev[[j]])){
@@ -598,7 +600,10 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
           o_l[[length(o_l)+1]] <- c(new_o[1:(b-1)], new_o[a], new_o[-c(1:(b-1), a)])
         }
       }
-    } else done <- TRUE
+    } else {
+      done <- TRUE
+      try <- try + 1
+    }
 
     ## Loop controls
     if(done == FALSE){
@@ -608,13 +613,13 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
     }
   }
   #print(paste0("Started with: ",paste0(unlist(o), collapse = ", ")))
-  message(paste0("Tried ",try," times. Found ",length(o_l), " 'best' matrices, with ",nrow(rev[[1]])," reversal(s) per matrix"))
+  message(paste0("Tried ",try," times. Found ",length(o_l), " 'best' matrix(ces), with ",if(length(rev) > 0) nrow(rev[[1]]) else 0," reversal(s) per matrix"))
 
   m <- list()
   r <- list()
   for(i in 1:length(o_l)) {
-    m[[length(m)+1]] <- d[order(match(rownames(d),o_l[[i]])),order(match(colnames(d),o_l[[i]]))]
-    if(length(rev[[i]]) > 0) r[[length(r)+1]] <- c(rownames(m[[i]])[rev[[i]][1]], colnames(m[[i]])[rev[[i]][2]])
+    m[[length(m) + 1]] <- d[order(match(rownames(d), o_l[[i]])), order(match(colnames(d), o_l[[i]]))]
+    if(length(rev) >0 && length(rev[[i]]) > 0) r[[length(r)+1]] <- c(rownames(m[[i]])[rev[[i]][1]], colnames(m[[i]])[rev[[i]][2]])
   }
 
   return(list(dominance = o_l, reversals = r, matrices = m))
