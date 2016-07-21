@@ -8,7 +8,7 @@ mod_UI_map_current <- function(id) {
     fluidRow(
       column(2,
              h3("Summary"),
-             actionButton("current_update", "Update Now"),
+             actionButton(ns("current_update"), "Update Now"),
              htmlOutput(ns("summary_current"))),
       column(10,
              leafletOutput(ns("map_current"), height = 600),
@@ -26,21 +26,27 @@ mod_map_current <- function(input, output, session, db) {
   ns <- session$ns
 
   circle <- function(point, data, radius = 0.5){
-
     n <- seq(0, by = 360/nrow(data), length.out = nrow(data))
-
     temp <- data.frame(do.call("rbind", lapply(n, FUN = function(x) {
       maptools::gcDestination(lon = point$lon,
                               lat = point$lat,
                               bearing = x,
                               dist = radius, dist.units = "km", model = "WGS84")
     })), row.names = NULL)
-
     names(temp) <- c("lon", "lat")
-
     circle <- cbind(data, temp)
     return(circle)
   }
+
+  sp_icons <- leaflet::awesomeIconList("Mountain Chickadee" = leaflet::makeAwesomeIcon(icon = "star",
+                                                                                       marker = "green",
+                                                                                       iconColor = "white"),
+                                       "House Finch" = leaflet::makeAwesomeIcon(icon = "star",
+                                                                                marker = "red",
+                                                                                iconColor = "white"),
+                                       "Dark-eyed Junco" = leaflet::makeAwesomeIcon(icon = "star",
+                                                                                    marker = "darkpurple",
+                                                                                    iconColor = "white"))
 
 
   imgs_wiki <- read.csv(system.file("extdata", "shiny-data", "species.csv", package = "feedr"), colClasses = c("factor", "character"))
@@ -63,8 +69,10 @@ mod_map_current <- function(input, output, session, db) {
     dbDisconnect(con)
   }
 
+  ## Get current Activity
   current <- reactive({
-    req(!is.null(db), values$current_map)
+    req(!is.null(db))
+
     invalidateLater(5 * 60 * 1000)
     input$current_update
 
@@ -96,42 +104,19 @@ mod_map_current <- function(input, output, session, db) {
             dplyr::do(circle(point = unique(.[, c("lat", "lon")]), data = ., radius = 0.01))
         } else data <- NULL
       })
-      data
     })
+    data
   })
 
   output$current_time <- renderText(as.character(values$current_time))
 
-
   ## Map of current activity
   output$map_current <- renderLeaflet({
+    req(current())
     cat("Initializing map of current activity (", as.character(Sys.time()), ") ...\n")
-    values$current_map <- TRUE
-    map_leaflet_base(locs = feeders_all %>% dplyr::filter(site_name == "Kamloops, BC")) %>%
-      leaflet::addScaleBar(position = "bottomright")
-  })
-
-  ## Add activity points
-  # Add circle markers for sample sizes
-  observeEvent(current(), {
-    req(imgs, imgs_wiki, values$current_map)
-
-    sp_icons <- leaflet::awesomeIconList(
-      "Mountain Chickadee" = leaflet::makeAwesomeIcon(icon = "star",
-                                                      marker = "green",
-                                                      iconColor = "white"),
-      "House Finch" = leaflet::makeAwesomeIcon(icon = "star",
-                                               marker = "red",
-                                               iconColor = "white"),
-      "Dark-eyed Junco" = leaflet::makeAwesomeIcon(icon = "star",
-                                                   marker = "darkpurple",
-                                                   iconColor = "white"))
-
-    cat("Refreshing map of current activity (", as.character(Sys.time()), ") ...\n")
-    if(nrow(current()) > 0) {
-      leaflet::leafletProxy(ns("map_current")) %>%
-        leaflet::clearGroup(group = "Activity") %>%
-        #addMarkers(data = current(),
+    isolate({
+      map <- map_leaflet_base(locs = feeders_all %>% dplyr::filter(site_name == "Kamloops, BC")) %>%
+        leaflet::addScaleBar(position = "bottomright") %>%
         leaflet::addAwesomeMarkers(data = current(),
                                    icon = ~sp_icons[species],
                                    popup = ~paste0("<strong>Species:</strong> ", species, "<br>",
@@ -140,6 +125,28 @@ mod_map_current <- function(input, output, session, db) {
                                                    "<strong>Total time:</strong> ", time, "min <br>",
                                                    get_image(current(), bird_id, 100, imgs, imgs_wiki)),
                                    lng = ~lon, lat = ~lat, group = "Activity")
+
+    })
+  })
+
+  ## Add activity points
+  # Add circle markers for sample sizes
+  observeEvent(current(), {
+    req(imgs, imgs_wiki, values$current_map)
+
+    cat("Refreshing map of current activity (", as.character(Sys.time()), ") ...\n")
+    if(nrow(current()) > 0) {
+      leaflet::leafletProxy(ns("map_current")) %>%
+        leaflet::clearGroup(group = "Activity") %>%
+        leaflet::addAwesomeMarkers(data = current(),
+                                   icon = ~sp_icons[species],
+                                   popup = ~paste0("<strong>Species:</strong> ", species, "<br>",
+                                                   "<strong>Bird ID:</strong> ", bird_id, "<br>",
+                                                   "<strong>No. RFID reads:</strong> ", n, "<br>",
+                                                   "<strong>Total time:</strong> ", time, "min <br>",
+                                                   get_image(current(), bird_id, 100, imgs, imgs_wiki)),
+                                   lng = ~lon, lat = ~lat, group = "Activity")
+
     } else {
       leaflet::leafletProxy("map_data") %>%
         leaflet::clearGroup(group = "Activity")
