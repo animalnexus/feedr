@@ -5,8 +5,7 @@ context("Transformations to movements")
 test_that("move() returns appropriate, non-empty dataframe", {
 
   ## Errors
-  expect_error(move(visits(finches)))
-  expect_silent(m <- visits(finches) %>% dplyr::group_by(bird_id) %>% dplyr::do(move(.)))
+  expect_silent(m <- move(visits(finches)))
 
   ## Format
   expect_is(m, "data.frame")
@@ -20,13 +19,13 @@ test_that("move() returns appropriate, non-empty dataframe", {
 })
 
 test_that("move() returns non-impossible data", {
-  m <- visits(finches) %>% dplyr::group_by(bird_id) %>% dplyr::do(move(.))
+  m <- move(visits(finches))
   expect_true(all(m$time[m$direction == "arrived"] >= m$time[m$direction == "left"]))
   expect_true(all(m$feeder_id[m$direction == "arrived"] != m$feeder_id[m$direction == "left"]))
 })
 
 test_that("move() returns expected data", {
-  m <- visits(finches) %>% dplyr::group_by(bird_id) %>% dplyr::do(move(.))
+  m <- move(visits(finches))
   expect_equal(unique(m$bird_id[1]), factor("041868D396", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
   expect_equal(m$feeder_id[1:2], factor(c("2400", "2100"), levels = c("2100", "2200", "2400", "2700")))
   expect_equal(m$time[1:2], as.POSIXct(c("2016-01-29 08:35:26", "2016-01-29 11:21:23"), tz = "America/Vancouver"))
@@ -44,7 +43,7 @@ test_that("move() handles zero movements", {
   ## No movements (all = FALSE)
   expect_silent(m <- visits(finches) %>% dplyr::filter(bird_id == "062000043E") %>% move())
   expect_is(m, "data.frame")
-  expect_length(m, 0)
+  expect_equal(nrow(m), 0)
 
   ## No movements (all = TRUE)
   expect_silent(m <- visits(finches) %>% dplyr::filter(bird_id == "062000043E") %>% move(., all = TRUE))

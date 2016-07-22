@@ -148,14 +148,13 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 # move
 # ----------------------------------
 
-#' 'Visits' to 'movements' for a single bird_id
+#' 'Visits' to 'movements'
 #'
-#' For a single \code{bird_id}, turns visits to mulitple feeders into movements
-#' between feeders
+#' Turns visits to mulitple feeders into movements between feeders
 #'
-#' @param v1 Dataframe. A visits data frame containing only \strong{one} unique
-#'   bird id. From the output of \code{visits}. Must contain columns
-#'   \code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.
+#' @param v Dataframe. A visits data frame (may contain multiple bird_ids). From
+#'   the output of \code{visits}. Must contain columns \code{bird_id},
+#'   \code{feeder_id}, \code{start}, and \code{end}.
 #' @param all Logical. Should all bird_ids be returned, even if the bird made no
 #'   movements? If TRUE, a data frame with NAs for all columns except
 #'   \code{bird_id} will be returned, if FALSE, an empty data frame will be
@@ -166,58 +165,61 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 #' @return A data frame of movements. These are defined as the bout of time from
 #'   leaving one feeder to arriving at a second one. Each movement bout consists
 #'   of two rows of data containing:
-#' \itemize{
-#' \item ID of the bird (\code{bird_id})
-#' \item Time of event (\code{time})
-#' \item The ID of feeders involved (\code{feeder_id})
-#' \item The movement path including direction (\code{move_dir})
-#' \item The movement path independent of direction (\code{move_path})
-#' \item The 'strength' of the connection (inverse of time taken to move
-#' between; \code{strength})
-#' \item Information on whether left/arrived (\code{direction})
-#' \item Any extra columns \code{pass}ed through
-#' }
+#'   \itemize{
+#'   \item ID of the bird (\code{bird_id})
+#'   \item Time of event (\code{time})
+#'   \item The ID of feeders involved (\code{feeder_id})
+#'   \item The movement path including direction (\code{move_dir})
+#'   \item The movement path independent of direction (\code{move_path})
+#'   \item The 'strength' of the connection (inverse of time taken to move
+#'   between; \code{strength})
+#'   \item Information on whether left/arrived (\code{direction})
+#'   \item Any extra columns \code{pass}ed through
+#'   }
 #'
 #' @examples
 #'
 #' v <- visits(finches)
-#'
-#' # One bird at a time:
-#' m <- move(v[v$bird_id == "0620000514",])
-#' head(m)
-#'
-#' # Split a data frame by \code{bird_id} then apply \code{move}
-#'
-#' # With plyr
-#' library(plyr)
-#'
-#' # Split and apply move
-#' m <- plyr::ddply(v, c("bird_id"), move)
+#' m <- move(v)
 #'
 #' # Summarize (divide by 2 because 2 rows per event)
-#' m.totals <- ddply(m, c("bird_id", "move_path"), summarize,
-#'                   n_path = length(move_path) / 2)
-#'
-#' # With dplyr
 #' library(dplyr)
 #'
-#' # Split and apply move
-#' m <- v %>%
-#'   group_by(bird_id) %>%
-#'   do(move(.)) %>%
+#' m.totals <- m %>%
 #'   group_by(bird_id, move_path) %>%
 #'   summarize(n_path = length(move_path) /2)
 
 #' @import magrittr
 #' @export
-move <- function(v1, all = FALSE, pass = TRUE){
-
+move <- function(v, all = FALSE, pass = TRUE){
   # Check for correct formatting
-  check_name(v1, c("bird_id", "feeder_id", "start", "end"))
-  check_time(v1)
-  check_indiv(v1)
-  check_format(v1)
+  check_name(v, c("bird_id", "feeder_id", "start", "end"))
+  check_time(v)
+  check_format(v)
 
+  # Get extra columns
+  if(pass == TRUE) extra <- keep_extra(v, n = c("start", "end"))
+
+  # Apply individually to each bird
+  m <- v %>%
+    dplyr::group_by(bird_id) %>%
+    dplyr::do(move_single(., all = all)) %>%
+    dplyr::ungroup()
+
+  if(nrow(m) > 0){
+    # Add in extra cols
+    if(pass == TRUE) m <- merge_extra(m, extra)
+
+    # Order
+    m <- m %>%
+      dplyr::select(bird_id, time, feeder_id, direction, move_dir, move_path, strength, everything()) %>%
+      dplyr::arrange(bird_id, time)
+  }
+  return(m)
+}
+
+# Movement function for single bird
+move_single <- function(v1, all = FALSE){
   # Get factor levels
   bird_id <- levels(v1$bird_id)
   feeder_id <- levels(v1$feeder_id)
@@ -227,9 +229,6 @@ move <- function(v1, all = FALSE, pass = TRUE){
   move_dir <- move_dir[move_dir$feeder_left != move_dir$feeder_arrived,]
   move_dir <- paste0(move_dir$feeder_left, "_", move_dir$feeder_arrived)
   move_path <- unique(sapply(move_dir, FUN = mp))
-
-  # Get extra columns
-  if(pass == TRUE) extra <- keep_extra(v1, n = c("start", "end"))
 
   if(length(unique(v1$feeder_id)) > 1) { # Only proceed if there are actual data!
 
@@ -257,15 +256,6 @@ move <- function(v1, all = FALSE, pass = TRUE){
                     strength = 1 / as.numeric(difftime(time[direction == "arrived"], time[direction == "left"], units = "hours"))) %>%
       dplyr::ungroup() %>%
       dplyr::select(-n)
-
-    # Add in extra cols
-    if(pass == TRUE) m <- merge_extra(m, extra)
-
-    # Order
-    m <- m %>%
-      dplyr::select(bird_id, time, feeder_id, direction, move_dir, move_path, strength, everything()) %>%
-      dplyr::arrange(bird_id, time)
-
   } else if (all == TRUE) {
     # Create the movement data frame for birds that didn't move between feeders
     m <- data.frame(bird_id = factor(v1$bird_id[1], levels = bird_id),
@@ -275,15 +265,6 @@ move <- function(v1, all = FALSE, pass = TRUE){
                     move_dir = factor(NA, levels = move_dir),
                     move_path = factor(NA, levels = move_path),
                     strength = as.numeric(NA))
-
-    # Add in extra cols
-    if(pass == TRUE) m <- merge_extra(m, extra)
-
-    # Order
-    m <- m %>%
-      dplyr::select(bird_id, time, feeder_id, direction, move_dir, move_path, strength, everything()) %>%
-      dplyr::arrange(bird_id, time)
-
   } else {
     # If there are no movements and all == FALSE, return an empty data.frame
     m <- data.frame()
@@ -295,17 +276,16 @@ move <- function(v1, all = FALSE, pass = TRUE){
 # feeding
 # ----------------------------------
 
-#' 'Visits' to 'feeding bouts' for a single bird_id
+#' 'Visits' to 'feeding bouts'
 #'
-#' For a single \code{bird_id}, turns visits at mulitple feeders into feeding
-#' bouts. Feeding bouts are separated by switching feeders (when \code{bw =
-#' NULL}). If \code{bw} is not \code{NULL}, they are separated by switching
-#' feeders or by \code{bw} minutes.
+#' Turns visits at mulitple feeders into feeding bouts. Feeding bouts are
+#' separated by switching feeders (when \code{bw = NULL}). If \code{bw} is not
+#' \code{NULL}, they are separated by switching feeders or by \code{bw} minutes.
 #'
 #'
-#' @param v1 Dataframe. A visits data frame containing only \strong{one} unique
-#'   bird id. From the output of \code{visits}. Must contain columns
-#'   \code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.
+#' @param v Dataframe. A visits data frame from the output of \code{visits} (may
+#'   contain more than one bird_id). Must contain columns \code{bird_id},
+#'   \code{feeder_id}, \code{start}, and \code{end}.
 #' @param bw Numeric. The minimum number of minutes between visits for two
 #'   successive visits to be considered separate feeding bouts. When \code{bw} =
 #'   NULL only visits to another feeder are scored as a separate feeding bout.
@@ -315,44 +295,57 @@ move <- function(v1, all = FALSE, pass = TRUE){
 #' @return A data frame of feeding bouts. A feeding bout is defined as the bout
 #'   of time spent making regular visits to a feeder, in which each visit
 #'   occurrred within some cutoff time of the last. This data frame has the
-#'   following columns: \itemize{ \item ID of the bird (\code{bird_id}) \item ID
-#'   of the feeder(\code{feeder_id}) \item Time of the start of the feeding bout
-#'   (\code{feed_start}) \item Time of the end of the feeding bout
-#'   (\code{feed_end}) }
+#'   following columns:
+#'   \itemize{
+#'   \item ID of the bird (\code{bird_id})
+#'   \item ID of the feeder(\code{feeder_id})
+#'   \item Time of the start of the feeding bout (\code{feed_start})
+#'   \item Time of the end of the feeding bout (\code{feed_end})
+#'   }
 #'
 #' @examples
 #'
 #'  v <- visits(finches)
+#'  f <- feeding(v)
 #'
-#'  # One bird at a time:
-#'  f <- feeding(v[v$bird_id == "0620000514",])
+#'  # Summarize a movement dataframe (get total time spent feeding)
+#'  library(dplyr)
+#'  f.totals <- f %>%
+#'      group_by(bird_id, feeder_id) %>%
+#'      summarize(feed_length = sum(feed_length))
 #'
-#'  # Split a data frame by \code{bird_id} with \code{plyr}, then
-#'  # apply \code{move}.
-#'  library(plyr)
-#'  f <- ddply(v, c("bird_id"), feeding)
-#'
-#'  # Summarize a movement dataframe
-#'  library(plyr)
-#'  f.totals <- ddply(f, c("bird_id", "feeder_id"), summarise,
-#'                    feed_length = sum(feed_length))
-#'
-
 #' @export
-feeding <- function(v1, bw = 15, pass = TRUE){
+
+feeding <- function(v, bw = 15, pass = TRUE){
 
   ## Check for correct formatting
-  check_name(v1, c("bird_id","feeder_id", "start","end"))
-  check_time(v1)
-  check_indiv(v1)
-  check_format(v1)
+  check_name(v, c("bird_id","feeder_id", "start","end"))
+  check_time(v)
+  check_format(v)
+
+  # Keep extra cols
+  if(pass == TRUE) extra <- keep_extra(v, n = c("start", "end"))
+
+  # Calculate for each individual
+  f <- v %>%
+    dplyr::group_by(bird_id) %>%
+    dplyr::do(feeding_single(., bw = bw)) %>%
+    dplyr::ungroup()
+
+  # Get extra columns and add in
+  if(pass == TRUE) f <- merge_extra(f, extra)
+  f <- f[order(f$bird_id, f$feed_start, f$feeder_id), ]
+
+  return(f)
+}
+
+
+# Calculate feeding bouts for single bird
+feeding_single <- function(v1, bw = 15){
 
   # Get factor levels
   bird_id <- levels(v1$bird_id)
   feeder_id <- levels(v1$feeder_id)
-
-  # Keep extra cols
-  if(pass == TRUE) extra <- keep_extra(v1, n = c("start", "end"))
 
   v1 <- v1[order(v1$start),]
   feeder_diff <- v1$feeder_id[-1] != v1$feeder_id[-nrow(v1)]
@@ -373,10 +366,6 @@ feeding <- function(v1, bw = 15, pass = TRUE){
                   feed_start = v1$start[v1$feed_start == TRUE],
                   feed_end = v1$end[v1$feed_end == TRUE],
                   feed_length = difftime(v1$end[v1$feed_end == TRUE], v1$start[v1$feed_start == TRUE], units = "mins"))
-
-  # Get extra columns and add in
-  if(pass == TRUE) f <- merge_extra(f, extra)
-  f <- f[order(f$bird_id, f$feed_start), ]
 
   return(f)
 }

@@ -2,14 +2,14 @@
 % Please edit documentation in R/transformations.R
 \name{move}
 \alias{move}
-\title{'Visits' to 'movements' for a single bird_id}
+\title{'Visits' to 'movements'}
 \usage{
-move(v1, all = FALSE, pass = TRUE)
+move(v, all = FALSE, pass = TRUE)
 }
 \arguments{
-\item{v1}{Dataframe. A visits data frame containing only \strong{one} unique
-bird id. From the output of \code{visits}. Must contain columns
-\code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.}
+\item{v}{Dataframe. A visits data frame (may contain multiple bird_ids). From
+the output of \code{visits}. Must contain columns \code{bird_id},
+\code{feeder_id}, \code{start}, and \code{end}.}
 
 \item{all}{Logical. Should all bird_ids be returned, even if the bird made no
 movements? If TRUE, a data frame with NAs for all columns except
@@ -23,49 +23,30 @@ them to the output.}
 A data frame of movements. These are defined as the bout of time from
   leaving one feeder to arriving at a second one. Each movement bout consists
   of two rows of data containing:
-\itemize{
-\item ID of the bird (\code{bird_id})
-\item Time of event (\code{time})
-\item The ID of feeders involved (\code{feeder_id})
-\item The movement path including direction (\code{move_dir})
-\item The movement path independent of direction (\code{move_path})
-\item The 'strength' of the connection (inverse of time taken to move
-between; \code{strength})
-\item Information on whether left/arrived (\code{direction})
-\item Any extra columns \code{pass}ed through
-}
+  \itemize{
+  \item ID of the bird (\code{bird_id})
+  \item Time of event (\code{time})
+  \item The ID of feeders involved (\code{feeder_id})
+  \item The movement path including direction (\code{move_dir})
+  \item The movement path independent of direction (\code{move_path})
+  \item The 'strength' of the connection (inverse of time taken to move
+  between; \code{strength})
+  \item Information on whether left/arrived (\code{direction})
+  \item Any extra columns \code{pass}ed through
+  }
 }
 \description{
-For a single \code{bird_id}, turns visits to mulitple feeders into movements
-between feeders
+Turns visits to mulitple feeders into movements between feeders
 }
 \examples{
 
 v <- visits(finches)
-
-# One bird at a time:
-m <- move(v[v$bird_id == "0620000514",])
-head(m)
-
-# Split a data frame by \\code{bird_id} then apply \\code{move}
-
-# With plyr
-library(plyr)
-
-# Split and apply move
-m <- plyr::ddply(v, c("bird_id"), move)
+m <- move(v)
 
 # Summarize (divide by 2 because 2 rows per event)
-m.totals <- ddply(m, c("bird_id", "move_path"), summarize,
-                  n_path = length(move_path) / 2)
-
-# With dplyr
 library(dplyr)
 
-# Split and apply move
-m <- v \%>\%
-  group_by(bird_id) \%>\%
-  do(move(.)) \%>\%
+m.totals <- m \%>\%
   group_by(bird_id, move_path) \%>\%
   summarize(n_path = length(move_path) /2)
 }

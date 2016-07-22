@@ -2,14 +2,14 @@
 % Please edit documentation in R/transformations.R
 \name{feeding}
 \alias{feeding}
-\title{'Visits' to 'feeding bouts' for a single bird_id}
+\title{'Visits' to 'feeding bouts'}
 \usage{
-feeding(v1, bw = 15, pass = TRUE)
+feeding(v, bw = 15, pass = TRUE)
 }
 \arguments{
-\item{v1}{Dataframe. A visits data frame containing only \strong{one} unique
-bird id. From the output of \code{visits}. Must contain columns
-\code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.}
+\item{v}{Dataframe. A visits data frame from the output of \code{visits} (may
+contain more than one bird_id). Must contain columns \code{bird_id},
+\code{feeder_id}, \code{start}, and \code{end}.}
 
 \item{bw}{Numeric. The minimum number of minutes between visits for two
 successive visits to be considered separate feeding bouts. When \code{bw} =
@@ -22,33 +22,29 @@ them to the output.}
 A data frame of feeding bouts. A feeding bout is defined as the bout
   of time spent making regular visits to a feeder, in which each visit
   occurrred within some cutoff time of the last. This data frame has the
-  following columns: \itemize{ \item ID of the bird (\code{bird_id}) \item ID
-  of the feeder(\code{feeder_id}) \item Time of the start of the feeding bout
-  (\code{feed_start}) \item Time of the end of the feeding bout
-  (\code{feed_end}) }
+  following columns:
+  \itemize{
+  \item ID of the bird (\code{bird_id})
+  \item ID of the feeder(\code{feeder_id})
+  \item Time of the start of the feeding bout (\code{feed_start})
+  \item Time of the end of the feeding bout (\code{feed_end})
+  }
 }
 \description{
-For a single \code{bird_id}, turns visits at mulitple feeders into feeding
-bouts. Feeding bouts are separated by switching feeders (when \code{bw =
-NULL}). If \code{bw} is not \code{NULL}, they are separated by switching
-feeders or by \code{bw} minutes.
+Turns visits at mulitple feeders into feeding bouts. Feeding bouts are
+separated by switching feeders (when \code{bw = NULL}). If \code{bw} is not
+\code{NULL}, they are separated by switching feeders or by \code{bw} minutes.
 }
 \examples{
 
  v <- visits(finches)
+ f <- feeding(v)
 
- # One bird at a time:
- f <- feeding(v[v$bird_id == "0620000514",])
-
- # Split a data frame by \\code{bird_id} with \\code{plyr}, then
- # apply \\code{move}.
- library(plyr)
- f <- ddply(v, c("bird_id"), feeding)
-
- # Summarize a movement dataframe
- library(plyr)
- f.totals <- ddply(f, c("bird_id", "feeder_id"), summarise,
-                   feed_length = sum(feed_length))
+ # Summarize a movement dataframe (get total time spent feeding)
+ library(dplyr)
+ f.totals <- f \%>\%
+     group_by(bird_id, feeder_id) \%>\%
+     summarize(feed_length = sum(feed_length))
 
 }
 
