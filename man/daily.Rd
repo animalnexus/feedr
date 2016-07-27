@@ -4,10 +4,12 @@
 \alias{daily}
 \title{Create daily activity data}
 \usage{
-daily(a1)
+daily(a1, pass = TRUE)
 }
 \arguments{
 \item{a1}{Data frame. Data from output of \code{activity()}.}
+
+\item{pass}{Logical. Pass 'extra' columns through the function and append them to the output.}
 }
 \description{
 Summarizes and averages activity data over a 24-hr period, generating a 24-hr
