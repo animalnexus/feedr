@@ -123,7 +123,7 @@ mod_map_current <- function(input, output, session, db) {
                                                    "<strong>Bird ID:</strong> ", bird_id, "<br>",
                                                    "<strong>No. RFID reads:</strong> ", n, "<br>",
                                                    "<strong>Total time:</strong> ", time, "min <br>",
-                                                   get_image(current(), bird_id, 100, imgs, imgs_wiki)),
+                                                   feedr:::get_image(current(), bird_id, 100, imgs, imgs_wiki)),
                                    lng = ~lon, lat = ~lat, group = "Activity")
 
     })
@@ -144,7 +144,7 @@ mod_map_current <- function(input, output, session, db) {
                                                    "<strong>Bird ID:</strong> ", bird_id, "<br>",
                                                    "<strong>No. RFID reads:</strong> ", n, "<br>",
                                                    "<strong>Total time:</strong> ", time, "min <br>",
-                                                   get_image(current(), bird_id, 100, imgs, imgs_wiki)),
+                                                   feedr:::get_image(current(), bird_id, 100, imgs, imgs_wiki)),
                                    lng = ~lon, lat = ~lat, group = "Activity")
 
     } else {
