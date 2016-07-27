@@ -64,7 +64,7 @@ mod_UI_db_data <- function(id) {
     fluidRow(
       hr(),
       h3("Advanced Options"),
-      actionButton(ns("pause"), "Pause"),
+      #actionButton(ns("pause"), "Pause"),
       actionButton(ns("showadv"), "Show Advanced Options"),
       shinyjs::hidden(div(id = "advanced",
                           uiOutput(ns("UI_data_bird_id")),
