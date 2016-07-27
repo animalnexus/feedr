@@ -11,6 +11,7 @@ License: GPL-3
 LazyData: TRUE
 Depends: R (>= 3.2.2)
 Imports:
+    DBI (>= 0.4.1),
     dplyr(>= 0.4.3),
     ggplot2 (>= 2.1.0),
     ggmap (>= 2.6.1),
@@ -19,7 +20,10 @@ Imports:
     lubridate (>= 1.5.6),
     magrittr (>= 1.5),
     maptools (>= 0.8-39),
-    RCurl(>= 1.95-4.8),
+    RCurl (>= 1.95-4.8),
+    RPostgreSQL (>= 0.4.1),
+    shiny (>= 0.13.2),
+    shinyBS (>= 0.61),
     stringr (>= 1.0.0),
     tidyr (>= 0.5.1),
     xml2 (>= 0.1.2)
@@ -28,9 +32,6 @@ Suggests:
     knitr,
     lazyeval,
     rmarkdown,
-    RPostgreSQL,
-    shiny,
-    shinyBS,
     shinyjs,
     sp,
     testthat
