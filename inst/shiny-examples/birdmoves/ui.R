@@ -12,6 +12,7 @@ shinyUI(fluidPage(
   ## CSS Styling
 
   tags$head(
+    tags$title("birdmoves"),
     tags$style(HTML("
       .shiny-output-error-validation {
         padding: 1em;
@@ -54,7 +55,7 @@ shinyUI(fluidPage(
     "))
   ),
 
-  navbarPage(title = HTML("bird<strong>moves</strong>"),
+  navbarPage(title = a(href = "http://gaia.tru.ca:8080/birdmoves/", HTML("bird<strong>moves</strong>")),
 
              #################
              ## SETUP
@@ -154,11 +155,7 @@ shinyUI(fluidPage(
 
                      h1("People"),
                      "Project Blurbs and Pictures",
-                     "Stefanie LaZerte",
-                     "Matt Reudink",
-                     "David Hill",
-                     "Etc."
-
+                     "People, etc."
             ),
             tabPanel("References",
                      h1("FAQ"),
