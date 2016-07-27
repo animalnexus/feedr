@@ -70,6 +70,11 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
     if(na_rm == TRUE) r <- r[rowSums(is.na(r)) == 0,]
   }
 
+  ## Make factors
+  r <- dplyr::mutate(r,
+                     feeder_id = factor(feeder_id),
+                     bird_id = factor(bird_id))
+
   # Grab unique extra cols
   if(pass == TRUE) extra <- keep_extra(r, n = "time")
 
@@ -123,22 +128,21 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
     tidyr::spread(variable, value) %>%
     dplyr::select(-n) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(feeder_id = factor(feeder_id),
-                  bird_id = factor(bird_id),
-                  bird_n = length(unique(bird_id)),         # Get sample sizes
+    dplyr::mutate(bird_n = length(unique(bird_id)),         # Get sample sizes
                   feeder_n = length(unique(feeder_id)))
 
   # Set timezone attributes
   attr(v$start, "tzone") <- tz
   attr(v$end, "tzone") <- tz
 
+  # Order data frame
+  v <- v %>%
+    dplyr::select(bird_id, start, end, feeder_id, bird_n, feeder_n) %>%
+    dplyr::arrange(bird_id, start)
+
   # Add in extra variables
   if(pass == TRUE) v <- merge_extra(v, extra)
 
-  # Order data frame
-  v <- v %>%
-    dplyr::select(bird_id, start, end, feeder_id, bird_n, feeder_n, everything()) %>%
-    dplyr::arrange(bird_id, start)
 
   return(v)
 }
@@ -207,13 +211,13 @@ move <- function(v, all = FALSE, pass = TRUE){
     dplyr::ungroup()
 
   if(nrow(m) > 0){
-    # Add in extra cols
-    if(pass == TRUE) m <- merge_extra(m, extra)
-
     # Order
     m <- m %>%
-      dplyr::select(bird_id, time, feeder_id, direction, move_dir, move_path, strength, everything()) %>%
+      dplyr::select(bird_id, time, feeder_id, direction, move_dir, move_path, strength) %>%
       dplyr::arrange(bird_id, time)
+
+    # Add in extra cols
+    if(pass == TRUE) m <- merge_extra(m, extra)
   }
   return(m)
 }
@@ -463,12 +467,10 @@ disp <- function(v, bw = 5, pass = TRUE){
   d$left <- rep(v$end[c(bird_diff & time_diff & feeder_diff, FALSE)], 2)
   d$arrived <- rep(v$start[c(FALSE, bird_diff & time_diff & feeder_diff)], 2)
 
-  d <- d[, !(names(d) %in% c("start", "end"))]
+  d <- dplyr::select(d, bird_id, left, arrived, feeder_id, role) %>%
+    dplyr::arrange(left, feeder_id, role)
 
-
-if(pass == TRUE) d <- merge_extra(d, extra)
-  d <- dplyr::select(d, bird_id, left, arrived, feeder_id, role, everything()) %>%
-    dplyr::arrange(left)
+  if(pass == TRUE) d <- merge_extra(d, extra)
 
   ## Summarize totals
   s <- d %>%

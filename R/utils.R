@@ -53,8 +53,8 @@ keep_extra <- function(d, n, only = c("bird_id", "feeder_id")){
 }
 
 merge_extra <- function(d, extra, only = NULL) {
-  if(!is.null(extra$both)) d <- merge(d, extra$both, by = c("bird_id", "feeder_id"), all.x = TRUE, all.y = FALSE)
-  if(!is.null(extra$bird_id)) d <- merge(d, extra$bird_id, by = "bird_id", all.x = TRUE, all.y = FALSE)
-  if(!is.null(extra$feeder_id)) d <- merge(d, extra$feeder_id, by = "feeder_id", all.x = TRUE, all.y = FALSE)
+  if(!is.null(extra$both)) d <- dplyr::left_join(d, extra$both, by = c("bird_id", "feeder_id"))
+  if(!is.null(extra$bird_id)) d <- dplyr::left_join(d, extra$bird_id, by = "bird_id")
+  if(!is.null(extra$feeder_id)) d <- dplyr::left_join(d, extra$feeder_id, by = "feeder_id")
   return(d)
 }

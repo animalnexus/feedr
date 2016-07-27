@@ -90,8 +90,10 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
     if(length(unique(f1$feeder_id)) == 1) by_feeder <- TRUE
 
     # Keep extra cols
-    if(by_feeder == FALSE) only <- "bird_id" else only <- c("feeder_id", "bird_id")
-    extra <- keep_extra(f1, n = c("feed_start", "feed_end", "feed_length"), only = only)
+    if(pass) {
+      if(by_feeder == FALSE) only <- "bird_id" else only <- c("feeder_id", "bird_id")
+      extra <- keep_extra(f1, n = c("feed_start", "feed_end", "feed_length"), only = only)
+    }
 
     # Get activity
     prob <- round(length(f1$feed_length[f1$feed_length < res]) / nrow(f1) * 100, 2)
@@ -164,9 +166,10 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
     }
 
     # Merge extra and order
-    a <- merge_extra(a, extra)
-    a <- dplyr::select(a, bird_id, date, time, activity, activity_c, feeder_id, everything()) %>%
+    a <- dplyr::select(a, bird_id, date, time, activity, activity_c, feeder_id) %>%
       dplyr::arrange(bird_id, date, time)
+
+    if(pass) a <- merge_extra(a, extra)
 
     return(a)
   }
@@ -188,9 +191,10 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
 #'
 #'
 #' @param a1 Data frame. Data from output of \code{activity()}.
+#' @param pass Logical. Pass 'extra' columns through the function and append them to the output.
 #'
 #' @export
-daily <- function(a1){
+daily <- function(a1, pass = TRUE){
 
   #v <- visits(dl_data(start = "2016-03-05", end = "2016-03-07"))
   #f1 <- feeding(v[v$bird_id == "0620000514",])
@@ -203,8 +207,10 @@ daily <- function(a1){
   check_indiv(a1)
 
   # Get extra
-  if(all(is.na(a1$feeder_id))) only <- "bird_id" else only <- c("feeder_id", "bird_id")
-  extra <- keep_extra(a1, c("time", "activity", "activity_c"), only = only)
+  if(pass){
+    if(all(is.na(a1$feeder_id))) only <- "bird_id" else only <- c("feeder_id", "bird_id")
+    extra <- keep_extra(a1, c("time", "activity", "activity_c"), only = only)
+  }
 
   a1$time_c <- format(a1$time, "%H:%M:%S")
 
@@ -240,9 +246,11 @@ daily <- function(a1){
   }
 
   # Merge extra and order
-  d <- merge_extra(d, extra)
-  d <- dplyr::select(d, bird_id, time, time_c, feeder_id, everything()) %>%
+  d <- dplyr::select(d, bird_id, time, time_c, feeder_id) %>%
     dplyr::arrange(bird_id, time)
+
+  if(pass) d <- merge_extra(d, extra)
+
   return(d)
 }
 

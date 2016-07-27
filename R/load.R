@@ -93,26 +93,26 @@ load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
       # Trim leading or trailing whitespace
       r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
 
-      # Get feeder Ids by matching patterns in file name
+      # Get feeder ids by matching patterns in file name
       r$feeder_id <- stringr::str_extract(r_file, feeder_pattern)
 
       # Convert bird_id to character for combining later on
       r$bird_id <- as.character(r$bird_id)
 
-      # Get any extra columns by matching patterns in file name as specified by extra_pattern and extra_name
-      if(!is.null(extra_pattern)){
-        if(is.null(extra_name)) stop("You have specified patterns to match for extra columns, but you have not specified what these column names ('extra_name') should be.")
-        for(i in 1:length(extra_pattern)) r[,extra_name[i]] <- stringr::str_extract(r_file, extra_pattern[i])
-      } else if(!is.null(extra_name)) stop("You have specified names for extra columns, but you have not specified what pattern to match for filling ('extra_pattern').")
-
+      # Convert times
       r$time <- lubridate::parse_date_time(paste(r$date, r$time), orders = "%m/%d/%y %H:%M:%S", tz = tz)
-      r <- r[, names(r) != "date"]
-
       if(!is.null(tz_disp)) r$time <- lubridate::with_tz(r$time, tz_disp)
 
       # Reorder columns
-      r <- dplyr::select(r, bird_id, time, feeder_id, everything()) %>%
+      r <- dplyr::select(r, bird_id, time, feeder_id) %>%
         dplyr::arrange(bird_id, time)
+
+      # Get any extra columns by matching patterns in file name as specified by extra_pattern and extra_name
+      if(!is.null(extra_pattern)){
+        if(is.null(extra_name)) stop("You have specified patterns to match for extra columns, but you have not specified what these column names ('extra_name') should be.")
+        for(i in 1:length(extra_pattern)) r[, extra_name[i]] <- stringr::str_extract(r_file, extra_pattern[i])
+      } else if(!is.null(extra_name)) stop("You have specified names for extra columns, but you have not specified what pattern to match for filling ('extra_pattern').")
+
       return(r)
     } else message("Empty file skipped: ", r_file)
 }
