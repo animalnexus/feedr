@@ -85,7 +85,7 @@ observeEvent(current(), {
                                         "<strong>Bird ID:</strong> ", bird_id, "<br>",
                                         "<strong>No. RFID reads:</strong> ", n, "<br>",
                                         "<strong>Total time:</strong> ", time, "min <br>",
-                                        get_image(current(), bird_id, 100, imgs)),
+                                        feedr:::get_image(current(), bird_id, 100, imgs)),
                         lng = ~lon, lat = ~lat, group = "Activity")
   } else {
     leafletProxy("map_data") %>%
