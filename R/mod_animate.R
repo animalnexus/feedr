@@ -26,10 +26,11 @@ mod_UI_map_animate <- function(id) {
       }"))),
     column(4,
            h1("Data"),
-           radioButtons(ns("anim_type"), "Show data by:",
+           radioButtons(ns("anim_type"), "Summary type:",
                         choices = c("Total no. visits" = "t_visits",
                                     "Avg. visits per bird" = "b_visits",
                                     "Total no. birds" = "t_birds")),
+           shinyBS::bsPopover(ns("anim_type"), "How should the data be summarized?", "Circles representing the the summary here will pop up on the map for the given time Circle area depicts the amount of visits recorded per site or feeder given the options selected", placement = "right", trigger = "hover"),
            h1("Animation"),
            sliderInput(ns("anim_speed"), "Speed",
                        min = 0, max = 100,
@@ -40,7 +41,14 @@ mod_UI_map_animate <- function(id) {
                        max = 24,
                        value = 1,
                        step = 1,
-                       post = " hour(s)")
+                       post = " hour(s)"),
+           h3("Instructions:"),
+           p("Select your 'Summary type' and 'Interval' (above), and the specific 'Time' (right) to show a summary of visits to each feeder for that interval of time on the map."),
+           p("Summaries can be animated over time by clicking on the", strong("small blue arrow"), "to the lower right of the 'Time' slider (right)."),
+           p("The speed of this animation can be adjusted with the 'Speed' slider bar (above).")
+           #p("Circles on the map representing a summary of visits to each feeder (Total no. visits, Avg. visits per bird, or Total no. birds) for the interval choosen at the time indicated on the time slider."),
+           #p("For example, with 'Avg. visits per bird' and an interval of '4 hours', the colour of each circle represents the average number of visits per bird made at a particular feeder over that 4 hour interval."),
+           #p("The specific time can be changed with the slider bar and can even be automatically advanced by clicking on the", strong("small blue arrow"), "to the lower right of the Time slider")
     ),
     column(8,
            fluidRow(leafletOutput(ns("map"), height = 600)),
