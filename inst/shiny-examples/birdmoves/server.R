@@ -1,6 +1,9 @@
 shinyServer(function(input, output, session) {
   library(feedr)
 
+  ## Load reactive expressions
+  source("reactive.R", local = TRUE)
+
   values <- reactiveValues(
     current_map = NULL)
 
@@ -35,12 +38,10 @@ shinyServer(function(input, output, session) {
   ### Visualizations
  # source("map_paths.R", local = TRUE)
  # source("map_static.R", local = TRUE)
-
-  ## Load reactive expressions
-  source("reactive.R", local = TRUE)
-
-  ## Load transformation data tables
-  source("output_data.R", local = TRUE)
+  ## Animate Data
+  observe({
+    callModule(mod_map_animate, "anim", v = v())
+  })
 
   ## Add weather data
   #Get weather data
@@ -55,20 +56,16 @@ shinyServer(function(input, output, session) {
   # }
 
 
-  ## Animate Data
-  observe({
-    r <- raw()
-    callModule(mod_map_animate, "anim", v = v())
-  })
-
-
   ## Look at birds
-
   output$img_birds <- renderText({
     req(imgs, birds())
     # Don't actually know what STRH stands for, assuming Sapphire-throated Hummingbird
-    get_image(birds(), input$dt_birds_rows_selected, 300, imgs, imgs_wiki)
+    feedr:::get_image(birds(), input$dt_birds_rows_selected, 300, imgs, imgs_wiki)
     })
+
+
+  ## Load transformation data tables
+  source("output_data.R", local = TRUE)
 
 
 })
