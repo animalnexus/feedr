@@ -22,7 +22,7 @@ mod_UI_db_data <- function(id) {
 
     fluidRow(
       column(4,
-             div(img(src = "logo.jpg", width = 400), style="text-align: left;"),
+             #div(img(src = "logo.jpg", width = 400), style="text-align: left;"),
              h2("Data Selection"),
              h3("Select Data"),
              div(id = "selection",
