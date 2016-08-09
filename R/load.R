@@ -253,19 +253,14 @@ load.raw.all <- function(r_dir,
 #'   details about the birds to download. Use NULL to download no extra columns.
 #' @param tz_disp Character vector. Timezone data should be displayed in (should match one of
 #'   the zones produced by \code{OlsonNames()})
-#' @param sites Character vector. Sites to download data from. Currently must be
-#'   one or more of "Kamloops" (default) or "Costa Rica".
 #'
 #' @examples
 #' \dontrun{
 #' # Get all Kamloops data (may take a couple minutes)
 #' r <- dl_data()
 #'
-#' # Get all Costa Rica data (may take a couple minutes)
-#' r <- dl_data(sites = "Costa Rica")
-#'
 #' # Get all data (may take a couple minutes)
-#' r <- dl_data(sites = c("Kamloops", "Costa Rica"))
+#' r <- dl_data()
 #'
 #' # Get all 2016 data
 #' r <- dl_date(start = "2016")
@@ -282,11 +277,10 @@ dl_data <- function(start = NULL,
                      url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
                      feeder_details = c("loc"),
                      bird_details = c("species"),
-                     tz_disp = "America/Vancouver",
-                     sites = "Kamloops") {
+                     tz_disp = "America/Vancouver") {
 
   # Get data from website in GMT, if tz not in selection, then convert later
-  if(!(tz_disp %in% c("America/Vancouver", "GMT", "America/Costa Rica"))) {
+  if(!(tz_disp %in% c("America/Vancouver", "GMT"))) {
     tz <- "GMT"
   } else tz <- tz_disp
 
@@ -308,11 +302,7 @@ dl_data <- function(start = NULL,
   # Stop if url doesn't exist
   if(!RCurl::url.exists(url)) stop("The url '", url, "' doesn't exist (or you have no internet connection).")
 
-  # Stop if sites not in list
-  if(!all(sites %in% c("Kamloops", "Costa Rica"))) stop("Sites must be one or more of 'Kamloops' and/or 'Costa Rica'")
-
-  sites <- gsub("Kamloops", "qskam", sites)
-  sites <- gsub("Costa Rica", "qscr", sites)
+  sites <- "qskam"
 
   # Get form options
   params <- as.list(rep("1", length(c(feeder_details, bird_details, sites))))
