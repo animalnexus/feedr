@@ -28,7 +28,7 @@ controls <- function(map, group) {
   }
   map <- removeLayersControl(map) %>%
     addLayersControl(baseGroups = c[[1]], overlayGroups = c[[2]],
-                     options = layersControlOptions(collapsed = FALSE))
+                     options = layersControlOptions(collapsed = TRUE))
   return(map)
 }
 

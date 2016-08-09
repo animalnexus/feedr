@@ -51,17 +51,21 @@ map_prep <- function(u = NULL, p = NULL, locs = NULL) {
 #' Designed for advanced use (see map_leaflet() for general mapping)
 #' @export
 map_leaflet_base <- function(locs, marker = "feeder_id", name = "Readers", controls = TRUE) {
-  leaflet(data = locs) %>%
+  l <- leaflet(data = locs) %>%
     addTiles(group = "Open Street Map") %>%
     addProviderTiles("Stamen.Toner", group = "Black and White") %>%
     addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
     addProviderTiles("Esri.WorldTopoMap", group = "Terrain") %>%
     addMarkers(~lon, ~lat,
                      popup  = htmltools::htmlEscape(locs[, marker]),
-                     group = name) %>%
-    addLayersControl(baseGroups = c("Satellite", "Terrain", "Open Street Map", "Black and White"),
-                     overlayGroups = name,
-                     options = layersControlOptions(collapsed = FALSE))
+                     group = name)
+  if(controls) {
+    l <- l %>%
+      addLayersControl(baseGroups = c("Satellite", "Terrain", "Open Street Map", "Black and White"),
+                       overlayGroups = name,
+                       options = layersControlOptions(collapsed = TRUE))
+  }
+  return(l)
 }
 
 map.leaflet.base <- function(locs, marker = "feeder_id", name = "Readers", controls = TRUE) {
@@ -324,11 +328,11 @@ map_leaflet <- function(u = NULL, p = NULL, locs = NULL,
   if(any(names(u) == "bird_id", names(p) == "bird_id")) bird_id <- unique(unlist(list(u$bird_id, p$bird_id))) else bird_id = NULL
 
   # BASE MAP
-  map <- map_leaflet_base(locs = locs)
+  map <- map_leaflet_base(locs = locs, controls = controls)
 
   # Layers
-  if(!is.null(p)) map <- path_layer(map, p = p, p_scale = p_scale, p_pal = p_pal, p_title = p_title)
-  if(!is.null(u)) map <- use_layer(map, u = u, u_scale = u_scale, u_pal = u_pal, u_title = u_title)
+  if(!is.null(p)) map <- path_layer(map, p = p, p_scale = p_scale, p_pal = p_pal, p_title = p_title, controls = controls)
+  if(!is.null(u)) map <- use_layer(map, u = u, u_scale = u_scale, u_pal = u_pal, u_title = u_title, controls = controls)
 
   return(map)
 }
