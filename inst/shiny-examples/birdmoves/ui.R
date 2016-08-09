@@ -55,7 +55,7 @@ shinyUI(fluidPage(
     "))
   ),
 
-  navbarPage(title = a(href = "http://gaia.tru.ca:8080/birdmoves/", HTML("bird<strong>moves</strong>")),
+  navbarPage(title = a(href = "http://gaia.tru.ca:8080/animalnexus/", HTML("animal<strong>nexus</strong>")),
 
              #################
              ## SETUP
@@ -145,8 +145,8 @@ shinyUI(fluidPage(
                      )
             ),
             tabPanel("About",
-                     h1("Project"),
-                     p(HTML("The bird<strong>moves</strong> project is large collaborative effort to develop tools for the observation, visualization, and analysis of animal movements registered by RFID feeders or other static recording stations.")),
+                     h1("Overall Project"),
+                     p(HTML("The animal<strong>nexus</strong> project is large collaborative effort to develop tools for the observation, visualization, and analysis of animal movements registered by RFID feeders or other static recording stations.")),
 
                      p("We hope that this project will be useful to scientists, citizen scientists, students and educators alike."),
                      p("Our goals are to provide a tool that is easy to use, yet powerful."),
