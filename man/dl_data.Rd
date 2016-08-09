@@ -7,7 +7,7 @@
 dl_data(start = NULL, end = NULL,
   url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
   feeder_details = c("loc"), bird_details = c("species"),
-  tz_disp = "America/Vancouver", sites = "Kamloops")
+  tz_disp = "America/Vancouver")
 }
 \arguments{
 \item{start}{Character. This is the start date (with or without time) for the
@@ -31,9 +31,6 @@ details about the birds to download. Use NULL to download no extra columns.}
 
 \item{tz_disp}{Character vector. Timezone data should be displayed in (should match one of
 the zones produced by \code{OlsonNames()})}
-
-\item{sites}{Character vector. Sites to download data from. Currently must be
-one or more of "Kamloops" (default) or "Costa Rica".}
 }
 \description{
 This function uses RCurl to submit an HTML form and retrieve the csv file.
@@ -74,14 +71,9 @@ For specifying extra \code{feeder_details}:
 }
 \examples{
 \dontrun{
-# Get all Kamloops data (may take a couple minutes)
-r <- dl_data()
-
-# Get all Costa Rica data (may take a couple minutes)
-r <- dl_data(sites = "Costa Rica")
 
 # Get all data (may take a couple minutes)
-r <- dl_data(sites = c("Kamloops", "Costa Rica"))
+r <- dl_data()
 
 # Get all 2016 data
 r <- dl_date(start = "2016")

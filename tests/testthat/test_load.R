@@ -58,8 +58,8 @@ test_that("load_raw_all loads and formats data correctly", {
 
 # dl_data()
 test_that("dl_data loads and formats data correctly", {
-  load <- dl_data(start = "2016-01-01", end = "2016-02-01", sites = "Kamloops")
-  load2 <- dl_data(start = "2016-01-01", end = "2016-02-01", sites = "Kamloops", tz_disp = "America/Toronto")
+  load <- dl_data(start = "2016-01-01", end = "2016-02-01")
+  load2 <- dl_data(start = "2016-01-01", end = "2016-02-01", tz_disp = "America/Toronto")
   expect_is(load, "data.frame")
   expect_match(names(load)[1:3], "^bird_id$|^time$|^feeder_id$")
   expect_is(load$bird_id, "factor")

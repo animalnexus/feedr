@@ -256,8 +256,6 @@ load.raw.all <- function(r_dir,
 #'
 #' @examples
 #' \dontrun{
-#' # Get all Kamloops data (may take a couple minutes)
-#' r <- dl_data()
 #'
 #' # Get all data (may take a couple minutes)
 #' r <- dl_data()
