@@ -200,7 +200,7 @@ load.raw.all <- function(r_dir,
  .Deprecated("load_raw_all")
 }
 
-#' Download data from BirdMoves website.
+#' Download data from original BirdMoves website.
 #'
 #' This function uses RCurl to submit an HTML form and retrieve the csv file.
 #' This is simply a convenience function to replace going to the website
@@ -322,7 +322,7 @@ dl_data <- function(start = NULL,
   return(r)
 }
 
-#' Depreciated: Download data from BirdMoves website.
+#' Depreciated: Download data from original BirdMoves website.
 #'
 #' Depreciated use \link{\code{dl_data}} instead.
 #'

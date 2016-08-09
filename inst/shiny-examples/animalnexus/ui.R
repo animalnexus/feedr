@@ -12,7 +12,7 @@ shinyUI(fluidPage(
   ## CSS Styling
 
   tags$head(
-    tags$title("birdmoves"),
+    tags$title("animalnexus"),
     tags$style(HTML("
       .shiny-output-error-validation {
         padding: 1em;

@@ -1,4 +1,4 @@
-#' Read data on Finches from BirdMoves website
+#' Read data on Finches from original BirdMoves website
 #'
 #' A dataset containing raw reads of finches visiting feeders in Kamloops, BC,
 #' Canada

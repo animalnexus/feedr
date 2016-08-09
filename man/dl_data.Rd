@@ -2,7 +2,7 @@
 % Please edit documentation in R/load.R
 \name{dl_data}
 \alias{dl_data}
-\title{Download data from BirdMoves website.}
+\title{Download data from original BirdMoves website.}
 \usage{
 dl_data(start = NULL, end = NULL,
   url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",

@@ -1,6 +1,8 @@
-# feedr 0.6.0.9000
+# feedr 0.6.1
 
-- Added birdmoves shiny app to feedr package (`birdmoves()`)
+- Added animalnexus shiny app to feedr package (`animalnexus()`)
+- Fixed some bugs in visualizations
+- Correct animalnexus UI issues
 
 
 

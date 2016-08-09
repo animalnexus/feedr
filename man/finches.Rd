@@ -3,7 +3,7 @@
 \docType{data}
 \name{finches}
 \alias{finches}
-\title{Read data on Finches from BirdMoves website}
+\title{Read data on Finches from original BirdMoves website}
 \format{A data frame with 412 rows and 5 variables:
 \describe{
   \item{bird_id}{Unique RFID tag attached to a finch}
