@@ -16,7 +16,7 @@ shinyServer(function(input, output, session) {
   imgs <- read.csv(system.file("extdata", "shiny-data", "img_index.csv", package = "feedr"))
 
   ## Select Data
-  raw <- callModule(feedr:::mod_db_data, "access", db = db)
+  raw <- callModule(feedr:::mod_data_db, "access", db = db)
 
   ## Feeders of current data
   feeders <- reactive({

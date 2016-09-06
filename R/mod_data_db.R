@@ -6,7 +6,7 @@
 #' @import shiny
 #' @import magrittr
 #' @import shinyBS
-mod_UI_db_data <- function(id) {
+mod_UI_data_db <- function(id) {
 
   ns <- shiny::NS(id)
 
@@ -79,7 +79,7 @@ mod_UI_db_data <- function(id) {
 #' @import lubridate
 #' @import RPostgreSQL
 #' @import DBI
-mod_db_data <- function(input, output, session, db) {
+mod_data_db <- function(input, output, session, db) {
 
   ns <- session$ns
 

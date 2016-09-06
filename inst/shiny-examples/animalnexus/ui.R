@@ -61,7 +61,7 @@ shinyUI(fluidPage(
              ## SETUP
              #################
              tabPanel("Select Data",
-                      feedr:::mod_UI_db_data("access")
+                      feedr:::mod_UI_data_db("access")
               ),
 
             #################
