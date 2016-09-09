@@ -35,15 +35,16 @@ keep_extra <- function(d, n, only = c("bird_id", "feeder_id")){
     d <- d[, names(d) != "loc",]
   }
 
-  if("bird_id" %in% only) bird_id <- names(which(lapply(d[, !(names(d) %in% c("bird_id", "feeder_id"))], FUN = function(x) nrow(unique(cbind(d$bird_id, x)))) == length(unique(d$bird_id)))) else bird_id <- NULL
-  if("feeder_id" %in% only) feeder_id <- names(which(lapply(d[, !(names(d) %in% c("bird_id", "feeder_id"))], FUN = function(x) nrow(unique(cbind(d$feeder_id, x)))) == length(unique(d$feeder_id)))) else feeder_id <- NULL
+  extra <- names(d)[!(names(d) %in% c("bird_id", "feeder_id"))]
+  bird_id <- feeder_id <- both <- NULL
+
+  if("bird_id" %in% only) bird_id <- extra[lapply(extra, FUN = function(x) nrow(unique(cbind(d$bird_id, d[, x])))) == length(unique(d$bird_id))]
+  if("feeder_id" %in% only) feeder_id <- extra[lapply(extra, FUN = function(x) nrow(unique(cbind(d$feeder_id, d[, x])))) == length(unique(d$feeder_id))]
 
   if(all(c("feeder_id", "bird_id") %in% only)) {
     both <- intersect(bird_id, feeder_id)
     feeder_id <- setdiff(setdiff(feeder_id, both), bird_id)
     bird_id <- setdiff(setdiff(bird_id, both), feeder_id)
-  } else {
-    both <- NULL
   }
 
   if(length(both) > 0) both <- unique(d[, c("bird_id", "feeder_id", both)]) else both <- NULL
