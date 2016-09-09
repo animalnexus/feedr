@@ -47,7 +47,11 @@ load.web <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ","
 #' It's utility depends on how standardized your data is, and whether you have
 #' extra details you need to address
 #'
-#' @param r_file Character. The location of a single file to load.
+#' @param r_file Character. The location of a single file to load. Can also be a
+#'   vector of length 2 if the first parameter is the file location and the
+#'   second contains information to be matched by feeder_pattern and/or
+#'   extra_pattern. If the vector is length 2, all patterns are extracted from
+#'   the second component.
 #' @param tz Character. The time zone the date/times are in (should match one of
 #'   the zones produced by \code{OlsonNames())}.
 #' @param tz_disp Character. The time zone the date/times should be displayed in
@@ -80,21 +84,30 @@ load.web <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ","
 #' # Extract extra data to be stored in another column:
 #' r <- load_raw("2300.csv", extra_pattern = "exp[0-9]{1}", extra_name = experiment)
 #'
+#' # If file path doesn't contain feeder_id, specify the feeder id pattern as
+#' the second component:
+#' r <- load_raw(c("data.csv", "GPR13"))
 #' }
 #' @export
 load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1) {
-    r <- read.table(r_file,
+
+  if(length(r_file) > 2) stop("r_file can only be length 1, the file name, or length 2, the file name and information on feeder and/or extra patterns.")
+  if(!is.character(r_file)) stop("r_file must be character")
+
+    r <- read.table(r_file[1],
                     col.names = c("bird_id","date","time"),
                     colClasses = "character",
                     skip = skip,
                     sep = sep)
+
+    if(length(r_file) == 1) details <- r_file else details <- r_file[2]
 
     if(nrow(r) > 0){
       # Trim leading or trailing whitespace
       r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
 
       # Get feeder ids by matching patterns in file name
-      r$feeder_id <- stringr::str_extract(r_file, feeder_pattern)
+      r$feeder_id <- stringr::str_extract(details, feeder_pattern)
 
       # Convert bird_id to character for combining later on
       r$bird_id <- as.character(r$bird_id)
@@ -110,7 +123,7 @@ load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
       # Get any extra columns by matching patterns in file name as specified by extra_pattern and extra_name
       if(!is.null(extra_pattern)){
         if(is.null(extra_name)) stop("You have specified patterns to match for extra columns, but you have not specified what these column names ('extra_name') should be.")
-        for(i in 1:length(extra_pattern)) r[, extra_name[i]] <- stringr::str_extract(r_file, extra_pattern[i])
+        for(i in 1:length(extra_pattern)) r[, extra_name[i]] <- stringr::str_extract(details, extra_pattern[i])
       } else if(!is.null(extra_name)) stop("You have specified names for extra columns, but you have not specified what pattern to match for filling ('extra_pattern').")
 
       return(r)
@@ -347,7 +360,7 @@ load_format <- function(r, tz, tz_disp = NULL){
   # Trim leading or trailing whitespace
   r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
 
-    # Extract Proper Date and Times
+  # Extract Proper Date and Times
   if("timezone" %in% names(r)) names(r)[names(r) == "timezone"] <- "time"
   if("time" %in% names(r)) r$time <- lubridate::ymd_hms(r$time, tz = tz)
   if(!is.null(tz_disp)) r$time <- lubridate::with_tz(r$time, tz_disp)
@@ -356,7 +369,13 @@ load_format <- function(r, tz, tz_disp = NULL){
   if(any(names(r) == "bird_id")) r$bird_id <- as.factor(r$bird_id)
   if(any(names(r) == "feeder_id")) r$feeder_id <- as.factor(r$feeder_id)
 
-  # If locs present convert now
+  # If locs already present, convert to numeric
+  if(all(c("lat", "lon") %in% names(r))) {
+    r$lon <- as.numeric(as.character(r$lon))
+    r$lat <- as.numeric(as.character(r$lat))
+  }
+
+  # If locs combined convert now
   if("loc" %in% names(r)) {
     r$lon <- as.numeric(gsub("\\(([-0-9.]+),[-0-9.]+\\)", "\\1", r$loc))
     r$lat <- as.numeric(gsub("\\([-0-9.]+,([-0-9.]+)\\)", "\\1", r$loc))
