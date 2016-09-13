@@ -6,13 +6,11 @@ mod_UI_map_current <- function(id) {
 
   tagList(
     fluidRow(
-      column(2,
-             h3("Summary"),
-             actionButton(ns("current_update"), "Update Now"),
-             htmlOutput(ns("summary_current"))),
-      column(10,
-             leafletOutput(ns("map_current"), height = 600),
-             htmlOutput(ns("current_time"))
+      column(12,
+             leafletOutput(ns("map_current"), height = 500),
+             htmlOutput(ns("current_time")),
+             actionButton(ns("current_update"), "Update Now", style = "margin: 0 auto")
+             #htmlOutput(ns("summary_current"))
       )
     )
   )
