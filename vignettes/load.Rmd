@@ -207,11 +207,6 @@ r <- dl_data(end = "2015-09-06", feeder_details = c("loc","site_name"), bird_det
 head(r)
 ```
 
-Different Sites:
-```{r}
-r <- dl_data(end = "2013-02-14 09:00:00", site = "Costa Rica", feeder_details = c("loc","site_name"))
-head(r)
-```
 --------------------------
 Back to [top](#top)  
 Go back to [main document](feedr.html) | Continue with [housekeeping](housekeeping.html)
