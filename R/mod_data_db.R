@@ -23,7 +23,6 @@ mod_UI_data_db <- function(id) {
     fluidRow(
       column(4,
              #div(img(src = "logo.jpg", width = 400), style="text-align: left;"),
-             h2("Data Selection"),
              h3("Select Data"),
              div(id = "selection",
                  uiOutput(ns("UI_data_site_name")),
@@ -535,5 +534,10 @@ mod_data_db <- function(input, output, session, db) {
     "Drag and select a date range to further refine the data selection"
   })
 
-  return(raw)
+  data <- reactive({
+    req(raw())
+    list(data = raw(), time = Sys.time(), name = raw()$site_name[1])
+  })
+
+  return(data)
 }
