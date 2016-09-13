@@ -1,3 +1,11 @@
+# feedr 0.6.2
+
+This update fixed a couple of minor bugs in the main package, and includes some fairly substantial changes to the animalnexus server.
+
+- Fixed bug which omitted columns even when pass = TRUE in transformations.
+- Added ability to import personal data for use in animalnexus
+
+
 # feedr 0.6.1
 
 - Added animalnexus shiny app to feedr package (`animalnexus()`)
