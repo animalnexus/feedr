@@ -5,57 +5,18 @@ library(leaflet)
 library(feedr)
 #library(ggvis)
 
-shinyUI(fluidPage(
+shinyUI(
+  tagList(
+    shinyjs::useShinyjs(),
+    navbarPage(title = a(href = "http://animalnexus.ca", HTML("animal<strong>nexus</strong>")),
+               position = "fixed-top",
+               collapsible = TRUE,
+               windowTitle = "animalnexus",
+               theme = "style.css",
+               footer = column(12,
+                               hr(),
+                               div(class = "data-status", textOutput("data_info"))),
 
-  shinyjs::useShinyjs(),
-
-  ## CSS Styling
-
-  tags$head(
-    tags$title("animalnexus"),
-    tags$style(HTML("
-      .shiny-output-error-validation {
-        padding: 1em;
-        font-weight: bold;
-        color: green;
-      }
-      .shiny-progress .progress-text {
-        background-color: orange;
-      }
-      .shiny-progress .progress-text .progress-message {
-        font-size: 100%;
-        color: #03F;
-      }
-     img {
-        border: 1;
-        max-width: 100%;
-     }
-     element.style {
-        width: 33.33%;
-     }
-
-     .bird-img {
-        position:relative;
-        width:100%;
-     }
-     .wiki-watermark {
-        background: rgb(0, 0, 0); /* fallback color */
-        background: rgba(0, 0, 0, 0.7);
-        position:absolute;
-        left:0px;
-        bottom:0px;
-        padding: 5px;
-        color:white;
-        font-weight:bold;
-        font-size: 75%;
-     }
-     .wiki-watermark a:link, .wiki-watermark a:visited, .wiki-watermark a:hover, .wiki-watermark a:active, .wiki-watermark a:focus {
-        color:white;
-     }
-    "))
-  ),
-
-  navbarPage(title = a(href = "http://gaia.tru.ca:8080/animalnexus/", HTML("animal<strong>nexus</strong>")),
 
              #################
              ## SETUP
