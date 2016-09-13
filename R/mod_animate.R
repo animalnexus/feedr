@@ -252,6 +252,25 @@ mod_map_animate <- function(input, output, session, v) {
     g_time
   })
 
+
+  ## If video selected, create animated video instead
+  # observeEvent(input$animate, {
+  #   req(p_total())
+  #   d <- p_total() %>%
+  #     dplyr::rename(amount = n)
+  #
+  #   for(i in unique(d$block_time)){
+  #     g <- map_ggmap(u = d[d$block_time == i, ])
+  #     ggsave(filename = paste0("~/Desktop/temp",i,".png"), plot = g)
+  #   }
+  #
+  #   browser()
+  # })
+
+  observeEvent(input$pause, {
+    browser()
+  })
+
   output$plot_time <- renderPlot({
     g_time()# + annotate("rect", xmin = anim_time()[1], xmax = anim_time()[1] + 60 * 60 * input$anim_interval, ymin = -Inf, ymax = +Inf, alpha = 0.5)
   }, height = 150, width = 550)
