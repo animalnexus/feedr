@@ -17,36 +17,35 @@ shinyUI(
                                hr(),
                                div(class = "data-status", textOutput("data_info"))),
 
+             #################
+             ## Watch Now
+             #################
+             tabPanel("Home",
+                      fluidRow(
+                        div(style = "text-align:center", HTML("<h1>Welcome to animal<strong>nexus</strong></h1>")),
+                        h4(style = "text-align:center", "This webapp is based on R shiny and uses the 'feedr' package to transform, summarize and visualize animal movement data collected from RFID stations."),
+                        h4(style = "text-align:center", "To get started, select data from our data base, or import your own"),
+                        actionButton("pause", "Pause"),
+                        hr(),
+                        h4(style = "text-align:center", "Current activity at feeders on Thompson Rivers University Campus")),
+                      fluidRow(
+                        column(10, offset = 1,
+                               div(style = "max-width: 800px; margin-left: auto; margin-right:auto;", feedr:::mod_UI_map_current("current"))
+                        ))
+             ),
 
              #################
              ## SETUP
              #################
-             tabPanel("Select Data",
-                      feedr:::mod_UI_data_db("access")
-              ),
-
-            #################
-            ## Watch Now
-            #################
-            tabPanel("Current Activity",
-                     feedr:::mod_UI_map_current("current")
-                     # fluidRow(
-                     #   column(2,
-                     #          h3("Summary"),
-                     #          bsButton("current_update", "Update Now"),
-                     #          htmlOutput("summary_current")),
-                     #   column(10,
-                     #          leafletOutput("map_current", height = 600),
-                     #          htmlOutput('current_time')
-                     #   )
-                     # )
-
-            ),
+             tabPanel(title = "Database", icon = icon("database"),
+                      feedr:::mod_UI_data_db("access")),
+             tabPanel(title = "Import", icon = icon("upload"),
+                      feedr:::mod_UI_data_import("import")),
 
             #################
             ## Visualization
             #################
-            tabPanel("Visualizations",
+            tabPanel("Visualizations", icon = icon("eye"),
                      mod_UI_map_animate("anim")
             ),
 
@@ -78,7 +77,7 @@ shinyUI(
             #################
             ## BIRDS
             #################
-            tabPanel("Birds",
+            tabPanel("Individuals",
                      fluidRow(column(6,
                                      h3("Click on a row for more information")),
                               column(6, htmlOutput("img_birds"))),
@@ -87,10 +86,10 @@ shinyUI(
             #################
             ## DATA
             #################
-            tabPanel("Data Transformations",
+            tabPanel("Transformations", icon = icon("exchange"),
                      column(3,
-                            h2("Downloads"),
-                            p(shinyjs::disabled(downloadButton('data_dl', 'Download All'))),
+                            h3("Downloads"),
+                            p(shinyjs::disabled(downloadButton('data_dl', 'All'))),
                             p(shinyjs::disabled(downloadButton("data_dl_raw", "Raw"))),
                             p(shinyjs::disabled(downloadButton("data_dl_visits", "Visits"))),
                             p(shinyjs::disabled(downloadButton("data_dl_feeding", "Feeding"))),
