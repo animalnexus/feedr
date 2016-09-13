@@ -9,7 +9,11 @@ load_raw(r_file, tz = "America/Vancouver", tz_disp = NULL,
   extra_name = NULL, sep = "", skip = 1)
 }
 \arguments{
-\item{r_file}{Character. The location of a single file to load.}
+\item{r_file}{Character. The location of a single file to load. Can also be a
+vector of length 2 if the first parameter is the file location and the
+second contains information to be matched by feeder_pattern and/or
+extra_pattern. If the vector is length 2, all patterns are extracted from
+the second component.}
 
 \item{tz}{Character. The time zone the date/times are in (should match one of
 the zones produced by \code{OlsonNames())}.}
@@ -55,6 +59,9 @@ r <- load_raw("2300_2015_12_01.csv", feeder_pattern = "[0-9]{4}")
 # Extract extra data to be stored in another column:
 r <- load_raw("2300.csv", extra_pattern = "exp[0-9]{1}", extra_name = experiment)
 
+# If file path doesn't contain feeder_id, specify the feeder id pattern as
+the second component:
+r <- load_raw(c("data.csv", "GPR13"))
 }
 }
 
