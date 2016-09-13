@@ -27,3 +27,17 @@ map_animate <- function(v) {
   )
   shiny::runApp(app, display.mode = "normal")
 }
+
+#' Create figures
+#'
+#' @export
+figures <- function(r) {
+
+  app <- shiny::shinyApp(ui = shiny::fluidPage(mod_UI_figures("standalone")),
+                         server = function(input, output, session) {
+                           shiny::callModule(mod_figures, "standalone", r = r)
+                         }
+  )
+  shiny::runApp(app, display.mode = "normal")
+}
+
