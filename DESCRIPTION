@@ -22,8 +22,9 @@ Imports:
     maptools (>= 0.8-39),
     RCurl (>= 1.95-4.8),
     RPostgreSQL (>= 0.4.1),
-    shiny (>= 0.13.2),
+    shiny (>= 0.13.2.9005),
     shinyBS (>= 0.61),
+    shinyjs (>= 0.6),
     stringr (>= 1.0.0),
     tidyr (>= 0.5.1),
     xml2 (>= 0.1.2)
