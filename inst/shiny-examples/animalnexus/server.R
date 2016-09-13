@@ -15,8 +15,58 @@ shinyServer(function(input, output, session) {
   imgs_wiki <- read.csv(system.file("extdata", "shiny-data", "species.csv", package = "feedr"), colClasses = c("factor", "character"))
   imgs <- read.csv(system.file("extdata", "shiny-data", "img_index.csv", package = "feedr"))
 
-  ## Select Data
-  raw <- callModule(feedr:::mod_data_db, "access", db = db)
+  ## Pause
+  observeEvent(input$pause, browser())
+
+  ## Database or Import
+  data_db <- callModule(feedr:::mod_data_db, "access", db = db)
+  data_import <- callModule(feedr:::mod_data_import, "import")
+
+  observeEvent(data_db(), {
+    values$data_db <- data_db()
+  })
+
+  observeEvent(data_import(), {
+    values$data_import <- data_import()
+  })
+
+  data <- reactive({
+    if(!is.null(values$data_db) & !is.null(values$data_import)) {
+      if(values$data_db$time > values$data_import$time) {
+        data <- values$data_db
+        } else {
+          data <- values$data_import
+          data$data$dataaccess <- 0  ## Allow users to download their own data
+        }
+    } else if (!is.null(values$data_db) & is.null(values$data_import)) {
+      data <- values$data_db
+    } else if (is.null(values$data_db) & !is.null(values$data_import)) {
+      data <- values$data_import
+      data$data$dataaccess <- 0  ## Allow users to download their own data
+    } else data <- NULL
+    return(data)
+  })
+
+  raw <- reactive({
+    req(data())
+    data()$data
+  })
+
+  data_info <- reactive({
+    t <- "Active dataset: "
+    if(is.null(data())) {
+      t <- paste0(t, "None")
+    } else {
+      t <- paste0(t, data()$name, ". Loaded at ", data()$time)
+    }
+    return(t)
+  })
+
+  output$data_info <- renderText({
+    req(data_info())
+    data_info()
+  })
+
 
   ## Feeders of current data
   feeders <- reactive({
@@ -27,8 +77,9 @@ shinyServer(function(input, output, session) {
 
   ## Birds of current data
   birds <- reactive({
+    cols <- names(raw())[names(raw()) %in% c("bird_id", "species", "age", "sex", "tagged_on", "site_name")]
     raw() %>%
-      dplyr::select(bird_id, species, age, sex, tagged_on, site_name) %>%
+      dplyr::select(one_of(cols)) %>%
       unique(.)
   })
 
@@ -36,8 +87,6 @@ shinyServer(function(input, output, session) {
   callModule(module = feedr:::mod_map_current, id = "current", db = db)
 
   ### Visualizations
- # source("map_paths.R", local = TRUE)
- # source("map_static.R", local = TRUE)
   ## Animate Data
   observe({
     callModule(mod_map_animate, "anim", v = v())
