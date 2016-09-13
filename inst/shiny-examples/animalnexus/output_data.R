@@ -6,19 +6,27 @@ birds_dl <- reactive({
 })
 
 raw_dl <- reactive({
-  raw()[raw()$dataaccess == 0, ]
+  raw() %>%
+    dplyr::filter(dataaccess == 0) %>%
+    dplyr::select(-dataaccess)
 })
 
 v_dl <- reactive({
-  v()[v()$dataaccess == 0, ]
+  v() %>%
+    dplyr::filter(dataaccess == 0) %>%
+    dplyr::select(-dataaccess)
 })
 
 f_dl <- reactive({
-  f()[f()$dataaccess == 0, ]
+  f() %>%
+    dplyr::filter(dataaccess == 0) %>%
+    dplyr::select(-dataaccess)
 })
 
 m_dl <- reactive({
-  m()[m()$dataaccess == 0, ]
+  m() %>%
+    dplyr::filter(dataaccess == 0) %>%
+    dplyr::select(-dataaccess)
   })
 
 #disp <- reactive({})
@@ -86,6 +94,7 @@ output$data_dl_raw <- downloadHandler(
 ## Birds
 output$dt_birds <- DT::renderDataTable({
   validate(need(try(nrow(raw()) > 0, silent = TRUE), msg_select))
+  validate(need(try(nrow(birds()) > 0, silent = TRUE), "No data on individuals"))
   req(birds())
 
   DT::datatable(birds_dl(),
@@ -100,6 +109,7 @@ output$dt_birds <- DT::renderDataTable({
 ## Visits
 output$dt_v <- DT::renderDataTable({
   validate(need(try(nrow(raw()) > 0, silent = TRUE), msg_select))
+  validate(need(try(nrow(v()) > 0, silent = TRUE), "No data on visits"))
   req(raw())
   validate(need(sum(raw()$dataaccess==0) > 0, msg_private))
 
@@ -121,6 +131,7 @@ output$data_dl_visits <- downloadHandler(
 ## Feeding
 output$dt_f <- DT::renderDataTable({
   validate(need(try(nrow(raw()) > 0, silent = TRUE), msg_select))
+  validate(need(try(nrow(f()) > 0, silent = TRUE), "No data on feeding bouts"))
   req(raw())
   validate(need(sum(raw()$dataaccess==0) > 0, msg_private))
 
@@ -142,6 +153,7 @@ output$data_dl_feeding <- downloadHandler(
 ## Movements
 output$dt_m <- DT::renderDataTable({
   validate(need(try(nrow(raw()) > 0, silent = TRUE), msg_select))
+  validate(need(try(nrow(m()) > 0, silent = TRUE), "No data on movements"))
   req(raw())
   validate(need(sum(raw()$dataaccess == 0) > 0, msg_private))
 
