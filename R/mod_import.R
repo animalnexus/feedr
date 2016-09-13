@@ -18,6 +18,8 @@ mod_UI_data_import <- function(id) {
   tagList(
     fluidRow(
       column(4,
+             p("Here you can import your own data to transform and visualize. After the session it will be deleted (we do not keep your data)."),
+
              fileInput(ns('file1'), 'Choose CSV File',
                        accept=c('text/csv',
                                 'text/comma-separated-values,text/plain',
