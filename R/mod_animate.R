@@ -25,25 +25,26 @@ mod_UI_map_animate <- function(id) {
       margin-right: auto;
       }"))),
     column(4,
-           h1("Data"),
+           #actionButton(ns("animate"), "Create Animation"),
+           #actionButton(ns("pause"), "Pause"),
+           #hr(),
            radioButtons(ns("anim_type"), "Summary type:",
                         choices = c("Total no. visits" = "t_visits",
                                     "Avg. visits per bird" = "b_visits",
                                     "Total no. birds" = "t_birds")),
            shinyBS::bsPopover(ns("anim_type"), "How should the data be summarized?", "Circles representing the the summary here will pop up on the map for the given time Circle area depicts the amount of visits recorded per site or feeder given the options selected", placement = "right", trigger = "hover"),
-           h1("Animation"),
-           sliderInput(ns("anim_speed"), "Speed",
+           sliderInput(ns("anim_speed"), "Animation speed",
                        min = 0, max = 100,
                        post = "%",
                        value = 50),
-           sliderInput(ns("anim_interval"), "Interval",
+           sliderInput(ns("anim_interval"), "Time interval",
                        min = 1,
                        max = 24,
                        value = 1,
                        step = 1,
                        post = " hour(s)"),
            h3("Instructions:"),
-           p("Select your 'Summary type' and 'Interval' (above), and the specific 'Time' (right) to show a summary of visits to each feeder for that interval of time on the map."),
+           p("Select your 'Summary type' and 'Time interval' (above), and the specific 'Time' (right) to show a summary of visits to each feeder for that interval of time on the map."),
            p("Summaries can be animated over time by clicking on the", strong("small blue arrow"), "to the lower right of the 'Time' slider (right)."),
            p("The speed of this animation can be adjusted with the 'Speed' slider bar (above).")
            #p("Circles on the map representing a summary of visits to each feeder (Total no. visits, Avg. visits per bird, or Total no. birds) for the interval choosen at the time indicated on the time slider."),
@@ -138,7 +139,7 @@ mod_map_animate <- function(input, output, session, v) {
       } else if(input$anim_type == "b_visits") {
         #Average number of visits per bird
         p_total <- v_block() %>%
-          dplyr::group_by(feeder_id, lat, lon, species, bird_id, block, block_time, add = TRUE) %>%
+          dplyr::group_by(feeder_id, lat, lon, bird_id, block, block_time, add = TRUE) %>%
           dplyr::summarize(n = length(start)) %>%
           dplyr::group_by(feeder_id, lat, lon, block, block_time) %>%
           dplyr::summarize(n = mean(n))
@@ -218,6 +219,7 @@ mod_map_animate <- function(input, output, session, v) {
       leafletProxy(ns("map")) %>% clearGroup(group = "Visits")
     }
   }, priority = 50)
+
 
   ## Add sunrise sunset
   observeEvent(anim_time(), {
