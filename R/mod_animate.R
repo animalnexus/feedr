@@ -114,6 +114,9 @@ mod_map_animate <- function(input, output, session, v) {
   ## Break visits into blocks of time depending on animation interval
   v_block <- reactive({
     req(input$anim_interval)
+
+    validate(need(sum(names(v) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine feeder locations without them"))
+
     int_start <- seq(start, end - input$anim_interval * 60 * 60, by = paste(input$anim_interval, "hour"))
     int_end <- seq(start + input$anim_interval * 60 * 60, end, by = paste(input$anim_interval, "hour"))
     ## Add to end if not even
@@ -130,6 +133,9 @@ mod_map_animate <- function(input, output, session, v) {
   ## Get total data sets depending on options
   p_total <- reactive({
     req(input$anim_type)
+
+    validate(need(sum(names(v) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine feeder locations without them"))
+
     withProgress({
       if(input$anim_type == "t_visits") {
         #Total number of visits
