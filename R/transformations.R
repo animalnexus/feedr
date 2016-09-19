@@ -178,6 +178,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 #'   \item The 'strength' of the connection (inverse of time taken to move
 #'   between; \code{strength})
 #'   \item Information on whether left/arrived (\code{direction})
+#'   \item The ID of a single move event for a particular individual (\code{move_id})
 #'   \item Any extra columns \code{pass}ed through
 #'   }
 #'
@@ -213,7 +214,7 @@ move <- function(v, all = FALSE, pass = TRUE){
   if(nrow(m) > 0){
     # Order
     m <- m %>%
-      dplyr::select(bird_id, time, feeder_id, direction, move_dir, move_path, strength) %>%
+      dplyr::select(bird_id, time, feeder_id, direction, move_id, move_dir, move_path, strength) %>%
       dplyr::arrange(bird_id, time)
 
     # Add in extra cols
@@ -253,19 +254,19 @@ move_single <- function(v1, all = FALSE){
                     (direction == "left" & type == "end")) %>%
       dplyr::select(-value, -type) %>%
       dplyr::arrange(time) %>%
-      dplyr::mutate(n = sort(rep(1:(length(bird_id)/2),2))) %>%
-      dplyr::group_by(n) %>%
+      dplyr::mutate(move_id = sort(rep(1:(length(bird_id)/2),2))) %>%
+      dplyr::group_by(move_id) %>%
       dplyr::mutate(move_dir = paste0(feeder_id, collapse = "_"),
                     move_path = factor(paste0(sort(feeder_id), collapse = "_"), levels = move_path),
                     strength = 1 / as.numeric(difftime(time[direction == "arrived"], time[direction == "left"], units = "hours"))) %>%
-      dplyr::ungroup() %>%
-      dplyr::select(-n)
+      dplyr::ungroup()
   } else if (all == TRUE) {
     # Create the movement data frame for birds that didn't move between feeders
     m <- data.frame(bird_id = factor(v1$bird_id[1], levels = bird_id),
                     time = as.POSIXct(NA),
                     feeder_id = factor(NA, levels = feeder_id),
                     direction = as.character(NA),
+                    move_id = as.numeric(NA),
                     move_dir = factor(NA, levels = move_dir),
                     move_path = factor(NA, levels = move_path),
                     strength = as.numeric(NA))
