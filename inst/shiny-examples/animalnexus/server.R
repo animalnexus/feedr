@@ -83,7 +83,7 @@ shinyServer(function(input, output, session) {
   birds <- reactive({
     cols <- names(raw())[names(raw()) %in% c("bird_id", "species", "age", "sex", "tagged_on", "site_name")]
     raw() %>%
-      dplyr::select(one_of(cols)) %>%
+      dplyr::select_(.dots = cols) %>%
       unique(.)
   })
 
