@@ -1,3 +1,18 @@
+# feedr 0.6.2.9999
+
+- Add functions for various shiny mods
+    - map_animate()
+    - map\_animate\_indiv()
+    - map_summary()
+    - import_file()
+- Update manual entries for various mods
+- Add new visualization mods (map\_animate\_indiv(), map\_summary()) to animal\_nexus.
+- Add more details and descriptions to animal\_nexus.
+- Add new column, move_id, to movements (output of move()).
+
+    
+    
+
 # feedr 0.6.2
 
 This update fixed a couple of minor bugs in the main package, and includes some fairly substantial changes to the animalnexus server.
