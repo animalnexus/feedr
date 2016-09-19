@@ -23,6 +23,8 @@ mod_map_current <- function(input, output, session, db) {
 
   ns <- session$ns
 
+  if(!is.null(db) && !curl::has_internet()) db <- NULL
+
   circle <- function(point, data, radius = 0.5){
     n <- seq(0, by = 360/nrow(data), length.out = nrow(data))
     temp <- data.frame(do.call("rbind", lapply(n, FUN = function(x) {
@@ -69,7 +71,8 @@ mod_map_current <- function(input, output, session, db) {
 
   ## Get current Activity
   current <- reactive({
-    req(!is.null(db))
+    validate(need(!is.null(db), message = "No Database access. To see Current Activity, check out animalnexus.ca"))
+    #req(!is.null(db))
 
     invalidateLater(5 * 60 * 1000)
     input$current_update

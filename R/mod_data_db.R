@@ -82,6 +82,8 @@ mod_data_db <- function(input, output, session, db) {
 
   ns <- session$ns
 
+  if(!is.null(db) && !curl::has_internet()) db <- NULL
+
   ## Get data base details
   if(!is.null(db)) {
 
@@ -390,6 +392,7 @@ mod_data_db <- function(input, output, session, db) {
 
   ## Render Map
   output$map_data <- renderLeaflet({
+    validate(need(!is.null(db), message = "No Database access. To work with local data, use the 'Import' tab. To work with the Database check out animalnexus.ca"))
     req(!is.null(db))
     cat("Initializing data map...\n")
 
