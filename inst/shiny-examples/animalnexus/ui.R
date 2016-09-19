@@ -17,7 +17,8 @@ shinyUI(
                windowTitle = "animalnexus",
                footer = column(12,
                                hr(),
-                               div(class = "data-status", textOutput("data_info"))),
+                               div(class = "data-status", textOutput("data_info")),
+                               div(class = "package-version", htmlOutput("package_version"))),
 
              #################
              ## Watch Now
