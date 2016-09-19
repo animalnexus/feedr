@@ -1,4 +1,12 @@
 ## import module function
+
+
+
+#' Import files
+#'
+#' An interactive shiny app for loading simple data.
+#'
+#' @export
 import_file <- function() {
   app <- shiny::shinyApp(ui = shiny::fluidPage(shinyjs::useShinyjs(),
                                                mod_UI_data_import("standalone")),
@@ -33,7 +41,7 @@ mod_UI_data_import <- function(id) {
                                       "Custom")),
              tags$hr(),
              h4("Format details:"),
-             p(textOutput(ns("format"))),
+             p(htmlOutput(ns("format"))),
              uiOutput(ns("header")),
              uiOutput(ns("sep")),
              uiOutput(ns("skip")),
@@ -48,7 +56,8 @@ mod_UI_data_import <- function(id) {
              )
     ),
     p(),
-    div("Need to import batches of raw data files? Check out the 'load_raw_all' function in the feedr package for R.", style = "color: grey")
+    h3("Tip:"),
+    p("Need to import batches of raw data files? Check out the 'load_raw_all' function in the feedr package for R.")
   )
 }
 
@@ -63,8 +72,8 @@ mod_data_import <- function(input, output, session, type = NULL) {
 
   output$format <- renderText({
     req(input$format)
-    if(input$format == "TRU raw") t <- "This format is for raw data exported from TRU feeders. It expects the feeder_id in the file name (starting with GPR). It skips the first line of data, and each data row contains the bird_id followed by date and time, separated by whitespace."
-    if(input$format == "Custom") t <- "This format expects at least three columns with headers: 'bird_id', 'feeder_id', and 'time'. 'time' should be both date and time in 2016-01-24 14:04:00 format. Separators and rows to skip can be specified below."
+    if(input$format == "TRU raw") t <- "This format is for raw data exported from TRU feeders. It expects the feeder_id in the file name (starting with GPR). It skips the first line of data, and each data row contains the bird_id followed by date and time, separated by whitespace. See <a href = 'tru_example.txt' target = 'blank'>an example file</a>."
+    if(input$format == "Custom") t <- "This format expects at least three columns with headers: 'bird_id', 'feeder_id', and 'time'. 'time' should be both date and time in 2016-01-24 14:04:00 format. Separators and rows to skip can be specified below. See <a href = 'custom_example.csv' target = 'blank'>an example file</a>."
   return(t)
   })
 
