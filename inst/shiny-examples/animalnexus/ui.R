@@ -9,6 +9,7 @@ shinyUI(
   tagList(
     shinyjs::useShinyjs(),
     navbarPage(title = a(href = "http://animalnexus.ca", HTML("animal<strong>nexus</strong>")),
+               id = "main",
                position = "fixed-top",
                collapsible = TRUE,
                windowTitle = "animalnexus",
@@ -24,7 +25,7 @@ shinyUI(
                       fluidRow(
                         div(style = "text-align:center", HTML("<h1>Welcome to animal<strong>nexus</strong></h1>")),
                         h4(style = "text-align:center", "This webapp is based on R shiny and uses the 'feedr' package to transform, summarize and visualize animal movement data collected from RFID stations."),
-                        h4(style = "text-align:center", "To get started, select data from our data base, or import your own"),
+                        h4(style = "text-align:center", "To get started, ", actionLink("link_db", "select data from our data base"), "or", actionLink("link_import", "import your own"), "."),
                         #actionButton("pause", "Pause"),
                         hr(),
                         h4(style = "text-align:center", "Current activity at feeders on Thompson Rivers University Campus")),
