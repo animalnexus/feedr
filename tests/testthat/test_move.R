@@ -9,7 +9,7 @@ test_that("move() returns appropriate, non-empty dataframe", {
 
   ## Format
   expect_is(m, "data.frame")
-  expect_length(m, 12)
+  expect_length(m, 13)
   expect_equal(nrow(m), 30)
   expect_equal(sum(is.na(m)), 0)
   expect_match(names(m)[1:3], "^bird_id$|^time$|^feeder_id$|^direction$|^move_dir$|^move_path$|^strength$")
@@ -48,13 +48,13 @@ test_that("move() handles zero movements", {
   ## No movements (all = TRUE)
   expect_silent(m <- visits(finches) %>% dplyr::filter(bird_id == "062000043E") %>% move(., all = TRUE))
   expect_is(m, "data.frame")
-  expect_length(m, 12)
+  expect_length(m, 13)
   expect_equal(nrow(m), 1)
   expect_equal(m$bird_id[1], factor("062000043E", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
 })
 
 test_that("move() pass", {
-  expect_length(visits(finches) %>% dplyr::group_by(bird_id) %>% dplyr::do(move(., pass = FALSE)), 7)
-  expect_length(visits(finches) %>% dplyr::group_by(bird_id) %>% dplyr::do(move(.)), 12)
+  expect_length(visits(finches) %>% dplyr::group_by(bird_id) %>% dplyr::do(move(., pass = FALSE)), 8)
+  expect_length(visits(finches) %>% dplyr::group_by(bird_id) %>% dplyr::do(move(.)), 13)
 })
 

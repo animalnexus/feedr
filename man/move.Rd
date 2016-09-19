@@ -32,6 +32,7 @@ A data frame of movements. These are defined as the bout of time from
   \item The 'strength' of the connection (inverse of time taken to move
   between; \code{strength})
   \item Information on whether left/arrived (\code{direction})
+  \item The ID of a single move event for a particular individual (\code{move_id})
   \item Any extra columns \code{pass}ed through
   }
 }
