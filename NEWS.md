@@ -7,7 +7,7 @@
     - import_file()
 - Update manual entries for various mods
 - Add new visualization mods (map\_animate\_indiv(), map\_summary()) to animal\_nexus.
-- Add more details and descriptions to animal\_nexus.
+- Add more details and descriptions to animal_nexus_.
 - Add new column, move_id, to movements (output of move()).
 
     
