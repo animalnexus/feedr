@@ -11,6 +11,7 @@ License: GPL-3
 LazyData: TRUE
 Depends: R (>= 3.2.2)
 Imports:
+    curl (>= 0.9.7),
     DBI (>= 0.4.1),
     dplyr(>= 0.4.3),
     ggplot2 (>= 2.1.0),
@@ -22,7 +23,7 @@ Imports:
     maptools (>= 0.8-39),
     RCurl (>= 1.95-4.8),
     RPostgreSQL (>= 0.4.1),
-    shiny (>= 0.13.2.9005),
+    shiny (>= 0.14),
     shinyBS (>= 0.61),
     shinyjs (>= 0.6),
     stringr (>= 1.0.0),
@@ -33,7 +34,6 @@ Suggests:
     knitr,
     lazyeval,
     rmarkdown,
-    shinyjs,
     sp,
     testthat
 RoxygenNote: 5.0.1
