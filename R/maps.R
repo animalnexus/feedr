@@ -18,7 +18,7 @@ map_prep <- function(u = NULL, p = NULL, locs = NULL) {
   lat <- c("lat", "latitude")
   lon <- c("lon", "long", "longitude")
 
-  locs <- unique(rbind(get_locs(u), get_locs(p), get_locs(locs)))
+  locs <- unique(dplyr::bind_rows(get_locs(u), get_locs(p), get_locs(locs)))
   if(nrow(locs) == 0) stop(paste0("Locations (locs) dataframe is missing either latitude (", paste0(lat, collapse = ", "), ") or longitude (", paste0(lon, collapse = ", "), "), or both."))
 
   # Get locations and alert if any missing
@@ -40,8 +40,8 @@ map_prep <- function(u = NULL, p = NULL, locs = NULL) {
       dplyr::ungroup()
   }
 
-  if(!is.null(u)) if(nrow(u) == 0) stop("Missing use lat/lon data, did you supply location data in either u, p, or locs?")
-  if(!is.null(p)) if(nrow(p) == 0) stop("Missing path lat/lon data, did you supply location data in either u, p, or locs?")
+  #if(!is.null(u)) if(nrow(u) == 0) stop("Missing use lat/lon data, did you supply location data in either u, p, or locs?")
+  #if(!is.null(p)) if(nrow(p) == 0) stop("Missing path lat/lon data, did you supply location data in either u, p, or locs?")
 
   return(list('u' = u, 'p' = p, 'locs' = locs))
 }
@@ -331,8 +331,8 @@ map_leaflet <- function(u = NULL, p = NULL, locs = NULL,
   map <- map_leaflet_base(locs = locs, controls = controls)
 
   # Layers
-  if(!is.null(p)) map <- path_layer(map, p = p, p_scale = p_scale, p_pal = p_pal, p_title = p_title, controls = controls)
-  if(!is.null(u)) map <- use_layer(map, u = u, u_scale = u_scale, u_pal = u_pal, u_title = u_title, controls = controls)
+  if(!is.null(p) && nrow(p) != 0) map <- path_layer(map, p = p, p_scale = p_scale, p_pal = p_pal, p_title = p_title, controls = controls)
+  if(!is.null(u) && nrow(u) != 0) map <- use_layer(map, u = u, u_scale = u_scale, u_pal = u_pal, u_title = u_title, controls = controls)
 
   return(map)
 }
