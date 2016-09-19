@@ -67,6 +67,10 @@ shinyServer(function(input, output, session) {
     data_info()
   })
 
+  output$package_version <- renderText({
+   paste0("Using <a href = 'http://github.com/steffilazerte/feedr' target = 'blank'>feedr v", packageVersion("feedr"), "</a>")
+  })
+
 
   ## Feeders of current data
   feeders <- reactive({
