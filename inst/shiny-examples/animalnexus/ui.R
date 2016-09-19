@@ -6,14 +6,15 @@ library(feedr)
 #library(ggvis)
 
 shinyUI(
+
   tagList(
     shinyjs::useShinyjs(),
+    includeCSS("../../extra/style.css"),
     navbarPage(title = a(href = "http://animalnexus.ca", HTML("animal<strong>nexus</strong>")),
                id = "main",
                position = "fixed-top",
                collapsible = TRUE,
                windowTitle = "animalnexus",
-               theme = "style.css",
                footer = column(12,
                                hr(),
                                div(class = "data-status", textOutput("data_info"))),
