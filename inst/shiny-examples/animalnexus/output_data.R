@@ -62,13 +62,10 @@ observe({
   }
 })
 
-msg_select <- c("Please select data first:\n
-                - On the 'Select Data' tab, make your selection\n
-                - Be sure to click on the 'Get Data' button\n
-                - Data is available when the the 'Retrieving Data' message has disappeared")
+msg_select <- c("Please select data through the Database or by Importing")
 
 msg_private <- "None of the currently selected data is available for download.\n
-Some of our data is restricted to visualizations only to protect the hard work of scientists until they've had a chance to publish their findings."
+Some of data in our Database is restricted to visualizations only to protect the hard work of scientists until they've had a chance to publish their findings."
 
 
 ## Raw
@@ -191,3 +188,14 @@ output$data_dl <- downloadHandler(
   },
   contentType = "application/zip"
 )
+
+## Data Descriptions
+
+output$data_desc <- renderText({
+  req(input$data_tabs)
+  if(input$data_tabs == "Raw Data") t <- "<h3>Raw RFID data</h3> <p>Each row corresponds to an RFID 'read' event.</p>"
+  if(input$data_tabs == "Visits Data") t <- "<h3>Visits</h3> <p>Each row corresponds to a single 'visit' to the reader. Visits are defined as a series of consecutive RFID reads, with each read occurring within 3s of the next. See the visits() function in the feedr package for R to fine tune these settings.</p><p>Bird N and Feeder N refer to the total number of individuals and readers in the data, respectively.</p>"
+  if(input$data_tabs == "Feeding Data") t <- "<h3>Feeding bouts</h3> <p>Each row corresponds to a single 'feeding bout' at the reader if the reader is a feeder, or a period of time spent near the reader otherwise. Feeding bouts are defined as a series of visits at a single feeder separated by no more than 15min. See the feeding() function in the feedr package for R to fine tune these settings.</p><p>Feed start and end reflect the start and end of the feeding bout and feed length refers to the length in minutes of the feeding bout.</p><p>Bird N and Feeder N refer to the total number of individuals and readers in the data, respectively.</p>"
+    if(input$data_tabs == "Movement Data") t <- "<h3>Movements</h3> <p>Each two rows correspond to a single 'movement' from one reader to another. A movement is defined as the last and first consecutive visits made by an individual to two different readers.</p><p>Move Id refers to the unique identifier of each movement made by an individual. Move Path reflects the unique path between readers (without accounting for direction) whereas Move Dir reflect s the unique path between readers, including direction. Strength is a measure of how connected two readers are and is calculated as the inverse of time taken to move between the readers.</p>"
+    return(t)
+})
