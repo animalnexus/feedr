@@ -129,5 +129,16 @@ shinyServer(function(input, output, session) {
   ## Load transformation data tables
   source("output_data.R", local = TRUE)
 
+  ## Links to panels
+
+  observeEvent(input$link_db, {
+    updateTabsetPanel(session, "main", "Database")
+  })
+
+  observeEvent(input$link_import, {
+    updateTabsetPanel(session, "main", "Import")
+  })
+
+
 
 })
