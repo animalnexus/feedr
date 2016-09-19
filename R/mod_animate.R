@@ -1,3 +1,34 @@
+#' Animated map with leaflet
+#'
+#' Interactive shiny app to select and animate feeder use of multiple
+#' individuals over time. Also available through \code{animalnexus()}.
+#'
+#' @param v Data frame. Data frame. Visits data frame created with the
+#'   \code{visits()} function.
+#'
+#' @examples
+#' \dontrun{
+#' map_animate(visits(finches))
+#' }
+#'
+#' @export
+map_animate <- function(v) {
+
+  # Check for correct formatting
+  check_name(v, c("bird_id", "feeder_id", "start", "end"))
+  check_time(v)
+  check_format(v)
+
+  app <- shiny::shinyApp(ui = shiny::fluidPage(mod_UI_map_animate("standalone")),
+                         server = function(input, output, session) {
+                           shiny::callModule(mod_map_animate, "standalone",
+                                             v = v)
+                         }
+  )
+  shiny::runApp(app, display.mode = "normal")
+}
+
+
 ## Animated map - UI
 #' @import shiny
 #' @import magrittr
@@ -16,7 +47,7 @@ mod_UI_map_animate <- function(id) {
       max-width: 100%;
       }"))),
     tags$style(HTML(paste0(
-      "div#", ns("UI_anim_time")," {
+      "div#", ns("UI_time")," {
       padding-left:30px;
       width: 550px;
       max-width: 100%;
@@ -28,33 +59,43 @@ mod_UI_map_animate <- function(id) {
            #actionButton(ns("animate"), "Create Animation"),
            #actionButton(ns("pause"), "Pause"),
            #hr(),
-           radioButtons(ns("anim_type"), "Summary type:",
+           popify(radioButtons(ns("anim_type"), "Summary type:",
                         choices = c("Total no. visits" = "t_visits",
-                                    "Avg. visits per bird" = "b_visits",
-                                    "Total no. birds" = "t_birds")),
-           shinyBS::bsPopover(ns("anim_type"), "How should the data be summarized?", "Circles representing the the summary here will pop up on the map for the given time Circle area depicts the amount of visits recorded per site or feeder given the options selected", placement = "right", trigger = "hover"),
-           sliderInput(ns("anim_speed"), "Animation speed",
+                                    "Avg. visits per individual" = "b_visits",
+                                    "Total no. individuals" = "t_birds")),
+                  title = "Summaries", content = "How the data should be summarized for each time interval at each reader:<br/>Count the total number of visits<br/>Calculate the average number of visits per individual<br/>Count the total number of individuals.",
+                  options = list(container = "body")),
+           popify(uiOutput(ns("UI_time_range")), title = "Time range",
+                  content = "Select a particular time range to look at", options = list(container = "body")),
+           hr(),
+           popify(radioButtons(ns("interval"), "Resolution",
+                        choices = list("5 min" = 5, "15 min" = 15, "30 min" = 30, "1 hr" = 60, "3 hr" = 60*3, "6 hr" = 60*6, "12 hr" = 60 * 12, "24 hr" = 60 * 24), inline = TRUE),
+                  title = "Resolution", content = "Amount of time to advance in each frame.", options = list(container = "body")),
+           popify(sliderInput(ns("anim_speed"), "Animation speed",
                        min = 0, max = 100,
                        post = "%",
                        value = 50),
-           sliderInput(ns("anim_interval"), "Time interval",
-                       min = 1,
-                       max = 24,
-                       value = 1,
-                       step = 1,
-                       post = " hour(s)"),
+                  title = "Animation speed", content = "How fast should the animated steps advance.", options = list(container = "body")),
+           popify(radioButtons(ns("sunset"), "Show sunset/sunrise?",
+                        choices = list("Yes" = TRUE, "No" = FALSE), inline = TRUE),
+                  title = "Sunset/Sunrise", content = "Whether or not to include a shadow layer on the map demonstrating daytime and nighttime.", options = list(container = "body")),
            h3("Instructions:"),
-           p("Select your 'Summary type' and 'Time interval' (above), and the specific 'Time' (right) to show a summary of visits to each feeder for that interval of time on the map."),
+           p("Select your summary type, and time range (above), and the specific 'Time' (right) to show a summary of visits to each feeder for that interval of time on the map."),
            p("Summaries can be animated over time by clicking on the", strong("small blue arrow"), "to the lower right of the 'Time' slider (right)."),
-           p("The speed of this animation can be adjusted with the 'Speed' slider bar (above).")
+           p("The time interval of each jump and the speed of the animation can be adjusted above."),
+           h3("Tip:"),
+           p("If you find your animations lagging, reduce the amount of data (reduce the time range or increase the interval length).")
            #p("Circles on the map representing a summary of visits to each feeder (Total no. visits, Avg. visits per bird, or Total no. birds) for the interval choosen at the time indicated on the time slider."),
            #p("For example, with 'Avg. visits per bird' and an interval of '4 hours', the colour of each circle represents the average number of visits per bird made at a particular feeder over that 4 hour interval."),
            #p("The specific time can be changed with the slider bar and can even be automatically advanced by clicking on the", strong("small blue arrow"), "to the lower right of the Time slider")
     ),
     column(8,
-           fluidRow(leafletOutput(ns("map"), height = 600)),
+           popify(fluidRow(leafletOutput(ns("map"), height = 600)),
+                    title = "Activity summaries",
+                    content = "Circles show the amount of activity at each feeder for the given time interval.",
+                    options = list(container = "body")),
            div(
-             fluidRow(uiOutput(ns("UI_anim_time")), style = "text-align: center;"),
+             fluidRow(uiOutput(ns("UI_time")), style = "text-align: center;"),
              fluidRow(div(plotOutput(ns("plot_time"), height = "100%"), style = "height: 150px")),
              fluidRow(div(
                strong("Note that times are in Local Standard Time (no DST)"), br(),
@@ -83,49 +124,75 @@ mod_map_animate <- function(input, output, session, v) {
                   end = lubridate::with_tz(end, tzone = tz_offset(attr(v$end, "tzone"), tz_name = TRUE)),
                   day = as.Date(start))
 
+  tz <- tz_offset(attr(v$start, "tzone"))
+  if(tz >=0) tz <- paste0("+", sprintf("%02d", abs(tz)), "00") else tz <- paste0("-", sprintf("%02d", abs(tz)), "00")
+
   #lubridate::tz(v$start) <- "UTC"
   #lubridate::tz(v$end) <- "UTC"
 
   start <- lubridate::floor_date(min(v$start), unit = "hour")
   end <- lubridate::ceiling_date(max(v$start), unit = "hour")
 
-  # Time slider
-  output$UI_anim_time <- renderUI({
-    req(input$anim_speed, input$anim_interval)
-    tz <- tz_offset(attr(v$start, "tzone"))
-    if(tz >=0) tz <- paste0("+", sprintf("%02d", abs(tz)), "00") else tz <- paste0("-", sprintf("%02d", abs(tz)), "00")
-    sliderInput(ns("anim_time"), "Time",
+  interval <- reactive({
+    req(input$interval)
+    as.numeric(input$interval)
+  })
+
+  # Time range - select subsection of data
+  output$UI_time_range <- renderUI({
+    sliderInput(ns("time_range"), "Time Range",
                 min = start,
                 max = end,
-                value = start,
-                step = 60 * 60 * input$anim_interval,
+                value = c(start, end),
+                step = 60 * 60,
+                timezone = tz)
+  })
+
+  time_range <- reactive({
+    req(input$time_range)
+    lubridate::with_tz(input$time_range, lubridate::tz(v$start))
+  })
+
+  v_range <- reactive({
+    req(time_range())
+    dplyr::filter(v, start >= time_range()[1]  & end <= time_range()[2])
+  })
+
+  # Time slider
+  output$UI_time <- renderUI({
+    req(input$anim_speed, interval(), time_range())
+    sliderInput(ns("time"), "Time",
+                min = time_range()[1],
+                max = time_range()[2],
+                value = time_range()[1],
+                step = 60 * interval(),
                 timezone = tz,
-                animate = animationOptions(interval = 500 * (1 - (input$anim_speed/100)) + 50, loop = TRUE),
+                animate = animationOptions(interval = 500 * (1 - (input$anim_speed/100)) + 0.1, loop = FALSE),
                 width = "520px")
   })
 
   ## Convert to proper tz
-  anim_time <- reactive({
-    req(input$anim_time)
-    lubridate::with_tz(input$anim_time, lubridate::tz(v$start))
+  time <- reactive({
+    req(input$time)
+    lubridate::with_tz(input$time, lubridate::tz(v$start))
   })
 
 
   ## Break visits into blocks of time depending on animation interval
   v_block <- reactive({
-    req(input$anim_interval)
+    req(interval(), v_range())
 
-    validate(need(sum(names(v) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine feeder locations without them"))
+    validate(need(sum(names(v_range()) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine feeder locations without them"))
 
-    int_start <- seq(start, end - input$anim_interval * 60 * 60, by = paste(input$anim_interval, "hour"))
-    int_end <- seq(start + input$anim_interval * 60 * 60, end, by = paste(input$anim_interval, "hour"))
+    int_start <- seq(start, end - interval() * 60, by = paste(interval(), "min"))
+    int_end <- seq(start + interval() * 60, end, by = paste(interval(), "min"))
     ## Add to end if not even
     if(length(int_end) != end) {
       int_start <- c(int_start, int_end[length(int_end)])
       int_end <- c(int_end, end)
     }
-    v_block <- v %>%
-      dplyr::bind_cols(data.frame(block = sapply(v$start, FUN = function(x) which(x >= int_start & x < int_end)))) %>%
+    v_block <- v_range() %>%
+      dplyr::bind_cols(data.frame(block = sapply(v_range()$start, FUN = function(x) which(x >= int_start & x < int_end)))) %>%
       dplyr::bind_cols(data.frame(block_time = int_start[.$block]))
 
   })
@@ -134,7 +201,7 @@ mod_map_animate <- function(input, output, session, v) {
   p_total <- reactive({
     req(input$anim_type)
 
-    validate(need(sum(names(v) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine feeder locations without them"))
+    validate(need(sum(names(v_range()) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine feeder locations without them"))
 
     withProgress({
       if(input$anim_type == "t_visits") {
@@ -161,8 +228,8 @@ mod_map_animate <- function(input, output, session, v) {
 
   ## Filter points by time
   p <- reactive({
-    req(anim_time(), input$anim_interval)
-    p_total() %>% dplyr::filter(block_time >= anim_time(), block_time < anim_time() + 60 * 60 * input$anim_interval)
+    req(time(), interval())
+    p_total() %>% dplyr::filter(block_time >= time(), block_time < time() + 60 * interval())
   })
 
   ## Render Base Map
@@ -228,31 +295,40 @@ mod_map_animate <- function(input, output, session, v) {
 
 
   ## Add sunrise sunset
-  observeEvent(anim_time(), {
-    req(anim_time(), input$anim_interval)
+  observeEvent(time(), {
+    req(time(), interval(), input$sunset == TRUE)
     leafletProxy(ns("map")) %>%
-      addTerminator(time = anim_time(),
-                    layerId = paste0("set-", anim_time()),
+      addTerminator(time = time(),
+                    layerId = paste0("set-", time()),
                     group = "Sunrise/Sunset") %>%
       removeShape(layerId = paste0("set-", values$time_prev))
-    values$time_prev <- anim_time()
+    values$time_prev <- time()
   }, priority = 100)
+
+  observeEvent(input$sunset, {
+    req(input$sunset == FALSE)
+    leafletProxy(ns("map")) %>%
+      clearGroup(group = "Sunrise/Sunset")
+  })
+
+
+
 
   ## Time figure
   g_time <- eventReactive(p_total(), {
     lab <- ifelse(input$anim_type == "t_visits", "Total no. visists", ifelse(input$anim_type == "b_visits", "Avg. visits per bird", "Total no. birds"))
-    lim <- c(start, ifelse(max(p_total()$block_time) + input$anim_interval * 60 * 60 > end, max(p_total()$block_time) + input$anim_interval * 60 * 60, end))
+    lim <- c(start, ifelse(max(p_total()$block_time) + interval() * 60 > end, max(p_total()$block_time) + interval() * 60, end))
     g_time <- ggplot2::ggplot(data = p_total()) +
       ggplot2::theme_bw() +
       ggplot2::theme(legend.position = "none") +
       ggplot2::labs(x = "Time", y = lab) +
       ggplot2::scale_y_continuous(expand = c(0,0)) +
-      ggplot2::scale_x_datetime(labels = scales::date_format("%Y %b %d\n%H:%M", tz = lubridate::tz(v$start)))
-                                #limits = lim,
+      ggplot2::scale_x_datetime(labels = scales::date_format("%Y %b %d\n%H:%M", tz = lubridate::tz(v$start)),
+                                limits = time_range())
                                 #breaks = seq(start, end, length.out = 5),
                                 #expand = c(0,0))
 
-      g_time <- g_time + ggplot2::geom_bar(stat = "identity", ggplot2::aes(x = block_time, y = n, fill = feeder_id)) +
+      g_time <- g_time + ggplot2::geom_bar(stat = "identity", ggplot2::aes(x = block_time, y = n, group = feeder_id)) +
         ggplot2::labs(fill = "Reader")
 
     g_time
@@ -278,6 +354,6 @@ mod_map_animate <- function(input, output, session, v) {
   })
 
   output$plot_time <- renderPlot({
-    g_time()# + annotate("rect", xmin = anim_time()[1], xmax = anim_time()[1] + 60 * 60 * input$anim_interval, ymin = -Inf, ymax = +Inf, alpha = 0.5)
+    g_time()# + annotate("rect", xmin = time()[1], xmax = time()[1] + 60 * 60 * interval(), ymin = -Inf, ymax = +Inf, alpha = 0.5)
   }, height = 150, width = 550)
 }
