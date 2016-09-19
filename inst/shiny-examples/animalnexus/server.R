@@ -96,6 +96,15 @@ shinyServer(function(input, output, session) {
     callModule(mod_map_animate, "anim", v = v())
   })
 
+  observe({
+    callModule(mod_map_animate_indiv, "anim_indiv", v = v())
+  })
+
+  ## Non-animated Maps
+  observe({
+    callModule(mod_map_summary, "vis_sum", v = v())
+  })
+
   ## Add weather data
   #Get weather data
   # if(input$data_weather == "Yes" & any(unique(data$site_name) == "Kamloops, BC")){
