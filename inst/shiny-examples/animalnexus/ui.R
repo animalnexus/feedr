@@ -49,7 +49,14 @@ shinyUI(
             ## Visualization
             #################
             tabPanel("Visualizations", icon = icon("eye"),
-                     mod_UI_map_animate("anim")
+                     navlistPanel(widths = c(2, 10),
+                                  "Animated",
+                                  tabPanel("Summary", mod_UI_map_animate("anim")),
+                                  tabPanel("Individual", mod_UI_map_animate_indiv("anim_indiv")),
+                                  "Non-animated",
+                                  tabPanel("Summary", mod_UI_map_summary("vis_sum"))
+                                  #tabPanel("Individual")
+                     )
             ),
 
             # tabPanel("Paths (Static)",
