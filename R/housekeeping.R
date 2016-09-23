@@ -86,6 +86,7 @@ check.ids <- function(r, bird_ids, omit_bird = c("wand", "error")){
 #' @return A data frame with corrected ids. Messages are printed to inform the
 #'   user of any corrections made.
 #'
+#' @import magrittr
 #' @export
 check_problems <- function(r, problems){
   if(length(problems) > 1 & !is.data.frame(problems)) stop("Problems should either be the name of a comma separated file (csv) OR should be a data frame. In either case, the data should contain headers 'original_id' and 'corrected_id'")
@@ -101,10 +102,9 @@ check_problems <- function(r, problems){
   if(nrow(problems) < 1) stop("Problems data frame has no rows")
 
   # Trim leading or trailing whitespace
-  problems <- data.frame(apply(problems, MARGIN = 2, FUN = trimws))
-
-  problems$original_id <- as.character(problems$original_id)
-  problems$corrected_id <- as.character(problems$corrected_id)
+  problems <- problems %>%
+    dplyr::mutate_all(trimws) %>%
+    dplyr::mutate_all(as.character)
 
   # Fix problem IDs
   fixes <- data.frame()
