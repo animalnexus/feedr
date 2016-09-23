@@ -129,7 +129,8 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
     dplyr::select(-n) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(bird_n = length(unique(bird_id)),         # Get sample sizes
-                  feeder_n = length(unique(feeder_id)))
+                  feeder_n = length(unique(feeder_id)),
+                  date = as.Date(start))
 
   # Set timezone attributes
   attr(v$start, "tzone") <- tz
@@ -137,7 +138,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 
   # Order data frame
   v <- v %>%
-    dplyr::select(bird_id, start, end, feeder_id, bird_n, feeder_n) %>%
+    dplyr::select(bird_id, date, start, end, feeder_id, bird_n, feeder_n) %>%
     dplyr::arrange(bird_id, start)
 
   # Add in extra variables
@@ -171,6 +172,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 #'   of two rows of data containing:
 #'   \itemize{
 #'   \item ID of the bird (\code{bird_id})
+#'   \item Date of event (\code{date})
 #'   \item Time of event (\code{time})
 #'   \item The ID of feeders involved (\code{feeder_id})
 #'   \item The movement path including direction (\code{move_dir})
@@ -198,7 +200,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 #' @export
 move <- function(v, all = FALSE, pass = TRUE){
   # Check for correct formatting
-  check_name(v, c("bird_id", "feeder_id", "start", "end"))
+  check_name(v, c("bird_id", "feeder_id", "date", "start", "end"))
   check_time(v)
   check_format(v)
 
@@ -214,7 +216,7 @@ move <- function(v, all = FALSE, pass = TRUE){
   if(nrow(m) > 0){
     # Order
     m <- m %>%
-      dplyr::select(bird_id, time, feeder_id, direction, move_id, move_dir, move_path, strength) %>%
+      dplyr::select(bird_id, date, time, feeder_id, direction, move_id, move_dir, move_path, strength) %>%
       dplyr::arrange(bird_id, time)
 
     # Add in extra cols
@@ -238,7 +240,7 @@ move_single <- function(v1, all = FALSE){
   if(length(unique(v1$feeder_id)) > 1) { # Only proceed if there are actual data!
 
     # If there are movements, calculate events
-    v1 <- v1[, c("bird_id", "start", "end", "feeder_id")]
+    v1 <- v1[, c("bird_id", "date", "start", "end", "feeder_id")]
     v1 <- v1[order(v1$start),]
     diff <- v1$feeder_id[-1] != v1$feeder_id[-nrow(v1)]
     v1$arrived <- v1$left <- FALSE
@@ -263,6 +265,7 @@ move_single <- function(v1, all = FALSE){
   } else if (all == TRUE) {
     # Create the movement data frame for birds that didn't move between feeders
     m <- data.frame(bird_id = factor(v1$bird_id[1], levels = bird_id),
+                    date = as.Date(NA),
                     time = as.POSIXct(NA),
                     feeder_id = factor(NA, levels = feeder_id),
                     direction = as.character(NA),
@@ -324,7 +327,7 @@ move_single <- function(v1, all = FALSE){
 feeding <- function(v, bw = 15, pass = TRUE){
 
   ## Check for correct formatting
-  check_name(v, c("bird_id","feeder_id", "start","end"))
+  check_name(v, c("bird_id","feeder_id", "date", "start","end"))
   check_time(v)
   check_format(v)
 
@@ -367,6 +370,7 @@ feeding_single <- function(v1, bw = 15){
 
   ## Create the feeding data frame.
   f <- data.frame(bird_id = factor(v1$bird_id[1], levels = bird_id),
+                  date = as.Date(v1$start[v1$feed_start == TRUE]),
                   feeder_id = factor(v1$feeder_id[v1$feed_start == TRUE], levels = feeder_id),
                   feed_start = v1$start[v1$feed_start == TRUE],
                   feed_end = v1$end[v1$feed_end == TRUE],
@@ -435,7 +439,7 @@ feeding_single <- function(v1, bw = 15){
 disp <- function(v, bw = 5, pass = TRUE){
 
   ## Check for correct formatting
-  check_name(v, c("bird_id", "feeder_id", "start", "end"))
+  check_name(v, c("bird_id", "feeder_id", "date", "start", "end"))
   check_time(v)
   check_format(v)
 
@@ -456,8 +460,8 @@ disp <- function(v, bw = 5, pass = TRUE){
   time_diff <- (v$start[-1] - v$end[-nrow(v)]) < bw
   feeder_diff <- v$feeder_id[-1] == v$feeder_id[-nrow(v)]
 
-  d <- rbind(v[c(bird_diff & time_diff & feeder_diff, FALSE), c("bird_id", "feeder_id", "start", "end")],
-             v[c(FALSE, bird_diff & time_diff & feeder_diff), c("bird_id", "feeder_id", "start", "end")])
+  d <- rbind(v[c(bird_diff & time_diff & feeder_diff, FALSE), c("bird_id", "feeder_id", "date", "start", "end")],
+             v[c(FALSE, bird_diff & time_diff & feeder_diff), c("bird_id", "feeder_id", "date", "start", "end")])
 
   if(nrow(d) == 0) stop(paste0("There are no displacement events with a bw = ", bw, ", stopping now"))
 
@@ -468,7 +472,7 @@ disp <- function(v, bw = 5, pass = TRUE){
   d$left <- rep(v$end[c(bird_diff & time_diff & feeder_diff, FALSE)], 2)
   d$arrived <- rep(v$start[c(FALSE, bird_diff & time_diff & feeder_diff)], 2)
 
-  d <- dplyr::select(d, bird_id, left, arrived, feeder_id, role) %>%
+  d <- dplyr::select(d, bird_id, date, left, arrived, feeder_id, role) %>%
     dplyr::arrange(left, feeder_id, role)
 
   if(pass == TRUE) d <- merge_extra(d, extra)
