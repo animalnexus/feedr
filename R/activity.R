@@ -17,17 +17,18 @@
 #' \code{feeder_id}, all activity between the start and end times will be scored
 #' as unknown, regardless of the feeder. See examples.
 #'
-#' @param f1 Data frame. A feeding bout data frame for an individual
-#'   \code{bird_id}
+#' @param f Dataframe. A feeding bout data frame (may contain multiple bird_ids). From
+#'   the output of \code{feeding}. Must contain columns \code{bird_id},
+#'   \code{feeder_id}, \code{feed_start}, and \code{feed_end}.
 #' @param res Character. The resolution over which to calculate activity. Should
 #'   be in the format of "15 min" or "1 hour", etc.
 #' @param by_feeder Logical. Should the activity be calculated overall, or
 #'   individually for each feeder visited? If there is only one feeder,
 #'   by_feeder will automatically revert to TRUE to enable passing of
 #'   feeder-related variables.
-#' @param missing Data frame. If there are known times for a particular feeder
-#'   for which activity can't be recorded (i.e. times during which a feeder was
-#'   inactive).
+#' @param missing Data frame. (NOT AVAILABLE) If there are known times for a
+#'   particular feeder for which activity can't be recorded (i.e. times during
+#'   which a feeder was inactive).
 #' @param sun Logical. Calculate sun rise/set? If by_feeder = FALSE, returns
 #'   median sun rise/set across all feeders for each day.
 #' @param keep_all Logical. Keep all individuals, even ones with less than 24hrs of data.
@@ -36,41 +37,67 @@
 #' @import magrittr
 #' @export
 
-activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE, keep_all = FALSE, pass = TRUE){
-  #v <- visits(dl_data(start = "2016-03-05", end = "2016-03-07"))
-  #f1 <- feeding(v[v$bird_id == "0620000514",])
+activity <- function(f, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE, keep_all = FALSE, pass = TRUE){
 
-  check_name(f1, c("bird_id", "feeder_id", "feed_start", "feed_end"), "feeding")
-  check_time(f1, c("feed_start", "feed_end"))
-  check_indiv(f1)
-
-  tz <- attr(f1$feed_start, "tzone")
+  check_name(f, c("bird_id", "feeder_id", "feed_start", "feed_end"), "feeding")
+  check_time(f, c("feed_start", "feed_end"))
 
   if(!is.null(missing)){
-    if(!is.data.frame(missing)) {
-      if(!is.character(missing) | length(missing) != 1) {
-        stop("'missing' must be data frame or string with location of a csv file.")
-      } else {
-        missing <- read.csv(missing)
-      }
-    }
+    message("missing argument not yet implemented")
+    # if(!is.data.frame(missing)) {
+    #   if(!is.character(missing) | length(missing) != 1) {
+    #     stop("'missing' must be data frame or string with location of a csv file.")
+    #   } else {
+    #     missing <- read.csv(missing)
+    #   }
+    # }
 
-    if(sum(names(missing) %in% c("start", "end")) != 2) stop("'missing' must have columns 'start' and 'end'.")
+    #if(sum(names(missing) %in% c("start", "end")) != 2) stop("'missing' must have columns 'start' and 'end'.")
 
-    missing$start <- lubridate::parse_date_time(missing$start, orders = "%Y-%m-%d %H:%M:%S", truncated = 3, tz = tz)
-    missing$end <- lubridate::parse_date_time(missing$end, orders = "%Y-%m-%d %H:%M:%S", truncated = 3, tz = tz)
+    #missing$start <- lubridate::parse_date_time(missing$start, orders = "%Y-%m-%d %H:%M:%S", truncated = 3, tz = tz)
+    #missing$end <- lubridate::parse_date_time(missing$end, orders = "%Y-%m-%d %H:%M:%S", truncated = 3, tz = tz)
 
-    if(any(!lubridate::is.POSIXct(c(missing$start, missing$end)))) {
-      stop("'missing' start or end cannot be converted to date/time, be sure it is in a standard date/time format (YYYY-MM-DD HH:MM:SS is best).")
-    }
+    # if(any(!lubridate::is.POSIXct(c(missing$start, missing$end)))) {
+    #   stop("'missing' start or end cannot be converted to date/time, be sure it is in a standard date/time format (YYYY-MM-DD HH:MM:SS is best).")
+    # }
   }
+
+  # Keep extra cols
+  if(pass) {
+    if(by_feeder == FALSE) only <- c("bird_id", "date") else only <- c("feeder_id", "bird_id", "date")
+    extra <- keep_extra(f, n = c("feed_start", "feed_end", "feed_length"), only = only)
+  }
+
+  if(any(!lubridate::is.POSIXct(c(f$feed_start, f$feed_end)))) {
+    stop("Cannot define start and end times of the feeding data set, make sure this is the output from feeding().")
+  }
+
+
+  # Apply individually to each bird
+  a <- f %>%
+    dplyr::group_by(bird_id) %>%
+    dplyr::do(activity_single(., res = res, by_feeder = by_feeder, missing = missing, sun = sun, keep_all = keep_all)) %>%
+    dplyr::ungroup()
+
+  if(pass) a <- merge_extra(a, extra)
+
+  a <- dplyr::arrange(a, bird_id, date, time, feeder_id)
+  return(a)
+
+}
+
+
+activity_single <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE, keep_all = FALSE){
+
+  check_indiv(f1)
+
+  if(nrow(f1) == 0) {
+    message(paste0(f1$bird_id[1], ": Skipping. Individual has no data"))
+    return(data.frame())
+  } else {
 
   start <- lubridate::floor_date(min(f1$feed_start), "day")
   end <- lubridate::ceiling_date(max(f1$feed_end), "day")
-
-  if(any(!lubridate::is.POSIXct(c(start, end)))) {
-    stop("Cannot define start and end times of the feeding data set (f1), make sure this is the output from feeding().")
-  }
 
   # Calculate Activity only if > 24hrs of data
   if((max(f1$feed_end) - min(f1$feed_start)) < lubridate::dhours(24) & keep_all == FALSE) {
@@ -87,13 +114,7 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
     if(p_active < 0.05) message(paste0(f1$bird_id[1], ": Active less than 5% of the total time period..."))
 
     # Override by_feeder if only one feeder_id to keep extra columns
-    if(length(unique(f1$feeder_id)) == 1) by_feeder <- TRUE
-
-    # Keep extra cols
-    if(pass) {
-      if(by_feeder == FALSE) only <- "bird_id" else only <- c("feeder_id", "bird_id")
-      extra <- keep_extra(f1, n = c("feed_start", "feed_end", "feed_length"), only = only)
-    }
+    #if(length(unique(f1$feeder_id)) == 1) by_feeder <- TRUE
 
     # Get activity
     prob <- round(length(f1$feed_length[f1$feed_length < res]) / nrow(f1) * 100, 2)
@@ -109,7 +130,7 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
       activity_c = factor("inactive",
                           levels = c("active", "inactive", "unknown")))
 
-    a$date = lubridate::floor_date(a$time, unit = "day")
+    a$date <- as.Date(lubridate::floor_date(a$time, unit = "day"))
 
     # Get by individual only, or by individual for each feeder
     if(by_feeder == FALSE){
@@ -134,44 +155,49 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
       }
     }
 
-    if(!is.null(missing)) {
-      for(i in 1:nrow(missing)){
-        if(by_feeder == FALSE){
-          a$activity_c[a$time >= missing$start[i] & a$time <= missing$end[i]] <- "unknown"
-        } else {
-          a$activity_c[a$feeder_id == missing$feeder_id[i] & a$time >= missing$start[i] & a$time <= missing$end[i]] <- "unknown"
-        }
-      }
-    }
+    # if(!is.null(missing)) {
+    #   for(i in 1:nrow(missing)){
+    #     if(by_feeder == FALSE){
+    #       a$activity_c[a$time >= missing$start[i] & a$time <= missing$end[i]] <- "unknown"
+    #     } else {
+    #       a$activity_c[a$feeder_id == missing$feeder_id[i] & a$time >= missing$start[i] & a$time <= missing$end[i]] <- "unknown"
+    #     }
+    #   }
+    # }
 
     # Create plotting column
     a$activity <- as.numeric(a$activity == "active")
 
     # Calculate sunrise/sunset times
     if(sun == TRUE) {
-      s <- expand.grid(feeder_id = unique(f1$feeder_id), date = seq(start, end, by = "1 day"))
-      s <- merge(s, unique(f1[, c("feeder_id", "lon", "lat")]), by = "feeder_id")
-      s <- cbind(s, sun(s[, c("lon", "lat")], s$date))
-      if(by_feeder == TRUE) {
-        a <- merge(a, s[, c("feeder_id", "date", "rise", "set")],
-                   by = c("feeder_id", "date"), all.x = TRUE, all.y = FALSE)
+      if(!all(c("lat", "lon") %in% names(f1))) {
+        message(paste0(f1$bird_id, ": Skipping sunrise/sunset, no lat/lon information"))
       } else {
-        s <- s %>%
-          dplyr::group_by(date) %>%
-          dplyr::summarize(rise = median(rise),
-                           set = median(set))
-        a <- dplyr::left_join(a, s[, c("date", "rise", "set")], by = "date")
+
+        s <- expand.grid(feeder_id = unique(f1$feeder_id), date = as.Date(seq(start, end, by = "1 day"))) %>%
+          dplyr::left_join(unique(f1[, c("feeder_id", "lon", "lat")]), by = "feeder_id")
+        s <- dplyr::bind_cols(s, sun(s[, c("lon", "lat")], s$date))
+
+        if(by_feeder == TRUE) {
+          a <- dplyr::left_join(a, s[, c("feeder_id", "date", "rise", "set")],
+                                by = c("feeder_id", "date"))
+        } else {
+          s <- s %>%
+            dplyr::group_by(date) %>%
+            dplyr::summarize(rise = median(rise),
+                             set = median(set))
+          a <- dplyr::left_join(a, s[, c("date", "rise", "set")], by = "date")
+        }
       }
-      f1 <- f1[, names(f1) != "date"]
     }
 
-    # Merge extra and order
-    a <- dplyr::select(a, bird_id, date, time, activity, activity_c, feeder_id) %>%
-      dplyr::arrange(bird_id, date, time)
-
-    if(pass) a <- merge_extra(a, extra)
+    # Select
+    n <- c("bird_id", "date", "time", "activity", "activity_c", "feeder_id", "rise", "set")
+    n <- n[n %in% names(a)]
+    a <- dplyr::select_(a, .dots = n)
 
     return(a)
+  }
   }
 }
 
@@ -190,35 +216,40 @@ activity <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE
 #' specified in \code{activity()}.
 #'
 #'
-#' @param a1 Data frame. Data from output of \code{activity()}.
+#' @param a Data frame. Data from output of \code{activity()}.
 #' @param pass Logical. Pass 'extra' columns through the function and append them to the output.
 #'
 #' @export
-daily <- function(a1, pass = TRUE){
 
-  #v <- visits(dl_data(start = "2016-03-05", end = "2016-03-07"))
-  #f1 <- feeding(v[v$bird_id == "0620000514",])
-  #f1 <- f1[f1$feeder_id == "1500",]
-  #a1 <- activity(f1, res = 1, by_feeder = FALSE, sun = TRUE)
-  #a1 <- activity(f1, res = 1, by_feeder = TRUE, sun = TRUE)
+daily <- function(a, pass = TRUE){
 
-  check_name(a1, c("bird_id", "date", "time", "activity", "activity_c", "feeder_id"), "activity")
-  check_time(a1, c("date", "time"))
-  check_indiv(a1)
+  check_name(a, c("bird_id", "date", "time", "activity", "activity_c", "feeder_id"), "activity")
+  check_time(a, c("time"))
 
-  # Get extra
+    # Get extra
   if(pass){
-    if(all(is.na(a1$feeder_id))) only <- "bird_id" else only <- c("feeder_id", "bird_id")
-    extra <- keep_extra(a1, c("time", "activity", "activity_c"), only = only)
+    if(all(is.na(a$feeder_id))) only <- "bird_id" else only <- c("feeder_id", "bird_id")
+    extra <- keep_extra(a, c("time", "activity", "activity_c"), only = only)
   }
 
-  a1$time_c <- format(a1$time, "%H:%M:%S")
+  a$time_c <- format(a$time, "%H:%M:%S")
 
-  #d <- plyr::ddply(a1, c("bird_id", "feeder_id", "time_c"), plyr::summarise,
-  #                 p_active = length(activity_c[activity_c == "active"]) / length(activity_c[activity_c != "unknown"]),
-  #                 p_inactive = length(activity_c[activity_c == "inactive"]) / length(activity_c[activity_c != "unknown"]),
-  #                 p_unknown = length(activity_c[activity_c == "unknown"]) / length(activity_c),
-  #                 p_total = 1 - p_unknown)
+  # Apply single function
+
+  d <- a %>%
+    dplyr::group_by(bird_id) %>%
+    dplyr::do(daily_single(., pass = pass)) %>%
+    dplyr::ungroup()
+
+  if(pass) d <- merge_extra(d, extra)
+
+
+  return(d)
+}
+
+daily_single <- function(a1, pass = TRUE){
+
+  check_indiv(a1)
 
   d <- a1 %>%
     dplyr::group_by(bird_id, feeder_id, time_c) %>%
@@ -232,11 +263,8 @@ daily <- function(a1, pass = TRUE){
   lubridate::tz(d$time) <- "UTM"
 
   # Get sun/rise set if exist, and average
-  if(any(names(a1) %in% c("rise", "set"))) {
+  if(all(c("rise", "set") %in% names(a1))) {
     sun <- unique(a1[, c("date", "feeder_id", "rise", "set")])
-    #sun <- plyr::ddply(sun, c("feeder_id"), plyr::summarise,
-    #                   rise = mean_clock(rise, origin = TRUE),
-    #                   set = mean_clock(set, origin = TRUE))
 
     sun <- sun %>%
       dplyr::group_by(feeder_id) %>%
@@ -245,11 +273,12 @@ daily <- function(a1, pass = TRUE){
     d <- merge(d, sun, by = "feeder_id", all.x = TRUE, all.y = FALSE)
   }
 
-  # Merge extra and order
-  d <- dplyr::select(d, bird_id, time, time_c, feeder_id) %>%
-    dplyr::arrange(bird_id, time)
+  # Order
+  n <- c("bird_id", "time", "time_c", "p_active", "p_inactive", "p_unknown", "p_total", "feeder_id", "rise", "set")
+  n <- n[n %in% names(d)]
 
-  if(pass) d <- merge_extra(d, extra)
+  d <- dplyr::select_(d, .dots = n) %>%
+    dplyr::arrange(bird_id, time)
 
   return(d)
 }
