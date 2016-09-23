@@ -6,7 +6,7 @@ test_that("visits() returns appropriate, non-empty dataframe", {
   expect_silent(v <- visits(finches))
   expect_is(v, "data.frame")
   expect_equal(sum(is.na(v)), 0)
-  expect_match(names(v)[1:3], "^bird_id$|^start$|^end$|^feeder_id$")
+  expect_match(names(v)[1:3], "^bird_id$|^date$|^start$|^end$|^feeder_id$")
   expect_is(v$bird_id, "factor")
   expect_is(v$feeder_id, "factor")
   expect_is(v$start, "POSIXct")
@@ -50,6 +50,6 @@ test_that("visits() na_rm", {
 })
 
 test_that("visits() pass", {
-  expect_length(visits(finches, pass = FALSE), 6)
-  expect_length(visits(finches), 9)
+  expect_length(visits(finches, pass = FALSE), 7)
+  expect_length(visits(finches, pass = TRUE), 10)
 })

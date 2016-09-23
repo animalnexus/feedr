@@ -14,7 +14,7 @@ test_that("disp() returns appropriate, non-empty dataframe", {
   expect_is(d2 <- d[["summaries"]], "data.frame")
   expect_is(d3 <- d[["interactions"]], "data.frame")
 
-  expect_length(d1, 10)
+  expect_length(d1, 11)
   expect_length(d2, 4)
   expect_length(d3, 3)
 
@@ -26,8 +26,9 @@ test_that("disp() returns appropriate, non-empty dataframe", {
   expect_equal(sum(is.na(d2)), 1)
   expect_equal(sum(is.na(d3)), 0)
 
-  expect_match(names(d1)[1:3], "^bird_id$|^left$|^arrived$|^feeder_id$|^role$")
+  expect_match(names(d1)[1:3], "^bird_id$|^date$|^left$|^arrived$|^feeder_id$|^role$")
   expect_is(d1$bird_id, "factor")
+  expect_is(d1$date, "Date")
   expect_is(d1$feeder_id, "factor")
   expect_is(d1$left, "POSIXct")
 })
@@ -61,6 +62,6 @@ test_that("disp() returns correct data", {
 })
 
 test_that("disp() pass", {
-  expect_length(visits(finches) %>% disp(., bw = 30, pass = FALSE) %>% .$displacements, 5)
-  expect_length(visits(finches) %>% disp(., bw = 30, pass = TRUE) %>% .$displacements, 10)
+  expect_length(visits(finches) %>% disp(., bw = 30, pass = FALSE) %>% .$displacements, 6)
+  expect_length(visits(finches) %>% disp(., bw = 30, pass = TRUE) %>% .$displacements, 11)
 })

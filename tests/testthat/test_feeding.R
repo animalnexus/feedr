@@ -8,8 +8,8 @@ test_that("feeding() handles single bird", {
 
   ## Format
   expect_is(f, "data.frame")
-  expect_length(f, 10)
-  expect_match(names(f)[1:5], "^feeder_id$|^bird_id$|^feed_start$|^feed_end$|^feed_length$")
+  expect_length(f, 11)
+  expect_match(names(f)[1:5], "^feeder_id$|^bird_id$|^date$|^feed_start$|^feed_end$|^feed_length$")
   expect_is(f$bird_id, "factor")
   expect_is(f$feeder_id, "factor")
   expect_is(f$feed_start, "POSIXct")
@@ -28,8 +28,8 @@ test_that("feeding() handles multiple birds", {
 
   ## Format
   expect_is(f, "data.frame")
-  expect_length(f, 10)
-  expect_match(names(f)[1:5], "^feeder_id$|^bird_id$|^feed_start$|^feed_end$|^feed_length$")
+  expect_length(f, 11)
+  expect_match(names(f)[1:5], "^feeder_id$|^bird_id$|^date$|^feed_start$|^feed_end$|^feed_length$")
   expect_is(f$bird_id, "factor")
   expect_is(f$feeder_id, "factor")
   expect_is(f$feed_start, "POSIXct")
@@ -40,7 +40,7 @@ test_that("feeding() handles multiple birds", {
 })
 
 test_that("feeder() pass", {
-  expect_length(feeding(visits(finches), pass = FALSE), 5)
-  expect_length(feeding(visits(finches), pass = TRUE), 10)
+  expect_length(feeding(visits(finches), pass = FALSE), 6)
+  expect_length(feeding(visits(finches), pass = TRUE), 11)
 })
 
