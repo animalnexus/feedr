@@ -1,3 +1,20 @@
+#' Launch current
+#'
+if(file.exists("/usr/local/share/feedr/db_full.R")) {
+  source("/usr/local/share/feedr/db_full.R")
+} else db <- NULL
+
+mod_current <- function(db) {
+  app <- shiny::shinyApp(ui = shiny::fluidPage(mod_UI_map_current("standalone")),
+                         server = function(input, output, session) {
+                           shiny::callModule(mod_map_current, "standalone", db = db)
+                         }
+  )
+  shiny::runApp(app, display.mode = "normal")
+}
+
+
+
 ## Get current data
 #' @import shiny
 #' @import magrittr
