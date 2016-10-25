@@ -15,7 +15,7 @@
 #'   .csv file containing the bird id index or a data frame of the bird id
 #'   index. In either case, the data must contain two columns: \code{bird_id}
 #'   and \code{species}.
-#' @param omit_bird Character vector. All the values of \code{species} in the
+#' @param omit Character vector. All the values of \code{species} in the
 #'   bird id index which you would like to omit from your data. Defaults to
 #'   \code{c("wand", "error")}.
 #' @return A data frame without the specified bird ids. Messages are printed to
@@ -32,7 +32,7 @@
 #' r <- check.ids(r, bird_ids = b)
 #' }
 #' @export
-check_ids <- function(r, bird_ids, omit_bird = c("wand", "error")){
+check_ids <- function(r, bird_ids, omit = c("wand", "error")){
   if(length(bird_ids) > 1 & !is.data.frame(bird_ids)) stop("bird_ids should either be the name of a comma separated file (csv) OR should be a data frame. In either case, the data should contain headers 'bird_id' and 'species'")
 
   if(!is.data.frame(bird_ids)) bird_ids <- read.csv(bird_ids)
@@ -46,12 +46,13 @@ check_ids <- function(r, bird_ids, omit_bird = c("wand", "error")){
   if(length(unlisted) > 0) message(paste("Some ids present in your data do not exist in the bird_id index:", paste(unlisted, collapse = ", "))) else message("All ids in your data are also in your bird_id index")
 
   # Look for individuals in your bird_ids that are not in your data
-  unseen <- unique(bird_ids$bird_id[!(bird_ids$bird_id %in% unique(r$bird_id))])
+  real_birds <- unique(bird_ids$bird_id[!(bird_ids$species %in% omit)])
+  unseen <- real_birds[!(real_birds %in% unique(r$bird_id))]
   if(length(unseen) > 0) message(paste("Some ids present in your bird_id index, are not in your data:", paste0(unseen, collapse = ", "))) else message("All ids in your bird_id index are also in your data")
 
   # Which ids in the data set match the "omit" section?
   if(!is.data.frame(bird_ids)) bird_ids <- read.csv(bird_ids)
-  ob <- unique(bird_ids[bird_ids$species %in% omit_bird, "bird_id"]) # Which to omit in general
+  ob <- unique(bird_ids[bird_ids$species %in% omit, "bird_id"]) # Which to omit in general
   ob2 <- unique(r$bird_id[r$bird_id %in% ob]) # Which to omit in this case
   if(length(ob2) > 0) message(paste("The following bird ids have been omitted:",paste0(ob2, collapse = ", "))) else message("No ids have been omitted")
 
