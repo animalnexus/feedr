@@ -1,10 +1,16 @@
 shinyServer(function(input, output, session) {
   library(feedr)
 
+
+  output$package_version <- renderText({
+    paste0("Using <a href = 'http://github.com/steffilazerte/feedr' target = 'blank'>feedr v", packageVersion("feedr"), "</a>")
+  })
+
   ## Load reactive expressions
   source("reactive.R", local = TRUE)
 
   values <- reactiveValues(
+    data_reset = TRUE,
     current_map = NULL)
 
   ## Get Database access if we have it
@@ -23,10 +29,12 @@ shinyServer(function(input, output, session) {
   data_import <- callModule(feedr:::mod_data_import, "import")
 
   observeEvent(data_db(), {
+    values$data_reset <- TRUE
     values$data_db <- data_db()
   })
 
   observeEvent(data_import(), {
+    values$data_reset <- TRUE
     values$data_import <- data_import()
   })
 
@@ -47,12 +55,8 @@ shinyServer(function(input, output, session) {
     return(data)
   })
 
-  raw <- reactive({
-    req(data())
-    data()$data
-  })
-
   data_info <- reactive({
+    cat("Update active dataset")
     t <- "Active dataset: "
     if(is.null(data())) {
       t <- paste0(t, "None")
@@ -66,11 +70,6 @@ shinyServer(function(input, output, session) {
     req(data_info())
     data_info()
   })
-
-  output$package_version <- renderText({
-   paste0("Using <a href = 'http://github.com/steffilazerte/feedr' target = 'blank'>feedr v", packageVersion("feedr"), "</a>")
-  })
-
 
   ## Feeders of current data
   feeders <- reactive({
@@ -93,15 +92,19 @@ shinyServer(function(input, output, session) {
   ### Visualizations
   ## Animate Data
   observe({
+    #browser()
+    req(v(), !values$data_reset)
     callModule(mod_map_animate, "anim", v = v())
   })
 
   observe({
+    req(v(), !values$data_reset)
     callModule(mod_map_animate_indiv, "anim_indiv", v = v())
   })
 
   ## Non-animated Maps
   observe({
+    req(v(), !values$data_reset)
     callModule(mod_map_summary, "vis_sum", v = v())
   })
 
