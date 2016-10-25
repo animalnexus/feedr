@@ -4,10 +4,10 @@
 \alias{daily}
 \title{Create daily activity data}
 \usage{
-daily(a1, pass = TRUE)
+daily(a, pass = TRUE)
 }
 \arguments{
-\item{a1}{Data frame. Data from output of \code{activity()}.}
+\item{a}{Data frame. Data from output of \code{activity()}.}
 
 \item{pass}{Logical. Pass 'extra' columns through the function and append them to the output.}
 }

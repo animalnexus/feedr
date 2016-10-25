@@ -4,12 +4,13 @@
 \alias{activity}
 \title{Calculate activity from feeding data}
 \usage{
-activity(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE,
+activity(f, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE,
   keep_all = FALSE, pass = TRUE)
 }
 \arguments{
-\item{f1}{Data frame. A feeding bout data frame for an individual
-\code{bird_id}}
+\item{f}{Dataframe. A feeding bout data frame (may contain multiple bird_ids). From
+the output of \code{feeding}. Must contain columns \code{bird_id},
+\code{feeder_id}, \code{feed_start}, and \code{feed_end}.}
 
 \item{res}{Character. The resolution over which to calculate activity. Should
 be in the format of "15 min" or "1 hour", etc.}
@@ -19,9 +20,9 @@ individually for each feeder visited? If there is only one feeder,
 by_feeder will automatically revert to TRUE to enable passing of
 feeder-related variables.}
 
-\item{missing}{Data frame. If there are known times for a particular feeder
-for which activity can't be recorded (i.e. times during which a feeder was
-inactive).}
+\item{missing}{Data frame. (NOT AVAILABLE) If there are known times for a
+particular feeder for which activity can't be recorded (i.e. times during
+which a feeder was inactive).}
 
 \item{sun}{Logical. Calculate sun rise/set? If by_feeder = FALSE, returns
 median sun rise/set across all feeders for each day.}

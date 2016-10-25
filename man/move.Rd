@@ -25,6 +25,7 @@ A data frame of movements. These are defined as the bout of time from
   of two rows of data containing:
   \itemize{
   \item ID of the bird (\code{bird_id})
+  \item Date of event (\code{date})
   \item Time of event (\code{time})
   \item The ID of feeders involved (\code{feeder_id})
   \item The movement path including direction (\code{move_dir})
