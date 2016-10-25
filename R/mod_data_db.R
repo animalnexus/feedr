@@ -208,9 +208,11 @@ mod_data_db <- function(input, output, session, db) {
 
   ## Subset of counts reflecting species
   counts_species <- reactive({
-    req(input$data_species)
+    req(input$data_species, counts_site())
+    #browser()
     cat("Calculating counts_species()...\n")
-    droplevels(counts_site()[counts_site()$species %in% input$data_species, ])
+    if(is.null(values$input)) species <- unique(values$keep$species) else species <- input$data_species
+    droplevels(counts_site()[counts_site()$species %in% species, ])
   })
 
   ## Table showing current selection
@@ -379,6 +381,7 @@ mod_data_db <- function(input, output, session, db) {
     dbDisconnect(con)
 
     if(nrow(data) > 0) {
+      cat("Formatting selected data...")
       data <- data %>%
         load_format(., tz = "") %>%
         dplyr::mutate(bird_id = factor(bird_id, levels = sort(unique(birds_all$bird_id))),
@@ -387,7 +390,7 @@ mod_data_db <- function(input, output, session, db) {
         dplyr::left_join(feeders_all, by = c("feeder_id", "site_name"))
     } else data <- NULL
 
-    data
+    return(data)
   })
 
   ## Render Map
@@ -402,18 +405,30 @@ mod_data_db <- function(input, output, session, db) {
         dplyr::left_join(sites_all, by = c("choices" = "site_name"))
     )
 
-    map_leaflet_base(locs = sites_all %>% dplyr::mutate(name = site_name), marker = "name", name = "Sites") %>%
-      addScaleBar(position = "bottomright") %>%
-      setView(lng = -98.857903, lat = 21.363297, zoom = 2) %>%
-      addCircleMarkers(data = s, lng = ~lon, lat = ~lat, group = "Points",
-                       radius = ~feedr:::scale_area(sum, val_min = 0),
-                       fillOpacity = 0.7,
-                       fillColor = "orange")
+    #browser()
+    leaflet(data = sites_all) %>%
+        addTiles(group = "Open Street Map") %>%
+        addProviderTiles("Stamen.Toner", group = "Black and White") %>%
+        addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
+        addProviderTiles("Esri.WorldTopoMap", group = "Terrain") %>%
+        addMarkers(~lon, ~lat,
+                   popup  = htmltools::htmlEscape(sites_all$site_name),
+                   group = "Sites") %>%
+        addLayersControl(baseGroups = c("Satellite", "Terrain", "Open Street Map", "Black and White"),
+                         overlayGroups = "Sites",
+                         options = layersControlOptions(collapsed = TRUE)) %>%
+        addScaleBar(position = "bottomright") %>%
+        setView(lng = -98.857903, lat = 21.363297, zoom = 2) %>%
+        addCircleMarkers(data = s, lng = ~lon, lat = ~lat, group = "Points",
+                         radius = ~feedr:::scale_area(sum, val_min = 0),
+                         fillOpacity = 0.7,
+                         fillColor = "orange")
   })
 
   ## Reset map on Reset Button
   observeEvent(input$data_reset, {
     req(!is.null(db))
+    cat("Reset map")
     leafletProxy(ns("map_data")) %>%
       clearGroup(group = "Points") %>%
       clearGroup(group = "Sites") %>%
