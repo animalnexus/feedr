@@ -6,24 +6,28 @@ birds_dl <- reactive({
 })
 
 raw_dl <- reactive({
+  req(any(raw()$dataaccess == 0))
   raw() %>%
     dplyr::filter(dataaccess == 0) %>%
     dplyr::select(-dataaccess)
 })
 
 v_dl <- reactive({
+  req(any(raw()$dataaccess == 0))
   v() %>%
     dplyr::filter(dataaccess == 0) %>%
     dplyr::select(-dataaccess)
 })
 
 f_dl <- reactive({
+  req(any(raw()$dataaccess == 0))
   f() %>%
     dplyr::filter(dataaccess == 0) %>%
     dplyr::select(-dataaccess)
 })
 
 m_dl <- reactive({
+  req(any(raw()$dataaccess == 0))
   m() %>%
     dplyr::filter(dataaccess == 0) %>%
     dplyr::select(-dataaccess)
