@@ -65,8 +65,10 @@ mod_UI_map_animate <- function(id) {
                                     "Total no. individuals" = "t_birds")),
                   title = "Summaries", content = "How the data should be summarized for each time interval at each reader:<br/>Count the total number of visits<br/>Calculate the average number of visits per individual<br/>Count the total number of individuals.",
                   options = list(container = "body")),
-           popify(uiOutput(ns("UI_time_range")), title = "Time range",
-                  content = "Select a particular time range to look at", options = list(container = "body")),
+           popify(
+             uiOutput(ns("UI_time_range")),
+             title = "Time range",
+             content = "Select a particular time range to look at", options = list(container = "body")),
            hr(),
            popify(radioButtons(ns("interval"), "Resolution",
                         choices = list("5 min" = 5, "15 min" = 15, "30 min" = 30, "1 hr" = 60, "3 hr" = 60*3, "6 hr" = 60*6, "12 hr" = 60 * 12, "24 hr" = 60 * 24), inline = TRUE),
@@ -109,6 +111,7 @@ mod_UI_map_animate <- function(id) {
 #' @import shiny
 #' @import magrittr
 #' @import leaflet
+#' @import lubridate
 #' @export
 mod_map_animate <- function(input, output, session, v) {
 
@@ -130,8 +133,8 @@ mod_map_animate <- function(input, output, session, v) {
   #lubridate::tz(v$start) <- "UTC"
   #lubridate::tz(v$end) <- "UTC"
 
-  start <- lubridate::floor_date(min(v$start), unit = "hour")
-  end <- lubridate::ceiling_date(max(v$start), unit = "hour")
+  #start <- reactive(lubridate::floor_date(min(v$start), unit = "hour"))
+  #end <- reactive(lubridate::ceiling_date(max(v$start), unit = "hour"))
 
   interval <- reactive({
     req(input$interval)
@@ -141,13 +144,14 @@ mod_map_animate <- function(input, output, session, v) {
   # Time range - select subsection of data
   output$UI_time_range <- renderUI({
     sliderInput(ns("time_range"), "Time Range",
-                min = start,
-                max = end,
-                value = c(start, end),
+                min = lubridate::floor_date(min(v$start), unit = "hour"),
+                max = lubridate::ceiling_date(max(v$start), unit = "hour"),
+                value = c(lubridate::floor_date(min(v$start), unit = "hour"), lubridate::ceiling_date(max(v$start), unit = "hour")),
                 step = 60 * 60,
                 timezone = tz)
   })
 
+  #browser()
   time_range <- reactive({
     req(input$time_range)
     lubridate::with_tz(input$time_range, lubridate::tz(v$start))
@@ -180,16 +184,16 @@ mod_map_animate <- function(input, output, session, v) {
 
   ## Break visits into blocks of time depending on animation interval
   v_block <- reactive({
-    req(interval(), v_range())
+    req(interval(), nrow(v_range()) > 0)
 
     validate(need(sum(names(v_range()) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine feeder locations without them"))
 
-    int_start <- seq(start, end - interval() * 60, by = paste(interval(), "min"))
-    int_end <- seq(start + interval() * 60, end, by = paste(interval(), "min"))
+    int_start <- seq(lubridate::floor_date(min(v$start), unit = "hour"), lubridate::ceiling_date(max(v$start), unit = "hour") - interval() * 60, by = paste(interval(), "min"))
+    int_end <- seq(lubridate::floor_date(min(v$start), unit = "hour") + interval() * 60, lubridate::ceiling_date(max(v$start), unit = "hour"), by = paste(interval(), "min"))
     ## Add to end if not even
-    if(length(int_end) != end) {
+    if(length(int_end) != lubridate::ceiling_date(max(v$start), unit = "hour")) {
       int_start <- c(int_start, int_end[length(int_end)])
-      int_end <- c(int_end, end)
+      int_end <- c(int_end, lubridate::ceiling_date(max(v$start), unit = "hour"))
     }
     v_block <- v_range() %>%
       dplyr::bind_cols(data.frame(block = sapply(v_range()$start, FUN = function(x) which(x >= int_start & x < int_end)))) %>%
@@ -317,7 +321,7 @@ mod_map_animate <- function(input, output, session, v) {
   ## Time figure
   g_time <- eventReactive(p_total(), {
     lab <- ifelse(input$anim_type == "t_visits", "Total no. visists", ifelse(input$anim_type == "b_visits", "Avg. visits per bird", "Total no. birds"))
-    lim <- c(start, ifelse(max(p_total()$block_time) + interval() * 60 > end, max(p_total()$block_time) + interval() * 60, end))
+    lim <- c(lubridate::floor_date(min(v$start), unit = "hour"), ifelse(max(p_total()$block_time) + interval() * 60 > lubridate::ceiling_date(max(v$start), unit = "hour"), max(p_total()$block_time) + interval() * 60, lubridate::ceiling_date(max(v$start), unit = "hour")))
     g_time <- ggplot2::ggplot(data = p_total()) +
       ggplot2::theme_bw() +
       ggplot2::theme(legend.position = "none") +
