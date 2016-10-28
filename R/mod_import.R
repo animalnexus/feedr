@@ -45,8 +45,8 @@ mod_UI_data_import <- function(id) {
              uiOutput(ns("header")),
              uiOutput(ns("sep")),
              uiOutput(ns("skip")),
-             shinyjs::disabled(actionButton(ns("get_data"), "Import")),
-             actionButton(ns("pause"), "Pause")
+             shinyjs::disabled(actionButton(ns("get_data"), "Import"))#,
+             #actionButton(ns("pause"), "Pause")
              ),
       column(8,
              h3("File Preview"),
@@ -106,7 +106,7 @@ mod_data_import <- function(input, output, session, type = NULL) {
 
     if(input$format == "TRU raw") {
       suppressWarnings({
-        l <- try(load_raw(r_file = unlist(input$file1[c("datapath", "name")]), tz = input$tz), silent = TRUE)
+        l <- try(load_raw(r_file = input$file1$datapath, tz = input$tz, feeder_id_loc = "firstline"), silent = TRUE)
         validate(need(class(l) != "try-error", "Error importing data, try a different format."))
       })
     }
@@ -119,6 +119,8 @@ mod_data_import <- function(input, output, session, type = NULL) {
         validate(need(try(l <- load_format(l, tz = input$tz), silent = TRUE), "Error importing data, try a different format."))
       })
     }
+
+    validate(need(all(!is.na(l$feeder_id)), "Some or all of your feeder ids are missing"))
 
     vars$get_data <- TRUE
     return(l)
@@ -150,8 +152,14 @@ mod_data_import <- function(input, output, session, type = NULL) {
 
   observeEvent(input$get_data, {
     req(preview_data(), vars$get_data)
-    if(input$format == "TRU raw") l <- load_raw(r_file = unlist(input$file1[c("datapath", "name")]), tz = input$tz)
+
+    browser()
+
+    ## Import data
+    if(input$format == "TRU raw") l <- load_raw(r_file = input$file1$datapath, tz = input$tz, feeder_id_loc = "firstline")
     if(input$format == "Custom") l <- read.csv(input$file1$datapath, sep = input$sep, skip = input$skip) %>% load_format(tz = input$tz)
+
+    ## Save data to vars
     if(!is.null(type) && type == "standalone") stopApp(returnValue = l) else vars$data <- l
   })
 
