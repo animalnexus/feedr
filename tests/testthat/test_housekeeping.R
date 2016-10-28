@@ -21,8 +21,8 @@ test_that("check_ids catches and removes correctly", {
   b <- b[b$bird_id != "0620000514",]
   expect_message(check_ids(finches, b), "Some ids present in your data do not exist in the bird_id index: 0620000514")
 
-  r <- finches[!(finches$bird_id %in% c("0620000514", "041868D861")),]
-  expect_message(check_ids(r, b), "Some ids present in your bird_id index, are not in your data: 041868D861")
+  r <- finches[!(finches$bird_id %in% c("0620000514", "06200004F8")),]
+  expect_message(check_ids(r, b), "Some ids present in your bird_id index, are not in your data: 06200004F8")
 
   expect_is(check_ids(r, b)$bird_id, "factor")
   expect_is(check_ids(r, b)$feeder_id, "factor")
