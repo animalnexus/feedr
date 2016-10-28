@@ -43,6 +43,7 @@ mod_UI_data_import <- function(id) {
              h4("Format details:"),
              p(htmlOutput(ns("format"))),
              uiOutput(ns("header")),
+             uiOutput(ns("time")),
              uiOutput(ns("sep")),
              uiOutput(ns("skip")),
              shinyjs::disabled(actionButton(ns("get_data"), "Import"))#,
@@ -72,12 +73,21 @@ mod_data_import <- function(input, output, session, type = NULL) {
 
   output$format <- renderText({
     req(input$format)
-    if(input$format == "TRU raw") t <- "This format is for raw data exported from TRU feeders. It expects the feeder_id in the file name (starting with GPR). It skips the first line of data, and each data row contains the bird_id followed by date and time, separated by whitespace. See <a href = 'tru_example.txt' target = 'blank'>an example file</a>."
-    if(input$format == "Custom") t <- "This format expects at least three columns with headers: 'bird_id', 'feeder_id', and 'time'. 'time' should be both date and time in 2016-01-24 14:04:00 format. Separators and rows to skip can be specified below. See <a href = 'custom_example.csv' target = 'blank'>an example file</a>."
+    if(input$format == "TRU raw") t <- "This format is for raw data exported from TRU feeders. It expects the feeder_id in the file name (starting with GPR). It skips the first line of data, and each data row contains the bird_id followed by date and time, separated by whitespace. Date/time order is expected to be 'Month, Day, Year, Hour, Minute, Second. See <a href = 'tru_example.txt' target = 'blank'>an example file</a>."
+    if(input$format == "Custom") t <- "This format expects at least three columns with headers: 'bird_id', 'feeder_id', and 'time'. 'time' should be both date and time in 'Year-Month-Day Hour:Min:Sec' format (or specify below). Separators and rows to skip can be specified below. See <a href = 'custom_example.csv' target = 'blank'>an example file</a>."
   return(t)
   })
 
   ## Get input figured out:
+
+  output$time <- renderUI({
+    req(input$format == "Custom")
+    selectInput(ns('time'), "Date order (for 'time' column)",
+                choices = c("Year Month Day" = "ymd HMS",
+                            "Month Day Year" = "mdy HMS",
+                            "Day Month Year" = "dmy HMS"))
+  })
+
   output$sep <- renderUI({
     req(input$format == "Custom")
     radioButtons(ns('sep'), 'Separator',
@@ -116,11 +126,12 @@ mod_data_import <- function(input, output, session, type = NULL) {
       suppressWarnings({
         l <- read.csv(input$file1$datapath, sep = input$sep, skip = input$skip, nrows = 40)
         validate(need(sum(names(l) %in% c("time", "bird_id", "feeder_id")) == 3, "Error importing data, try a different format."))
-        validate(need(try(l <- load_format(l, tz = input$tz), silent = TRUE), "Error importing data, try a different format."))
+        validate(need(try(l <- load_format(l, tz = input$tz, time_format = input$time), silent = TRUE), "Error importing data, try a different format."))
       })
     }
 
     validate(need(all(!is.na(l$feeder_id)), "Some or all of your feeder ids are missing"))
+    validate(need(all(!is.na(l$time)), "NA times detected, check your time format."))
 
     vars$get_data <- TRUE
     return(l)
@@ -153,11 +164,11 @@ mod_data_import <- function(input, output, session, type = NULL) {
   observeEvent(input$get_data, {
     req(preview_data(), vars$get_data)
 
-    browser()
+    #browser()
 
     ## Import data
     if(input$format == "TRU raw") l <- load_raw(r_file = input$file1$datapath, tz = input$tz, feeder_id_loc = "firstline")
-    if(input$format == "Custom") l <- read.csv(input$file1$datapath, sep = input$sep, skip = input$skip) %>% load_format(tz = input$tz)
+    if(input$format == "Custom") l <- read.csv(input$file1$datapath, sep = input$sep, skip = input$skip) %>% load_format(tz = input$tz, time_format = input$time)
 
     ## Save data to vars
     if(!is.null(type) && type == "standalone") stopApp(returnValue = l) else vars$data <- l
