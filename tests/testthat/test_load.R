@@ -17,8 +17,8 @@ test_that("load_web loads and formats data correctly", {
   expect_equal(load2$time[1], as.POSIXct("2016-01-28 15:34:25", tz = "America/Toronto"))
 })
 
-# load_raw()
-test_that("load_raw loads and formats data correctly", {
+# load_raw() - feeder_id from file name
+test_that("load_raw loads and formats data correctly - feeder id from file name", {
   f <- system.file("extdata", "raw", "exp1", "GR12DATA_2015_12_24.TXT", package = "feedr")
   expect_is(r <- load_raw(r_file = f), "data.frame")
   expect_match(names(r)[1:3], "^bird_id$|^time$|^feeder_id$")
@@ -30,6 +30,21 @@ test_that("load_raw loads and formats data correctly", {
   expect_equal(r$feeder_id[1], "GR12")
   expect_equal(r$time[1], as.POSIXct("2015-12-15 11:16:08", tz = "America/Vancouver"))
   expect_equal(load_raw(f, tz_disp = "America/Toronto")$time[1], as.POSIXct("2015-12-15 14:16:08", tz = "America/Toronto"))
+})
+
+# load_raw() - feeder_id from first line
+test_that("load_raw loads and formats data correctly - feeder id from first line", {
+  f <- system.file("extdata", "raw", "exp1", "GR12DATA_2015_12_24.TXT", package = "feedr")
+  expect_is(r <- load_raw(r_file = f, feeder_id_loc = "firstline"), "data.frame")
+  expect_match(names(r)[1:3], "^bird_id$|^time$|^feeder_id$")
+  expect_is(r$bird_id, "character")
+  expect_is(r$feeder_id, "character")
+  expect_is(r$time, "POSIXct")
+
+  expect_equal(r$bird_id[1], "062000014F")
+  expect_equal(r$feeder_id[1], "GR12")
+  expect_equal(r$time[1], as.POSIXct("2015-12-15 11:16:08", tz = "America/Vancouver"))
+  expect_equal(load_raw(f, feeder_id_loc = "firstline", tz_disp = "America/Toronto")$time[1], as.POSIXct("2015-12-15 14:16:08", tz = "America/Toronto"))
 })
 
 # load_raw() empty file

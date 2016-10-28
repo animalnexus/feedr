@@ -45,29 +45,30 @@ load.web <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ","
 #' Loads raw read data and formats for use with the feedr functions. This is
 #' merely a wrapper function that does many things that you can do yourself.
 #' It's utility depends on how standardized your data is, and whether you have
-#' extra details you need to address
+#' extra details you need to address.
 #'
-#' @param r_file Character. The location of a single file to load. Can also be a
-#'   vector of length 2 if the first parameter is the file location and the
-#'   second contains information to be matched by feeder_pattern and/or
-#'   extra_pattern. If the vector is length 2, all patterns are extracted from
-#'   the second component.
+#' @param r_file Character. The location of a single file to load.
 #' @param tz Character. The time zone the date/times are in (should match one of
 #'   the zones produced by \code{OlsonNames())}.
 #' @param tz_disp Character. The time zone the date/times should be displayed in
 #'   (if not the same as \code{tz}; should match one of the zones produced by
 #'   \code{OlsonNames())}.
-#' @param feeder_pattern Character. A regular expression matching the feeder id
-#'   in the file name.
+#' @param feeder_id_loc. Character. Where to extract feeder_id from: either the
+#'   file name ("filename") or from the first line of the file ("firstline").
+#' @param feeder_pattern Character. A regular expression matching the feeder_id
+#'   in the file name or from the first line of the file (see \code{feeder_id_loc}).
 #' @param extra_pattern Character vector. A vector of regular expressions
-#'   matching any extra information in the file or directory names.
+#'   matching any extra information in the file or directory names or in the
+#'   first line of the file.
 #' @param extra_name Character vector. A vector of column names matching the
 #'   order of \code{extra_pattern} for storing the results of the pattern.
 #' @param sep Character. An override for the separator in the
 #'   \code{read.table()} call (see \code{sep =} under \code{?read.table} for
 #'   more details).
-#' @param skip Character. An override for the skip in the \code{read.table()}
-#'   call (see \code{skip =} under \code{?read.table} for more details).
+#' @param skip Character. How many lines to skip before the data starts.
+#'   feeder_id or extra details in the first line do not count as data and
+#'   should be skipped. If there are headers (column labels) in the data, these
+#'   should also be skipped.
 #'
 #' @examples
 #' \dontrun{
@@ -77,6 +78,10 @@ load.web <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ","
 #' rather something like: 2300, 2500, 2550
 #' r <- load_raw("2300.csv", feeder_pattern = "[0-9]{4}")
 #'
+#' # Load a file where the feeder id is detected as the first line in the file,
+#' not the file name (still use default skip = 1):
+#' r <- load_raw("2016-01-01_09_30.csv", feeder_id_loc = "firstline")
+#'
 #' # Note that the following won't work because the pattern matches both the
 #' feeder id as well as the year:
 #' r <- load_raw("2300_2015_12_01.csv", feeder_pattern = "[0-9]{4}")
@@ -84,14 +89,14 @@ load.web <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ","
 #' # Extract extra data to be stored in another column:
 #' r <- load_raw("2300.csv", extra_pattern = "exp[0-9]{1}", extra_name = experiment)
 #'
-#' # If file path doesn't contain feeder_id, specify the feeder id pattern as
-#' the second component:
-#' r <- load_raw(c("data.csv", "GPR13"))
 #' }
 #' @export
-load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1) {
+load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL,
+                     feeder_id_loc = "filename", feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
+                     extra_pattern = NULL, extra_name = NULL,
+                     sep = "", skip = 1) {
 
-  if(length(r_file) > 2) stop("r_file can only be length 1, the file name, or length 2, the file name and information on feeder and/or extra patterns.")
+  if(length(r_file) > 1) stop("r_file can only be length 1, the file name.")
   if(!is.character(r_file)) stop("r_file must be character")
 
     r <- read.table(r_file[1],
@@ -100,14 +105,18 @@ load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
                     skip = skip,
                     sep = sep)
 
-    if(length(r_file) == 1) details <- r_file else details <- r_file[2]
-
     if(nrow(r) > 0){
       # Trim leading or trailing whitespace
       r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
 
-      # Get feeder ids by matching patterns in file name
-      r$feeder_id <- stringr::str_extract(details, feeder_pattern)
+      # Get feeder ids
+      if(feeder_id_loc == "firstline") { # Get feeder id from first line
+        r$feeder_id <- stringr::str_extract(readLines(r_file, n = 1), feeder_pattern)
+      } else if (feeder_id_loc == "filename") { # Match patterns in file name
+        r$feeder_id <- stringr::str_extract(r_file, feeder_pattern)
+      } else {
+        stop("'feeder_id_loc' must be either 'filename' or 'firstline'")
+      }
 
       # Convert bird_id to character for combining later on
       r$bird_id <- as.character(r$bird_id)
@@ -123,7 +132,7 @@ load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
       # Get any extra columns by matching patterns in file name as specified by extra_pattern and extra_name
       if(!is.null(extra_pattern)){
         if(is.null(extra_name)) stop("You have specified patterns to match for extra columns, but you have not specified what these column names ('extra_name') should be.")
-        for(i in 1:length(extra_pattern)) r[, extra_name[i]] <- stringr::str_extract(details, extra_pattern[i])
+        for(i in 1:length(extra_pattern)) r[, extra_name[i]] <- stringr::str_extract(r_file, extra_pattern[i])
       } else if(!is.null(extra_name)) stop("You have specified names for extra columns, but you have not specified what pattern to match for filling ('extra_pattern').")
 
       return(r)
