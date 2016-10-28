@@ -361,17 +361,25 @@ get.data <- function(start = NULL,
 
 #' Internal function: Format data
 #'
-#' Formats data for the loading function.
+#' Formats manually loaded data. Not necessary if using any of the helper loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, \code{data_dl()}, or \code{load_web()}.
+#'
+#' @param r Data frame. Data frame to format.
+#' @param tz Character. The time zone the date/times are in (should match one of
+#'   the zones produced by \code{OlsonNames())}.
+#' @param tz_disp Character. The time zone the date/times should be displayed in
+#'   (if not the same as \code{tz}; should match one of the zones produced by
+#'   \code{OlsonNames())}.
+#' @param time_format Character. The time format of the 'time' column. Defaults to "ymd HMS". Should be in formats usable by the \code{parse_date_time()} function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.).
 #'
 #' @export
-load_format <- function(r, tz, tz_disp = NULL){
+load_format <- function(r, tz, tz_disp = NULL, time_format = "ymd HMS"){
 
   # Trim leading or trailing whitespace
   r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
 
   # Extract Proper Date and Times
   if("timezone" %in% names(r)) names(r)[names(r) == "timezone"] <- "time"
-  if("time" %in% names(r)) r$time <- lubridate::ymd_hms(r$time, tz = tz)
+  if("time" %in% names(r)) r$time <- lubridate::parse_date_time(r$time, orders = time_format, tz = tz, truncated = 1)
   if(!is.null(tz_disp)) r$time <- lubridate::with_tz(r$time, tz_disp)
 
   # Make sure all factors are factors:
