@@ -122,7 +122,7 @@ load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL,
       r$bird_id <- as.character(r$bird_id)
 
       # Convert times
-      r$time <- lubridate::parse_date_time(paste(r$date, r$time), orders = "%m/%d/%y %H:%M:%S", tz = tz)
+      r$time <- lubridate::parse_date_time(paste(r$date, r$time), orders = "mdy HMS", tz = tz)
       if(!is.null(tz_disp)) r$time <- lubridate::with_tz(r$time, tz_disp)
 
       # Reorder columns
