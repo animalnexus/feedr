@@ -8,9 +8,11 @@
     - map_summary()
     - import_file()
 - Add new visualization mods (map\_animate\_indiv(), map\_summary()) to animal\_nexus.
+- Add option to specify date format when importing
 
 - Fix bugs that prevent switching between data sets
 - Fix bug that prevents switching between sites when accessing the database
+
     
 
 ## Updated functionality
