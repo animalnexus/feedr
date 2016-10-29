@@ -57,14 +57,13 @@ mod_UI_map_animate_indiv <- function(id) {
       margin-right: auto;
       }"))),
     column(4,
-           popify(uiOutput(ns("UI_bird_id")), title = "Individual",
-                  content = "ID of the individual to select.<br/>(Numbers) represent total number of movements.",
+           popify(uiOutput(ns("UI_bird_id")), title = "Individual", placement = "right",
+                  content = "ID of the individual to select.<br/>(X mv; Y fd) represent total number of movements and feeding events respectively.",
                   options = list(container = "body")),
            popify(uiOutput(ns("UI_time_range")), title = "Time range",
                   content = "Select a particular time range to look at", options = list(container = "body")),
            hr(),
-           popify(radioButtons(ns("interval"), "Resolution",
-                        choices = list("5 min" = 5, "15 min" = 15, "30 min" = 30, "1 hr" = 60, "3 hr" = 60*3, "6 hr" = 60*6), inline = TRUE),
+           popify(uiOutput(ns("UI_interval")),
                   title = "Resolution", content = "Amount of time to advance in each frame.", options = list(container = "body")),
            popify(sliderInput(ns("anim_speed"), "Animation speed",
                        min = 0, max = 100,
@@ -79,8 +78,8 @@ mod_UI_map_animate_indiv <- function(id) {
            p("Paths and feeder use can be animated over time by clicking on the", strong("small blue arrow"), "to the lower right of the 'Time' slider (right)."),
            p("The time interval of each jump and the speed of the animation can be adjusted above."),
            h3("Tip:"),
-           p("If you find your animations lagging, reduce the amount of data (adjust the time range).")#,
-           #actionButton(ns("pause"), "Pause")
+           p("If you find your animations lagging, reduce the amount of data (adjust the time range)."),
+           actionButton(ns("pause"), "Pause")
     ),
     column(8,
            popify(fluidRow(leafletOutput(ns("map"), height = 600)),
@@ -109,39 +108,76 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
   values <- reactiveValues(m_old = NULL,
                            f_old = NULL)
 
-  if(is.null(v) & (is.null(f) | is.null(m))) stop("Require either 'v' or both 'f' and 'm'.")
+  if(is.null(v) & is.null(f) & is.null(m)) stop("Require 'v', 'f' and/or 'm'.")
 
   # Fix time zone to LOOK like local non-DST, but assigned UTC (for timezone slider)
-  if(is.null(f) | is.null(m)){
-    v <- v %>%
-      dplyr::mutate(start = lubridate::with_tz(start, tzone = tz_offset(attr(v$start, "tzone"), tz_name = TRUE)),
-                    end = lubridate::with_tz(end, tzone = tz_offset(attr(v$end, "tzone"), tz_name = TRUE)),
-                    day = as.Date(start))
+  if(is.null(f) & is.null(m)){
     tz <- tz_offset(attr(v$start, "tzone"))
+    tz_name <- tz_offset(attr(v$start, "tzone"), tz_name = TRUE)
+
+    v <- v %>%
+      dplyr::mutate(start = lubridate::with_tz(start, tzone = tz_name),
+                    end = lubridate::with_tz(end, tzone = tz_name),
+                    day = as.Date(start))
+
 
     m <- move(v, all = TRUE)
     f <- feeding(v)
+
+    if(nrow(m) == 0 || all(is.na(m$direction))) m <- NULL
+    if(nrow(f) == 0 || all(is.na(f$feed_start))) f <- NULL
   } else {
-    m <- m %>%
-      dplyr::mutate(time = lubridate::with_tz(time, tzone = tz_offset(attr(m$time, "tzone"), tz_name = TRUE)), day = as.Date(start))
-    f <- f %>%
-      dplyr::mutate(feed_start = lubridate::with_tz(feed_start, tzone = tz_offset(attr(f$feed_start, "tzone"), tz_name = TRUE)),
-                    feed_end = lubridate::with_tz(feed_end, tzone = tz_offset(attr(f$feed_end, "tzone"), tz_name = TRUE)),
-                    day = as.Date(feed_start))
-    tz <- tz_offset(attr(m$time, "tzone"))
+    if(!is.null(m))  {
+      tz <- tz_offset(attr(m$time, "tzone"))
+      tz_name <- tz_offset(attr(m$time, "tzone"), tz_name = TRUE)
+      m <- m %>%
+        dplyr::mutate(time = lubridate::with_tz(time, tzone = tz_name),
+                      day = as.Date(start))
+    }
+
+    if(!is.null(f)) {
+      tz <- tz_offset(attr(f$feed_start, "tzone"))
+      tz_name <- tz_offset(attr(f$feed_start, "tzone"), tz_name = TRUE)
+      f <- f %>%
+        dplyr::mutate(feed_start = lubridate::with_tz(feed_start, tzone = tz_name),
+                      feed_end = lubridate::with_tz(feed_end, tzone = tz_name),
+                      day = as.Date(feed_start))
+    }
   }
 
   if(tz >=0) tz <- paste0("+", sprintf("%02d", abs(tz)), "00") else tz <- paste0("-", sprintf("%02d", abs(tz)), "00")
 
-  start <- reactive(lubridate::floor_date(min(c(m_id()$time, f_id()$feed_start), na.rm = TRUE), unit = "hour"))
-  end <- reactive(lubridate::ceiling_date(max(c(m_id()$time, f_id()$feed_end), na.rm = TRUE), unit = "hour"))
+  start <- reactive({
+    t <- vector()
+    if(!is.null(m_id())) t <- as.character(m_id()$time)
+    if(!is.null(f_id())) t <- c(t, as.character(f_id()$feed_start))
+    lubridate::floor_date(min(lubridate::ymd_hms(t, tz = tz_name), na.rm = TRUE), unit = "hour")
+  })
+
+  end <- reactive({
+    t <- vector()
+    if(!is.null(m_id())) t <- as.character(m_id()$time)
+    if(!is.null(f_id())) t <- c(t, as.character(f_id()$feed_end))
+    lubridate::ceiling_date(max(lubridate::ymd_hms(t, tz = tz_name), na.rm = TRUE), unit = "hour")
+  })
 
 
-  ## How many movements?
-  n_move <- m %>%
-    dplyr::group_by(bird_id) %>%
-    dplyr::summarize(n = floor(length(direction) / 2))
+  ## Summarize movements and feeding
+  if(!is.null(m)){
+    n_move <- m %>%
+      dplyr::group_by(bird_id) %>%
+      dplyr::summarize(n = floor(length(direction) / 2))
+  } else {
+    n_move <- data.frame(bird_id = unique(f$bird_id), n = 0)
+  }
 
+  if(!is.null(f)){
+    n_feeding <- f %>%
+      dplyr::group_by(bird_id) %>%
+      dplyr::summarize(t = length(feed_length))
+  } else n_feeding <- data.frame(bird_id = unique(m$bird_id), n = 0)
+
+  n_move <- merge(n_move, n_feeding, by = "bird_id")
 
   feeders <- unique(rbind(m[, c("feeder_id", "lon", "lat")],
                           f[, c("feeder_id", "lon", "lat")]))
@@ -151,18 +187,13 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
   # Bird ID selection
   output$UI_bird_id <- renderUI({
     labels <- as.character(n_move$bird_id)
-    names(labels) <- paste0(n_move$bird_id, " (", n_move$n, ")")
+    names(labels) <- paste0(n_move$bird_id, " (", n_move$n, " mv; ", n_move$t, " fd)")
     selectInput(ns("bird_id"), label = "Select Individual",
                 choices = c("Choose" = "", labels))
   })
 
-  output$UI_temp <- renderUI({
-    radioButtons(ns("temp"), label = "Testing", choices = c("sucks", "to"))
-  })
-
   # Time range - select subsection of data
    output$UI_time_range <- renderUI({
-     req(m_id(), f_id())
      sliderInput(ns("time_range"), "Time Range",
                  min = start(),
                  max = end(),
@@ -171,10 +202,23 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
                  timezone = tz)
    })
 
+   # Interval
+   output$UI_interval <- renderUI({
+     req(time_range()[1] != time_range()[2])
+     x <- list("5 min" = 5, "15 min" = 15,
+               "30 min" = 30, "1 hr" = 60,
+               "3 hr" = 60*3, "6 hr" = 60*6)
+     x <- x[x <= difftime(time_range()[2], time_range()[1], units = "min")]
+
+     radioButtons(ns("interval"), "Resolution",
+                  choices = x, inline = TRUE)
+   })
+
+
    ## Convert to proper tz
    time_range <- reactive({
      req(input$time_range)
-     lubridate::with_tz(input$time_range, lubridate::tz(m$time))
+     lubridate::with_tz(input$time_range, tz_name)
    })
 
    # Time slider
@@ -193,7 +237,7 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
    ## Convert to proper tz
    time <- reactive({
      req(input$time)
-     lubridate::with_tz(input$time, lubridate::tz(m$time))
+     lubridate::with_tz(input$time, tz_name)
    })
 
    interval <- reactive({
@@ -204,53 +248,78 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
   ## Subselections
   f_id <- reactive({
     req(input$bird_id)
-    validate(need(sum(names(f) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
-    dplyr::filter(f, bird_id == input$bird_id)
+    if(!is.null(f)){
+      validate(need(sum(names(f) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
+      d <- dplyr::filter(f, bird_id == input$bird_id)
+    } else d <- NULL
+    return(d)
   })
 
   f_range <- reactive({
-    req(f_id(), time_range())
-    f_id() %>%
-      dplyr::filter(feed_start >= time_range()[1] & feed_end <= time_range()[2])
+    req(time_range())
+
+    if(!is.null(f_id())){
+      d <- f_id() %>%
+        dplyr::filter(feed_start >= time_range()[1] & feed_end <= time_range()[2])
+    } else d <- NULL
+    return(d)
   })
 
   f_time <- reactive({
-    req(f_range(), time(), interval())
-    f_range() %>%
-      dplyr::filter(feed_end <= time() + interval() * 60)
+    req(time(), interval())
+    if(!is.null(f_range())) {
+      d <- f_range() %>%
+        dplyr::filter(feed_start <= time() + interval() * 60)
+    } else d <- NULL
+    return(d)
   })
 
   m_id <- reactive({
     req(input$bird_id)
-    validate(need(sum(names(m) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
-    m %>%
-      dplyr::filter(bird_id == input$bird_id) %>%
-      dplyr::arrange(time) %>%
-      dplyr::group_by(direction) %>%
-      dplyr::mutate(n = 1:length(direction)) %>%
-      dplyr::group_by(direction, move_path) %>%
-      dplyr::mutate(n_path = 1:length(move_path)) %>%
-      dplyr::ungroup()
+    if(!is.null(m)){
+      validate(need(sum(names(m) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
+      d <- m %>%
+        dplyr::filter(bird_id == input$bird_id) %>%
+        dplyr::arrange(time) %>%
+        dplyr::group_by(direction) %>%
+        dplyr::mutate(n = 1:length(direction)) %>%
+        dplyr::group_by(direction, move_path) %>%
+        dplyr::mutate(n_path = 1:length(move_path)) %>%
+        dplyr::ungroup()
+    } else d <- NULL
+    return(d)
   })
 
   m_range <- reactive({
-    req(m_id(), time_range())
-    m_id() %>%
-      dplyr::filter(time >= time_range()[1] & time <= time_range()[2])
+    req(time_range())
+    if(!is.null(m_id())) {
+      d <- m_id() %>%
+        dplyr::filter(time >= time_range()[1] & time <= time_range()[2]) %>%
+        dplyr::arrange(time)
+      if(nrow(d) > 0 && d$direction[1] == "arrived") d <- d[-1, ]
+    } else d <- NULL
+    return(d)
   })
 
   m_time <- reactive({
-    req(m_range(), time(), interval())
-    m_range()[m_range()$n %in% m_range()$n[m_range()$direction == "arrived" &
-                                           #m_range()$time > time()[1] &
-                                           m_range()$time <= time() + interval() * 60],]
+    req(time(), interval())
+    if(!is.null(m_range())){
+      d <- m_range()[m_range()$n %in% m_range()$n[m_range()$direction == "arrived" &
+                                                    #m_range()$time > time()[1] &
+                                                    m_range()$time <= time() + interval() * 60],]
+    } else d <- NULL
+    return(d)
   })
 
   ## Palette
   pal <- reactive({
-    colorNumeric(palette = "Blues",
-                 domain = as.numeric(c(min(c(m_range()$time, f_range()$feed_start, f_range()$feed_end)),
-                                       max(c(m_range()$time, f_range()$feed_start, f_range()$feed_end)))))
+    req(any(nrow(m_range()) > 0, nrow(f_range()) > 0))
+    t <- vector()
+    #browser()
+    if(!is.null(m_range())) t <- m_range()$time
+    if(!is.null(f_range())) t <- c(t, f_range()$feed_start, f_range()$feed_end)
+
+    colorNumeric(palette = "Blues", domain = as.numeric(c(min(t), max(t))))
   })
 
   # Render Base Map
@@ -281,43 +350,47 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
 
   # Add paths and points to animated map
   observeEvent(time(), {
-    req(f_time(), m_time())
+    #req(f_time(), m_time())
     p <- pal()
-    if(!(identical(values$m_old, m_time()))){
-      leafletProxy(ns("map")) %>% clearGroup(group = "Paths")
-      values$m_old <- m_time()
-      if(nrow(m_time()) > 0){
-        temp <- m_time() %>%
-          dplyr::group_by(direction, move_path) %>%
-          dplyr::mutate(n_path = length(move_path):1)
-        for(n in unique(temp$n)) {
-          leafletProxy(ns("map")) %>%
-            addPolylines(data = temp[temp$n == n, ],
-                         ~lon, ~lat,
-                         opacity = 1,
-                         weight = ~ n_path * max_width() + 10,
-                         group = "Paths",
-                         color = ~p(as.numeric(time)))
+    if(!is.null(m_id())) {
+      if(!(identical(values$m_old, m_time()))){
+        leafletProxy(ns("map")) %>% clearGroup(group = "Paths")
+        values$m_old <- m_time()
+        if(nrow(m_time()) > 0){
+          temp <- m_time() %>%
+            dplyr::group_by(direction, move_path) %>%
+            dplyr::mutate(n_path = length(move_path):1)
+          for(n in unique(temp$n)) {
+            leafletProxy(ns("map")) %>%
+              addPolylines(data = temp[temp$n == n, ],
+                           ~lon, ~lat,
+                           opacity = 1,
+                           weight = ~ n_path * max_width() + 10,
+                           group = "Paths",
+                           color = ~p(as.numeric(time)))
+          }
         }
       }
     }
-    if(!(identical(values$f_old, f_time()))){
-      leafletProxy(ns("map")) %>% clearGroup(group = "Feeding")
-      values$f_old <- f_time()
-      if(nrow(f_time()) > 0) {
-        f <- f_time() %>%
-          dplyr::group_by(feeder_id) %>%
-          dplyr::mutate(n_bout = length(feed_start):1)
-        leafletProxy(ns("map")) %>%
-          addCircleMarkers(data = f,
-                           ~lon, ~lat,
-                           weight = 2,
-                           fillOpacity = 1,
-                           radius = ~ n_bout * max_radius() + 10,
-                           group = "Feeding",
-                           color = NULL,
-                           opacity = 1,
-                           fillColor = ~p(as.numeric(feed_start)))
+    if(!is.null(f_id())){
+      if(!(identical(values$f_old, f_time()))){
+        leafletProxy(ns("map")) %>% clearGroup(group = "Feeding")
+        values$f_old <- f_time()
+        if(nrow(f_time()) > 0) {
+          f <- f_time() %>%
+            dplyr::group_by(feeder_id) %>%
+            dplyr::mutate(n_bout = length(feed_start):1)
+          leafletProxy(ns("map")) %>%
+            addCircleMarkers(data = f,
+                             ~lon, ~lat,
+                             weight = 2,
+                             fillOpacity = 1,
+                             radius = ~ n_bout * max_radius() + 10,
+                             group = "Feeding",
+                             color = NULL,
+                             opacity = 1,
+                             fillColor = ~p(as.numeric(feed_start)))
+        }
       }
     }
   })
@@ -341,23 +414,39 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
 
   ## Summary for time figure
   events <- reactive({
-    req(m_range(), f_range(), start(), end(), interval())
+    req(start(), end(), interval(), time_range(), any(nrow(m_range()) > 0, nrow(f_range()) > 0))
 
-    int_start <- seq(start(), end() - interval() * 60, by = paste(interval(), "min"))
-    int_end <- seq(start() + interval() * 60, end(), by = paste(interval(), "min"))
+    m_range()
+    f_range()
+    interval()
 
-    ## Add to end if not even
-    if(length(int_end) != end()) {
-      int_start <- c(int_start, int_end[length(int_end)])
-      int_end <- c(int_end, end())
-    }
-    dplyr::bind_rows(
-      dplyr::bind_cols(data.frame(block = sapply(f_range()$feed_start, FUN = function(x) which(x >= int_start & x < int_end)))) %>%
-        dplyr::bind_cols(data.frame(time = int_start[.$block])) %>%
-        dplyr::mutate(type = "Feeding"),
-      dplyr::bind_cols(data.frame(block = sapply(m_range()$time, FUN = function(x) which(x >= int_start & x < int_end)))) %>%
-        dplyr::bind_cols(data.frame(time = int_start[.$block])) %>%
-        dplyr::mutate(type = "Movement")) %>%
+    isolate({
+      int_start <- seq(start(), end() - interval() * 60, by = paste(interval(), "min"))
+      int_end <- seq(start() + interval() * 60, end(), by = paste(interval(), "min"))
+
+      ## Add to end if not even
+      if(length(int_end) != end()) {
+        int_start <- lubridate::with_tz(c(int_start, int_end[length(int_end)]), tzone = tz_name)
+        int_end <- lubridate::with_tz(c(int_end, end()), tzone = tz_name)
+      }
+
+      d <- data.frame()
+
+      if(!is.null(f_range()) && nrow(f_range()) > 0) {
+        d <- dplyr::bind_cols(data.frame(block = sapply(f_range()$feed_start, FUN = function(x) which(x >= int_start & x < int_end)))) %>%
+          dplyr::bind_cols(data.frame(time = int_start[.$block])) %>%
+          dplyr::mutate(type = "Feeding")
+      }
+
+      if(!is.null(m_range()) && nrow(m_range()) > 0) {
+        d <- dplyr::bind_rows(d,
+                              dplyr::bind_cols(data.frame(block = sapply(m_range()$time[m_range()$direction == "arrived"], FUN = function(x) which(x >= int_start & x < int_end)))) %>%
+                                dplyr::bind_cols(data.frame(time = int_start[.$block])) %>%
+                                dplyr::mutate(type = "Movement"))
+      }
+    })
+
+    d %>%
       dplyr::group_by(type, block, time) %>%
       dplyr::summarize(n = length(type))
   })
@@ -370,18 +459,18 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
       ggplot2::theme(legend.position = "bottom") +
       ggplot2::labs(x = "Time", y = lab) +
       ggplot2::scale_y_continuous(expand = c(0,0)) +
-      ggplot2::scale_x_datetime(labels = scales::date_format("%Y %b %d\n%H:%M", tz = lubridate::tz(m$time)),
-                                limits = time_range()) +
-      ggplot2::geom_bar(stat = "identity", position = "dodge") +
+      ggplot2::scale_x_datetime(labels = scales::date_format("%Y %b %d\n%H:%M", tz = tz_name),
+                                limits = time_range() + c(-interval()*60, interval()*60)) +
+      ggplot2::geom_bar(stat = "identity", position = "dodge", width = interval()*60, colour = "black") +
       ggplot2::labs(fill = "Event Type")
   })
 
   output$plot_time <- renderPlot({
     g_time()
-  }, height = 200, width = 550)
+  }, height = 200, width = 625)
 
 
- observeEvent(input$pause, {
+  observeEvent(input$pause, {
     browser()
   })
 }
