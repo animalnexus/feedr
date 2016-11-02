@@ -337,8 +337,8 @@ map_leaflet <- function(u = NULL, p = NULL, locs = NULL,
   map <- map_leaflet_base(locs = locs, controls = controls)
 
   # Layers
-  if(!is.null(p) && nrow(p) != 0) map <- path_layer(map, p = p, p_scale = p_scale, p_pal = p_pal, p_title = p_title, controls = controls)
   if(!is.null(u) && nrow(u) != 0) map <- use_layer(map, u = u, u_scale = u_scale, u_pal = u_pal, u_title = u_title, controls = controls)
+  if(!is.null(p) && nrow(p) != 0) map <- path_layer(map, p = p, p_scale = p_scale, p_pal = p_pal, p_title = p_title, controls = controls)
 
   return(map)
 }
