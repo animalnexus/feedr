@@ -519,7 +519,7 @@ map_ggmap <- function(u = NULL, p = NULL, locs = NULL,
   # If feeding data specified
   if(!is.null(u)) {
     map <- map +
-      ggplot2::geom_point(data = u, ggplot2::aes(x = lon, y = lat, fill = amount, size = amount2), shape = 21, alpha = 0.75) +
+      ggplot2::geom_point(data = u, ggplot2::aes(x = lon, y = lat, fill = amount, size = amount2), shape = 21, alpha = 0.5) +
       ggplot2::scale_fill_gradientn(name = u_title, colours = u_pal) +
       ggplot2::scale_size_area(guide = FALSE, max_size = 40)
   }
