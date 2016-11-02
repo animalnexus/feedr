@@ -56,9 +56,15 @@ map_leaflet_base <- function(locs, marker = "feeder_id", name = "Loggers", contr
     addProviderTiles("Stamen.Toner", group = "Black and White") %>%
     addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
     addProviderTiles("Esri.WorldTopoMap", group = "Terrain") %>%
-    addMarkers(~lon, ~lat,
-                     popup  = htmltools::htmlEscape(locs[, marker]),
-                     group = name)
+    addCircleMarkers(~lon, ~lat,
+                     popup  = htmltools::htmlEscape(as.character(unlist(locs[, marker]))),
+                     group = name,
+                     weight = 1,
+                     opacity = 1,
+                     fillOpacity = 1,
+                     fillColor = "black",
+                     color = "black",
+                     radius = 5)
   if(controls) {
     l <- l %>%
       addLayersControl(baseGroups = c("Satellite", "Terrain", "Open Street Map", "Black and White"),
