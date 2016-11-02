@@ -50,7 +50,7 @@ map_prep <- function(u = NULL, p = NULL, locs = NULL) {
 #'
 #' Designed for advanced use (see map_leaflet() for general mapping)
 #' @export
-map_leaflet_base <- function(locs, marker = "feeder_id", name = "Readers", controls = TRUE) {
+map_leaflet_base <- function(locs, marker = "feeder_id", name = "Loggers", controls = TRUE) {
   l <- leaflet(data = locs) %>%
     addTiles(group = "Open Street Map") %>%
     addProviderTiles("Stamen.Toner", group = "Black and White") %>%
@@ -68,7 +68,7 @@ map_leaflet_base <- function(locs, marker = "feeder_id", name = "Readers", contr
   return(l)
 }
 
-map.leaflet.base <- function(locs, marker = "feeder_id", name = "Readers", controls = TRUE) {
+map.leaflet.base <- function(locs, marker = "feeder_id", name = "Loggers", controls = TRUE) {
   .Deprecated("map_leaflet_base")
 }
 
@@ -128,8 +128,8 @@ path_layer <- function(map, p,
                            pal = p_pal,
                            opacity = 1,
                            values = p$path_use) %>%
-    hideGroup("Reader") %>%
-    showGroup("Reader")
+    hideGroup("Loggers") %>%
+    showGroup("Loggers")
 
   if(controls) map <- controls(map, p_title)
 
@@ -196,8 +196,8 @@ use_layer <- function(map, u,
               values = u$amount,
               bins = 5,
               opacity = 1) %>%
-    hideGroup("Readers") %>%
-    showGroup("Readers")
+    hideGroup("Loggers") %>%
+    showGroup("Loggers")
 
   if(controls) map <- controls(map, u_title)
   return(map)
