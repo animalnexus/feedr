@@ -526,13 +526,23 @@ map_ggmap <- function(u = NULL, p = NULL, locs = NULL,
 
   # If movement paths specified
   if(!is.null(p)){
+    p <- p %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(n = rep(1:2, nrow(p)/2)) %>%
+      tidyr::gather(type, value, lat, lon) %>%
+      dplyr::select(-feeder_id) %>%
+      tidyr::unite(combo, type, n) %>%
+      tidyr::spread(combo, value) %>%
+      dplyr::arrange(desc(path_use))
+
     map <- map +
-      ggplot2::geom_path(data = p, ggplot2::aes(x = lon,
-                                                y = lat,
-                                                group = move_path,
-                                                colour = path_use,
-                                                size = path_use2),
-                         lineend = "round", alpha = 0.75) +
+      ggplot2::geom_segment(data = p, ggplot2::aes(x = lon_1,
+                                                 y = lat_1,
+                                                 xend = lon_2,
+                                                 yend = lat_2,
+                                                 colour = path_use,
+                                                 size = path_use2),
+                          lineend = "round", alpha = 0.75) +
       ggplot2::scale_colour_gradientn(name = p_title, colours = p_pal)
   }
 
