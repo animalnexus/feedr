@@ -496,13 +496,13 @@ map_ggmap <- function(u = NULL, p = NULL, locs = NULL,
     # Sort and Scale
     u$amount <- as.numeric(u$amount)
   #  u <- u[order(u$amount, decreasing = TRUE),]
-    u$amount2 <- scale_area(u$amount, max = 150 * u_scale)
+    u$amount2 <- scale_area(u$amount, max = 30 * u_scale, min = 0.1 * u_scale)
   }
 
   if(!is.null(p)){
   #  # Sort and Scale
     p <- p[order(p$path_use, decreasing = TRUE), ]
-    p$path_use2 <- scale_area(p$path_use, max = 1 * p_scale)
+    p$path_use2 <- scale_area(p$path_use, max = 3 * p_scale, min = 0.1 * p_scale)
   }
 
   # Basic Map (reverse order to make sure feeders are on top)
