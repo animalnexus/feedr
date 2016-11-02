@@ -371,7 +371,7 @@ map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
 #'   for individual-based data, and lat/lon instead of a locs argument.
 #' @param locs Dataframe. Lat and long for each feeder_id, required if lat and
 #'   lon not in either u or p.
-#' @param u_scale,p_scale Numerical. Scaling constants to increase (> 1) or
+#' @param u_scale,p_scale Numerical. Relative scaling constants to increase (> 1) or
 #'   decrease (< 1) the relative size of use (u) and path (p) data.
 #' @param u_title,p_title Character. Titles for the legends of use (u) and
 #'   path (p) data.
@@ -521,7 +521,7 @@ map_ggmap <- function(u = NULL, p = NULL, locs = NULL,
     map <- map +
       ggplot2::geom_point(data = u, ggplot2::aes(x = lon, y = lat, fill = amount, size = amount2), shape = 21, alpha = 0.5) +
       ggplot2::scale_fill_gradientn(name = u_title, colours = u_pal) +
-      ggplot2::scale_size_area(guide = FALSE, max_size = 40)
+      ggplot2::scale_size_area(guide = FALSE, max_size = 35 * u_scale)
   }
 
   # If movement paths specified
