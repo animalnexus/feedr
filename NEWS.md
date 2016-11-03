@@ -1,19 +1,17 @@
-# feedr 0.6.2.9999
+# feedr 0.7.0
+
+This update provides a large amount of new functionality and bug fixes, making the app smoother overall.
 
 ## New functionality
 
-- Add functions for various shiny mods
+- Add loading messages to various calculations
+- Force user to wait until app is loaded
+- Add functions for various shiny mods which can be called from the R console
     - map_animate()
     - map\_animate\_indiv()
     - map_summary()
     - import_file()
 - Add new visualization mods (map\_animate\_indiv(), map\_summary()) to animal\_nexus.
-- Add option to specify date format when importing
-
-- Fix bugs that prevent switching between data sets
-- Fix bug that prevents switching between sites when accessing the database
-
-    
 
 ## Updated functionality
 
@@ -23,11 +21,15 @@
 - Add more details and descriptions to animal_nexus_.
 - Add new column, move_id, to movements (output of move()).
 - Change `activity()` to accept multiple bird_ids
+- Add option to specify date format when importing
 
 ## Bug fixes
 
 - Fix `check_problems()` which failed if only one line in problems index.
-    
+- Fix bugs that prevent switching between data sets
+- Fix bug that prevents switching between sites when accessing the database
+- Fix scaling error in `map_ggmap()`
+
     
 
 # feedr 0.6.2
