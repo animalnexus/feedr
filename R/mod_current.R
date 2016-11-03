@@ -133,7 +133,21 @@ mod_map_current <- function(input, output, session, db) {
     req(current())
     cat("Initializing map of current activity (", as.character(Sys.time()), ") ...\n")
     isolate({
-      map <- map_leaflet_base(locs = feeders_all %>% dplyr::filter(site_name == "Kamloops, BC")) %>%
+      d <- feeders_all %>% dplyr::filter(site_name == "Kamloops, BC")
+      map <- leaflet(data = d) %>%
+        addTiles(group = "Open Street Map") %>%
+        addProviderTiles("Stamen.Toner", group = "Black and White") %>%
+        addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
+        addProviderTiles("Esri.WorldTopoMap", group = "Terrain") %>%
+        addCircleMarkers(~lon, ~lat,
+                         popup  = htmltools::htmlEscape(as.character(unlist(d$feeder_id))),
+                         group = "Loggers",
+                         weight = 1,
+                         opacity = 1,
+                         fillOpacity = 1,
+                         fillColor = "black",
+                         color = "black",
+                         radius = 5) %>%
         leaflet::addScaleBar(position = "bottomright") %>%
         leaflet::addAwesomeMarkers(data = current(),
                                    icon = ~sp_icons[species],
@@ -142,7 +156,10 @@ mod_map_current <- function(input, output, session, db) {
                                                    "<strong>No. RFID reads:</strong> ", n, "<br>",
                                                    "<strong>Total time:</strong> ", time, "min <br>",
                                                    feedr:::get_image(current(), bird_id, 100, imgs, imgs_wiki)),
-                                   lng = ~lon, lat = ~lat, group = "Activity")
+                                   lng = ~lon, lat = ~lat, group = "Activity") %>%
+        addLayersControl(baseGroups = c("Satellite", "Terrain", "Open Street Map", "Black and White"),
+                         overlayGroups = c("Loggers", "Activity"),
+                         options = layersControlOptions(collapsed = TRUE))
 
     })
   })
