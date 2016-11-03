@@ -17,6 +17,9 @@ shinyServer(function(input, output, session) {
     source("/usr/local/share/feedr/db_full.R")
   } else db <- NULL
 
+  ## Current activity
+  callModule(module = feedr:::mod_map_current, id = "current", db = db)
+
   imgs_wiki <- read.csv(system.file("extdata", "shiny-data", "species.csv", package = "feedr"), colClasses = c("factor", "character"))
   imgs <- read.csv(system.file("extdata", "shiny-data", "img_index.csv", package = "feedr"))
 
@@ -84,9 +87,6 @@ shinyServer(function(input, output, session) {
       dplyr::select_(.dots = cols) %>%
       unique(.)
   })
-
-  ## Current activity
-  callModule(module = feedr:::mod_map_current, id = "current", db = db)
 
   ### Visualizations
   ## Animate Data
