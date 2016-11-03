@@ -10,6 +10,20 @@ shinyUI(
   tagList(
     shinyjs::useShinyjs(),
     includeCSS("../../extra/style.css"),
+    tags$head(tags$script("
+        window.onload = function() {
+            $('#main a:contains(\"Database\")').parent().addClass('hidden');
+            $('#main a:contains(\"Import\")').parent().addClass('hidden');
+            $('#main a:contains(\"Visualizations\")').parent().addClass('hidden');
+            $('#main a:contains(\"Individuals\")').parent().addClass('hidden');
+            $('#main a:contains(\"Transformations\")').parent().addClass('hidden');
+            $('#main a:contains(\"Help\")').parent().addClass('hidden');
+        };
+
+        Shiny.addCustomMessageHandler('activeNavs', function(nav_label) {
+            $('#main a:contains(\"' + nav_label + '\")').parent().removeClass('hidden');
+        });
+   ")),
     navbarPage(title = a(href = "http://animalnexus.ca", HTML("animal<strong>nexus</strong>")),
                id = "main",
                position = "fixed-top",
