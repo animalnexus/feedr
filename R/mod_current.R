@@ -145,9 +145,9 @@ mod_map_current <- function(input, output, session, db) {
                          weight = 1,
                          opacity = 1,
                          fillOpacity = 1,
-                         fillColor = "black",
+                         fillColor = "#337ab7",
                          color = "black",
-                         radius = 5) %>%
+                         radius = 7) %>%
         leaflet::addScaleBar(position = "bottomright") %>%
         leaflet::addAwesomeMarkers(data = current(),
                                    icon = ~sp_icons[species],
