@@ -142,6 +142,12 @@ shinyServer(function(input, output, session) {
     updateTabsetPanel(session, "main", "Import")
   })
 
-
-
+  observe({
+    session$sendCustomMessage('activeNavs', 'Database')
+    session$sendCustomMessage('activeNavs', 'Import')
+    session$sendCustomMessage('activeNavs', 'Visualizations')
+    session$sendCustomMessage('activeNavs', 'Individuals')
+    session$sendCustomMessage('activeNavs', 'Transformations')
+    session$sendCustomMessage('activeNavs', 'Help')
+  })
 })
