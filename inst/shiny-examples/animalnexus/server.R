@@ -58,7 +58,7 @@ shinyServer(function(input, output, session) {
   })
 
   data_info <- reactive({
-    cat("Update active dataset")
+    cat("Update active dataset\n")
     t <- "Active dataset: "
     if(is.null(data())) {
       t <- paste0(t, "None")
