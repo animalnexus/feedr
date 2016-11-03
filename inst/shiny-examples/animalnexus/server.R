@@ -1,6 +1,6 @@
-shinyServer(function(input, output, session) {
-  library(feedr)
+library(feedr)
 
+shinyServer(function(input, output, session) {
 
   output$package_version <- renderText({
     paste0("Using <a href = 'http://github.com/steffilazerte/feedr' target = 'blank'>feedr v", packageVersion("feedr"), "</a>")
