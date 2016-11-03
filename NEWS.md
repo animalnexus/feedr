@@ -1,4 +1,6 @@
-# feedr 0.7.0
+# feedr 0.7.0.0001
+
+# feedr 0.7.0 (2016-11-03)
 
 This update provides a large amount of new functionality and bug fixes, making the app smoother overall.
 
