@@ -10,8 +10,7 @@ shinyServer(function(input, output, session) {
   source("reactive.R", local = TRUE)
 
   values <- reactiveValues(
-    data_reset = TRUE,
-    current_map = NULL)
+    data_reset = TRUE)
 
   ## Get Database access if we have it
   if(file.exists("/usr/local/share/feedr/db_full.R")) {
