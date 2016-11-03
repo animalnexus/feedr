@@ -5,15 +5,11 @@
 \title{Load raw read data}
 \usage{
 load_raw(r_file, tz = "America/Vancouver", tz_disp = NULL,
-  feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL,
-  extra_name = NULL, sep = "", skip = 1)
+  feeder_id_loc = "filename", feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
+  extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1)
 }
 \arguments{
-\item{r_file}{Character. The location of a single file to load. Can also be a
-vector of length 2 if the first parameter is the file location and the
-second contains information to be matched by feeder_pattern and/or
-extra_pattern. If the vector is length 2, all patterns are extracted from
-the second component.}
+\item{r_file}{Character. The location of a single file to load.}
 
 \item{tz}{Character. The time zone the date/times are in (should match one of
 the zones produced by \code{OlsonNames())}.}
@@ -22,11 +18,12 @@ the zones produced by \code{OlsonNames())}.}
 (if not the same as \code{tz}; should match one of the zones produced by
 \code{OlsonNames())}.}
 
-\item{feeder_pattern}{Character. A regular expression matching the feeder id
-in the file name.}
+\item{feeder_pattern}{Character. A regular expression matching the feeder_id
+in the file name or from the first line of the file (see \code{feeder_id_loc}).}
 
 \item{extra_pattern}{Character vector. A vector of regular expressions
-matching any extra information in the file or directory names.}
+matching any extra information in the file or directory names or in the
+first line of the file.}
 
 \item{extra_name}{Character vector. A vector of column names matching the
 order of \code{extra_pattern} for storing the results of the pattern.}
@@ -35,14 +32,19 @@ order of \code{extra_pattern} for storing the results of the pattern.}
 \code{read.table()} call (see \code{sep =} under \code{?read.table} for
 more details).}
 
-\item{skip}{Character. An override for the skip in the \code{read.table()}
-call (see \code{skip =} under \code{?read.table} for more details).}
+\item{skip}{Character. How many lines to skip before the data starts.
+feeder_id or extra details in the first line do not count as data and
+should be skipped. If there are headers (column labels) in the data, these
+should also be skipped.}
+
+\item{feeder_id_loc.}{Character. Where to extract feeder_id from: either the
+file name ("filename") or from the first line of the file ("firstline").}
 }
 \description{
 Loads raw read data and formats for use with the feedr functions. This is
 merely a wrapper function that does many things that you can do yourself.
 It's utility depends on how standardized your data is, and whether you have
-extra details you need to address
+extra details you need to address.
 }
 \examples{
 \dontrun{
@@ -52,6 +54,10 @@ extra details you need to address
 rather something like: 2300, 2500, 2550
 r <- load_raw("2300.csv", feeder_pattern = "[0-9]{4}")
 
+# Load a file where the feeder id is detected as the first line in the file,
+not the file name (still use default skip = 1):
+r <- load_raw("2016-01-01_09_30.csv", feeder_id_loc = "firstline")
+
 # Note that the following won't work because the pattern matches both the
 feeder id as well as the year:
 r <- load_raw("2300_2015_12_01.csv", feeder_pattern = "[0-9]{4}")
@@ -59,9 +65,6 @@ r <- load_raw("2300_2015_12_01.csv", feeder_pattern = "[0-9]{4}")
 # Extract extra data to be stored in another column:
 r <- load_raw("2300.csv", extra_pattern = "exp[0-9]{1}", extra_name = experiment)
 
-# If file path doesn't contain feeder_id, specify the feeder id pattern as
-the second component:
-r <- load_raw(c("data.csv", "GPR13"))
 }
 }
 
