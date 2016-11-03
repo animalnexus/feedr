@@ -6,15 +6,15 @@ observeEvent(data_info(), {
   values$raw <- data()$data
 
   withProgress(message = "Transforming Data", detail = "Visits", value = 0, {
-    values$v <- visits(values$raw, allow_imp = TRUE)})
 
-  withProgress(message = "Transforming Data", detail = "Movements", value = 0.33, {
+    values$v <- visits(values$raw, allow_imp = TRUE)
+
+    setProgress(detail = "Movements", value = 0.33)
     values$m <- values$v %>%
       dplyr::group_by(bird_id) %>%
       dplyr::do(move(.))
-  })
 
-  withProgress(message = "Transforming Data", detail = "Feeding time", value = 0.66, {
+    setProgress(detail = "Feeding time", value = 0.66)
     values$f <- values$v %>%
       dplyr::group_by(bird_id) %>%
       dplyr::do(feeding(.))
