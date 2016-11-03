@@ -82,6 +82,7 @@ shinyServer(function(input, output, session) {
 
   ## Birds of current data
   birds <- reactive({
+    req(raw())
     cols <- names(raw())[names(raw()) %in% c("bird_id", "species", "age", "sex", "tagged_on", "site_name")]
     raw() %>%
       dplyr::select_(.dots = cols) %>%
