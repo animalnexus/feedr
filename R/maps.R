@@ -230,7 +230,7 @@ use.layer <- function(map, u, u_scale = 1, u_title = "Time", u_pal = c("yellow",
 #' @param p Dataframe. Summarized 'path' data with columns \code{feeder_id},
 #'   \code{move_path}, and \code{path_use}. It can also contain \code{bird_id}
 #'   for individual-based data, and lat/lon instead of a locs argument.
-#' @param locs Dataframe. Lat and long for each feeder_id, required if lat and
+#' @param locs Dataframe. Lat and lon for each feeder_id, required if lat and
 #'   lon not in either u or p.
 #' @param u_scale,p_scale Numerical. Scaling constants to increase (> 1) or
 #'   decrease (< 1) the relative size of use (u) and path (p) data.
@@ -369,7 +369,7 @@ map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
 #' @param p Dataframe. Summarized movement data with columns \code{feeder_id},
 #'   \code{move_path}, and \code{path_use}. It can also contain \code{bird_id}
 #'   for individual-based data, and lat/lon instead of a locs argument.
-#' @param locs Dataframe. Lat and long for each feeder_id, required if lat and
+#' @param locs Dataframe. Lat and lon for each feeder_id, required if lat and
 #'   lon not in either u or p.
 #' @param u_scale,p_scale Numerical. Relative scaling constants to increase (> 1) or
 #'   decrease (< 1) the relative size of use (u) and path (p) data.

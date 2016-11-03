@@ -18,10 +18,10 @@ data, and lat/lon instead of a locs argument.}
 \code{move_path}, and \code{path_use}. It can also contain \code{bird_id}
 for individual-based data, and lat/lon instead of a locs argument.}
 
-\item{locs}{Dataframe. Lat and long for each feeder_id, required if lat and
+\item{locs}{Dataframe. Lat and lon for each feeder_id, required if lat and
 lon not in either u or p.}
 
-\item{u_scale, p_scale}{Numerical. Scaling constants to increase (> 1) or
+\item{u_scale, p_scale}{Numerical. Relative scaling constants to increase (> 1) or
 decrease (< 1) the relative size of use (u) and path (p) data.}
 
 \item{u_title, p_title}{Character. Titles for the legends of use (u) and
@@ -55,7 +55,6 @@ that they wish to visualize it. This function can take invidiual bird data as
 well as grand summarise (see Details and Examples).
 }
 \examples{
-\dontrun{
 
 v <- visits(finches)
 f <- feeding(v, bw = 15)
@@ -63,27 +62,27 @@ m <- move(v)
 
 # Summarise data for visualization (use totals):
 library(dplyr)
-f.all <- group_by(f, feeder_id, lat, lon) \%>\%
-           summarise(amount = sum(feed_length) / bird_n)
+f_all <- group_by(f, feeder_id, lat, lon) \%>\%
+           summarise(amount = sum(feed_length) / bird_n[1])
 
-m.all <- group_by(m, move_path, feeder_id, lat, lon) \%>\%
-           summarise(path_use = length(move_path) / bird_n)
+m_all <- group_by(m, move_path, feeder_id, lat, lon) \%>\%
+           summarise(path_use = length(move_path) / bird_n[1])
 
 # Look at total summary maps
-map_leaflet(u = f.all, p = m.all)
-map_ggmap(u = f.all, p = m.all)
+map_leaflet(u = f_all, p = m_all)
+map_ggmap(u = f_all, p = m_all)
 
 # Summarise data for visualization (use individuals):
-f.indiv <- group_by(f, bird_id, feeder_id, lat, lon)
+f_indiv <- group_by(f, bird_id, feeder_id, lat, lon) \%>\%
              summarise(amount = sum(feed_length))
 
-m.indiv <- group_by(m, move_path, feeder_id, lat, lon) \%>\%
+m_indiv <- group_by(m, move_path, feeder_id, lat, lon) \%>\%
              summarise(path_use = length(move_path))
 
 # Look at individual summary maps (note that Leaflet just stacks individuals
 one on top of the other)
-map_leaflet(u = f.indiv, p = m.indiv)
-map_ggmap(u = f.indiv, p = m.indiv)
-}
+map_leaflet(u = f_indiv, p = m_indiv)
+map_ggmap(u = f_indiv, p = m_indiv)
+
 }
 

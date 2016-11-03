@@ -18,7 +18,7 @@ data, and lat/lon instead of a locs argument.}
 \code{move_path}, and \code{path_use}. It can also contain \code{bird_id}
 for individual-based data, and lat/lon instead of a locs argument.}
 
-\item{locs}{Dataframe. Lat and long for each feeder_id, required if lat and
+\item{locs}{Dataframe. Lat and lon for each feeder_id, required if lat and
 lon not in either u or p.}
 
 \item{u_scale, p_scale}{Numerical. Scaling constants to increase (> 1) or
