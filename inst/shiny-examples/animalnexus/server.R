@@ -41,6 +41,7 @@ shinyServer(function(input, output, session) {
   })
 
   data <- reactive({
+    #browser()
     if(!is.null(values$data_db) & !is.null(values$data_import)) {
       if(values$data_db$time > values$data_import$time) {
         data <- values$data_db
@@ -143,11 +144,14 @@ shinyServer(function(input, output, session) {
   })
 
   observe({
+    req("current-map_current_bounds" %in% names(input))
     session$sendCustomMessage('activeNavs', 'Database')
     session$sendCustomMessage('activeNavs', 'Import')
     session$sendCustomMessage('activeNavs', 'Visualizations')
     session$sendCustomMessage('activeNavs', 'Individuals')
     session$sendCustomMessage('activeNavs', 'Transformations')
     session$sendCustomMessage('activeNavs', 'Help')
+
+    hide('loading_app')
   })
 })

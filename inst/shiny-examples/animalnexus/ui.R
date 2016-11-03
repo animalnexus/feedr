@@ -11,6 +11,8 @@ shinyUI(
     shinyjs::useShinyjs(),
     includeCSS("../../extra/style.css"),
     tags$head(tags$script("
+
+
         window.onload = function() {
             $('#main a:contains(\"Database\")').parent().addClass('hidden');
             $('#main a:contains(\"Import\")').parent().addClass('hidden');
@@ -23,6 +25,7 @@ shinyUI(
         Shiny.addCustomMessageHandler('activeNavs', function(nav_label) {
             $('#main a:contains(\"' + nav_label + '\")').parent().removeClass('hidden');
         });
+
    ")),
     navbarPage(title = a(href = "http://animalnexus.ca", HTML("animal<strong>nexus</strong>")),
                id = "main",
@@ -41,8 +44,11 @@ shinyUI(
                       fluidRow(
                         div(style = "text-align:center", HTML("<h1>Welcome to animal<strong>nexus</strong></h1>")),
                         h4(style = "text-align:center", "This webapp is based on R shiny and uses the 'feedr' package to transform, summarize and visualize animal movement data collected from RFID stations."),
-                        h4(style = "text-align:center", "To get started, ", actionLink("link_db", "select data from our data base"), "or", actionLink("link_import", "import your own"), "."),
+                        h4(style = "text-align:center", "To get started, ", actionLink("link_db", "select data from our data base"), "or", actionLink("link_import", "import your own.")),
                         #actionButton("pause", "Pause"),
+
+                        div(style = "padding: 10px; max-width: 350px; margin: auto; text-align:center; font-size: 100%; border-style: solid; border-radius: 5px; border-color: #337ab7; color: #337ab7; box-shadow: 10px 10px 5px #888888;", id = "loading_app", "Please wait while the app loads..."),
+
                         hr(),
                         h4(style = "text-align:center", "Current activity at feeders on Thompson Rivers University Campus")),
                       fluidRow(
