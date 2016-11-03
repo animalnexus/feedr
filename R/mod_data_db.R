@@ -87,10 +87,12 @@ mod_data_db <- function(input, output, session, db) {
   ## Get data base details
   if(!is.null(db)) {
 
+    withProgress(message = "Loading...", detail = "Connecting to server...", value = 0, {
     suppressWarnings({
       cat("Connecting to server...\n")
       con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
 
+      setProgress(value = 0.15, detail = "Getting feeder data..")
       cat("Getting feeder data...\n")
       #   incProgress(1/5)
       feeders_all <- dbGetQuery(con, statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
@@ -99,6 +101,7 @@ mod_data_db <- function(input, output, session, db) {
         load_format(tz = "") %>%
         dplyr::mutate(site_name = factor(site_name))
 
+      setProgress(value = 0.30, detail = "Getting site data..")
       cat("Getting site data...\n")
       #    incProgress(2/5)
       sites_all <- feeders_all %>%
@@ -106,6 +109,7 @@ mod_data_db <- function(input, output, session, db) {
         dplyr::summarize(lon = mean(lon), lat = mean(lat), dataaccess = unique(dataaccess)) %>%
         dplyr::mutate(site_name = factor(site_name))
 
+      setProgress(value = 0.45, detail = "Getting bird data..")
       cat("Getting bird data...\n")
       #  incProgress(3/5)
       birds_all <- dbGetQuery(con, statement = paste0("SELECT DISTINCT raw.visits.bird_id FROM raw.visits")) %>%
@@ -115,6 +119,7 @@ mod_data_db <- function(input, output, session, db) {
                site_name = factor(site_name),
                bird_id = factor(bird_id))
 
+      setProgress(value = 0.60, detail = "Getting sample information..")
       cat("Getting sample information...\n")
       #    incProgress(4/5)
       counts <- dbGetQuery(con,
@@ -136,6 +141,7 @@ mod_data_db <- function(input, output, session, db) {
 
 
     #  incProgress(5/5)
+    setProgress(value = 0.75, detail = "Summarizing samples..")
     cat("Summarizing samples...\n")
     counts_sum <- dplyr::bind_rows(
       get_counts(counts, summarize_by = "site_name"),
@@ -144,21 +150,21 @@ mod_data_db <- function(input, output, session, db) {
       get_counts(counts, summarize_by = "bird_id"),
       get_counts(counts, summarize_by = "feeder_id"))
 
-    #})
+    })
   }
 
   values <- reactiveValues(
     data_map = NULL,          # Stores values which displayed on map
     keep = NULL,              # Stores data selected for download
     input = NULL,           # Stores selection options
-    input_previous = NULL)  # Stores previous selection options (for comparison)
+    input_previous = NULL)   # Stores previous selection options (for comparison)
 
 
   ## UPDATE SELECTION
   # Fires when selection complete
   observe({
     req(startup(input), !is.null(db))
-
+    #browser()
     ## Invalidate only on the following inputs
     input$data_species
     input$data_date
@@ -317,6 +323,7 @@ mod_data_db <- function(input, output, session, db) {
   ## UI bird_id
   output$UI_data_bird_id <- renderUI({
     req(counts_species())
+    #browser()
     cnts <- get_counts(c = counts_species(), summarize_by = "bird_id")
     checkboxGroupInput(ns("data_bird_id"), "Select bird ids",
                        choices = choices(cnts, "bird_id"),
@@ -327,9 +334,7 @@ mod_data_db <- function(input, output, session, db) {
 
   ## UI feeder_id
   output$UI_data_feeder_id <- renderUI({
-
     req(counts_species())
-
     cnts <- get_counts(c = counts_species(), summarize_by = "feeder_id")
     checkboxGroupInput(ns("data_feeder_id"), "Select feeder ids",
                        choices = choices(cnts, "feeder_id"),
@@ -450,6 +455,7 @@ mod_data_db <- function(input, output, session, db) {
   observeEvent(input$data_site_name, {
     req(!is.null(db), input$data_site_name != "")
     cat("Updating markers...\n")
+    #browser()
     f <- feeders_all[feeders_all$site_name == input$data_site_name, ]
     if(nrow(f) > 0) {
       if(unique(f$site_name) == "Kamloops, BC") zoom <- 17
