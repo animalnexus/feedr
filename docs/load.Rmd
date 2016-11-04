@@ -1,12 +1,5 @@
 ---
 title: "Loading in Data"
-author: "Steffi LaZerte"
-date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Loading/Importing Data}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 <a id = "top"></a>
 

@@ -8,70 +8,209 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<meta name="author" content="Steffi LaZerte" />
 
-<meta name="date" content="2016-11-04" />
 
 <title>Loading in Data</title>
 
-
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
 
 <style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet"
+      href="site_libs/highlight/textmate.css"
+      type="text/css" />
+<script src="site_libs/highlight/highlight.js"></script>
 <style type="text/css">
-div.sourceCode { overflow-x: auto; }
-table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
-  margin: 0; padding: 0; vertical-align: baseline; border: none; }
-table.sourceCode { width: 100%; line-height: 100%; }
-td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
-td.sourceCode { padding-left: 5px; }
-code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code > span.dt { color: #902000; } /* DataType */
-code > span.dv { color: #40a070; } /* DecVal */
-code > span.bn { color: #40a070; } /* BaseN */
-code > span.fl { color: #40a070; } /* Float */
-code > span.ch { color: #4070a0; } /* Char */
-code > span.st { color: #4070a0; } /* String */
-code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code > span.ot { color: #007020; } /* Other */
-code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code > span.fu { color: #06287e; } /* Function */
-code > span.er { color: #ff0000; font-weight: bold; } /* Error */
-code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-code > span.cn { color: #880000; } /* Constant */
-code > span.sc { color: #4070a0; } /* SpecialChar */
-code > span.vs { color: #4070a0; } /* VerbatimString */
-code > span.ss { color: #bb6688; } /* SpecialString */
-code > span.im { } /* Import */
-code > span.va { color: #19177c; } /* Variable */
-code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code > span.op { color: #666666; } /* Operator */
-code > span.bu { } /* BuiltIn */
-code > span.ex { } /* Extension */
-code > span.pp { color: #bc7a00; } /* Preprocessor */
-code > span.at { color: #7d9029; } /* Attribute */
-code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
 </style>
 
-
-
-<link rel="stylesheet" href="/home/steffi/R/x86_64-pc-linux-gnu-library/3.3/rmarkdown/rmarkdown/templates/html_vignette/resources/vignette.css" type="text/css" />
 
 </head>
 
 <body>
 
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">How to use feedr</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="divider"></li>
+<li>
+  <a href="load.html">Loading</a>
+</li>
+<li>
+  <a href="housekeeping.html">Housekeeping</a>
+</li>
+<li>
+  <a href="transformations.html">Transformations</a>
+</li>
+<li>
+  <a href="maps.html">Visualizations</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
 
 
 
 <h1 class="title toc-ignore">Loading in Data</h1>
-<h4 class="author"><em>Steffi LaZerte</em></h4>
-<h4 class="date"><em>2016-11-04</em></h4>
 
+</div>
 
 
 <p><a id = "top"></a></p>
@@ -95,8 +234,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="load_raw" class="section level2">
 <h2><code>load_raw()</code></h2>
 <p>This loads and formats a raw data file downloaded directly from feeder RFID readers.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r1 &lt;-<span class="st"> </span><span class="kw">load_raw</span>(<span class="st">&quot;./Data/exp1/GR10DATA_2015_12_09.TXT&quot;</span>)
-<span class="kw">head</span>(r1)</code></pre></div>
+<pre class="r"><code>r1 &lt;- load_raw(&quot;./Data/exp1/GR10DATA_2015_12_09.TXT&quot;)
+head(r1)</code></pre>
 <pre><code>##      bird_id                time feeder_id
 ## 1 0000000000 2016-01-11 11:34:08      GR10
 ## 2 062000014F 2016-01-11 12:00:54      GR10
@@ -106,8 +245,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## 6 062000014F 2016-01-11 12:05:00      GR10</code></pre>
 <p>Note that the feeder_id is taken from the file name. This is done by matching an expected pattern against the actual file name.</p>
 <p>The default pattern matches GR or GPR followed by 1 or 2 digits. If you need to specify a different pattern you can do so:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r1 &lt;-<span class="st"> </span><span class="kw">load_raw</span>(<span class="st">&quot;./Data/exp1/Feeder_10_2015_12_09.TXT&quot;</span>, <span class="dt">feeder_pattern =</span> <span class="st">&quot;Feeder_[0-9]{2}&quot;</span>)
-<span class="kw">head</span>(r1)</code></pre></div>
+<pre class="r"><code>r1 &lt;- load_raw(&quot;./Data/exp1/Feeder_10_2015_12_09.TXT&quot;, feeder_pattern = &quot;Feeder_[0-9]{2}&quot;)
+head(r1)</code></pre>
 <p>For more information on how to write patterns, see documentation for “Regular Expressions” (e.g. <a href="http://www.regular-expressions.info/tutorial.html" class="uri">http://www.regular-expressions.info/tutorial.html</a>)</p>
 <p><a id="loadrawall"></a></p>
 </div>
@@ -115,9 +254,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h2><code>load_raw_all()</code></h2>
 <p>The function <code>load_raw_all()</code> is a wrapper function which will automatically load and combine data contained in several different files in a single folder, or in a nested series of folders. Other files can be present, but all feeder data files must be identifiable by a pattern in the file name.</p>
 <p>In this example our data files are stored in a folder called <code>raw</code> and there are several sets of data, each corresponding to an individual experiment which are then stored in their own folder called <code>exp1</code>, <code>exp2</code>, etc. Feeder data files are identifiable by the characters ‘DATA’ present in the name (as in the above example), which is the default.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r &lt;-<span class="st"> </span><span class="kw">load_raw_all</span>(<span class="dt">r_dir =</span> <span class="st">&quot;./Data/raw&quot;</span>)
-<span class="kw">head</span>(r)</code></pre></div>
-<pre><code>## Empty file skipped: /home/steffi/Projects/feedr/inst/extdata/raw/exp2/GR10DATA_2016_01_18.TXT</code></pre>
+<pre class="r"><code>r &lt;- load_raw_all(r_dir = &quot;./Data/raw&quot;)
+head(r)</code></pre>
+<pre><code>## Empty file skipped: /home/steffi/R/x86_64-pc-linux-gnu-library/3.3/feedr/extdata/raw/exp2/GR10DATA_2016_01_18.TXT</code></pre>
 <pre><code>##      bird_id                time feeder_id
 ## 1 0000000000 2016-01-11 11:34:08      GR10
 ## 2 062000014F 2016-01-11 12:00:54      GR10
@@ -126,11 +265,11 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## 5 062000014F 2016-01-11 12:04:30      GR10
 ## 6 062000014F 2016-01-11 12:05:00      GR10</code></pre>
 <p>If your feeder files didn’t have a identiifable label, but were the only csv files in the folders, you could use:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r &lt;-<span class="st"> </span><span class="kw">load_raw_all</span>(<span class="dt">r_dir =</span> <span class="st">&quot;./Data/raw&quot;</span>, <span class="dt">pattern =</span> <span class="st">&quot;.csv&quot;</span>)</code></pre></div>
+<pre class="r"><code>r &lt;- load_raw_all(r_dir = &quot;./Data/raw&quot;, pattern = &quot;.csv&quot;)</code></pre>
 <p>However, in this example we have several different experiments, which we’ll probably want to identify in our data. This is where the <code>extra</code> arguments come in.</p>
 <p>In our example, each experiment is stored in its own folder (exp1 and exp2). Therefore we can tell our function to identify those patterns (<code>extra_pattern</code>) and store the values in an extra column (<code>extra_name</code>):</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r &lt;-<span class="st"> </span><span class="kw">load_raw_all</span>(<span class="dt">r_dir =</span> <span class="st">&quot;./Data/raw&quot;</span>, <span class="dt">extra_pattern =</span> <span class="st">&quot;exp[1-2]{1}&quot;</span>, <span class="dt">extra_name =</span> <span class="st">&quot;experiment&quot;</span>)</code></pre></div>
-<pre><code>## Empty file skipped: /home/steffi/Projects/feedr/inst/extdata/raw/exp2/GR10DATA_2016_01_18.TXT</code></pre>
+<pre class="r"><code>r &lt;- load_raw_all(r_dir = &quot;./Data/raw&quot;, extra_pattern = &quot;exp[1-2]{1}&quot;, extra_name = &quot;experiment&quot;)</code></pre>
+<pre><code>## Empty file skipped: /home/steffi/R/x86_64-pc-linux-gnu-library/3.3/feedr/extdata/raw/exp2/GR10DATA_2016_01_18.TXT</code></pre>
 <pre><code>##      bird_id                time feeder_id experiment
 ## 1 0000000000 2016-01-11 11:34:08      GR10       exp2
 ## 2 062000014F 2016-01-11 12:00:54      GR10       exp2
@@ -149,10 +288,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## 6       exp2      GR11 53.88999 -122.8210
 ## 7       exp2      GR12 53.88997 -122.8193
 ## 8       exp2      GR13 53.89088 -122.8208</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">f.index &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;./Data/feeder_index.csv&quot;</span>)
-f.index</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r &lt;-<span class="st"> </span><span class="kw">merge</span>(r, f.index, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;experiment&quot;</span>, <span class="st">&quot;feeder_id&quot;</span>))
-<span class="kw">head</span>(r)</code></pre></div>
+<pre class="r"><code>f.index &lt;- read.csv(&quot;./Data/feeder_index.csv&quot;)
+f.index</code></pre>
+<pre class="r"><code>r &lt;- merge(r, f.index, by = c(&quot;experiment&quot;, &quot;feeder_id&quot;))
+head(r)</code></pre>
 <pre><code>##   experiment feeder_id    bird_id                time      lat       lon
 ## 1       exp2      GR10 062000038D 2016-01-11 11:03:44 53.89086 -122.8193
 ## 2       exp2      GR10 062000038D 2016-01-11 11:05:03 53.89086 -122.8193
@@ -161,8 +300,8 @@ f.index</code></pre></div>
 ## 5       exp2      GR10 062000038D 2016-01-11 11:06:29 53.89086 -122.8193
 ## 6       exp2      GR10 062000038D 2016-01-11 11:05:29 53.89086 -122.8193</code></pre>
 <p>Because here, the feeder units were reused for different experiments, some feeders have the same id, but a different lat/lon. This will create problems later on, so let’s create unique feeder_id names:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r$feeder_id &lt;-<span class="st"> </span><span class="kw">paste</span>(r$experiment, r$feeder_id, <span class="dt">sep =</span> <span class="st">&quot;-&quot;</span>)
-<span class="kw">head</span>(r)</code></pre></div>
+<pre class="r"><code>r$feeder_id &lt;- paste(r$experiment, r$feeder_id, sep = &quot;-&quot;)
+head(r)</code></pre>
 <pre><code>##   experiment feeder_id    bird_id                time      lat       lon
 ## 1       exp2 exp2-GR10 062000038D 2016-01-11 11:03:44 53.89086 -122.8193
 ## 2       exp2 exp2-GR10 062000038D 2016-01-11 11:05:03 53.89086 -122.8193
@@ -175,8 +314,8 @@ f.index</code></pre></div>
 <div id="load_web" class="section level2">
 <h2><code>load_web()</code></h2>
 <p>You can go to <a href="http://gaia.tru.ca/birdMOVES/datadownload.html" class="uri">http://gaia.tru.ca/birdMOVES/datadownload.html</a> and download a csv file of data from the BirdMoves website. To load and format this data for use with the feedr package, run:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r &lt;-<span class="st"> </span><span class="kw">load_web</span>(<span class="st">&quot;./Data/load_web.csv&quot;</span>)
-<span class="kw">head</span>(r)</code></pre></div>
+<pre class="r"><code>r &lt;- load_web(&quot;./Data/load_web.csv&quot;)
+head(r)</code></pre>
 <pre><code>##      bird_id                time feeder_id     species       lon      lat
 ## 1 0620000514 2016-01-28 12:34:25      2200 House Finch -120.3612 50.66778
 ## 2 0620000514 2016-01-28 12:34:28      2200 House Finch -120.3612 50.66778
@@ -185,9 +324,9 @@ f.index</code></pre></div>
 ## 5 06200004F8 2016-01-28 12:35:59      2200 House Finch -120.3612 50.66778
 ## 6 06200004F8 2016-01-28 12:36:02      2200 House Finch -120.3612 50.66778</code></pre>
 <p>The default timezone is “America/Vancouver”, therefore, if your data is from a different time zone, you need to specify that manually. Make sure you use a timezone name from the output of OlsonNames(). For example:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r &lt;-<span class="st"> </span><span class="kw">load_web</span>(<span class="st">&quot;./Data/load_web.csv&quot;</span>, <span class="dt">tz =</span> <span class="st">&quot;America/Costa_Rica&quot;</span>)
-r$time[<span class="dv">1</span>]
-<span class="kw">head</span>(r)</code></pre></div>
+<pre class="r"><code>r &lt;- load_web(&quot;./Data/load_web.csv&quot;, tz = &quot;America/Costa_Rica&quot;)
+r$time[1]
+head(r)</code></pre>
 <pre><code>## [1] &quot;2016-01-28 12:34:25 CST&quot;</code></pre>
 <pre><code>##      bird_id                time feeder_id     species       lon      lat
 ## 1 0620000514 2016-01-28 12:34:25      2200 House Finch -120.3612 50.66778
@@ -217,11 +356,11 @@ r$time[<span class="dv">1</span>]
 ## 4 50.66896
 ## 5 50.66896
 ## 6 50.66896</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r &lt;-<span class="st"> </span><span class="kw">dl_data</span>()
-<span class="kw">head</span>(r)</code></pre></div>
+<pre class="r"><code>r &lt;- dl_data()
+head(r)</code></pre>
 <p>You can specify start and end times:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r &lt;-<span class="st"> </span><span class="kw">dl_data</span>(<span class="dt">start =</span> <span class="st">&quot;2015-10-01&quot;</span>, <span class="dt">end =</span> <span class="st">&quot;2015-10-02&quot;</span>)
-<span class="kw">head</span>(r)</code></pre></div>
+<pre class="r"><code>r &lt;- dl_data(start = &quot;2015-10-01&quot;, end = &quot;2015-10-02&quot;)
+head(r)</code></pre>
 <pre><code>##      bird_id                time feeder_id     species       lon      lat
 ## 1 06200003AA 2015-10-01 08:24:44      2700 House Finch -120.3632 50.66909
 ## 2 06200003AA 2015-10-01 08:24:46      2700 House Finch -120.3632 50.66909
@@ -229,8 +368,8 @@ r$time[<span class="dv">1</span>]
 ## 4 06200003AA 2015-10-01 08:24:51      2700 House Finch -120.3632 50.66909
 ## 5 06200003AA 2015-10-01 08:24:53      2700 House Finch -120.3632 50.66909
 ## 6 06200003AA 2015-10-01 08:24:55      2700 House Finch -120.3632 50.66909</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r &lt;-<span class="st"> </span><span class="kw">dl_data</span>(<span class="dt">start =</span> <span class="st">&quot;2015-10-01 09:00:00&quot;</span>, <span class="dt">end =</span> <span class="st">&quot;2015-10-02&quot;</span>)
-<span class="kw">head</span>(r)</code></pre></div>
+<pre class="r"><code>r &lt;- dl_data(start = &quot;2015-10-01 09:00:00&quot;, end = &quot;2015-10-02&quot;)
+head(r)</code></pre>
 <pre><code>##      bird_id                time feeder_id     species       lon      lat
 ## 1 06200003AA 2015-10-01 09:15:32      2700 House Finch -120.3632 50.66909
 ## 2 06200004F8 2015-10-01 09:15:50      2700 House Finch -120.3632 50.66909
@@ -239,8 +378,8 @@ r$time[<span class="dv">1</span>]
 ## 5 06200004F8 2015-10-01 09:16:17      2700 House Finch -120.3632 50.66909
 ## 6 06200004F8 2015-10-01 09:16:20      2700 House Finch -120.3632 50.66909</code></pre>
 <p>You can also specify only a start or an end, all data up to or after that point will be grabbed:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r &lt;-<span class="st"> </span><span class="kw">dl_data</span>(<span class="dt">end =</span> <span class="st">&quot;2015-09-06&quot;</span>)
-<span class="kw">head</span>(r)</code></pre></div>
+<pre class="r"><code>r &lt;- dl_data(end = &quot;2015-09-06&quot;)
+head(r)</code></pre>
 <pre><code>##      bird_id                time feeder_id            species       lon
 ## 1 062000031A 2015-09-02 08:25:58      2100 Mountain Chickadee -120.3624
 ## 2 062000031A 2015-09-02 08:26:01      2100 Mountain Chickadee -120.3624
@@ -256,8 +395,8 @@ r$time[<span class="dv">1</span>]
 ## 5 50.66896
 ## 6 50.66896</code></pre>
 <p>Extra bird or feeder related details (?dl_data for more):</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r &lt;-<span class="st"> </span><span class="kw">dl_data</span>(<span class="dt">end =</span> <span class="st">&quot;2015-09-06&quot;</span>, <span class="dt">feeder_details =</span> <span class="kw">c</span>(<span class="st">&quot;loc&quot;</span>,<span class="st">&quot;site_name&quot;</span>), <span class="dt">bird_details =</span> <span class="kw">c</span>(<span class="st">&quot;species&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;sex&quot;</span>))
-<span class="kw">head</span>(r)</code></pre></div>
+<pre class="r"><code>r &lt;- dl_data(end = &quot;2015-09-06&quot;, feeder_details = c(&quot;loc&quot;,&quot;site_name&quot;), bird_details = c(&quot;species&quot;, &quot;age&quot;, &quot;sex&quot;))
+head(r)</code></pre>
 <pre><code>##      bird_id                time feeder_id    site_name            species
 ## 1 062000031A 2015-09-02 08:25:58      2100 Kamloops, BC Mountain Chickadee
 ## 2 062000031A 2015-09-02 08:26:01      2100 Kamloops, BC Mountain Chickadee
@@ -278,6 +417,19 @@ Go back to <a href="feedr.html">main document</a> | Continue with <a href="house
 </div>
 
 
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
