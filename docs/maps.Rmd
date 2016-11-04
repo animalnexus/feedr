@@ -1,0 +1,238 @@
+---
+title: "Visualizing Data"
+---
+<a id = "top"></a>
+
+
+```{r, include = F}
+library(feedr)
+knitr::opts_chunk$set(fig.width = 8, fig.height = 5)
+```
+
+Here we will go over visualizing your data with maps. `feedr` includes two wrapper functions that can be used to visualize your data on maps. These two functions, `map_leaflet` and `map_ggmap` are really just convenience functions to do a lot of the grunt work. If you want to achieve a more fine tuned map, I suggest you check out the packages `leaflet` and `ggmap`.
+
+These mapping functions take summarized feeding and movement data and turn it into circles and paths around/between feeders representing time spent at different feeders and the amount of movement between particular feeder paths. 
+
+Because different projects may need different summaries (totals vs. means, corrected for number of individuals, uncorrected, etc.) we will first create the summary data and then pass this to the functions for plotting. This gives us more flexibility, but does mean that we have to do some work before we can visualize the data.
+
+## Summarizing data
+
+First we will calculate our movement and feeding data. Because we will summarize according to the number of individual chickadees _in each experiment_ we will also calculate a new `bird_n`.
+
+```{r, eval = FALSE}
+##############FIX
+library(plyr)
+
+v <- visits(chickadees)
+v <- ddply(v, "experiment", transform, bird_n_exp = length(unique(bird_id)))
+head(v)
+```
+
+The `transform()` function adds a new column to the current data frame, as opposed to replacing the whole dataset (`summarize()`). `length()` calculates the total number of items, and `unique()` returns only unique values. Thus we have a new column `bird_n_exp` which contains the number of unique bird_ids for each value of `experiment`.
+
+Now calculate our movements and feeding times:
+```{r, eval = FALSE}
+##FIXXXXXXXXX
+m <- ddply(v, "bird_id", move)
+f <- ddply(v, "bird_id", feeding)
+
+head(m)
+head(f)
+```
+
+There are many ways we can summarize the data:
+
+- by population
+- by individual
+- totals (sums)
+- means
+- totals corrected for number of birds 
+
+### By Population
+
+Calculate total feeding time at each feeder, corrected for the number of birds total
+
+```{r, eval = FALSE}
+##FIXXXXXXXXX
+f.all <- ddply(f, "feeder_id", summarise,
+              amount = sum(feed_length) / bird_n_exp[1])
+head(f.all)
+```
+
+We use `bird_n_exp[1]` because we want to divide the total sum by the number of birds in each experiment. However, as the value `bird-n_exp` is repeated, we only need the first one, hence the `[1]`.
+
+If we wanted to calculate mean feeding time, we would use `amount = mean(feed_length)`  
+If we wanted to calculate total feeding time with no correction, we would use `amount = sum(feed_length)`  
+
+__Note:__ The new summary data set must have the column `amount`, regardless of how it is calculated. That name is what the mapping functions look for.
+
+Now let's summarize the movement data for each movement path between feeders. We can summarize individually for each feeder, which will account for the double counting (one row for leaving the feeder and one row for arriving) as well as making sure we have `feeder_id` in the final data set.
+
+
+```{r, eval = FALSE}
+##FIXXXXXXXXX
+m.all <- ddply(m, c("feeder_id", "move_path"), summarise,
+               path_use = length(move_path) / bird_n_exp[1])
+m.all
+```
+
+__Note:__ The new summary data set must have the column `path_use`, regardless of how it is calculated. That name is what the mapping functions look for.
+
+
+Now we've summarized our data, all we need is a list of lat/lons for each `feeder_id`. Fortunately, we have that data stored in all the non-summarized data frames, so it's merely a matter of cleaning it up. `unique()` will extract all non-duplicated rows of this subset of `f` including only the columns we've specified here:
+
+```{r, eval = FALSE}
+##FIXXXXXXXXX
+l <- unique(f[, c("feeder_id", "lat", "lon")])
+head(l)
+```
+
+In this example, we also have a feeder that was never used by chickadees, but we would still like to visualize it, so we will add it to the locations list:
+
+```{r, eval = FALSE}
+##FIXXXXXXXXX
+l <- rbind(l, data.frame(feeder_id = "exp1-GR11", lat = 53.89304, lon = -122.81827))
+```
+
+Alternatively, we could have loaded in an external feeder index and used that.
+
+### By Individual
+We can also summarize data by individual for plotting of individual maps.
+
+This is virtually identical to what we did above, except that we add one more variable to the grouping in our `ddply()` functions and we don't correct for the number of birds:
+
+```{r, eval = FALSE}
+##FIXXXXXXXXX
+f.indiv <- ddply(f, c("experiment", "feeder_id", "bird_id"), summarise,
+              amount = sum(feed_length))
+m.indiv <- ddply(m, c("experiment", "feeder_id", "move_path", "bird_id"), summarise,
+               path_use = length(move_path) / 2)
+head(f.indiv)
+head(m.indiv)
+```
+
+### Recap:
+
+To create maps you need the following:
+
+- feeding summary with a columns: `feeder_id` and `amount`
+- movement summary with a columns: `feeder_id`, `move_path` and `path_use`
+- location summary with columns: `feeder_id`, `lat` and `lon`
+    - (but the mapping functions will also accept `latitude`, `longitude` and `long`)
+- If locations are included in feeding or movement datasets, you don't need the extra location dataset.
+
+If you want to look at individual data, add `bird_id` to the grouping in the `ddply()` function, otherwise omit it.
+
+## Mapping
+
+<a id = "leaflet"></a>
+
+## `map_leaflet()`
+
+This function creates an interactive html map using leaflet for R (package `leaflet`). 
+
+```{r, eval = FALSE}
+##FIXXXXXXXXX
+map_leaflet(u = f.all, p = m.all, locs = l)
+```
+
+The map is interactive in that it can be zoomed, the tiles changed, and different elements added or removed. Feeders (black dots) can also be clicked on to reveal ids and circles and paths can clicked on to reveal their actual numbers.
+
+You can also adjust some of the cosmtic details:
+
+```{r, eval = FALSE}
+##FIXXXXXXXXX
+map_leaflet(u = f.all, p = m.all, locs = l, 
+            u_scale = 5, p_scale = 5,
+            u_title = "Feeding (min)", p_title = "Paths",
+            u_pal = c("blue","white"),
+            p_pal = c("black","red"))
+```
+
+To plot by individual, simply use our individually summarized data sets:
+
+```{r, eval = FALSE}
+### FIXXX
+map_leaflet(u = f.indiv, p = m.indiv, locs = l)
+```
+
+Note, however, that for leaflet maps, the individual lines are stacked in order of magnitude and visualizations like this may not be very useful for large numbers of individuals.
+
+To save this map, you can zoom and set it up as you like and use the "Export > Save as image" button in RStudio. 
+
+Alternatively, you can use the `map_ggmap()` function to visualize a static map.
+
+--------------------
+Back to [top](#top) 
+--------------------
+
+<a id = "ggmap"></a>
+
+## `map_ggmap()`
+
+This creates static maps using the package `ggmap`. This map may take longer to create as it downloads background images from Google Maps (but you can also specify the source, see below).
+
+```{r, eval = FALSE}
+##FIXXXXXXXXX
+map_ggmap(u = f.all, p = m.all, locs = l)
+```
+
+Getting the zoom level often requires some trial and error (default = 17). If you see a warning about rows with missing values omitted, this means that not all your data could fit on the map.
+
+```{r, eval = FALSE}
+##FIXXXXXXXXX
+map_ggmap(u = f.all, p = m.all, locs = l, zoom = 16)
+```
+
+```{r, eval = FALSE}
+##FIXXXXXXXXX
+map_ggmap(u = f.all, p = m.all, locs = l, 
+          zoom = 16, u_scale = 0.7)
+```
+
+Note that the lines between the two sites shows that some individual chickadees visited both sites
+
+```{r, eval = FALSE}
+##FIXXXXXXXXX
+map_ggmap(u = f.all, p = m.all, locs = l, 
+          zoom = 16, u_scale = 0.7, maptype = "terrain")
+```
+
+```{r, eval = FALSE}
+##FIXXXXXXXXX
+map_ggmap(u = f.all, p = m.all, locs = l, 
+          zoom = 16, maptype = "roadmap")
+```
+
+For individuals:
+
+```{r, error = TRUE, eval = FALSE}
+### FXIXXX
+map_ggmap(u = f.indiv, p = m.indiv, locs = l, 
+          zoom = 16, u_scale = 0.7)
+```
+
+Okay, let's try with fewer birds
+
+```{r, fig.width = 10, fig.height = 10, eval = FALSE}
+## Fix
+sub_birds <- unique(f.indiv$bird_id) #Get first 5 bird_ids
+
+# Use only f.indiv/m.indiv where the bird_id is in these first 10.
+map_ggmap(u = f.indiv, p = m.indiv, locs = l, 
+          zoom = 16, u_scale = 0.7,
+          which = sub_birds[1:10])
+
+# Use only f.indiv/m.indiv where the bird_id is in these second 10.
+map_ggmap(u = f.indiv, p = m.indiv, locs = l, 
+          zoom = 16, u_scale = 0.7,
+          which = sub_birds[11:20])
+
+```
+
+Note that one individual (0620000006) was removed. This is because the individual had a feed_length of 0 and no movements. This situation will occur if an individual makes only one visit to a feeder (resulting in a visit length of 0, and thus a feeding length of 0).
+
+
+--------------------------
+Back to [top](#top)  
+Go back to [main document](feedr.html) | Go back to [transformations](transformations.html)
