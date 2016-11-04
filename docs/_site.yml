@@ -1,0 +1,8 @@
+name: "use-feedr"
+navbar:
+  title: "How to use feedr"
+left:
+  - text: "Home"
+    href: index.html
+  - text: "About"
+    href: about.html
