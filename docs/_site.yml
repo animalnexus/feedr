@@ -1,4 +1,5 @@
 name: "use-feedr"
+output_dir: "."
 navbar:
   title: "How to use feedr"
 left:
@@ -6,3 +7,4 @@ left:
     href: index.html
   - text: "About"
     href: about.html
+
