@@ -569,6 +569,42 @@ disp <- function(v, bw = 5, pass = TRUE){
 #' @param omit_cutoff Numeric. Minimum number of interactions (sum of wins and
 #'   losses) individuals must have (omitted otherwise).
 #'
+#' #' @examples
+#'
+#'  # Look at dominance for chickadees in experiment 2
+#'  v <- visits(chickadees[chickadees$experiment == "exp2",])
+#'  d <- disp(v)
+#'  dm <- dom(d$interactions)
+#'
+#'  # But not necessary to specify interactions:
+#'  dm <- dom(d)
+#'
+#' #'  # Calculate across different experiments (expect warnings about unequal factor levels):
+#' library(dplyr)
+#'
+#' v <- chickadees %>%
+#'   group_by(experiment) %>%
+#'   do(visits(.))
+#'
+#' d <- v %>%
+#'   group_by(experiment) %>%
+#'   do(data = disp(.))
+#'
+#' dm <- d %>%
+#'   group_by(experiment) %>%
+#'   do(data = dom(.$data[[1]]))
+#'
+#' # Look at the dominance data stored in the 2nd experiment:
+#' dm$data[dm$experiment == "exp2"][[1]] #or
+#' dm[["data"]][[1]] #or
+#' dm$data[[1]]
+#'
+#' # Look at the dominance matrices from 3nd experiment:
+#' dm$data[dm$experiment == "exp3"][[1]]$matrices #or
+#' dm[["data"]][[2]]$matrices #or
+#' dm$data[[2]]$matrices
+#'
+#'
 #' @export
 dom <- function(d, tries = 50, omit_cutoff = 3){
 
