@@ -356,16 +356,17 @@ feeding <- function(v, bw = 15, pass = TRUE){
   check_time(v)
   check_format(v)
 
+
+  # Get factor levels for whole dataset
+  if(is.factor(v$bird_id)) bird_id <- levels(v$bird_id) else bird_id <- unique(v$bird_id)
+  if(is.factor(v$feeder_id)) feeder_id <- levels(v$feeder_id) else feeder_id <- unique(v$feeder_id)
+
   # Remove factors for now
   v$bird_id <- as.character(v$bird_id)
   v$feeder_id <- as.character(v$feeder_id)
 
   # Keep extra cols
   if(pass == TRUE) extra <- keep_extra(v, n = c("start", "end"))
-
-  # Get factor levels for whole dataset
-  if(is.factor(v$bird_id)) bird_id <- levels(v$bird_id) else bird_id <- unique(v$bird_id)
-  if(is.factor(v$feeder_id)) feeder_id <- levels(v$feeder_id) else feeder_id <- unique(v$feeder_id)
 
   # Calculate for each individual
   f <- v %>%
