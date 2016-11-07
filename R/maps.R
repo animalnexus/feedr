@@ -514,9 +514,11 @@ map_ggmap <- function(u = NULL, p = NULL, locs = NULL,
 
   # If movement paths specified
   if(!is.null(p)){
+    sort_by <- c("bird_id", "move_path", "feeder_id")
+    sort_by <- sort_by[sort_by %in% names(p)]
     p <- p %>%
       dplyr::ungroup() %>%
-      dplyr::arrange(bird_id, move_path, feeder_id) %>%
+      dplyr::arrange_(.dots = sort_by) %>%
       dplyr::mutate(n = rep(1:2, nrow(p)/2)) %>%
       tidyr::gather(type, value, lat, lon) %>%
       dplyr::select(-feeder_id) %>%
