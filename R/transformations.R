@@ -39,6 +39,12 @@
 #'
 #' v <- visits(finches, bw = 30)
 #' head(v)
+#'
+#' # Calculate across different experiments:
+#' library(dplyr)
+#' v <- chickadees %>%
+#'   group_by(experiment) %>%
+#'   do(visits(.))
 
 #' @import magrittr
 #' @export
@@ -188,10 +194,23 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 #' m.totals <- m %>%
 #'   group_by(bird_id, move_path) %>%
 #'   summarize(n_path = length(move_path) /2)
+#'
+#' # Calculate across different experiments:
+#' library(dplyr)
+#'
+#' v <- chickadees %>%
+#'   group_by(experiment) %>%
+#'   do(visits(.))
+#'
+#' m <- v %>%
+#'   group_by(experiment) %>%
+#'   do(move(.))
+#'
 
 #' @import magrittr
 #' @export
 move <- function(v, all = FALSE, pass = TRUE){
+
   # Check for correct formatting
   check_name(v, c("bird_id", "feeder_id", "date", "start", "end"))
   check_time(v)
@@ -200,10 +219,20 @@ move <- function(v, all = FALSE, pass = TRUE){
   # Get extra columns
   if(pass == TRUE) extra <- keep_extra(v, n = c("start", "end"))
 
+  # Get factor levels for whole dataset
+  if(is.factor(v$bird_id)) bird_id <- levels(v$bird_id) else bird_id <- unique(v$bird_id)
+  if(is.factor(v$feeder_id)) feeder_id <- levels(v$feeder_id) else feeder_id <- unique(v$feeder_id)
+
+  # Get movement options
+  move_dir <- expand.grid(feeder_left = feeder_id, feeder_arrived = feeder_id)
+  move_dir <- move_dir[move_dir$feeder_left != move_dir$feeder_arrived,]
+  move_dir <- paste0(move_dir$feeder_left, "_", move_dir$feeder_arrived)
+  move_path <- unique(sapply(move_dir, FUN = mp))
+
   # Apply individually to each bird
   m <- v %>%
     dplyr::group_by(bird_id) %>%
-    dplyr::do(move_single(., all = all)) %>%
+    dplyr::do(move_single(., move_dir = move_dir, move_path = move_path, all = all)) %>%
     dplyr::ungroup()
 
   if(nrow(m) > 0){
@@ -214,21 +243,16 @@ move <- function(v, all = FALSE, pass = TRUE){
 
     # Add in extra cols
     if(pass == TRUE) m <- merge_extra(m, extra)
+
+    # Apply factors
+    m$bird_id <- factor(m$bird_id, levels = bird_id)
+    m$feeder_id <- factor(m$feeder_id, levels = feeder_id)
   }
   return(m)
 }
 
 # Movement function for single bird
-move_single <- function(v1, all = FALSE){
-  # Get factor levels
-  bird_id <- levels(v1$bird_id)
-  feeder_id <- levels(v1$feeder_id)
-
-  # Get movement options
-  move_dir <- expand.grid(feeder_left = feeder_id, feeder_arrived = feeder_id)
-  move_dir <- move_dir[move_dir$feeder_left != move_dir$feeder_arrived,]
-  move_dir <- paste0(move_dir$feeder_left, "_", move_dir$feeder_arrived)
-  move_path <- unique(sapply(move_dir, FUN = mp))
+move_single <- function(v1, move_dir, move_path, all = FALSE){
 
   if(length(unique(v1$feeder_id)) > 1) { # Only proceed if there are actual data!
 
@@ -257,18 +281,18 @@ move_single <- function(v1, all = FALSE){
       dplyr::ungroup()
   } else if (all == TRUE) {
     # Create the movement data frame for birds that didn't move between feeders
-    m <- data.frame(bird_id = factor(v1$bird_id[1], levels = bird_id),
-                    date = as.Date(NA),
-                    time = as.POSIXct(NA),
-                    feeder_id = factor(NA, levels = feeder_id),
-                    direction = as.character(NA),
-                    move_id = as.numeric(NA),
-                    move_dir = factor(NA, levels = move_dir),
-                    move_path = factor(NA, levels = move_path),
-                    strength = as.numeric(NA))
+    m <- tibble::data_frame(bird_id = v1$bird_id[1],
+                            date = as.Date(NA),
+                            time = as.POSIXct(NA),
+                            feeder_id = NA,
+                            direction = as.character(NA),
+                            move_id = as.numeric(NA),
+                            move_dir = factor(NA, levels = move_dir),
+                            move_path = factor(NA, levels = move_path),
+                            strength = as.numeric(NA))
   } else {
-    # If there are no movements and all == FALSE, return an empty data.frame
-    m <- data.frame()
+    # If there are no movements and all == FALSE, return an empty data frame
+    m <- tibble::data_frame()
   }
   return(m)
 }
@@ -302,14 +326,26 @@ move_single <- function(v1, all = FALSE){
 #'
 #' @examples
 #'
-#'  v <- visits(finches)
-#'  f <- feeding(v)
+#' v <- visits(finches)
+#' f <- feeding(v)
 #'
-#'  # Summarize a movement dataframe (get total time spent feeding)
-#'  library(dplyr)
-#'  f.totals <- f %>%
-#'      group_by(bird_id, feeder_id) %>%
-#'      summarize(feed_length = sum(feed_length))
+#' # Summarize a movement dataframe (get total time spent feeding)
+#' library(dplyr)
+#' f.totals <- f %>%
+#'     group_by(bird_id, feeder_id) %>%
+#'     summarize(feed_length = sum(feed_length))
+#'
+#' # Calculate across different experiments (expect warnings about unequal factor levels):
+#' library(dplyr)
+#'
+#' v <- chickadees %>%
+#'   group_by(experiment) %>%
+#'   do(visits(.))
+#'
+#' f <- v %>%
+#'   group_by(experiment) %>%
+#'   do(feeding(.))
+#'
 #'
 #' @export
 
@@ -320,8 +356,16 @@ feeding <- function(v, bw = 15, pass = TRUE){
   check_time(v)
   check_format(v)
 
+  # Remove factors for now
+  v$bird_id <- as.character(v$bird_id)
+  v$feeder_id <- as.character(v$feeder_id)
+
   # Keep extra cols
   if(pass == TRUE) extra <- keep_extra(v, n = c("start", "end"))
+
+  # Get factor levels for whole dataset
+  if(is.factor(v$bird_id)) bird_id <- levels(v$bird_id) else bird_id <- unique(v$bird_id)
+  if(is.factor(v$feeder_id)) feeder_id <- levels(v$feeder_id) else feeder_id <- unique(v$feeder_id)
 
   # Calculate for each individual
   f <- v %>%
@@ -333,16 +377,16 @@ feeding <- function(v, bw = 15, pass = TRUE){
   if(pass == TRUE) f <- merge_extra(f, extra)
   f <- f[order(f$bird_id, f$feed_start, f$feeder_id), ]
 
+  # Apply factors
+  f$bird_id <- factor(f$bird_id, levels = bird_id)
+  f$feeder_id <- factor(f$feeder_id, levels = feeder_id)
+
   return(f)
 }
 
 
 # Calculate feeding bouts for single bird
 feeding_single <- function(v1, bw = 15){
-
-  # Get factor levels
-  bird_id <- levels(v1$bird_id)
-  feeder_id <- levels(v1$feeder_id)
 
   v1 <- v1[order(v1$start),]
   feeder_diff <- v1$feeder_id[-1] != v1$feeder_id[-nrow(v1)]
@@ -358,12 +402,12 @@ feeding_single <- function(v1, bw = 15){
   }
 
   ## Create the feeding data frame.
-  f <- data.frame(bird_id = factor(v1$bird_id[1], levels = bird_id),
-                  date = as.Date(v1$start[v1$feed_start == TRUE]),
-                  feeder_id = factor(v1$feeder_id[v1$feed_start == TRUE], levels = feeder_id),
-                  feed_start = v1$start[v1$feed_start == TRUE],
-                  feed_end = v1$end[v1$feed_end == TRUE],
-                  feed_length = difftime(v1$end[v1$feed_end == TRUE], v1$start[v1$feed_start == TRUE], units = "mins"))
+  f <- tibble::data_frame(bird_id = v1$bird_id[1],
+                          date = as.Date(v1$start[v1$feed_start == TRUE]),
+                          feeder_id = v1$feeder_id[v1$feed_start == TRUE],
+                          feed_start = v1$start[v1$feed_start == TRUE],
+                          feed_end = v1$end[v1$feed_end == TRUE],
+                          feed_length = difftime(v1$end[v1$feed_end == TRUE], v1$start[v1$feed_start == TRUE], units = "mins"))
 
   return(f)
 }
