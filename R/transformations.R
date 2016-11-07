@@ -561,11 +561,11 @@ disp <- function(v, bw = 5, pass = TRUE){
 #'   returned as a list item from \code{disp()}, or the whole displacements list
 #'   returned by \code{disp()}.
 #' @param tries Numeric. The maximum number of iterations to find the 'best guess'
-#' @param omit_zero Logical. Should individuals with 0 interactions (sum of wins
-#'   and losses) be omitted?
+#' @param omit_cutoff Numeric. Minimum number of interactions (sum of wins and
+#'   losses) individuals must have (omitted otherwise).
 #'
 #' @export
-dom <- function(d, tries = 50, omit_zero = TRUE){
+dom <- function(d, tries = 50, omit_cutoff = 3){
 
   # Function takes either the whole output of disp() or just the dominance table
   if(!is.data.frame(d)) d <- d$interactions
@@ -585,11 +585,11 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
 
   # Check sample sizes and warn if low
 
-  if(omit_zero == TRUE) {
-    omit <- o$displacer[(o$win + o$loss) == 0]
+  if(omit_cutoff > 0) {
+    omit <- o$displacer[(o$win + o$loss) < omit_cutoff]
     o <- o[!(o$displacer %in% omit), ]
     d <- d[!(d$displacee %in% omit) & !(d$displacer %in% omit), ]
-    if(length(omit) > 0) message("bird_ids with zero interactions have been omitted: ", paste0(omit, collapse = ", "))
+    if(length(omit) > 0) message("bird_ids with fewer than ", omit_cutoff, " interactions have been omitted: ", paste0(omit, collapse = ", "))
   }
 
   if(nrow(o[(o$win + o$loss) <= 2, ]) / nrow(o) > 0.5) message("More than 50% of your interactions (", round(nrow(d[d$n == 0, ]) / nrow(d)*100), "%) have 2 or fewer observations, this matrix may be founded on too little data.")
