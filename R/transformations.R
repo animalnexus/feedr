@@ -216,12 +216,16 @@ move <- function(v, all = FALSE, pass = TRUE){
   check_time(v)
   check_format(v)
 
-  # Get extra columns
-  if(pass == TRUE) extra <- keep_extra(v, n = c("start", "end"))
-
   # Get factor levels for whole dataset
   if(is.factor(v$bird_id)) bird_id <- levels(v$bird_id) else bird_id <- unique(v$bird_id)
   if(is.factor(v$feeder_id)) feeder_id <- levels(v$feeder_id) else feeder_id <- unique(v$feeder_id)
+
+  # Remove factors to allow silent joins between different levels
+  v$bird_id <- as.character(v$bird_id)
+  v$feeder_id <- as.character(v$feeder_id)
+
+  # Get extra columns
+  if(pass == TRUE) extra <- keep_extra(v, n = c("start", "end"))
 
   # Get movement options
   move_dir <- expand.grid(feeder_left = feeder_id, feeder_arrived = feeder_id)
@@ -248,6 +252,7 @@ move <- function(v, all = FALSE, pass = TRUE){
     m$bird_id <- factor(m$bird_id, levels = bird_id)
     m$feeder_id <- factor(m$feeder_id, levels = feeder_id)
   }
+
   return(m)
 }
 
@@ -284,7 +289,7 @@ move_single <- function(v1, move_dir, move_path, all = FALSE){
     m <- tibble::data_frame(bird_id = v1$bird_id[1],
                             date = as.Date(NA),
                             time = as.POSIXct(NA),
-                            feeder_id = NA,
+                            feeder_id = as.character(NA),
                             direction = as.character(NA),
                             move_id = as.numeric(NA),
                             move_dir = factor(NA, levels = move_dir),
