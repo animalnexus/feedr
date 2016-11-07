@@ -1,6 +1,3 @@
-# ----------------------------------
-# visits()
-# ----------------------------------
 #' 'Raw' data to 'visits' data
 #'
 #'
@@ -144,14 +141,9 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
   # Add in extra variables
   if(pass == TRUE) v <- merge_extra(v, extra)
 
-
   return(v)
 }
 
-
-# ----------------------------------
-# move
-# ----------------------------------
 
 #' 'Visits' to 'movements'
 #'
@@ -280,10 +272,6 @@ move_single <- function(v1, all = FALSE){
   return(m)
 }
 
-# ----------------------------------
-# feeding
-# ----------------------------------
-
 #' 'Visits' to 'feeding bouts'
 #'
 #' Turns visits at mulitple feeders into feeding bouts. Feeding bouts are
@@ -379,10 +367,6 @@ feeding_single <- function(v1, bw = 15){
   return(f)
 }
 
-
-# ----------------------------------
-# disp
-# ----------------------------------
 
 #' 'Visits' to 'displacements'
 #'
