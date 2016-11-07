@@ -67,8 +67,9 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
     if(na_rm == TRUE) r <- r[rowSums(is.na(r)) == 0,]
   }
 
-  ## Make factors
+  ## Make factors and get date
   r <- dplyr::mutate(r,
+                     date = as.Date(time),
                      feeder_id = factor(feeder_id),
                      bird_id = factor(bird_id))
 
