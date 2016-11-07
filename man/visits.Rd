@@ -54,5 +54,11 @@ head(v)
 
 v <- visits(finches, bw = 30)
 head(v)
+
+# Calculate across different experiments:
+library(dplyr)
+v <- chickadees \%>\%
+  group_by(experiment) \%>\%
+  do(visits(.))
 }
 

@@ -37,14 +37,26 @@ separated by switching feeders (when \code{bw = NULL}). If \code{bw} is not
 }
 \examples{
 
- v <- visits(finches)
- f <- feeding(v)
+v <- visits(finches)
+f <- feeding(v)
 
- # Summarize a movement dataframe (get total time spent feeding)
- library(dplyr)
- f.totals <- f \%>\%
-     group_by(bird_id, feeder_id) \%>\%
-     summarize(feed_length = sum(feed_length))
+# Summarize a movement dataframe (get total time spent feeding)
+library(dplyr)
+f.totals <- f \%>\%
+    group_by(bird_id, feeder_id) \%>\%
+    summarize(feed_length = sum(feed_length))
+
+# Calculate across different experiments (expect warnings about unequal factor levels):
+library(dplyr)
+
+v <- chickadees \%>\%
+  group_by(experiment) \%>\%
+  do(visits(.))
+
+f <- v \%>\%
+  group_by(experiment) \%>\%
+  do(feeding(.))
+
 
 }
 
