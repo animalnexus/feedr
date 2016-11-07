@@ -11,6 +11,7 @@ License: GPL-3
 LazyData: TRUE
 Depends: R (>= 3.2.2)
 Imports:
+    DT (>= 0.1),
     curl (>= 0.9.7),
     DBI (>= 0.4.1),
     dplyr(>= 0.4.3),
@@ -23,10 +24,12 @@ Imports:
     maptools (>= 0.8-39),
     RCurl (>= 1.95-4.8),
     RPostgreSQL (>= 0.4.1),
+    scales(>= 0.4.0),
     shiny (>= 0.14),
     shinyBS (>= 0.61),
     shinyjs (>= 0.6),
     stringr (>= 1.0.0),
+    tibble(>= 1.2),
     tidyr (>= 0.5.1),
     xml2 (>= 0.1.2)
 Suggests:
