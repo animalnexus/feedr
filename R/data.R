@@ -1,7 +1,7 @@
-#' Read data on Finches from original BirdMoves website
+#' Finches visits to RFID-enabled feeders
 #'
-#' A dataset containing raw reads of finches visiting feeders in Kamloops, BC,
-#' Canada
+#' A dataset containing raw reads of finches visiting feeders on Thompson Rivers
+#' University campus in Kamloops, BC, Canada
 #'
 #' @format A data frame with 412 rows and 5 variables:
 #' \describe{
