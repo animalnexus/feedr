@@ -19,7 +19,7 @@ test_that("ggmap and leaflet map return map", {
   m.indiv <- visits(finches) %>%
     dplyr::group_by(bird_id) %>%
     dplyr::do(move(.)) %>%
-    dplyr::group_by(bird_id, move_path) %>%
+    dplyr::group_by(bird_id, feeder_id, move_path) %>%
     dplyr::summarize(path_use = length(move_path))
 
 
