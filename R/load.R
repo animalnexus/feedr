@@ -184,8 +184,7 @@ load.raw.all <- function(r_dir,
 #'
 #' This function uses RCurl to submit an HTML form and retrieve the csv file.
 #' This is simply a convenience function to replace going to the website
-#' yourself (http://gaia.tru.ca/birdMOVES/datadownload.html) and then running
-#' the data frame through \code{\link{load_web}}.
+#' yourself (http://gaia.tru.ca/birdMOVES/datadownload.html).
 #'
 #' Note that while the website requires a date in the format of YYYY-MM-DD
 #' HH:MM:SS, this function is a bit more flexible. Using
