@@ -34,6 +34,17 @@
 #' @param keep_all Logical. Keep all individuals, even ones with less than 24hrs of data.
 #' @param pass Logical. Pass 'extra' columns through the function and append them to the output.
 #'
+#' @examples
+#'
+#' v <- visits(chickadees)
+#' f <- feeding(v)
+#' a <- activity(f, res = 1)
+#'
+#' # By feeder (may take a while)
+#' \dontrun{
+#' a <- activity(f, res = 1, by_feeder = TRUE)
+#'}
+#'
 #' @import magrittr
 #' @export
 
@@ -62,6 +73,10 @@ activity <- function(f, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE,
     # }
   }
 
+  # Get factor levels for whole dataset
+  if(is.factor(f$bird_id)) bird_id <- levels(f$bird_id) else bird_id <- unique(f$bird_id)
+  feeders <- unique(f[, c("feeder_id", "lat", "lon")])
+
   # Keep extra cols
   if(pass) {
     if(by_feeder == FALSE) only <- c("bird_id", "date") else only <- c("feeder_id", "bird_id", "date")
@@ -76,24 +91,29 @@ activity <- function(f, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE,
   # Apply individually to each bird
   a <- f %>%
     dplyr::group_by(bird_id) %>%
-    dplyr::do(activity_single(., res = res, by_feeder = by_feeder, missing = missing, sun = sun, keep_all = keep_all)) %>%
+    dplyr::do(activity_single(., feeders = feeders, res = res, by_feeder = by_feeder, missing = missing, sun = sun, keep_all = keep_all)) %>%
     dplyr::ungroup()
 
   if(pass) a <- merge_extra(a, extra)
 
   a <- dplyr::arrange(a, bird_id, date, time, feeder_id)
+
+  # Apply factors
+  a$bird_id <- factor(a$bird_id, levels = bird_id)
+  a$feeder_id <- factor(a$feeder_id, levels = levels(feeders$feeder_id))
+
   return(a)
 
 }
 
 
-activity_single <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE, keep_all = FALSE){
+activity_single <- function(f1, feeders, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE, keep_all = FALSE){
 
   check_indiv(f1)
 
   if(nrow(f1) == 0) {
     message(paste0(f1$bird_id[1], ": Skipping. Individual has no data"))
-    return(data.frame())
+    return(tibble::data_frame())
   } else {
 
   start <- lubridate::floor_date(min(f1$feed_start), "day")
@@ -102,10 +122,10 @@ activity_single <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun
   # Calculate Activity only if > 24hrs of data
   if((max(f1$feed_end) - min(f1$feed_start)) < lubridate::dhours(24) & keep_all == FALSE) {
     message(paste0(f1$bird_id[1], ": Skipping. Individual has less than 24hrs of data"))
-    return(data.frame())
+    return(tibble::data_frame())
   } else if (all(f1$feed_length == 0))  {
     message(paste0(f1$bird_id[1], ": Skipping. All feeding bouts are 0 min. Consider increasing 'bw' in feeding()"))
-    return(data.frame())
+    return(tibble::data_frame())
   } else {
     ## ACCOUNT FOR MISSING!!!
 
@@ -124,8 +144,8 @@ activity_single <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun
 
     # Prep activity data frame
     res <- res * 60
-    a <- data.frame(
-      bird_id = factor(f1$bird_id[1], levels = levels(f1$bird_id)),
+    a <- tibble::data_frame(
+      bird_id = f1$bird_id[1],
       time = seq(start, end, by = paste0(res, " sec")),
       activity_c = factor("inactive",
                           levels = c("active", "inactive", "unknown")))
@@ -134,17 +154,17 @@ activity_single <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun
 
     # Get by individual only, or by individual for each feeder
     if(by_feeder == FALSE){
-      a$feeder_id = factor(NA, levels = levels(f1$feeder_id))
+      a$feeder_id <- NA
     } else {
-      temp <- data.frame()
-      for(i in unique(f1$feeder_id)){
-        temp <- rbind(temp, cbind(a, feeder_id = factor(i, levels = levels(f1$feeder_id))))
+      temp <- tibble::data_frame()
+      for(i in levels(feeders$feeder_id)){
+        temp <- rbind(temp, cbind(a, feeder_id = i))
       }
       a <- temp
     }
 
     # Fill with active/inactive
-    for(f_id in levels(f1$feeder_id)){
+    for(f_id in unique(f1$feeder_id)){
       f <- f1[f1$feeder_id == f_id, ]
       for(i in 1:nrow(f)) {
         if(by_feeder == FALSE) {
@@ -166,7 +186,8 @@ activity_single <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun
     # }
 
     # Create plotting column
-    a$activity <- as.numeric(a$activity == "active")
+    a$activity <- as.numeric(a$activity_c == "active")
+    a$activity[a$activity_c == "unknown"] <- NA
 
     # Calculate sunrise/sunset times
     if(sun == TRUE) {
@@ -174,8 +195,10 @@ activity_single <- function(f1, res = 15, by_feeder = FALSE, missing = NULL, sun
         message(paste0(f1$bird_id, ": Skipping sunrise/sunset, no lat/lon information"))
       } else {
 
-        s <- expand.grid(feeder_id = unique(f1$feeder_id), date = as.Date(seq(start, end, by = "1 day"))) %>%
-          dplyr::left_join(unique(f1[, c("feeder_id", "lon", "lat")]), by = "feeder_id")
+        s <- expand.grid(feeder_id = feeders$feeder_id,
+                         date = as.Date(seq(start, end, by = "1 day"))) %>%
+          dplyr::left_join(unique(feeders[, c("feeder_id", "lon", "lat")]), by = "feeder_id")
+
         s <- dplyr::bind_cols(s, sun(s[, c("lon", "lat")], s$date))
 
         if(by_feeder == TRUE) {
