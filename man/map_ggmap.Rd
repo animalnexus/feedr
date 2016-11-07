@@ -80,7 +80,7 @@ m_indiv <- group_by(m, move_path, feeder_id, lat, lon) \%>\%
              summarise(path_use = length(move_path))
 
 # Look at individual summary maps (note that Leaflet just stacks individuals
-one on top of the other)
+# one on top of the other)
 map_leaflet(u = f_indiv, p = m_indiv)
 map_ggmap(u = f_indiv, p = m_indiv)
 

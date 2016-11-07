@@ -10,6 +10,6 @@ get.data(start = NULL, end = NULL,
   tz_disp = "America/Vancouver", sites = "Kamloops")
 }
 \description{
-Depreciated use \link{\code{dl_data}} instead.
+Depreciated use \code{\link{dl_data}} instead.
 }
 

@@ -9,7 +9,8 @@
   \item{bird_id}{Unique RFID tag attached to a finch}
   \item{time}{Time of read}
   \item{feeder_id}{Unique id of feeder where read was made}
-  \item{loc}{Lat/lon as downloaded from website}
+  \item{lat}{Latitude}
+  \item{lon}{Longitude}
   \item{species}{Individual species}}}
 \usage{
 finches

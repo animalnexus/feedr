@@ -9,6 +9,6 @@ load.raw.all(r_dir, pattern = "DATA", tz = "America/Vancouver",
   extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1)
 }
 \description{
-Depreciated, see \link{\code{load_raw_all}}.
+Depreciated, see \code{\link{load_raw_all}}.
 }
 

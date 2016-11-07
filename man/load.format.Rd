@@ -7,6 +7,6 @@
 load.format(r, tz, tz_disp = NULL)
 }
 \description{
-Depreciated use \link{\code{load_format}} instead.
+Depreciated use \code{\link{load_format}} instead.
 }
 
