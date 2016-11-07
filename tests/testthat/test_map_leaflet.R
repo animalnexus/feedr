@@ -1,5 +1,5 @@
 library(magrittr)
-context("leaflet maps")
+context("Mapping Visualizations")
 
 test_that("maps_leaflet_base return maps", {
   expect_error(map <- map_leaflet_base(locs = unique(finches[, c("feeder_id", "lat", "lon")])), NA)
