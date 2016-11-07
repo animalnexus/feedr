@@ -99,7 +99,7 @@ load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL,
 
 #'  Depreciated: Load raw read data
 #'
-#'  Depreciated, see \link{\code{load_raw}}.
+#'  Depreciated, see \code{\link{load_raw}}.
 #'
 #' @export
 load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1){
@@ -165,7 +165,7 @@ load_raw_all <- function(r_dir,
 
 #' Depreciated: Load and combine raw data files
 #'
-#' Depreciated, see \link{\code{load_raw_all}}.
+#' Depreciated, see \code{\link{load_raw_all}}.
 #'
 #' @export
 load.raw.all <- function(r_dir,
@@ -304,7 +304,7 @@ dl_data <- function(start = NULL,
 
 #' Depreciated: Download data from original BirdMoves website.
 #'
-#' Depreciated use \link{\code{dl_data}} instead.
+#' Depreciated use \code{\link{dl_data}} instead.
 #'
 #' @export
 get.data <- function(start = NULL,
@@ -367,7 +367,7 @@ load_format <- function(r, tz, tz_disp = NULL, time_format = "ymd HMS"){
 
 #' Depreciated: Internal function: Format data
 #'
-#' Depreciated use \link{\code{load_format}} instead.
+#' Depreciated use \code{\link{load_format}} instead.
 #'
 #' @export
 load.format <- function(r, tz, tz_disp = NULL) {
