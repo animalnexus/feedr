@@ -214,9 +214,6 @@ use.layer <- function(map, u, u_scale = 1, u_title = "Time", u_pal = c("yellow",
   .Deprecated("use_layer")
 }
 
-# ----------------------------------
-# map_leaflet()
-# ----------------------------------
 #' Map data using leaflet
 #'
 #' Visualize feeder use and path data using leaflet for R. This produces
@@ -353,9 +350,6 @@ map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
   .Deprecated("map_leaflet")
 }
 
-# ----------------------------------
-# map_ggmap()
-# ----------------------------------
 #' Map data using ggmap
 #'
 #' Visualize feeder use and path data using ggmap in R. This produces a
