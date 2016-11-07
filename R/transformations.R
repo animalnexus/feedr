@@ -546,11 +546,16 @@ disp <- function(v, bw = 5, pass = TRUE){
     tidyr::spread(role, bird_id) %>%
     dplyr::group_by(displacer, displacee) %>%
     dplyr::summarize(n = length(displacee)) %>%
-    dplyr::ungroup() %>%
+    dplyr::ungroup()
+
+  t$displacee <- factor(t$displacee, levels = bird_id)
+  t$displacer <- factor(t$displacer, levels = bird_id)
+
+  t <- t %>%
     tidyr::complete(displacer, displacee, fill = list("n" = 0)) %>%
     dplyr::filter(displacee != displacer)
 
-  t <- t[order(match(t$displacer,s$bird_id)),]  ##Sort according to the p_win value from s
+  t <- t[order(match(t$displacer, s$bird_id)),]  ##Sort according to the p_win value from s
 
   return(list("displacements" = d, "summaries" = s, "interactions" = t))
 }
