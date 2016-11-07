@@ -180,7 +180,7 @@ load.raw.all <- function(r_dir,
  .Deprecated("load_raw_all")
 }
 
-#' Download data from original BirdMoves website.
+#' Download data from original animalnexus database
 #'
 #' This function uses RCurl to submit an HTML form and retrieve the csv file.
 #' This is simply a convenience function to replace going to the website
