@@ -472,8 +472,9 @@ disp <- function(v, bw = 5, pass = TRUE){
   check_time(v)
   check_format(v)
 
-  bird_id <- levels(v$bird_id)
-  feeder_id <- levels(v$feeder_id)
+  # Get factor levels for whole dataset
+  if(is.factor(v$bird_id)) bird_id <- levels(v$bird_id) else bird_id <- unique(v$bird_id)
+  if(is.factor(v$feeder_id)) feeder_id <- levels(v$feeder_id) else feeder_id <- unique(v$feeder_id)
 
   v <- v[order(v$start), ]
 
