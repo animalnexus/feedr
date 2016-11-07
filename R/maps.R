@@ -522,6 +522,7 @@ map_ggmap <- function(u = NULL, p = NULL, locs = NULL,
   if(!is.null(p)){
     p <- p %>%
       dplyr::ungroup() %>%
+      dplyr::arrange(bird_id, move_path, feeder_id) %>%
       dplyr::mutate(n = rep(1:2, nrow(p)/2)) %>%
       tidyr::gather(type, value, lat, lon) %>%
       dplyr::select(-feeder_id) %>%
