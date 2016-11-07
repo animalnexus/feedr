@@ -578,7 +578,9 @@ dom <- function(d, tries = 50, omit_zero = TRUE){
   o <- dplyr::left_join(dplyr::group_by(d, displacer) %>% dplyr::summarize(win = sum(n)),
                         dplyr::group_by(d, displacee) %>% dplyr::summarize(loss = sum(n)),
                         by = c("displacer" = "displacee")) %>%
-    dplyr::mutate(p_win = win / (win + loss)) %>%
+    dplyr::mutate(win = replace(win, is.na(win), 0),
+                  loss = replace(loss, is.na(loss), 0),
+                  p_win = win / (win + loss)) %>%
     dplyr::arrange(desc(p_win))
 
   # Check sample sizes and warn if low
