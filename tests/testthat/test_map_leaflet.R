@@ -22,10 +22,16 @@ test_that("ggmap and leaflet map return map", {
     dplyr::group_by(bird_id, feeder_id, move_path) %>%
     dplyr::summarize(path_use = length(move_path))
 
+  m.error <- visits(finches) %>%
+    dplyr::group_by(bird_id) %>%
+    dplyr::do(move(.)) %>%
+    dplyr::group_by(bird_id, move_path) %>%
+    dplyr::summarize(path_use = length(move_path))
 
   expect_error(map <- map_leaflet(u = f.indiv, p = m.indiv), NA)
   expect_is(map, c("leaflet", "htmlwidget"))
 
+  expect_error(map_ggmap(u = f.indiv, p = m.error), "requires three columns:")
   expect_message(expect_error(map <- map_ggmap(u = f.indiv, p = m.indiv), NA), "(Some birds)|(Map from URL)|(You have specified)")
   expect_is(map, c("gg", "ggplot"))
 })

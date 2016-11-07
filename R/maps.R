@@ -8,8 +8,8 @@ map_prep <- function(u = NULL, p = NULL, locs = NULL) {
     if(!all(c("feeder_id","amount") %in% names(u))) stop("The use dataframe (u) requires two columns: 'feeder_id' and 'amount'.")
   }
   if(!is.null(p)){
-    if(!all(c("move_path","path_use") %in% names(p))) stop("The path dataframe (p) requires two columns: 'move_path' and 'path_use'.")
-    if(any(stringr::str_count(p$move_path, "_") > 1)) stop("Using '_' in feeder_id names conflicts with the mapping functions. You should remove any '_'s.")
+    if(!all(c("move_path","path_use", "feeder_id") %in% names(p))) stop("The path dataframe (p) requires three columns: 'feeder_id', 'move_path', 'path_use'.")
+    if(any(stringr::str_count(p$move_path, "_") > 1)) stop("Using '_' in feeder_id names conflicts with the mapping functions. You should remove any '_'s from feeder_ids.")
   }
 
   # Check and format location data
