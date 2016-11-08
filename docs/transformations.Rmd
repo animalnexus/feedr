@@ -1,11 +1,9 @@
 ---
 title: "Transforming/Summarizing Data"
 ---
-<a id = "top"></a>
 
-
-```{r, include = F}
-library(feedr)
+```{r setup, include = F}
+source("setup.R")
 ```
 
 This is a quick tutorial to get you started with transforming and summarizing your data from raw read data to a variety of different data types which can be used to answer different questions.

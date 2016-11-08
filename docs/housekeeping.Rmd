@@ -2,10 +2,8 @@
 title: "Housekeeping"
 ---
 
-<a id = "top"></a>
-
-```{r, include = F}
-library(feedr)
+```{r setup, include = F}
+source("setup.R")
 ```
 
 This is a quick tutorial covering a couple functions you can use to clean and fix problems in your data.

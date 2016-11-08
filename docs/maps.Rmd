@@ -1,12 +1,9 @@
 ---
 title: "Visualizing Data"
 ---
-<a id = "top"></a>
 
-
-```{r, include = F}
-library(feedr)
-knitr::opts_chunk$set(fig.width = 8, fig.height = 5)
+```{r setup, include = F}
+source("setup.R")
 ```
 
 Here we will go over visualizing your data with maps. `feedr` includes two wrapper functions that can be used to visualize your data on maps. These two functions, `map_leaflet` and `map_ggmap` are really just convenience functions to do a lot of the grunt work. If you want to achieve a more fine tuned map, I suggest you check out the packages `leaflet` and `ggmap`.

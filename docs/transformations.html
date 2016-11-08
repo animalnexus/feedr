@@ -15,7 +15,7 @@
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -71,6 +71,7 @@ h6 {
 }
 </style>
 
+<link rel="stylesheet" href="custom.css" type="text/css" />
 
 </head>
 
@@ -102,34 +103,34 @@ button.code-folding-btn:focus {
 <style type="text/css">
 /* padding for bootstrap navbar */
 body {
-  padding-top: 51px;
+  padding-top: 66px;
   padding-bottom: 40px;
 }
 /* offset scroll position for anchor links (for fixed navbar)  */
 .section h1 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 71px;
+  margin-top: -71px;
 }
 
 .section h2 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 71px;
+  margin-top: -71px;
 }
 .section h3 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 71px;
+  margin-top: -71px;
 }
 .section h4 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 71px;
+  margin-top: -71px;
 }
 .section h5 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 71px;
+  margin-top: -71px;
 }
 .section h6 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 71px;
+  margin-top: -71px;
 }
 </style>
 
@@ -169,7 +170,7 @@ $(document).ready(function () {
 
 
 
-<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
@@ -217,15 +218,14 @@ $(document).ready(function () {
 </div>
 
 
-<p><a id = "top"></a></p>
 <p>This is a quick tutorial to get you started with transforming and summarizing your data from raw read data to a variety of different data types which can be used to answer different questions.</p>
 <p>Here we assume that you know how to <a href="load.html">load/import</a> your data and that, if needed, you’ve cleaned up problematic bird_ids with the various <a href="housekeeping.html">housekeeping</a> functions.</p>
 <div id="functions" class="section level2">
 <h2>Functions</h2>
 <p>In all cases you’ll want to use the <code>visits()</code> function first, but after that it depends on what kinda of data you want to end up with.</p>
 <p>Click on the function name below to skip directly to the function tutorial:</p>
-<p><div id="htmlwidget-7ccba713d5b59ecf9e1f" style="width:500px;height:480px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-7ccba713d5b59ecf9e1f">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nvisits[label = \"visits()\", URL = \"#visits\", tooltip = \"Individual feeder visits\"]\ndisp[label = \"disp()\", URL = \"#displacements\", tooltip = \"Displacements from the feeder by another bird\"]\ndom[label = \"dom()\", URL = \"#dominance\", tooltip = \"Dominance indicated by displacements\"]\nmove[label = \"move()\", URL = \"#movements\", tooltip = \"Movements between feeders\"]\nfeed[label = \"feeding()\", URL = \"#feedingbouts\", tooltip = \"Feeding bouts at feeders\"]\nact[label = \"activity()\", URL = \"#acitivty\", tooltip = \"Activity scored (active/inactive)\"]\ndaily[label = \"daily()\", URL = \"#dailyactivity\", tooltip = \"Daily activity patterns\"]\n\nvisits-> {disp, move, feed}\nfeed -> act\ndisp -> dom\nact -> daily\n\nmap1[label = \"map_ggmap()\", URL = \"#mapggmap\", tooltip = \"Visualize with a static map\"]\nmap2[label = \"map_leaflet()\", URL = \"#mapleaflet\", tooltip = \"Visualize with an interactive map\"]\n\n{feed; move} -> {map1; map2}\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script> <a id = "visits"></a></p>
+<p><div id="htmlwidget-871d0457df2e92727fec" style="width:500px;height:480px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-871d0457df2e92727fec">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nvisits[label = \"visits()\", URL = \"#visits\", tooltip = \"Individual feeder visits\"]\ndisp[label = \"disp()\", URL = \"#displacements\", tooltip = \"Displacements from the feeder by another bird\"]\ndom[label = \"dom()\", URL = \"#dominance\", tooltip = \"Dominance indicated by displacements\"]\nmove[label = \"move()\", URL = \"#movements\", tooltip = \"Movements between feeders\"]\nfeed[label = \"feeding()\", URL = \"#feedingbouts\", tooltip = \"Feeding bouts at feeders\"]\nact[label = \"activity()\", URL = \"#acitivty\", tooltip = \"Activity scored (active/inactive)\"]\ndaily[label = \"daily()\", URL = \"#dailyactivity\", tooltip = \"Daily activity patterns\"]\n\nvisits-> {disp, move, feed}\nfeed -> act\ndisp -> dom\nact -> daily\n\nmap1[label = \"map_ggmap()\", URL = \"#mapggmap\", tooltip = \"Visualize with a static map\"]\nmap2[label = \"map_leaflet()\", URL = \"#mapleaflet\", tooltip = \"Visualize with an interactive map\"]\n\n{feed; move} -> {map1; map2}\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script> <a id = "visits"></a></p>
 </div>
 <div id="visits" class="section level2">
 <h2><code>visits()</code></h2>
@@ -240,10 +240,8 @@ $(document).ready(function () {
 ## 8 06200004F8 2016-01-28 12:36:09      2200 House Finch -120.3612 50.66778
 ## 9 06200004F8 2016-01-28 12:36:12      2200 House Finch -120.3612 50.66778</code></pre>
 <p>The <code>visits()</code> function turns this raw data into something more practical:</p>
-<pre class="r"><code>v &lt;- visits(finches, bw = 5)</code></pre>
-<pre><code>## Warning in mutate_impl(.data, dots): &#39;.Random.seed&#39; is not an integer
-## vector but of type &#39;NULL&#39;, so ignored</code></pre>
-<pre class="r"><code>head(v)</code></pre>
+<pre class="r"><code>v &lt;- visits(finches, bw = 5)
+head(v)</code></pre>
 <pre><code>## # A tibble: 6 × 10
 ##      bird_id       date               start                 end feeder_id
 ##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;fctr&gt;
@@ -392,7 +390,7 @@ ggplot(data = d$summaries, aes(x = bird_id, y = p_win)) +
   ylim(c(0, 1)) +
   labs(x = &quot;Bird id&quot;, y = &quot;Proportion of &#39;wins&#39;&quot;)</code></pre>
 <pre><code>## Warning: Removed 4 rows containing missing values (geom_point).</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-15-1.png" width="768" /></p>
 <div id="interactions" class="section level3">
 <h3>Interactions</h3>
 <p><strong>Interactions</strong> reflect each combination of possible interactions and how many times each occurred (<code>d$interactions</code>). This can then be converted to a dominance matrix (see <a href="#dom"><code>dom()</code> function</a>):</p>

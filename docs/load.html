@@ -15,7 +15,7 @@
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -67,6 +67,7 @@ h6 {
 }
 </style>
 
+<link rel="stylesheet" href="custom.css" type="text/css" />
 
 </head>
 
@@ -98,34 +99,34 @@ button.code-folding-btn:focus {
 <style type="text/css">
 /* padding for bootstrap navbar */
 body {
-  padding-top: 51px;
+  padding-top: 66px;
   padding-bottom: 40px;
 }
 /* offset scroll position for anchor links (for fixed navbar)  */
 .section h1 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 71px;
+  margin-top: -71px;
 }
 
 .section h2 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 71px;
+  margin-top: -71px;
 }
 .section h3 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 71px;
+  margin-top: -71px;
 }
 .section h4 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 71px;
+  margin-top: -71px;
 }
 .section h5 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 71px;
+  margin-top: -71px;
 }
 .section h6 {
-  padding-top: 56px;
-  margin-top: -56px;
+  padding-top: 71px;
+  margin-top: -71px;
 }
 </style>
 
@@ -165,7 +166,7 @@ $(document).ready(function () {
 
 
 
-<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
@@ -213,28 +214,25 @@ $(document).ready(function () {
 </div>
 
 
-<p><a id = "top"></a></p>
 <p>This is a quick tutorial to get you started with loading in your own data. <code>feedr</code> includes several wrapper functions that can be used to load and format your data.</p>
 <ul>
 <li><a href="#loadraw"><code>load_raw()</code></a></li>
-<li><a href="#loadrawall"><code>load_raw_web()</code></a></li>
-<li><a href="#loadweb"><code>load_web()</code></a></li>
+<li><a href="#loadrawall"><code>load_raw_all()</code></a></li>
 <li><a href="#dldata"><code>dl_data()</code></a></li>
 </ul>
-<p>These functions work with either <strong>raw</strong> feeder data (downloaded directly from the feeders) or <strong>web</strong> feeder data downloaded from the birdmoves websites (either by hand, from <a href="http://gaia.tru.ca/birdMOVES/datadownload.html" class="uri">http://gaia.tru.ca/birdMOVES/datadownload.html</a>, or with the <code>dl_data()</code> function.</p>
+<p>These functions work with either <strong>raw</strong> feeder data (downloaded directly from the feeders) or _<strong>database</strong> feeder data downloaded from <a href="http://animalnexus.ca" class="uri">http://animalnexus.ca</a> directly or with the <code>dl_data()</code> function.</p>
 <div id="a-note-about-file-structure" class="section level2">
 <h2>A note about file structure</h2>
-<p>It’s important to remember that when specifying file locations, you must either specify a complete file id (e.g. /home/steffi/Desktop/data.csv) <strong>or</strong> an appropriate relative file location.</p>
+<p>It’s important to remember that when specifying file locations, you must either specify a complete file location (e.g. “/home/steffi/Desktop/data.csv”) <strong>or</strong> an appropriate relative file location. A relative file location would be something like: “./Data/data.csv” which points to a file called data.csv which is in a folder called “Data”. The “./” indicates that “Data” is in the current working directory. If we used “../” that would indicate that “Data” was one directory up.</p>
 <p>Also, remember that file locations are relative to where R’s working directory is, and this is not necessarily the same place as the R script with which you are working.</p>
 <p>If you are using RStudio, it is highly recommended that you specify an RStudio project in the directory which holds your scripts. This way, anytime you open the file, the working directly is automatically set to your script directly.</p>
-<p>Otherwise you should probably use Session &gt; Set Working Directory &gt; To Source File Location (if you’re using RStudio).</p>
 <p><strong>This tutorial assumes that your data is stored in a folder called “Data” which is in turn stored in your R scripts folder.</strong></p>
 <p><a id="loadraw"></a></p>
 </div>
 <div id="load_raw" class="section level2">
 <h2><code>load_raw()</code></h2>
-<p>This loads and formats a raw data file downloaded directly from feeder RFID readers.</p>
-<pre class="r"><code>r1 &lt;- load_raw(&quot;./Data/exp1/GR10DATA_2015_12_09.TXT&quot;)
+<p>This loads and formats a raw data file downloaded directly from RFID loggers setup in the same manner as the Thompson Rivers University feeders.</p>
+<pre class="r"><code>r1 &lt;- load_raw(&quot;./Data/Raw/exp2/GR10DATA_2016_01_16.TXT&quot;)
 head(r1)</code></pre>
 <pre><code>##      bird_id                time feeder_id
 ## 1 0000000000 2016-01-11 11:34:08      GR10
@@ -243,104 +241,98 @@ head(r1)</code></pre>
 ## 4 062000014F 2016-01-11 12:02:50      GR10
 ## 5 062000014F 2016-01-11 12:04:30      GR10
 ## 6 062000014F 2016-01-11 12:05:00      GR10</code></pre>
-<p>Note that the feeder_id is taken from the file name. This is done by matching an expected pattern against the actual file name.</p>
-<p>The default pattern matches GR or GPR followed by 1 or 2 digits. If you need to specify a different pattern you can do so:</p>
-<pre class="r"><code>r1 &lt;- load_raw(&quot;./Data/exp1/Feeder_10_2015_12_09.TXT&quot;, feeder_pattern = &quot;Feeder_[0-9]{2}&quot;)
+<p>Note that the <code>feeder_id</code> is taken from the file name. This is done by matching an expected pattern against the actual file name.</p>
+<p>The default pattern matches GR or GPR followed by 1 or 2 digits. If you need to specify a different pattern you can do so. For example, if your feeders were labeled “Feeder_10” or “Feeder_01”:</p>
+<pre class="r"><code>r1 &lt;- load_raw(&quot;./Data/Raw/exp2/Feeder_10_2016_01_16.TXT&quot;, feeder_pattern = &quot;Feeder_[0-9]{2}&quot;)
 head(r1)</code></pre>
+<pre><code>##      bird_id                time feeder_id
+## 1 0000000000 2016-01-11 11:34:08 Feeder_10
+## 2 062000014F 2016-01-11 12:00:54 Feeder_10
+## 3 062000014F 2016-01-11 12:01:57 Feeder_10
+## 4 062000014F 2016-01-11 12:02:50 Feeder_10
+## 5 062000014F 2016-01-11 12:04:30 Feeder_10
+## 6 062000014F 2016-01-11 12:05:00 Feeder_10</code></pre>
 <p>For more information on how to write patterns, see documentation for “Regular Expressions” (e.g. <a href="http://www.regular-expressions.info/tutorial.html" class="uri">http://www.regular-expressions.info/tutorial.html</a>)</p>
 <p><a id="loadrawall"></a></p>
 </div>
 <div id="load_raw_all" class="section level2">
 <h2><code>load_raw_all()</code></h2>
-<p>The function <code>load_raw_all()</code> is a wrapper function which will automatically load and combine data contained in several different files in a single folder, or in a nested series of folders. Other files can be present, but all feeder data files must be identifiable by a pattern in the file name.</p>
+<p>The function <code>load_raw_all()</code> is a wrapper function which will automatically load and combine data contained in several different files in a single folder, or in a nested series of folders. Other files can be present, but all data files must be identifiable by a pattern in the file name.</p>
 <p>In this example our data files are stored in a folder called <code>raw</code> and there are several sets of data, each corresponding to an individual experiment which are then stored in their own folder called <code>exp1</code>, <code>exp2</code>, etc. Feeder data files are identifiable by the characters ‘DATA’ present in the name (as in the above example), which is the default.</p>
-<pre class="r"><code>r &lt;- load_raw_all(r_dir = &quot;./Data/raw&quot;)
-head(r)</code></pre>
-<pre><code>## Empty file skipped: /home/steffi/R/x86_64-pc-linux-gnu-library/3.3/feedr/extdata/raw/exp2/GR10DATA_2016_01_18.TXT</code></pre>
+<pre class="r"><code>r &lt;- load_raw_all(r_dir = &quot;./Data/Raw&quot;)</code></pre>
+<pre><code>## Empty file skipped: ./Data/Raw/exp2/GR10DATA_2016_01_18.TXT</code></pre>
+<pre class="r"><code>head(r)</code></pre>
 <pre><code>##      bird_id                time feeder_id
-## 1 0000000000 2016-01-11 11:34:08      GR10
-## 2 062000014F 2016-01-11 12:00:54      GR10
-## 3 062000014F 2016-01-11 12:01:57      GR10
-## 4 062000014F 2016-01-11 12:02:50      GR10
-## 5 062000014F 2016-01-11 12:04:30      GR10
-## 6 062000014F 2016-01-11 12:05:00      GR10</code></pre>
-<p>If your feeder files didn’t have a identiifable label, but were the only csv files in the folders, you could use:</p>
-<pre class="r"><code>r &lt;- load_raw_all(r_dir = &quot;./Data/raw&quot;, pattern = &quot;.csv&quot;)</code></pre>
+## 1 062000038F 2016-01-18 13:46:06      GR10
+## 2 062000038F 2016-01-18 13:53:08      GR10
+## 3 062000038F 2016-01-19 09:09:49      GR10
+## 4 062000038F 2016-01-19 09:09:51      GR10
+## 5 062000038F 2016-01-19 09:09:52      GR10
+## 6 062000038F 2016-01-20 11:07:32      GR10</code></pre>
+<pre class="r"><code>summary(r)</code></pre>
+<pre><code>##        bird_id           time                     feeder_id  
+##  062000038D: 4082   Min.   :2016-01-06 13:18:44   GR10:4290  
+##  0700EE2B10: 2614   1st Qu.:2016-01-15 10:48:46   GR11:8697  
+##  062000038F: 2487   Median :2016-01-23 15:41:34   GR12:5649  
+##  062000014F: 1935   Mean   :2016-01-26 08:58:16   GR13:8819  
+##  0700ED9E0E: 1809   3rd Qu.:2016-02-05 15:55:54              
+##  0700EE0E42: 1675   Max.   :2016-02-16 14:30:29              
+##  (Other)   :12853</code></pre>
+<p>(Note that empty files are skipped, but identified)</p>
+<p>If your feeder files don’t have an identifiable label, but are the only csv files in the folders, you could use:</p>
+<pre class="r"><code>r &lt;- load_raw_all(r_dir = &quot;./Data/Raw&quot;, pattern = &quot;.csv&quot;)</code></pre>
 <p>However, in this example we have several different experiments, which we’ll probably want to identify in our data. This is where the <code>extra</code> arguments come in.</p>
-<p>In our example, each experiment is stored in its own folder (exp1 and exp2). Therefore we can tell our function to identify those patterns (<code>extra_pattern</code>) and store the values in an extra column (<code>extra_name</code>):</p>
-<pre class="r"><code>r &lt;- load_raw_all(r_dir = &quot;./Data/raw&quot;, extra_pattern = &quot;exp[1-2]{1}&quot;, extra_name = &quot;experiment&quot;)</code></pre>
-<pre><code>## Empty file skipped: /home/steffi/R/x86_64-pc-linux-gnu-library/3.3/feedr/extdata/raw/exp2/GR10DATA_2016_01_18.TXT</code></pre>
+<pre class="r"><code>list.files(&quot;./Data/Raw&quot;)</code></pre>
+<pre><code>## [1] &quot;exp2&quot; &quot;exp3&quot;</code></pre>
+<p>In our example, each experiment is stored in its own folder (‘exp2’ and ‘exp3’). Therefore we can tell our function to identify those patterns (<code>extra_pattern</code>) and store the values in an extra column (<code>extra_name</code>):</p>
+<pre class="r"><code>r &lt;- load_raw_all(r_dir = &quot;./Data/Raw&quot;, extra_pattern = &quot;exp[2-3]{1}&quot;, extra_name = &quot;experiment&quot;)</code></pre>
+<pre><code>## Empty file skipped: ./Data/Raw/exp2/GR10DATA_2016_01_18.TXT</code></pre>
+<pre class="r"><code>head(r)</code></pre>
 <pre><code>##      bird_id                time feeder_id experiment
-## 1 0000000000 2016-01-11 11:34:08      GR10       exp2
-## 2 062000014F 2016-01-11 12:00:54      GR10       exp2
-## 3 062000014F 2016-01-11 12:01:57      GR10       exp2
-## 4 062000014F 2016-01-11 12:02:50      GR10       exp2
-## 5 062000014F 2016-01-11 12:04:30      GR10       exp2
-## 6 062000014F 2016-01-11 12:05:00      GR10       exp2</code></pre>
+## 1 062000038F 2016-01-18 13:46:06      GR10       exp2
+## 2 062000038F 2016-01-18 13:53:08      GR10       exp2
+## 3 062000038F 2016-01-19 09:09:49      GR10       exp2
+## 4 062000038F 2016-01-19 09:09:51      GR10       exp2
+## 5 062000038F 2016-01-19 09:09:52      GR10       exp2
+## 6 062000038F 2016-01-20 11:07:32      GR10       exp2</code></pre>
 <p>“exp[1-2]{1}” matches the exact characters “exp” followed by either a 1 or a 2 of which there is exactly 1.</p>
-<p>We can also merge in some extra values for use later (visualizations, etc.)</p>
+<p>Because raw logger data doesn’t have any specific information, we should probably merge in some extra data for use later (visualizations, etc.):</p>
+<pre class="r"><code>## Open feeder index
+f_index &lt;- read.csv(&quot;./Data/feeder_index.csv&quot;)
+head(f_index)</code></pre>
 <pre><code>##   experiment feeder_id      lat       lon
 ## 1       exp1      GR10 53.89404 -122.8180
 ## 2       exp1      GR11 53.89304 -122.8183
 ## 3       exp1      GR12 53.89324 -122.8208
 ## 4       exp1      GR13 53.89410 -122.8201
 ## 5       exp2      GR10 53.89086 -122.8193
-## 6       exp2      GR11 53.88999 -122.8210
-## 7       exp2      GR12 53.88997 -122.8193
-## 8       exp2      GR13 53.89088 -122.8208</code></pre>
-<pre class="r"><code>f.index &lt;- read.csv(&quot;./Data/feeder_index.csv&quot;)
-f.index</code></pre>
-<pre class="r"><code>r &lt;- merge(r, f.index, by = c(&quot;experiment&quot;, &quot;feeder_id&quot;))
+## 6       exp2      GR11 53.88999 -122.8210</code></pre>
+<pre class="r"><code>## Merge feeder index into RFID data, matching &#39;experiment&#39; and &#39;feeder_id&#39;
+r &lt;- merge(r, f_index, by = c(&quot;experiment&quot;, &quot;feeder_id&quot;))
 head(r)</code></pre>
 <pre><code>##   experiment feeder_id    bird_id                time      lat       lon
-## 1       exp2      GR10 062000038D 2016-01-11 11:03:44 53.89086 -122.8193
-## 2       exp2      GR10 062000038D 2016-01-11 11:05:03 53.89086 -122.8193
-## 3       exp2      GR10 062000038D 2016-01-11 11:05:59 53.89086 -122.8193
-## 4       exp2      GR10 062000038D 2016-01-11 11:06:03 53.89086 -122.8193
-## 5       exp2      GR10 062000038D 2016-01-11 11:06:29 53.89086 -122.8193
-## 6       exp2      GR10 062000038D 2016-01-11 11:05:29 53.89086 -122.8193</code></pre>
-<p>Because here, the feeder units were reused for different experiments, some feeders have the same id, but a different lat/lon. This will create problems later on, so let’s create unique feeder_id names:</p>
+## 1       exp2      GR10 06200004E4 2016-01-24 15:44:23 53.89086 -122.8193
+## 2       exp2      GR10 06200004E4 2016-01-24 15:57:45 53.89086 -122.8193
+## 3       exp2      GR10 0620000525 2016-01-22 11:57:47 53.89086 -122.8193
+## 4       exp2      GR10 06200004E4 2016-01-24 14:49:59 53.89086 -122.8193
+## 5       exp2      GR10 06200004E4 2016-01-24 14:45:14 53.89086 -122.8193
+## 6       exp2      GR10 06200004E4 2016-01-24 14:46:00 53.89086 -122.8193</code></pre>
+<p>Because here, the RFID-enabled feeders were reused for different experiments, some feeders have the same id, but a different lat/lon. However, feeder_ids need to be unique or we will have problems later on, so let’s create unique feeder_id names:</p>
 <pre class="r"><code>r$feeder_id &lt;- paste(r$experiment, r$feeder_id, sep = &quot;-&quot;)
 head(r)</code></pre>
 <pre><code>##   experiment feeder_id    bird_id                time      lat       lon
-## 1       exp2 exp2-GR10 062000038D 2016-01-11 11:03:44 53.89086 -122.8193
-## 2       exp2 exp2-GR10 062000038D 2016-01-11 11:05:03 53.89086 -122.8193
-## 3       exp2 exp2-GR10 062000038D 2016-01-11 11:05:59 53.89086 -122.8193
-## 4       exp2 exp2-GR10 062000038D 2016-01-11 11:06:03 53.89086 -122.8193
-## 5       exp2 exp2-GR10 062000038D 2016-01-11 11:06:29 53.89086 -122.8193
-## 6       exp2 exp2-GR10 062000038D 2016-01-11 11:05:29 53.89086 -122.8193</code></pre>
-<p><a id="loadweb"></a></p>
-</div>
-<div id="load_web" class="section level2">
-<h2><code>load_web()</code></h2>
-<p>You can go to <a href="http://gaia.tru.ca/birdMOVES/datadownload.html" class="uri">http://gaia.tru.ca/birdMOVES/datadownload.html</a> and download a csv file of data from the BirdMoves website. To load and format this data for use with the feedr package, run:</p>
-<pre class="r"><code>r &lt;- load_web(&quot;./Data/load_web.csv&quot;)
-head(r)</code></pre>
-<pre><code>##      bird_id                time feeder_id     species       lon      lat
-## 1 0620000514 2016-01-28 12:34:25      2200 House Finch -120.3612 50.66778
-## 2 0620000514 2016-01-28 12:34:28      2200 House Finch -120.3612 50.66778
-## 3 041868D861 2016-01-28 12:35:41      2200 House Finch -120.3612 50.66778
-## 4 06200004F8 2016-01-28 12:35:52      2200 House Finch -120.3612 50.66778
-## 5 06200004F8 2016-01-28 12:35:59      2200 House Finch -120.3612 50.66778
-## 6 06200004F8 2016-01-28 12:36:02      2200 House Finch -120.3612 50.66778</code></pre>
-<p>The default timezone is “America/Vancouver”, therefore, if your data is from a different time zone, you need to specify that manually. Make sure you use a timezone name from the output of OlsonNames(). For example:</p>
-<pre class="r"><code>r &lt;- load_web(&quot;./Data/load_web.csv&quot;, tz = &quot;America/Costa_Rica&quot;)
-r$time[1]
-head(r)</code></pre>
-<pre><code>## [1] &quot;2016-01-28 12:34:25 CST&quot;</code></pre>
-<pre><code>##      bird_id                time feeder_id     species       lon      lat
-## 1 0620000514 2016-01-28 12:34:25      2200 House Finch -120.3612 50.66778
-## 2 0620000514 2016-01-28 12:34:28      2200 House Finch -120.3612 50.66778
-## 3 041868D861 2016-01-28 12:35:41      2200 House Finch -120.3612 50.66778
-## 4 06200004F8 2016-01-28 12:35:52      2200 House Finch -120.3612 50.66778
-## 5 06200004F8 2016-01-28 12:35:59      2200 House Finch -120.3612 50.66778
-## 6 06200004F8 2016-01-28 12:36:02      2200 House Finch -120.3612 50.66778</code></pre>
-<p><strong>Note:</strong> This doesn’t <em>convert</em> the time from one zone to another, it merely <em>assigns</em> the timezone. Make sure this matches the timezone of the original data download.</p>
+## 1       exp2 exp2-GR10 06200004E4 2016-01-24 15:44:23 53.89086 -122.8193
+## 2       exp2 exp2-GR10 06200004E4 2016-01-24 15:57:45 53.89086 -122.8193
+## 3       exp2 exp2-GR10 0620000525 2016-01-22 11:57:47 53.89086 -122.8193
+## 4       exp2 exp2-GR10 06200004E4 2016-01-24 14:49:59 53.89086 -122.8193
+## 5       exp2 exp2-GR10 06200004E4 2016-01-24 14:45:14 53.89086 -122.8193
+## 6       exp2 exp2-GR10 06200004E4 2016-01-24 14:46:00 53.89086 -122.8193</code></pre>
+<p>This data is now ready for <a href="transformations.html">transformations</a>!</p>
 <p><a id="dldata"></a></p>
 </div>
 <div id="dl_data" class="section level2">
 <h2><code>dl_data()</code></h2>
-<p>This is likely the easiest way to get data (provided the data you’re interested in is hosted on the BirdMoves website). This function requests data from the BirdMoves website and formats it for use with the feedr transformation functions.</p>
+<p>This is likely the easiest way to get data (provided the data you’re interested in is hosted in the animal__nexus__ database). This function requests data from animal__nexus__ and formats it for use with the feedr transformation functions.</p>
 <p>If you don’t specify anything, all data will be downloaded for the default site (Kamloops) and the default extra columns (loc and species) with the default timezone (America/Vancouver). See ?dl_data for more details.</p>
 <pre><code>##      bird_id                time feeder_id            species       lon
 ## 1 062000031A 2015-09-02 08:25:58      2100 Mountain Chickadee -120.3624

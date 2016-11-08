@@ -1,6 +1,7 @@
 name: "use-feedr"
 output_dir: "."
 navbar:
+  type: inverse
   title: "How to use feedr"
   left:
     - text: "Home"
@@ -18,6 +19,7 @@ navbar:
       href: about.html
 output:
   html_document:
-    theme: cosmo
+    theme: readable
     highlight: textmate
+    css: custom.css
 
