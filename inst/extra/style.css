@@ -41,6 +41,18 @@ element.style {
   width:100%;
 }
 
+.current {
+  width: 325px;
+  overflow: hidden;
+}
+
+.current img {
+    margin-right: 15px;
+    float: left;
+}
+
+
+
 .wiki-watermark {
   background: rgb(0, 0, 0); /* fallback color */
     background: rgba(0, 0, 0, 0.7);
