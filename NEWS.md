@@ -1,5 +1,14 @@
 # feedr 0.7.0.0001
 
+## Bug Fixes
+
+- Fixed minor errors in activity(), move() and feeding() 
+- Fixed errors in documentation examples
+- Added new documentation examples
+- Changed factoring to allow use of dplyr's group_by to run transformations on groups of data (e.g. differen sites or experiments)
+- Updated "Current activity" style
+
+
 # feedr 0.7.0 (2016-11-03)
 
 This update provides a large amount of new functionality and bug fixes, making the app smoother overall.
