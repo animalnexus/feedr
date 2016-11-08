@@ -68,13 +68,13 @@ mod_map_current <- function(input, output, session, db) {
                                                                                     marker = "darkpurple",
                                                                                     iconColor = "white"))
 
-
-  imgs_wiki <- read.csv(system.file("extdata", "shiny-data", "species.csv", package = "feedr"), colClasses = c("factor", "character"))
-  imgs <- read.csv(system.file("extdata", "shiny-data", "img_index.csv", package = "feedr"))
-
   values <- reactiveValues(
     current_map = NULL,
     current_time = NULL)
+
+  observeEvent(input$pause, {
+    browser()
+  })
 
   if(!is.null(db)){
     con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
@@ -104,14 +104,21 @@ mod_map_current <- function(input, output, session, db) {
       withProgress(message = "Updating...", {
         suppressWarnings({
           data <- dbGetQuery(con,
-                             statement = paste0("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time, feeders.site_name, feeders.loc, birds.species, birds.age, birds.sex ",
-                                                "FROM raw.visits, feeders, birds ",
-                                                "WHERE (raw.visits.feeder_id = feeders.feeder_id) ",
-                                                "AND (birds.bird_id = raw.visits.bird_id) ",
-                                                "AND feeders.site_name IN ( 'Kamloops, BC' ) ",
-                                                #"AND raw.visits.time::timestamp > (CURRENT_TIMESTAMP - INTERVAL '7 minutes') ",
-                                                "AND raw.visits.time::timestamp > ('2016-03-25 15:23:30'::timestamp - INTERVAL '7 minutes') "))
-        })
+                             statement = paste("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time, feeders.site_name, feeders.loc, birds.species, birds.age, birds.sex",
+                                                "FROM raw.visits, feeders, birds",
+                                                "WHERE (raw.visits.feeder_id = feeders.feeder_id)",
+                                                "AND (birds.bird_id = raw.visits.bird_id)",
+                                                "AND feeders.site_name IN ( 'Kamloops, BC' )",
+                                                "AND raw.visits.time::timestamp > ( CURRENT_TIMESTAMP::timestamp - INTERVAL '24 hours' )"))
+
+          if(nrow(data) == 0) data <- dbGetQuery(con,
+                                                     statement = paste("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time, feeders.site_name, feeders.loc, birds.species, birds.age, birds.sex ",
+                                                                       "FROM raw.visits, feeders, birds ",
+                                                                       "WHERE (raw.visits.feeder_id = feeders.feeder_id) ",
+                                                                       "AND (birds.bird_id = raw.visits.bird_id) ",
+                                                                       "AND feeders.site_name IN ( 'Kamloops, BC' ) ",
+                                                                       "ORDER BY raw.visits.time::timestamp DESC LIMIT 100"))
+          })
         dbDisconnect(con)
 
         if(nrow(data) > 0) {
@@ -174,7 +181,7 @@ mod_map_current <- function(input, output, session, db) {
   ## Add activity points
   # Add circle markers for sample sizes
   observeEvent(current(), {
-    req(imgs, imgs_wiki, values$current_map)
+    req(values$current_map)
 
     cat("Refreshing map of current activity (", as.character(Sys.time()), ") ...\n")
     if(nrow(current()) > 0) {
@@ -186,7 +193,7 @@ mod_map_current <- function(input, output, session, db) {
                                                    "<strong>Bird ID:</strong> ", bird_id, "<br>",
                                                    "<strong>No. RFID reads:</strong> ", n, "<br>",
                                                    "<strong>Total time:</strong> ", time, "min <br>",
-                                                   feedr:::get_image(current(), bird_id, 100, imgs, imgs_wiki)),
+                                                   feedr:::get_image(current(), bird_id, 100)),
                                    lng = ~lon, lat = ~lat, group = "Activity")
 
     } else {
