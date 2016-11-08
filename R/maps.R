@@ -265,7 +265,7 @@ use.layer <- function(map, u, u_scale = 1, u_title = "Time", u_pal = c("yellow",
 #'   summarise(amount = sum(feed_length))
 #'
 #' m_indiv <- m %>%
-#'   group_by(move_path, feeder_id, lat, lon) %>%
+#'   group_by(bird_id, feeder_id, move_path, lat, lon) %>%
 #'   summarise(path_use = length(move_path))
 #'
 #' # Look at individual summary maps (note that Leaflet just stacks individuals
@@ -400,12 +400,11 @@ map.leaflet <- function(u = NULL, p = NULL, locs = NULL,
 #'   summarise(amount = sum(feed_length))
 #'
 #' m_indiv <- m %>%
-#'   group_by(move_path, feeder_id, lat, lon) %>%
+#'   group_by(bird_id, feeder_id, move_path, lat, lon) %>%
 #'   summarise(path_use = length(move_path))
 #'
 #' # Look at individual summary maps (note that Leaflet just stacks individuals
 #' # one on top of the other)
-#' map_leaflet(u = f_indiv, p = m_indiv)
 #' map_ggmap(u = f_indiv, p = m_indiv)
 #'
 #' @export
