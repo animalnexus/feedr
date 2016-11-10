@@ -1,4 +1,4 @@
-library(feedr)
+library(feedr, lib.loc = "/usr/local/lib/R_exp/site-library/")
 
 shinyServer(function(input, output, session) {
 
