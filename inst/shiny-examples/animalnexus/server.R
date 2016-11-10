@@ -121,9 +121,11 @@ shinyServer(function(input, output, session) {
 
   ## Look at birds
   output$img_birds <- renderText({
-    req(imgs, birds())
+    req(birds())
     # Don't actually know what STRH stands for, assuming Sapphire-throated Hummingbird
-    feedr:::get_image(birds(), input$dt_birds_rows_selected, 300)
+    #paste0("<div class = \"bird-img\">",
+           feedr:::get_image(birds(), input$dt_birds_rows_selected, 300)#,
+    #       "</div>")
     })
 
 

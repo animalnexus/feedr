@@ -108,10 +108,11 @@ shinyUI(
             ## BIRDS
             #################
             tabPanel("Individuals",
-                     fluidRow(column(6,
-                                     h3("Click on a row for more information")),
-                              column(6, htmlOutput("img_birds"))),
-                     fluidRow(DT::dataTableOutput("dt_birds"))
+                     column(9,
+                            fluidRow(DT::dataTableOutput("dt_birds"))),
+                     column(3,
+                            h4("Click on a row for more information"),
+                            htmlOutput("img_birds", class = "bird-img"))
             ),
             #################
             ## DATA
