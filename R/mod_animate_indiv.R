@@ -78,8 +78,8 @@ mod_UI_map_animate_indiv <- function(id) {
            p("Paths and feeder use can be animated over time by clicking on the", strong("small blue arrow"), "to the lower right of the 'Time' slider (right)."),
            p("The time interval of each jump and the speed of the animation can be adjusted above."),
            h3("Tip:"),
-           p("If you find your animations lagging, reduce the amount of data (adjust the time range)."),
-           actionButton(ns("pause"), "Pause")
+           p("If you find your animations lagging, reduce the amount of data (adjust the time range).")#,
+           #actionButton(ns("pause"), "Pause")
     ),
     column(8,
            popify(fluidRow(leafletOutput(ns("map"), height = 600)),

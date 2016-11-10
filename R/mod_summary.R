@@ -66,8 +66,8 @@ mod_UI_map_summary <- function(id) {
                   content = "Select a particular time range to look at", options = list(container = "body")),
            hr(),
            h3("Instructions:"),
-           p("Select the time range overwhich to summarize."),
-           actionButton(ns("pause"), "Pause")
+           p("Select the time range overwhich to summarize.")#,
+           #actionButton(ns("pause"), "Pause")
     ),
     column(8,
            popify(fluidRow(leafletOutput(ns("map"), height = 600)),
