@@ -9,6 +9,6 @@ load.raw(r_file, tz = "America/Vancouver", tz_disp = NULL,
   extra_name = NULL, sep = "", skip = 1)
 }
 \description{
-Depreciated, see \link{\code{load_raw}}.
+Depreciated, see \code{\link{load_raw}}.
 }
 

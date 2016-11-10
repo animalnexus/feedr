@@ -22,12 +22,14 @@ mod_UI_map_current <- function(id) {
   ns <- NS(id)
 
   tagList(
+    includeCSS(system.file("extra", "style.css", package = "feedr")),
     fluidRow(
       column(12,
              leafletOutput(ns("map_current"), height = 500),
              htmlOutput(ns("current_time")),
-             actionButton(ns("current_update"), "Update Now", style = "margin: 0 auto")
-             #htmlOutput(ns("summary_current"))
+             actionButton(ns("current_update"), "Update Now", style = "margin: 0 auto")#,
+             #htmlOutput(ns("summary_current")),
+             #actionButton(ns("pause"), "Pause")
       )
     )
   )
@@ -36,6 +38,7 @@ mod_UI_map_current <- function(id) {
 
 #' @import shiny
 #' @import magrittr
+#' @import RPostgreSQL
 mod_map_current <- function(input, output, session, db) {
 
   ns <- session$ns
@@ -65,13 +68,13 @@ mod_map_current <- function(input, output, session, db) {
                                                                                     marker = "darkpurple",
                                                                                     iconColor = "white"))
 
-
-  imgs_wiki <- read.csv(system.file("extdata", "shiny-data", "species.csv", package = "feedr"), colClasses = c("factor", "character"))
-  imgs <- read.csv(system.file("extdata", "shiny-data", "img_index.csv", package = "feedr"))
-
   values <- reactiveValues(
     current_map = NULL,
     current_time = NULL)
+
+  observeEvent(input$pause, {
+    browser()
+  })
 
   if(!is.null(db)){
     con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
@@ -101,14 +104,21 @@ mod_map_current <- function(input, output, session, db) {
       withProgress(message = "Updating...", {
         suppressWarnings({
           data <- dbGetQuery(con,
-                             statement = paste0("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time, feeders.site_name, feeders.loc, birds.species, birds.age, birds.sex ",
-                                                "FROM raw.visits, feeders, birds ",
-                                                "WHERE (raw.visits.feeder_id = feeders.feeder_id) ",
-                                                "AND (birds.bird_id = raw.visits.bird_id) ",
-                                                "AND feeders.site_name IN ( 'Kamloops, BC' ) ",
-                                                #"AND raw.visits.time::timestamp > (CURRENT_TIMESTAMP - INTERVAL '7 minutes') ",
-                                                "AND raw.visits.time::timestamp > ('2016-03-25 15:23:30'::timestamp - INTERVAL '7 minutes') "))
-        })
+                             statement = paste("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time, feeders.site_name, feeders.loc, birds.species, birds.age, birds.sex",
+                                                "FROM raw.visits, feeders, birds",
+                                                "WHERE (raw.visits.feeder_id = feeders.feeder_id)",
+                                                "AND (birds.bird_id = raw.visits.bird_id)",
+                                                "AND feeders.site_name IN ( 'Kamloops, BC' )",
+                                                "AND raw.visits.time::timestamp > ( CURRENT_TIMESTAMP::timestamp - INTERVAL '24 hours' )"))
+
+          if(nrow(data) == 0) data <- dbGetQuery(con,
+                                                     statement = paste("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time, feeders.site_name, feeders.loc, birds.species, birds.age, birds.sex ",
+                                                                       "FROM raw.visits, feeders, birds ",
+                                                                       "WHERE (raw.visits.feeder_id = feeders.feeder_id) ",
+                                                                       "AND (birds.bird_id = raw.visits.bird_id) ",
+                                                                       "AND feeders.site_name IN ( 'Kamloops, BC' ) ",
+                                                                       "ORDER BY raw.visits.time::timestamp DESC LIMIT 100"))
+          })
         dbDisconnect(con)
 
         if(nrow(data) > 0) {
@@ -116,7 +126,8 @@ mod_map_current <- function(input, output, session, db) {
             load_format(., tz = "UTC", tz_disp = "America/Vancouver") %>%
             visits(.) %>%
             dplyr::group_by(bird_id, feeder_id, species, age, sex, lon, lat) %>%
-            dplyr::summarize(n = length(bird_id),
+            dplyr::summarize(most_recent = max(end),
+                             n = length(bird_id),
                              time = round(sum(end - start)/60, 2)) %>%
             dplyr::group_by(feeder_id) %>%
             dplyr::do(circle(point = unique(.[, c("lat", "lon")]), data = ., radius = 0.01))
@@ -126,7 +137,7 @@ mod_map_current <- function(input, output, session, db) {
     data
   })
 
-  output$current_time <- renderText(as.character(values$current_time))
+  output$current_time <- renderText(paste0("Most recent activity: ", as.character(max(current()$most_recent))))
 
   ## Map of current activity
   output$map_current <- renderLeaflet({
@@ -151,11 +162,14 @@ mod_map_current <- function(input, output, session, db) {
         leaflet::addScaleBar(position = "bottomright") %>%
         leaflet::addAwesomeMarkers(data = current(),
                                    icon = ~sp_icons[species],
-                                   popup = ~paste0("<strong>Species:</strong> ", species, "<br>",
+                                   popup = ~paste0("<div class = \"current\">",
+                                                   feedr:::get_image(current(), bird_id, 100),
+                                                   "<strong>Species:</strong> ", species, "<br>",
                                                    "<strong>Bird ID:</strong> ", bird_id, "<br>",
                                                    "<strong>No. RFID reads:</strong> ", n, "<br>",
                                                    "<strong>Total time:</strong> ", time, "min <br>",
-                                                   feedr:::get_image(current(), bird_id, 100, imgs, imgs_wiki)),
+                                                   "<strong>Most recent visit:</strong> ", most_recent, "<br>",
+                                                   "</div>"),
                                    lng = ~lon, lat = ~lat, group = "Activity") %>%
         addLayersControl(baseGroups = c("Satellite", "Terrain", "Open Street Map", "Black and White"),
                          overlayGroups = c("Loggers", "Activity"),
@@ -167,7 +181,7 @@ mod_map_current <- function(input, output, session, db) {
   ## Add activity points
   # Add circle markers for sample sizes
   observeEvent(current(), {
-    req(imgs, imgs_wiki, values$current_map)
+    req(values$current_map)
 
     cat("Refreshing map of current activity (", as.character(Sys.time()), ") ...\n")
     if(nrow(current()) > 0) {
@@ -179,7 +193,7 @@ mod_map_current <- function(input, output, session, db) {
                                                    "<strong>Bird ID:</strong> ", bird_id, "<br>",
                                                    "<strong>No. RFID reads:</strong> ", n, "<br>",
                                                    "<strong>Total time:</strong> ", time, "min <br>",
-                                                   feedr:::get_image(current(), bird_id, 100, imgs, imgs_wiki)),
+                                                   feedr:::get_image(current(), bird_id, 100)),
                                    lng = ~lon, lat = ~lat, group = "Activity")
 
     } else {

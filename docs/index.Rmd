@@ -1,0 +1,117 @@
+---
+title: "Getting started"
+---
+
+```{r setup, include = F}
+source("setup.R")
+```
+
+<!-- Render entire site:
+rmarkdown::render_site("./docs/") -->
+
+
+This is an overview of how to use functions in the `feedr` package to transform and visual your RFID data.
+
+## Order of operations
+This package contains functions to perform three broad services: 
+
+1. [__Loading/Importing Data__](#load)  
+    Raw data downloaded from the feeders or from the animal__nexus__ website 
+2. [__Housekeeping__](#hk)  
+    Functions for checking and correcting errors before you transform the data
+3. [__Transformations__](#trans)  
+    When raw data is transformed into visit data, feeding data, etc. which are the output of the `visits()`, `feeding()`, etc. functions
+4. [__Visualizations__](#vis)  
+    Static or interactive maps produced by the mapping functions which visualize the movement and feeding patterns around your feeders.
+
+
+As such, several functions depend on the output of other functions.
+
+For example, to get daily activity patterns, you could get your data from the web with `dl_data()`, turn this raw data to visits data with `visits()`, turn visits data to activity data with `activity()` and finally, turn activity data into daily activity patterns with `daily()`.
+
+```{r, echo = F, fig.align='center'}
+DiagrammeR::grViz("
+digraph order {
+
+graph [overlap = true, compound = true]
+
+node[shape = Mrecord]
+edge[arrowhead = vee]
+
+load[label = '{Loading/Importing Data | {load_raw_all() | load_web() | dl_data()}}']
+
+hk[label = '{Housekeeping (Optional) | {check_ids() | check_problems()}}', width = 3]
+
+load -> hk
+hk -> visits
+load -> visits
+
+visits[label = 'visits()']
+disp[label = 'disp()']
+dom[label = 'dom()']
+move[label = 'move()']
+feed[label = 'feeding()']
+act[label = 'activity()']
+daily[label = 'daily()']
+
+visits-> {disp, move, feed}
+feed -> act
+disp -> dom
+act -> daily
+
+map[label = '{Visualizations | {map_ggmap() | map_leaflet()}}']
+
+{feed; move} -> map
+
+#A -> e [ltail = cluster0, lhead = cluster1]
+#f -> 'visits()' [ltail = cluster1, lhead = cluster2]
+#'move()' -> 'map_leaflet()' [ltail = cluster2, lhead = cluster3]
+
+}
+", width = 500)
+```
+
+## Tutorial Data
+Two data frames, `finches` and `chickadees` are included in this package for the purpose of demonstration.
+
+```{r}
+head(finches)
+head(chickadees)
+```
+
+## Function Index
+
+### [Loading/Importing Data](load.html)
+<a id = "load"></a>
+
+- __load_raw():__ Load in a single file of raw feeder data
+- __load_raw_all():__ Load in and combine multiple files of raw feeder data
+- __load_web():__ Load in csv file previously downloaded
+- __dl_data():__ Download and load data directly from the animal__nexus__ website
+
+### [Housekeeping](housekeeping.html)
+<a id = "hk"></a>
+
+- __check_ids():__ Remove known bad ids (i.e. errors, wands, etc.)
+- __check_problems():__ Fix known id problems
+
+### [Transformations](transformations.html)
+<a id = "trans"></a>
+
+- __visits():__ Turn raw data into visits data
+- __move():__ Turn visits data into movements between feeders
+- __feeding():__ Turn visits data into feeding bouts
+- __disp():__ Turn visits data into displacements
+- __dom():__ Turn displacements into dominance matrices and hierarchies
+- __activity():__ Turn visits data into activity data
+- __daily():__ Turn activity data into daily activity patterns
+
+## [Visualizations](maps.html)
+<a id = "vis"></a>
+
+- __map_ggmap():__ Visualize movements and/or feeding bouts with ggmap (static)
+- __map_leaflet():__ Visualize movements and/or feeding bouts with leaflet (interactive)
+
+-----------------------------------------
+Back to [top](#top)  
+Continue with [loading/importing data](load.html)

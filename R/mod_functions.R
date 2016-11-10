@@ -91,36 +91,43 @@ values_list <- function(i = NULL, counts){
 }
 
 ## Get bird image
-get_image <- function(database, which, size, imgs, imgs_wiki){
-  ## Get the bird_id
+# database <- unique(finches[, c("bird_id", "species")])
+# which = 1:6; size = 300; imgs = NULL; imgs_wiki = NULL
+get_image <- function(database, which, size = 300, imgs = NULL, imgs_wiki = NULL){
+
+  if(is.null(imgs)) imgs <- read.csv(system.file("extdata", "shiny-data", "img_index.csv", package = "feedr"), colClasses = "character")
+  if(is.null(imgs_wiki)) imgs_wiki <- read.csv(system.file("extdata", "shiny-data", "wiki_index.csv", package = "feedr"), colClasses = "character")
+
+  ## Get the bird_id (which is either ID or index in data base)
   if(is.null(which) | is.null(database)) {  # No ID
-    bird <- data.frame(bird_id = NA, species = NA, img = NA)
+    bird <- data.frame(bird_id = NA, species = "unknown", img = NA, citation = NA, author = NA)
   } else if (is.numeric(which)) {  # ID by database location
     bird <- database[which, c("bird_id", "species")]
-    if(nchar(as.character(bird$bird_id)) < 1) bird$bird_id <- NA
+    bird$bird_id[nchar(as.character(bird$bird_id)) == 0] <- NA
   } else {  # Actual ID
     bird <- database[database$bird_id %in% which, c("bird_id", "species")]
   }
-  ## Keep row orders
-  if(any(!is.na(bird$bird_id))){
-    bird$id <- 1:nrow(bird)
-    suppressWarnings(bird <- dplyr::left_join(bird, imgs[, c("bird_id", "img")], by = "bird_id"))
-    bird$img[!is.na(bird$img)] <- paste0("http://gaia.tru.ca/birdMOVES/img.kl/", bird$img[!is.na(bird$img)], ".jpg")
 
-    ## No specific image, but we know the species:
-    bird$species <- as.character(bird$species)
+  ## Get image if we have it
+  if(any(!is.na(bird$bird_id))){
+    bird$id <- 1:nrow(bird) ## Preserve row order
+
+    ## Get img from our pictures
+    suppressWarnings({
+    bird <- dplyr::left_join(bird, imgs[, c("bird_id", "img", "citation", "author")], by = "bird_id")
+    })
   }
 
-  bird$species[is.na(bird$species)] <- "unknown"
-  suppressWarnings(bird <- dplyr::left_join(bird, imgs_wiki, by = "species"))
+  ## Get img of species from wikimedia if we don't have it
+  bird[is.na(bird$img), c("img", "citation", "author")] <- imgs_wiki[imgs_wiki$species %in% bird$species[is.na(bird$img)], c("img", "citation", "author")]
 
-  bird$css <- paste0("<div class = \"wiki-watermark\">Wiki: <a href = \"",bird$page,"\" target=\"blank\">",bird$author,"</a></div>")
-  bird$css[!is.na(bird$img)] <- NA
-  bird$img[is.na(bird$img)] <- bird$url[is.na(bird$img)]
+  ## Create css to overlay image
+  bird$css <- NA
+  bird$css[!is.na(bird$citation)] <- paste0("<div class = \"wiki-watermark\">Wiki: <a href = \"", bird$citation[!is.na(bird$citation)],"\" target=\"blank\">", bird$author[!is.na(bird$citation)], "</a></div>")
+  bird$css[is.na(bird$citation)] <- paste0("<div class = \"wiki-watermark\">", bird$author[is.na(bird$citation)], "</div>")
 
-  html <- paste("<div class = \"bird-img\"><img src='", bird$img, "' height = ", size, ">")
-  html[!is.na(bird$css)] <- paste0(html, "\n", bird$css[!is.na(bird$css)], "</div>")
-  html[is.na(bird$css)] <- paste0(html, "\n", "/div>")
+  ## Create div for img
+  html <- paste0("<img src='", bird$img, "' height = ", size, ">\n", bird$css)
   return(html)
 }
 

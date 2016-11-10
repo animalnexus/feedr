@@ -26,6 +26,9 @@ mp <- function(x) paste0(sort(unlist(strsplit(as.character(x), "_"))), collapse 
 # Grab extra columns unique only
 keep_extra <- function(d, n, only = c("bird_id", "feeder_id", "date")){
 
+  # Ungroup, if exists
+  d <- dplyr::ungroup(d)
+
   d <- unique(d[, setdiff(names(d), n)])
 
   # If loc present, deconstruct

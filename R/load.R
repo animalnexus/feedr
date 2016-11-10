@@ -1,45 +1,3 @@
-#' Load read data from the web
-#'
-#' Loads raw read data from csv files downloaded from the __current__
-#' \url{http://gaia.tru.ca/birdMOVES/datadownload.html} website and formats them
-#' for use with the feedr functions. This is merely a wrapper function that does
-#' many things that you can do yourself. It's utility depends on how
-#' standardized your data is, and whether you have extra details you need to
-#' address. This is updated to work with newer data download formats.
-#'
-#' This function is also used by \code{\link{dl_data}} and so can accept a data
-#' frame in place of a file location.
-#'
-#' @param r_file Character or Data frame. The location of a single file to load,
-#'   or a data frame of raw reads to be formated.
-#' @param tz Character. The time zone the date/times are in (should match one of
-#'   the zones produced by \code{OlsonNames())}.
-#' @param tz_disp Character. The time zone the date/times should be displayed in
-#'   (if not the same as \code{tz}; should match one of the zones produced by
-#'   \code{OlsonNames())}.
-#' @param sep Character. An override for the separator in the
-#'   \code{read.table()} call (see \code{sep =} under \code{?read.table} for
-#'   more details).
-#'
-#' @examples
-#' \dontrun{r <- load_web("downloaded_file.csv")}
-
-#' @export
-load_web <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ",") {
-  r <- read.csv(r_file, strip.white = TRUE)
-  r <- load_format(r, tz = tz, tz_disp = tz_disp)
-  return(r)
-}
-
-#' Depreciated: Load read data from the web
-#'
-#' Depreciated use \link{\code{load_web}} instead.
-#'
-#' @export
-load.web <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, sep = ",") {
- .Deprecated("load_web")
-}
-
 #' Load raw read data
 #'
 #' Loads raw read data and formats for use with the feedr functions. This is
@@ -141,7 +99,7 @@ load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL,
 
 #'  Depreciated: Load raw read data
 #'
-#'  Depreciated, see \link{\code{load_raw}}.
+#'  Depreciated, see \code{\link{load_raw}}.
 #'
 #' @export
 load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1){
@@ -207,7 +165,7 @@ load_raw_all <- function(r_dir,
 
 #' Depreciated: Load and combine raw data files
 #'
-#' Depreciated, see \link{\code{load_raw_all}}.
+#' Depreciated, see \code{\link{load_raw_all}}.
 #'
 #' @export
 load.raw.all <- function(r_dir,
@@ -222,12 +180,11 @@ load.raw.all <- function(r_dir,
  .Deprecated("load_raw_all")
 }
 
-#' Download data from original BirdMoves website.
+#' Download data from original animalnexus database
 #'
 #' This function uses RCurl to submit an HTML form and retrieve the csv file.
 #' This is simply a convenience function to replace going to the website
-#' yourself (http://gaia.tru.ca/birdMOVES/datadownload.html) and then running
-#' the data frame through \code{\link{load_web}}.
+#' yourself (http://gaia.tru.ca/birdMOVES/datadownload.html).
 #'
 #' Note that while the website requires a date in the format of YYYY-MM-DD
 #' HH:MM:SS, this function is a bit more flexible. Using
@@ -346,7 +303,7 @@ dl_data <- function(start = NULL,
 
 #' Depreciated: Download data from original BirdMoves website.
 #'
-#' Depreciated use \link{\code{dl_data}} instead.
+#' Depreciated use \code{\link{dl_data}} instead.
 #'
 #' @export
 get.data <- function(start = NULL,
@@ -409,7 +366,7 @@ load_format <- function(r, tz, tz_disp = NULL, time_format = "ymd HMS"){
 
 #' Depreciated: Internal function: Format data
 #'
-#' Depreciated use \link{\code{load_format}} instead.
+#' Depreciated use \code{\link{load_format}} instead.
 #'
 #' @export
 load.format <- function(r, tz, tz_disp = NULL) {

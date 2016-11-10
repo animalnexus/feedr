@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Transforming/Summarizing Data</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/htmlwidgets-0.7/htmlwidgets.js"></script>
+<script src="site_libs/viz-0.3/viz.js"></script>
+<link href="site_libs/DiagrammeR-styles-0.2/styles.css" rel="stylesheet" />
+<script src="site_libs/grViz-binding-0.8.2/grViz.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet"
+      href="site_libs/highlight/textmate.css"
+      type="text/css" />
+<script src="site_libs/highlight/highlight.js"></script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="custom.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">How to use feedr</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="divider"></li>
+<li>
+  <a href="load.html">Loading</a>
+</li>
+<li>
+  <a href="housekeeping.html">Housekeeping</a>
+</li>
+<li>
+  <a href="transformations.html">Transformations</a>
+</li>
+<li>
+  <a href="maps.html">Visualizations</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Transforming/Summarizing Data</h1>
+
+</div>
+
+
+<p>This is a quick tutorial to get you started with transforming and summarizing your data from raw read data to a variety of different data types which can be used to answer different questions.</p>
+<p>Here we assume that you know how to <a href="load.html">load/import</a> your data and that, if needed, you’ve cleaned up problematic bird_ids with the various <a href="housekeeping.html">housekeeping</a> functions.</p>
+<div id="functions" class="section level2">
+<h2>Functions</h2>
+<p>In all cases you’ll want to use the <code>visits()</code> function first, but after that it depends on what kinda of data you want to end up with.</p>
+<p>Click on the function name below to skip directly to the function tutorial:</p>
+<p><div id="htmlwidget-871d0457df2e92727fec" style="width:500px;height:480px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-871d0457df2e92727fec">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nvisits[label = \"visits()\", URL = \"#visits\", tooltip = \"Individual feeder visits\"]\ndisp[label = \"disp()\", URL = \"#displacements\", tooltip = \"Displacements from the feeder by another bird\"]\ndom[label = \"dom()\", URL = \"#dominance\", tooltip = \"Dominance indicated by displacements\"]\nmove[label = \"move()\", URL = \"#movements\", tooltip = \"Movements between feeders\"]\nfeed[label = \"feeding()\", URL = \"#feedingbouts\", tooltip = \"Feeding bouts at feeders\"]\nact[label = \"activity()\", URL = \"#acitivty\", tooltip = \"Activity scored (active/inactive)\"]\ndaily[label = \"daily()\", URL = \"#dailyactivity\", tooltip = \"Daily activity patterns\"]\n\nvisits-> {disp, move, feed}\nfeed -> act\ndisp -> dom\nact -> daily\n\nmap1[label = \"map_ggmap()\", URL = \"#mapggmap\", tooltip = \"Visualize with a static map\"]\nmap2[label = \"map_leaflet()\", URL = \"#mapleaflet\", tooltip = \"Visualize with an interactive map\"]\n\n{feed; move} -> {map1; map2}\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script> <a id = "visits"></a></p>
+</div>
+<div id="visits" class="section level2">
+<h2><code>visits()</code></h2>
+<p>This function is designed to turn ‘raw’ data into ‘visits’ data.</p>
+<p>This is always the first function you should use. Raw read data contains an individual line of data for each read event made by the RFID reader.</p>
+<p>For example, if the reader was set to record ids every ~3 seconds, an individual sitting on the feeder for 13 seconds would look something like this:</p>
+<pre class="r"><code>finches[5:9,]</code></pre>
+<pre><code>##      bird_id                time feeder_id     species       lon      lat
+## 5 06200004F8 2016-01-28 12:35:59      2200 House Finch -120.3612 50.66778
+## 6 06200004F8 2016-01-28 12:36:02      2200 House Finch -120.3612 50.66778
+## 7 06200004F8 2016-01-28 12:36:06      2200 House Finch -120.3612 50.66778
+## 8 06200004F8 2016-01-28 12:36:09      2200 House Finch -120.3612 50.66778
+## 9 06200004F8 2016-01-28 12:36:12      2200 House Finch -120.3612 50.66778</code></pre>
+<p>The <code>visits()</code> function turns this raw data into something more practical:</p>
+<pre class="r"><code>v &lt;- visits(finches, bw = 5)
+head(v)</code></pre>
+<pre><code>## # A tibble: 6 × 10
+##      bird_id       date               start                 end feeder_id
+##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;fctr&gt;
+## 1 041868D396 2016-01-29 2016-01-29 08:35:25 2016-01-29 08:35:26      2400
+## 2 041868D396 2016-01-29 2016-01-29 11:21:23 2016-01-29 11:21:26      2100
+## 3 041868D396 2016-01-29 2016-01-29 11:23:58 2016-01-29 11:24:21      2100
+## 4 041868D396 2016-01-29 2016-01-29 13:05:34 2016-01-29 13:05:34      2100
+## 5 041868D396 2016-01-29 2016-01-29 13:09:10 2016-01-29 13:09:10      2100
+## 6 041868D396 2016-01-29 2016-01-29 13:14:21 2016-01-29 13:14:21      2100
+## # ... with 5 more variables: bird_n &lt;int&gt;, feeder_n &lt;int&gt;, species &lt;chr&gt;,
+## #   lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
+<p>Note that the new data frame has the individuals sorted differently from our raw data frame. But we can look directly at that individual by pulling out it’s bird_id:</p>
+<pre class="r"><code>head(v[v$bird_id == &quot;06200004F8&quot;,])</code></pre>
+<pre><code>## # A tibble: 6 × 10
+##      bird_id       date               start                 end feeder_id
+##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;fctr&gt;
+## 1 06200004F8 2016-01-28 2016-01-28 12:35:52 2016-01-28 12:35:52      2200
+## 2 06200004F8 2016-01-28 2016-01-28 12:35:59 2016-01-28 12:36:12      2200
+## 3 06200004F8 2016-01-28 2016-01-28 12:38:50 2016-01-28 12:38:50      2200
+## 4 06200004F8 2016-01-28 2016-01-28 13:23:40 2016-01-28 13:23:40      2200
+## 5 06200004F8 2016-01-28 2016-01-28 13:24:41 2016-01-28 13:24:45      2200
+## 6 06200004F8 2016-01-28 2016-01-28 13:24:54 2016-01-28 13:24:54      2200
+## # ... with 5 more variables: bird_n &lt;int&gt;, feeder_n &lt;int&gt;, species &lt;chr&gt;,
+## #   lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
+<p>Now we can see that the above 5 reads have been combined into one visit, starting at 2016-01-28 12:35:59 and ending at 2016-01-28 12:36:12.</p>
+<p>Visits are defined by:</p>
+<ul>
+<li>How much time has passed between reads (<code>bw</code>)</li>
+<li>A change in bird_id between two successive reads</li>
+</ul>
+<p>We also know that in this data set there are 5 individual bird_ids (bird_n) and 4 individual feeder_ids (feeder_n).</p>
+<p>These numbers could also have been obtained by hand:</p>
+<pre class="r"><code>length(unique(v$bird_id))</code></pre>
+<pre><code>## [1] 6</code></pre>
+<pre class="r"><code>length(unique(v$feeder_id))</code></pre>
+<pre><code>## [1] 4</code></pre>
+<div id="dealing-with-problems" class="section level3">
+<h3>Dealing with problems</h3>
+<p>Depending on the interval between reads in your RFID reader, you may have to adjust the value of <code>bw</code> which specifies how many seconds between reads separates two visits. The default is 3 seconds, but, as in our example here, that is too low for our data.</p>
+<p>Another thing to be aware of is the possibility of ‘impossible visits’. This may occur if the internal clocks on your RFIDs are not in sync. An impossible visit is when an individual bird is detected at two different feeders within 2 seconds (the default) of each other. Unless your feeders are REALLY close to each other, this is highly unlikely.</p>
+<p>Because both missing values (NAs) and impossible visits likely indicate a greater, underlying problem, you have to specifically tell the function to ignore them (or omit them, in the case of NAs).</p>
+<pre class="r"><code>v &lt;- visits(finches, allow_imp = TRUE, na_rm = TRUE)</code></pre>
+</div>
+<div id="summarizing-visit-data" class="section level3">
+<h3>Summarizing visit data</h3>
+<p>Visit data is the starting block of all other transformations, but you can also summarize and analyze visit data itself.</p>
+<p>For example, if we want to create daily summaries of the number of visits made and feeders used per bird_id, we could use the <code>ddply()</code> function from the package <code>plyr</code> (or see the package <code>dplyr</code> for more advanced techniques).</p>
+<p>First we’ll add a column called <code>day</code> to our visits data frame, <code>v</code>.</p>
+<pre class="r"><code>v$day &lt;- as.Date(v$start)</code></pre>
+<p>Next we’ll summarize.</p>
+<p>Here we’ve told ddply to split the data frame <code>v</code> by <code>bird_id</code>, and then to create 4 new columns (<code>n_feeders</code>, <code>n_visits</code>, <code>n_days</code>, <code>mean_visit_length</code>). In each case, we have defined how we want ddply to fill these new columns.</p>
+<pre class="r"><code>## FIXIx
+library(plyr)
+s &lt;- ddply(v, c(&quot;bird_id&quot;), summarise,
+           n_feeders = length(unique(feeder_id)),
+           n_visits = length(start),
+           n_days = length(unique(day)),
+           mean_visit_length = mean(end - start))
+s</code></pre>
+<p>The result is a data frame with one row for each bird_id, giving us information on how many feeders that bird has used (total), how visits (total), how many days (total) and what the average visit length was.</p>
+<p>If we wanted to plot this data, the package <code>ggplot2</code> is a great option:</p>
+<pre class="r"><code>## FIXXXXX
+library(ggplot2)
+ggplot(data = s, aes(x = bird_id, y = mean_visit_length)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #rotate and shift id labels
+  geom_bar(stat = &quot;identity&quot;) +
+  labs(x = &quot;Bird ID&quot;, y = &quot;Average visit length (s)&quot;)</code></pre>
+<table>
+<tbody>
+<tr class="odd">
+<td align="left">Back to <a href="#top">top</a></td>
+</tr>
+</tbody>
+</table>
+<p><a id = "displacements"></a></p>
+</div>
+</div>
+<div id="disp" class="section level2">
+<h2><code>disp()</code></h2>
+<p>This function is designed to turn ‘visit’ data into ‘displacements’ data.</p>
+<p><strong>Displacements</strong> are events when one bird leaves the feeder and is replaced by another bird within a certain, defined, time span.</p>
+<p>In theory, we assume this is due to the arrival of a more dominant bird. However, observations in the field to confirm this assumption are necessary. Once ground-truthed, these events might lead to information on relative dominance of different individuals (see <a href="#dominance"><code>dom()</code> function</a>).</p>
+<p>It is important to ground-truth this assumption because, depending on species, displacements may not necessarily represent dominance. For example, in the case of black-capped chickadees, if the dominant male is using the feeder, the subsequent users of the feeder may actually arrive and depart in descending order of rank. In this case, apparent ‘displacements’ are not displacements at all.</p>
+<p>In the meanwhile, however, displacements reflect a quick turnover by the users of the feeder.</p>
+<p>This function returns a list with three different types of displacement information: displacements, summary, and interactions.</p>
+<p>If there are no displacement events in your data set, the function will stop:</p>
+<pre class="r"><code>v &lt;- visits(finches, bw = 5)
+d &lt;- disp(v)</code></pre>
+<pre><code>## Error in disp(v): There are no displacement events with a bw = 5, stopping now</code></pre>
+<p>We could increase the <code>bw</code> value, which for displacements represents the maximum interval between the first bird leaving and the second bird arriving for the interaction to be considered a displacement:</p>
+<pre class="r"><code>v &lt;- visits(finches, bw = 5)
+d &lt;- disp(v, bw = 10)</code></pre>
+<pre><code>## Error in disp(v, bw = 10): There are no displacement events with a bw = 10, stopping now</code></pre>
+<pre class="r"><code>d &lt;- disp(v, bw = 15)</code></pre>
+<p>However, an interval of 15s is pretty long and probably doesn’t constitute a real displacement event.</p>
+<p>So let’s look at some different data:</p>
+<pre class="r"><code>r &lt;- dl_data(start = &quot;2016-03-07&quot;, end = &quot;2016-03-11&quot;)
+v &lt;- visits(r)
+d &lt;- disp(v)
+class(d)</code></pre>
+<pre><code>## [1] &quot;list&quot;</code></pre>
+<pre class="r"><code>names(d)</code></pre>
+<pre><code>## [1] &quot;displacements&quot; &quot;summaries&quot;     &quot;interactions&quot;</code></pre>
+<p><code>class(d)</code> shows us that <code>d</code> is a list and <code>names(d)</code> shows us that it contains 3 items. These can be accessed individually by using: <code>d$displacements</code>, <code>d$summaries</code> or <code>d$interactions</code></p>
+<div id="displacements" class="section level3">
+<h3>Displacements</h3>
+<p><strong>Basic Displacements</strong> represent each individual event (<code>d$displacements</code>)</p>
+<pre class="r"><code>head(d$displacements)</code></pre>
+<pre><code>## # A tibble: 6 × 11
+##      bird_id       date                left             arrived feeder_id
+##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;fctr&gt;
+## 1 0620000513 2016-03-07 2016-03-07 12:40:16 2016-03-07 12:40:20      2300
+## 2 0620000514 2016-03-07 2016-03-07 12:40:16 2016-03-07 12:40:20      2300
+## 3 0620000513 2016-03-07 2016-03-07 12:40:35 2016-03-07 12:40:39      2300
+## 4 0620000514 2016-03-07 2016-03-07 12:40:35 2016-03-07 12:40:39      2300
+## 5 0620000514 2016-03-07 2016-03-07 12:40:39 2016-03-07 12:40:43      2300
+## 6 0620000513 2016-03-07 2016-03-07 12:40:39 2016-03-07 12:40:43      2300
+## # ... with 6 more variables: role &lt;chr&gt;, bird_n &lt;int&gt;, feeder_n &lt;int&gt;,
+## #   species &lt;chr&gt;, lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
+<p>We can see which feeder the interaction occurred at, when the displacee left, when the displacer arrived and the identity of each.</p>
+</div>
+</div>
+<div id="summaries" class="section level2">
+<h2>Summaries</h2>
+<p><strong>Summaries of Displacements</strong> represent the overall number of wins/losses per individual (<code>d$summaries</code>):</p>
+<pre class="r"><code>d$summaries</code></pre>
+<pre><code>## # A tibble: 11 × 4
+##       bird_id displacee displacer p_win
+##        &lt;fctr&gt;     &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;
+## 1  041868D861         0         1  1.00
+## 2  06200004F8         0         1  1.00
+## 3  0620000514         1         3  0.75
+## 4  0620000513         3         2  0.40
+## 5  062000035D         1         0  0.00
+## 6  062000043E         1         0  0.00
+## 7  0620000520         1         0  0.00
+## 8  041868BED6         0         0   NaN
+## 9  041868FF93         0         0   NaN
+## 10 06200003BB         0         0   NaN
+## 11 0620000400         0         0   NaN</code></pre>
+<p>We can see how many times each individual was the displacee or the displacer and what the proportion of wins was (displacer / total interactions).</p>
+<pre class="r"><code>library(ggplot2)
+ggplot(data = d$summaries, aes(x = bird_id, y = p_win)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #rotate and shift id labels
+  geom_point() +
+  ylim(c(0, 1)) +
+  labs(x = &quot;Bird id&quot;, y = &quot;Proportion of &#39;wins&#39;&quot;)</code></pre>
+<pre><code>## Warning: Removed 4 rows containing missing values (geom_point).</code></pre>
+<p><img src="transformations_files/figure-html/unnamed-chunk-15-1.png" width="768" /></p>
+<div id="interactions" class="section level3">
+<h3>Interactions</h3>
+<p><strong>Interactions</strong> reflect each combination of possible interactions and how many times each occurred (<code>d$interactions</code>). This can then be converted to a dominance matrix (see <a href="#dom"><code>dom()</code> function</a>):</p>
+<pre class="r"><code>head(d$interactions)</code></pre>
+<pre><code>## # A tibble: 6 × 3
+##    displacer  displacee     n
+##       &lt;fctr&gt;     &lt;fctr&gt; &lt;dbl&gt;
+## 1 041868D861 041868BED6     0
+## 2 041868D861 041868FF93     0
+## 3 041868D861 062000035D     0
+## 4 041868D861 06200003BB     0
+## 5 041868D861 0620000400     0
+## 6 041868D861 062000043E     1</code></pre>
+<table>
+<tbody>
+<tr class="odd">
+<td align="left">Back to <a href="#top">top</a></td>
+</tr>
+</tbody>
+</table>
+<p><a id = "dominance"></a></p>
+</div>
+</div>
+<div id="dom" class="section level2">
+<h2><code>dom()</code></h2>
+<p>This function is designed to turn ‘Displacement’ data into a ‘Dominance matrix’.</p>
+<p>A <strong>Dominance matrix</strong> is a matrix ranking individuals by wins and losses against other individuals. This matrix can be used to determine the final dominance hierarchy of a flock.</p>
+<p>This function produces a dominance matrix which represents a ‘best guess’, as opposed to a perfect final product. The function attempts to find the best ordering, with the fewest reversals. A reversal is when an individual loses or wins more against one particular individual than expected given the general pattern of dominance wins/losses.</p>
+<p>This matrix should not be considered a final product, but a starting point for manual manipulation.</p>
+<p>If the function finds more than one ‘best guess’ they will all be returned. In addition to the ‘best guess’ dominance matrices (<code>dm$matrices</code>), the function returns <code>dm$dominance</code> and <code>dm$reversals</code></p>
+<p>Let’s work with a slightly larger data set but concentrate on one feeder only:</p>
+<pre class="r"><code>r &lt;- dl_data(start = &quot;2016-03-07&quot;, end = &quot;2016-03-31&quot;)
+r &lt;- droplevels(r[r$feeder_id == 2300, ])</code></pre>
+<p>The <code>r[r$feeder_id == 2300, ]</code> results in a subset of the data frame <code>r</code> which only includes rows which have a <code>feeder_id</code> equivalent to ‘2300’. The <code>droplevels()</code> function then drops all levels that don’t appear in the data set (i.e. even though we’ve omitted certain individuals, the column <code>bird_id</code> keeps track of all <em>possible</em> individuals). This is not important for the <code>disp()</code> function, but functions that work on individual data, such as <code>move()</code> and <code>feeding()</code> rely on levels to keep track of ids. Using <code>droplevels()</code> when you want to completely omit individuals from analysis is therefore a good idea in general.</p>
+<pre class="r"><code>v &lt;- visits(r)
+d &lt;- disp(v)
+dm &lt;- dom(d$interactions)</code></pre>
+<pre><code>## bird_ids with zero interactions have been omitted: 041868FF93, 06200003AA, 06200003BB, 06200004F8</code></pre>
+<pre><code>## Tried 3 times. Found 2 &#39;best&#39; matrix(ces), with 1 reversal(s) per matrix</code></pre>
+<pre class="r"><code>names(dm)</code></pre>
+<pre><code>## [1] &quot;dominance&quot; &quot;reversals&quot; &quot;matrices&quot;</code></pre>
+<p>The main part of this output are the matrices:</p>
+<pre class="r"><code>dm$matrices</code></pre>
+<pre><code>## [[1]]
+##            062000043E 0620000520 0620000514 0620000513 041868BED6
+## 062000043E         NA          0          1          0          0
+## 0620000520          0         NA          1          0          0
+## 0620000514          0          0         NA          4          5
+## 0620000513          0          1          1         NA          1
+## 041868BED6          0          0          1          1         NA
+## 0620000400          0          0          0          0          0
+##            0620000400
+## 062000043E          1
+## 0620000520          0
+## 0620000514          0
+## 0620000513          0
+## 041868BED6          0
+## 0620000400         NA
+## 
+## [[2]]
+##            062000043E 0620000514 0620000513 0620000520 041868BED6
+## 062000043E         NA          1          0          0          0
+## 0620000514          0         NA          4          0          5
+## 0620000513          0          1         NA          1          1
+## 0620000520          0          1          0         NA          0
+## 041868BED6          0          1          1          0         NA
+## 0620000400          0          0          0          0          0
+##            0620000400
+## 062000043E          1
+## 0620000514          0
+## 0620000513          0
+## 0620000520          0
+## 041868BED6          0
+## 0620000400         NA</code></pre>
+<p>Here we have two, because both are equally possible. This is a situation in which a user will have to continue on by hand to end up with the best matrix.</p>
+<p>Most dominant individuals are those to the left or the top.</p>
+<p>These matrices are created by</p>
+<ul>
+<li>Ranking individuals based on their overall win rate</li>
+<li>Attempting to fix ‘reversals’ by switching individuals around, and testing whether this reduced the total number of reversals or not.</li>
+<li>After so many rounds of trying to reduce reversals, the script returns the best matrix</li>
+</ul>
+<p><strong>Dominance Rankings</strong> (<code>dm$dominance</code>) are the relative dominance rankings according to each final matrix (ranked from Dominant to Sub-dominant).</p>
+<pre class="r"><code>dm$dominance</code></pre>
+<pre><code>## [[1]]
+## [1] &quot;062000043E&quot; &quot;0620000520&quot; &quot;0620000514&quot; &quot;0620000513&quot; &quot;041868BED6&quot;
+## [6] &quot;0620000400&quot;
+## 
+## [[2]]
+## [1] &quot;062000043E&quot; &quot;0620000514&quot; &quot;0620000513&quot; &quot;0620000520&quot; &quot;041868BED6&quot;
+## [6] &quot;0620000400&quot;</code></pre>
+<p>Essentially, if the matrix is perfect, this is the dominance hierarchy you have in your flock. However, if you need to tweak your matrix, you’ll come up with a different dominance hierarchy.</p>
+<p>You can see that this matches the bird_id order in the matrices.</p>
+<p>The final thing to consider are any remaining reversals.</p>
+<p><strong>Reversals</strong> are a table identifying remaining reversals: Pairs of individuals which could be switched either way in the hierarchy.</p>
+<pre class="r"><code>dm$reversals</code></pre>
+<pre><code>## [[1]]
+## [1] &quot;0620000520&quot; &quot;0620000513&quot;
+## 
+## [[2]]
+## [1] &quot;0620000514&quot; &quot;0620000520&quot;</code></pre>
+<table>
+<tbody>
+<tr class="odd">
+<td align="left">Back to <a href="#top">top</a></td>
+</tr>
+</tbody>
+</table>
+<p><a id = "movements"></a></p>
+</div>
+<div id="move" class="section level2">
+<h2><code>move()</code></h2>
+<p>This function is designed to turn ‘Visit’ data into ‘Movement’ data.</p>
+<p><strong>Movements</strong> are defined as trips between feeders (i.e. a event when a visit from a bird_id occurs at a different feeder from the previous visit by that particular bird_id).</p>
+<p>Because this data is specific to each bird, for efficiency, this function works on individual birds only. However, combined with the function <code>ddply</code> from the plyr package, can be applied to entire data sets:</p>
+<pre class="r"><code>## FIXIx
+library(plyr)
+v &lt;- visits(finches, bw = 5)
+m &lt;- ddply(v, c(&quot;bird_id&quot;), move)</code></pre>
+<p>This code tells R to take the <code>v</code> data frame, split it by the column <code>bird_id</code> into unique groups, apply the function <code>move()</code> to each of those groups, and then to put them all back together as a data frame called <code>m</code>.</p>
+<pre class="r"><code>## FIXIx
+head(m)</code></pre>
+<p>This function returns a lot of information for each movement event.</p>
+<ul>
+<li><code>bird_id</code> id of the bird making the move</li>
+<li><code>time</code> time at which a feeder was left or arrived at</li>
+<li><code>feeder_id</code> the feeder left or arrived at</li>
+<li><code>direction</code> leaving or arriving</li>
+<li><code>move_dir</code> category indicating direction and feeders involved</li>
+<li><code>move_path</code> category indicating the feeders involved (no directionality)</li>
+<li><code>strength</code> a metric indicating how ‘easily’ individuals move been feeders, it represents 1/time between feeders</li>
+<li><code>bird_n</code> and <code>feeder_n</code> are sample sizes, same as in <code>visits()</code></li>
+</ul>
+<p>In this case, one bird_id has been omitted because it never moved between feeders. While the id is retained in the <em>levels</em> of the factor, <code>bird_id</code>, it is not present in the data frame:</p>
+<pre class="r"><code>## FIXIx
+unique(m$bird_id)</code></pre>
+<p>However, if you wanted all birds in the data set, regardless of whether they moved or not (for example, if you wanted to look at the likelihood of moving between feeders), you can specify that:</p>
+<pre class="r"><code>## FIXIx
+m &lt;- ddply(v, c(&quot;bird_id&quot;), move, all = TRUE)
+head(m)</code></pre>
+<p>Here we’ve told R that an additional parameter for <code>move()</code> is <code>all = TRUE</code>. Birds which never visit more than one feeder will have NA’s in the data frame.</p>
+<div id="summarizing-movement-data" class="section level3">
+<h3>Summarizing movement data</h3>
+<p>Once again we can summarize our movement data using <code>ddply()</code> from the plyr package.</p>
+<p>Are certain paths used more often?</p>
+<pre class="r"><code>## FIXIx
+s &lt;- ddply(m, c(&quot;feeder_id&quot;, &quot;move_path&quot;), summarize,
+           n = length(move_path))
+s</code></pre>
+<p>Note that because there are two rows per movement event (leaving and arriving), we can group by feeder_id to summarize individually by feeder. This will acount for the 2 rows and keep feeder ids in the final data frame (required for mapping later on).</p>
+<pre class="r"><code>## FIX
+ggplot(data = s, aes(x = move_path, y = n)) +
+  geom_bar(stat = &quot;identity&quot;)</code></pre>
+<p>Are certain directions on particular paths used more often?</p>
+<pre class="r"><code>## FIXIx
+s &lt;- ddply(m, c(&quot;feeder_id&quot;, &quot;move_path&quot;, &quot;move_dir&quot;), summarize,
+           n = length(move_path))
+s</code></pre>
+<pre class="r"><code>## FIX
+ggplot(data = s, aes(x = move_path, y = n, fill = move_dir)) +
+  geom_bar(stat = &quot;identity&quot;)</code></pre>
+<p>Is there a relationship between use of a path and the average ‘strength’?</p>
+<pre class="r"><code>## FIXIx
+s &lt;- ddply(m, c(&quot;feeder_id&quot;, &quot;move_path&quot;), summarize,
+           n = length(move_path),
+           strength = mean(strength, na.rm = TRUE))
+s</code></pre>
+<pre class="r"><code>## FIXIx
+ggplot(data = s, aes(x = strength, y = n)) +
+  geom_point() +
+  stat_smooth(method = &quot;lm&quot;) # add a regression line w/ standard error</code></pre>
+<p>Do some birds move more than others?</p>
+<pre class="r"><code>## FIXIx
+s &lt;- ddply(m, c(&quot;feeder_id&quot;, &quot;bird_id&quot;), summarize,
+           n = length(move_path[!is.na(move_path)]))
+s</code></pre>
+<p>Note that we have a zero for 062000043E because we made sure to include all individuals in the analysis (all = TRUE, above) and because we specified ddply to count only non-NA paths (<code>(move_path)</code>).</p>
+<pre class="r"><code>#FIX
+ggplot(data = s, aes(x = bird_id, y = n)) +
+  geom_bar(stat = &quot;identity&quot;)</code></pre>
+<table>
+<tbody>
+<tr class="odd">
+<td align="left">Back to <a href="#top">top</a></td>
+</tr>
+</tbody>
+</table>
+<p><a id = "feedingbouts"></a></p>
+</div>
+</div>
+<div id="feeding" class="section level2">
+<h2><code>feeding()</code></h2>
+<p>This function is designed to turn ‘Visit’ data into ‘Feeding’ data.</p>
+<p><strong>Feeding bouts</strong> are blocks of time in which the bird in question visited a given feeder regularly. The user of the function will define what the minimum amount of time between visits must be for the bout to be considered active. Ground truthing could help to establish the amount of time an individual spends near a feeder without making a feeder visit, to improve this cutoff time. Essentially, feeding bouts are simply longer visits, and can overlap with feeding bouts of other birds.</p>
+<p>This function works on individual birds, but combined with the function <code>ddply</code> from the plyr package, can be applied to entire datasets:</p>
+<p>For individual birds:</p>
+<pre class="r"><code>## FIXIx
+v &lt;- visits(finches, bw = 5)
+f &lt;- feeding(v[v$bird_id == &quot;041868D396&quot;,])
+head(f)</code></pre>
+<p>For the entire data set:</p>
+<pre class="r"><code>## FIXIx
+f &lt;- ddply(v, c(&quot;bird_id&quot;), feeding)
+head(f)</code></pre>
+<p>The default is for feeding bouts to be defined by either visiting a different feeder, or having 15 minutes pass without a feeder visit. The cutoff time between visits can be adjusted:</p>
+<pre class="r"><code>## FIXIx
+v &lt;- visits(finches, bw = 5)
+f &lt;- ddply(v, c(&quot;bird_id&quot;), feeding, bw = 240) ## Anything within 4 hrs
+head(f)</code></pre>
+<p>Or it can be omitted entirely:</p>
+<pre class="r"><code>## FIXIx
+v &lt;- visits(finches, bw = 5)
+f &lt;- ddply(v, c(&quot;bird_id&quot;), feeding, bw = NULL)
+head(f)</code></pre>
+<p>When <code>bw = NULL</code> only a change in feeder will initiate a new feeding bout. Therefore this identifies how much time passes before a new feeder is visited. Note, however, that if the bird visits feeder #1 at 9am and then feeder #2 at 9pm on the following day, the feeding bout for feeder #1 would be considered a day and a half long, but without any intermittent observations, it’s hard to say where the bird actually was.</p>
+<div id="summarize" class="section level3">
+<h3>Summarize</h3>
+<p>What’s the average feeding time for each individual?</p>
+<pre class="r"><code>## FIXIx
+f &lt;- ddply(v, c(&quot;bird_id&quot;), feeding)
+
+s &lt;- ddply(f, c(&quot;bird_id&quot;), summarise, 
+           n = length(feed_start), 
+           mean_length = mean(feed_end - feed_start))
+head(s)</code></pre>
+<p>Is there a relationship between the number and length of feeding bouts?</p>
+<pre class="r"><code>## FIXIx
+ggplot(data = s, aes(x = n, y = mean_length, colour = bird_id)) +
+  geom_point(position = &quot;jitter&quot;)</code></pre>
+<p>Do birds feed longer a certain feeders?</p>
+<pre class="r"><code>## FIXIx
+s &lt;- ddply(f, c(&quot;feeder_id&quot;), summarise, 
+           n = length(feed_start), 
+           mean_length = mean(feed_end - feed_start),
+           se_length = sd(feed_end - feed_start)/sqrt(n))
+head(s)
+ggplot(data = s, aes(x = feeder_id, y = mean_length, fill = feeder_id)) +
+  geom_bar(stat = &quot;identity&quot;) +
+  geom_errorbar(aes(ymin = mean_length - se_length, ymax = mean_length + se_length), width = 0.25)</code></pre>
+<table>
+<tbody>
+<tr class="odd">
+<td align="left">Back to <a href="#top">top</a></td>
+</tr>
+</tbody>
+</table>
+<p><a id = "activity"></a></p>
+</div>
+</div>
+<div id="activity-underdevelopment" class="section level2">
+<h2><code>activity()</code> [UNDERDEVELOPMENT]</h2>
+<p>This function scores individuals as either active or inactive based on their feeding data. While simply looking at the feeding bouts is a good proxy for active/inactive, scoring intervals as active/inactive allows for easier plotting as well as for averaging over days to create daily activity patterns (see <a href="#dailyactivity"><code>daily()</code> function</a>).</p>
+<p>First, let’s restrict our analysis a bit:</p>
+<pre class="r"><code>## FIXIx
+library(plyr)
+r &lt;- chickadees[chickadees$experiment == &quot;exp1&quot;,]
+v &lt;- visits(r)
+f &lt;- ddply(v, c(&quot;bird_id&quot;), feeding)</code></pre>
+<p>The default function calculates activity for each bird, independent of which feeders they are visiting, and with a resolution of 15min.</p>
+<pre class="r"><code>## FIXIx
+a &lt;- ddply(f, c(&quot;bird_id&quot;), activity)</code></pre>
+<p>Note that in addition to an activity data frame, this function also returns information regarding the process.</p>
+<p>In this case, several individuals were skipped because they had data for less than 24 hrs. If you wish to include these individuals regardless, you can force their inclusion with:</p>
+<pre class="r"><code>## FIXIx
+a &lt;- ddply(f, c(&quot;bird_id&quot;), activity, keep_all = TRUE)</code></pre>
+<p>Note that now we are warned about: - activity being low (“Active less than 5%…”) - obs which are shorter than the resolution ‘res’ - several individual with feeding bouts all 0min (this happens when each feeding bout is the result of a single visit)</p>
+<p>These messages are presented to help you understand the quality of your activity data.</p>
+<p>For example, if the length of most observations (feeding bouts) are less than the resolution, there’s a good chance that many observations are being missed when scoring activity. We can fix this by adjusting the resolution. In general, a small resolution is always better. Note, however, that the smaller the resolution, the more computationally challenging.</p>
+<p>Let’s use a resolution of 1 minute:</p>
+<pre class="r"><code>## FIXIx
+a &lt;- ddply(f, c(&quot;bird_id&quot;), activity, keep_all = TRUE, res = 1)</code></pre>
+<p>The number of messages has definitely done down but we still have quite a few. Most of these messages are warnings about the lack of data, so let’s go back to omitting individuals with low data:</p>
+<pre class="r"><code>## FIXIx
+a &lt;- ddply(f, c(&quot;bird_id&quot;), activity, res = 1)</code></pre>
+<p>We still have one bird (0700EE0E42) with a warning about a low resolution, but this is most likely due to the fact that there are very short feeding bouts (Median obs is 0 min).</p>
+<p>Several individuals are active for less than 5% of the total time, but this isn’t necessarily a problem.</p>
+<p>Next let’s take a look at our data:</p>
+<pre class="r"><code>## FIXIx
+head(a)
+summary(a)</code></pre>
+<p>Our extra data (experiment, lat, lon) is all there, but many of the lat/lons are “NA” now. This is because the default for the activity() function is to calculate activity independent of feeder. However if an individual has visited only one feeder, all the extra data associated with that feeder will be preserved.</p>
+<p>Let’s plot one day for one individual:</p>
+<pre class="r"><code>#FIX
+library(ggplot2)
+
+i &lt;- a[a$bird_id == &quot;0620000525&quot; &amp; a$date == as.POSIXct(&quot;2015-12-06&quot;),]
+
+ggplot(data = i, aes(x = time, ymin = 0, ymax = activity)) +
+  geom_ribbon()</code></pre>
+<p>There’s a clear daily pattern, but it’s a bit hard to tell without sunrise and sunset:</p>
+<table>
+<tbody>
+<tr class="odd">
+<td align="left">Back to <a href="#top">top</a></td>
+</tr>
+</tbody>
+</table>
+<p><a id = "dailyactivity"></a></p>
+</div>
+<div id="daily-underdevelopment" class="section level2">
+<h2><code>daily()</code> [UNDERDEVELOPMENT]</h2>
+<hr />
+<p>Back to <a href="#top">top</a><br />
+Go back to <a href="feedr.html">main document</a> | Go back to <a href="housekeeping.html">housekeeping</a> | Continue with <a href="maps.html">visualizations</a></p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

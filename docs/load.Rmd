@@ -1,0 +1,162 @@
+---
+title: "Loading in Data"
+---
+
+```{r setup, include = F}
+source("setup.R")
+```
+
+This is a quick tutorial to get you started with loading in your own data. `feedr` includes several wrapper functions that can be used to load and format your data.
+
+- [`load_raw()`](#loadraw)
+- [`load_raw_all()`](#loadrawall)
+- [`dl_data()`](#dldata)
+
+These functions work with either __raw__ feeder data (downloaded directly from the feeders) or ___database__ feeder data downloaded from <http://animalnexus.ca> directly or with the `dl_data()` function.
+
+
+## A note about file structure
+
+It's important to remember that when specifying file locations, you must either specify a complete file location (e.g. "/home/steffi/Desktop/data.csv") __or__ an appropriate relative file location. A relative file location would be something like: "./Data/data.csv" which points to a file called data.csv which is in a folder called "Data". The "./" indicates that "Data" is in the current working directory. If we used "../" that would indicate that "Data" was one directory up.
+
+Also, remember that file locations are relative to where R's working directory is, and this is not necessarily the same place as the R script with which you are working.
+
+If you are using RStudio, it is highly recommended that you specify an RStudio project in the directory which holds your scripts. This way, anytime you open the file, the working directly is automatically set to your script directly.
+
+__This tutorial assumes that your data is stored in a folder called "Data" which is in turn stored in your R scripts folder.__
+
+<a id="loadraw"></a>
+
+## `load_raw()`
+
+This loads and formats a raw data file downloaded directly from RFID loggers setup in the same manner as the Thompson Rivers University feeders.
+
+```{r}
+r1 <- load_raw("./Data/Raw/exp2/GR10DATA_2016_01_16.TXT")
+head(r1)
+```
+
+Note that the `feeder_id` is taken from the file name. This is done by matching an expected pattern against the actual file name.
+
+The default pattern matches GR or GPR followed by 1 or 2 digits. If you need to specify a different pattern you can do so. For example, if your feeders were labeled "Feeder_10" or "Feeder_01":
+
+```{r, echo = FALSE}
+system("mv ./Data/Raw/exp2/GR10DATA_2016_01_16.TXT ./Data/Raw/exp2/Feeder_10_2016_01_16.TXT")
+```
+
+
+```{r}
+r1 <- load_raw("./Data/Raw/exp2/Feeder_10_2016_01_16.TXT", feeder_pattern = "Feeder_[0-9]{2}")
+head(r1)
+```
+
+For more information on how to write patterns, see documentation for "Regular Expressions" (e.g. <http://www.regular-expressions.info/tutorial.html>)
+
+
+
+<a id="loadrawall"></a>
+
+## `load_raw_all()`
+
+The function `load_raw_all()` is a wrapper function which will automatically load and combine data contained in several different files in a single folder, or in a nested series of folders. Other files can be present, but all data files must be identifiable by a pattern in the file name.
+
+In this example our data files are stored in a folder called `raw` and there are several sets of data, each corresponding to an individual experiment which are then stored in their own folder called `exp1`, `exp2`, etc. Feeder data files are identifiable by the characters 'DATA' present in the name (as in the above example), which is the default.
+
+```{r}
+r <- load_raw_all(r_dir = "./Data/Raw")
+head(r)
+summary(r)
+```
+
+(Note that empty files are skipped, but identified)
+
+If your feeder files don't have an identifiable label, but are the only csv files in the folders, you could use:
+```{r eval = FALSE}
+r <- load_raw_all(r_dir = "./Data/Raw", pattern = ".csv")
+```
+
+However, in this example we have several different experiments, which we'll probably want to identify in our data. This is where the `extra` arguments come in.
+
+```{r}
+list.files("./Data/Raw")
+```
+
+In our example, each experiment is stored in its own folder ('exp2' and 'exp3'). Therefore we can tell our function to identify those patterns (`extra_pattern`) and store the values in an extra column (`extra_name`):
+
+```{r}
+r <- load_raw_all(r_dir = "./Data/Raw", extra_pattern = "exp[2-3]{1}", extra_name = "experiment")
+head(r)
+```
+
+"exp[1-2]{1}" matches the exact characters "exp" followed by either a 1 or a 2 of which there is exactly 1.
+
+Because raw logger data doesn't have any specific information, we should probably merge in some extra data for use later (visualizations, etc.):
+
+```{r}
+## Open feeder index
+f_index <- read.csv("./Data/feeder_index.csv")
+head(f_index)
+
+## Merge feeder index into RFID data, matching 'experiment' and 'feeder_id'
+r <- merge(r, f_index, by = c("experiment", "feeder_id"))
+head(r)
+```
+
+Because here, the RFID-enabled feeders were reused for different experiments, some feeders have the same id, but a different lat/lon. However, feeder_ids need to be unique or we will have problems later on, so let's create unique feeder_id names:
+
+```{r}
+r$feeder_id <- paste(r$experiment, r$feeder_id, sep = "-")
+head(r)
+```
+
+This data is now ready for [transformations](transformations.html)!
+
+
+<a id="dldata"></a>
+
+## `dl_data()`
+
+This is likely the easiest way to get data (provided the data you're interested in is hosted in the animal__nexus__ database). This function requests data from animal__nexus__ and formats it for use with the feedr transformation functions.
+
+If you don't specify anything, all data will be downloaded for the default site (Kamloops) and the default extra columns (loc and species) with the default timezone (America/Vancouver). See ?dl_data for more details.
+
+```{r, echo = FALSE}
+r <- dl_data(end = "2015-09-06")
+head(r)
+```
+
+```{r, eval = FALSE}
+r <- dl_data()
+head(r)
+```
+
+You can specify start and end times:
+
+```{r}
+r <- dl_data(start = "2015-10-01", end = "2015-10-02")
+head(r)
+```
+
+```{r}
+r <- dl_data(start = "2015-10-01 09:00:00", end = "2015-10-02")
+head(r)
+```
+
+You can also specify only a start or an end, all data up to or after that point will be grabbed:
+
+```{r}
+r <- dl_data(end = "2015-09-06")
+head(r)
+```
+
+Extra bird or feeder related details (?dl_data for more):
+
+```{r}
+r <- dl_data(end = "2015-09-06", feeder_details = c("loc","site_name"), bird_details = c("species", "age", "sex"))
+head(r)
+```
+
+--------------------------
+Back to [top](#top)  
+Go back to [main document](feedr.html) | Continue with [housekeeping](housekeeping.html)
+

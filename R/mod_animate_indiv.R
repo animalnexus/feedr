@@ -78,8 +78,8 @@ mod_UI_map_animate_indiv <- function(id) {
            p("Paths and feeder use can be animated over time by clicking on the", strong("small blue arrow"), "to the lower right of the 'Time' slider (right)."),
            p("The time interval of each jump and the speed of the animation can be adjusted above."),
            h3("Tip:"),
-           p("If you find your animations lagging, reduce the amount of data (adjust the time range)."),
-           actionButton(ns("pause"), "Pause")
+           p("If you find your animations lagging, reduce the amount of data (adjust the time range).")#,
+           #actionButton(ns("pause"), "Pause")
     ),
     column(8,
            popify(fluidRow(leafletOutput(ns("map"), height = 600)),
@@ -126,7 +126,9 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
 
     if(nrow(m) == 0 || all(is.na(m$direction))) m <- NULL
     if(nrow(f) == 0 || all(is.na(f$feed_start))) f <- NULL
+
   } else {
+
     if(!is.null(m))  {
       tz <- tz_offset(attr(m$time, "tzone"))
       tz_name <- tz_offset(attr(m$time, "tzone"), tz_name = TRUE)
@@ -192,8 +194,10 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
                 choices = c("Choose" = "", labels))
   })
 
+
   # Time range - select subsection of data
    output$UI_time_range <- renderUI({
+     req(start(), end())
      sliderInput(ns("time_range"), "Time Range",
                  min = start(),
                  max = end(),
@@ -217,7 +221,7 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
 
    ## Convert to proper tz
    time_range <- reactive({
-     req(input$time_range)
+     req(input$time_range, start(), end())
      lubridate::with_tz(input$time_range, tz_name)
    })
 
@@ -248,6 +252,7 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
   ## Subselections
   f_id <- reactive({
     req(input$bird_id)
+    req(input$bird_id %in% unique(f$bird_id))
     if(!is.null(f)){
       validate(need(sum(names(f) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
       d <- dplyr::filter(f, bird_id == input$bird_id)
@@ -257,7 +262,6 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
 
   f_range <- reactive({
     req(time_range())
-
     if(!is.null(f_id())){
       d <- f_id() %>%
         dplyr::filter(feed_start >= time_range()[1] & feed_end <= time_range()[2])
@@ -276,6 +280,7 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
 
   m_id <- reactive({
     req(input$bird_id)
+    req(input$bird_id %in% unique(m$bird_id))
     if(!is.null(m)){
       validate(need(sum(names(m) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
       d <- m %>%
@@ -315,7 +320,6 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
   pal <- reactive({
     req(any(nrow(m_range()) > 0, nrow(f_range()) > 0))
     t <- vector()
-    #browser()
     if(!is.null(m_range())) t <- m_range()$time
     if(!is.null(f_range())) t <- c(t, f_range()$feed_start, f_range()$feed_end)
 

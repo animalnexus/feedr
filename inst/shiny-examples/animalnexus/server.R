@@ -20,9 +20,6 @@ shinyServer(function(input, output, session) {
   ## Current activity
   callModule(module = feedr:::mod_map_current, id = "current", db = db)
 
-  imgs_wiki <- read.csv(system.file("extdata", "shiny-data", "species.csv", package = "feedr"), colClasses = c("factor", "character"))
-  imgs <- read.csv(system.file("extdata", "shiny-data", "img_index.csv", package = "feedr"))
-
   ## Pause
   observeEvent(input$pause, browser())
 
@@ -124,9 +121,11 @@ shinyServer(function(input, output, session) {
 
   ## Look at birds
   output$img_birds <- renderText({
-    req(imgs, birds())
+    req(birds())
     # Don't actually know what STRH stands for, assuming Sapphire-throated Hummingbird
-    feedr:::get_image(birds(), input$dt_birds_rows_selected, 300, imgs, imgs_wiki)
+    #paste0("<div class = \"bird-img\">",
+           feedr:::get_image(birds(), input$dt_birds_rows_selected, 300)#,
+    #       "</div>")
     })
 
 

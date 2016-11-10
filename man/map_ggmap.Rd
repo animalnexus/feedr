@@ -62,26 +62,28 @@ m <- move(v)
 
 # Summarise data for visualization (use totals):
 library(dplyr)
-f_all <- group_by(f, feeder_id, lat, lon) \%>\%
-           summarise(amount = sum(feed_length) / bird_n[1])
+f_all <- f \%>\%
+  group_by(feeder_id, lat, lon) \%>\%
+  summarise(amount = sum(feed_length) / bird_n[1])
 
-m_all <- group_by(m, move_path, feeder_id, lat, lon) \%>\%
-           summarise(path_use = length(move_path) / bird_n[1])
+m_all <- m \%>\%
+  group_by(feeder_id, move_path, lat, lon) \%>\%
+  summarise(path_use = length(move_path) / bird_n[1])
 
 # Look at total summary maps
-map_leaflet(u = f_all, p = m_all)
 map_ggmap(u = f_all, p = m_all)
 
 # Summarise data for visualization (use individuals):
-f_indiv <- group_by(f, bird_id, feeder_id, lat, lon) \%>\%
-             summarise(amount = sum(feed_length))
+f_indiv <- f \%>\%
+  group_by(bird_id, feeder_id, lat, lon) \%>\%
+  summarise(amount = sum(feed_length))
 
-m_indiv <- group_by(m, move_path, feeder_id, lat, lon) \%>\%
-             summarise(path_use = length(move_path))
+m_indiv <- m \%>\%
+  group_by(bird_id, feeder_id, move_path, lat, lon) \%>\%
+  summarise(path_use = length(move_path))
 
 # Look at individual summary maps (note that Leaflet just stacks individuals
-one on top of the other)
-map_leaflet(u = f_indiv, p = m_indiv)
+# one on top of the other)
 map_ggmap(u = f_indiv, p = m_indiv)
 
 }

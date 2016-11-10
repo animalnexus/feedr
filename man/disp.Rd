@@ -46,19 +46,43 @@ The first and last visits on the record are automatically assumed to be non
 displacer and non-displacee, respectively.
 }
 \examples{
- v <- visits(chickadees)
+
+# Lookat displacements for chickadees in experiment 2
+ v <- visits(chickadees[chickadees$experiment == "exp2",])
  d <- disp(v)
 
- # Look at displacement events (identical methods):
- d[['displacements']][1:5,]
- d$displacements[1:5,]
+ # Look at displacement events:
+ d[['displacements']] #or
+ d$displacements
 
  # Look at summaries (identical methods):
- d[['summaries']][1:10,]
- d$summaries[1:10,]
+ d[['summaries']] #or
+ d$summaries
 
  # Look at interactions (identical methods):
- d[['interactions']][1:10,]
- d$interactions[1:10,]
+ d[['interactions']] #or
+ d$interactions
+
+ # Calculate across different experiments (expect warnings about unequal factor levels):
+library(dplyr)
+
+v <- chickadees \%>\%
+  group_by(experiment) \%>\%
+  do(visits(.))
+
+d <- v \%>\%
+  group_by(experiment) \%>\%
+  do(data = disp(.))
+
+# Look at the data stored in the 2nd experiment:
+d$data[d$experiment == "exp2"][[1]] #or
+d[["data"]][[1]] #or
+d$data[[1]]
+
+# Access the displacements from the 3rd experiment:
+d$data[d$experiment == "exp3"][[1]]$displacements #or
+d[["data"]][[2]]$displacements #or
+d$data[[2]]$displacements
+
 }
 

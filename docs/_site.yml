@@ -1,0 +1,25 @@
+name: "use-feedr"
+output_dir: "."
+navbar:
+  type: inverse
+  title: "How to use feedr"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "--------------"
+    - text: "Loading"
+      href: load.html
+    - text: "Housekeeping"
+      href: housekeeping.html
+    - text: "Transformations"
+      href: transformations.html
+    - text: "Visualizations"
+      href: maps.html
+    - text: "About"
+      href: about.html
+output:
+  html_document:
+    theme: readable
+    highlight: textmate
+    css: custom.css
+

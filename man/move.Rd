@@ -51,5 +51,17 @@ library(dplyr)
 m.totals <- m \%>\%
   group_by(bird_id, move_path) \%>\%
   summarize(n_path = length(move_path) /2)
+
+# Calculate across different experiments:
+library(dplyr)
+
+v <- chickadees \%>\%
+  group_by(experiment) \%>\%
+  do(visits(.))
+
+m <- v \%>\%
+  group_by(experiment) \%>\%
+  do(move(.))
+
 }
 

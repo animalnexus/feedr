@@ -50,4 +50,16 @@ feeder with the missing start/end times will be scored as unknown. If
 \code{feeder_id}, all activity between the start and end times will be scored
 as unknown, regardless of the feeder. See examples.
 }
+\examples{
+
+v <- visits(chickadees)
+f <- feeding(v)
+a <- activity(f, res = 1)
+
+# By feeder (may take a while)
+\dontrun{
+a <- activity(f, res = 1, by_feeder = TRUE)
+}
+
+}
 

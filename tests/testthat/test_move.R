@@ -39,7 +39,7 @@ test_that("move() returns expected data", {
   expect_true(length(unique(m$move_path)) != length(unique(m$move_dir))) ## 47 visits > 0 seconds
 })
 
-test_that("move() handles zero movements", {
+test_that("move() handles zero movements and single bird", {
   ## No movements (all = FALSE)
   expect_silent(m <- visits(finches) %>% dplyr::filter(bird_id == "062000043E") %>% move())
   expect_is(m, "data.frame")
