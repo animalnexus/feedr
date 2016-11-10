@@ -5,9 +5,12 @@
 - Fixed minor errors in activity(), move() and feeding() 
 - Fixed errors in documentation examples
 - Added new documentation examples
-- Changed factoring to allow use of dplyr's group_by to run transformations on groups of data (e.g. differen sites or experiments)
+- Changed factoring to allow use of dplyr's group_by to run transformations on groups of data (e.g. different sites or experiments)
 - Updated "Current activity" style
 
+## Changes
+
+- Altered display of pictures of species/individuals on animalnexus.ca
 
 # feedr 0.7.0 (2016-11-03)
 
