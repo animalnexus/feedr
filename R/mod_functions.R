@@ -100,7 +100,7 @@ get_image <- function(database, which, size = 300, imgs = NULL, imgs_wiki = NULL
 
   ## Get the bird_id (which is either ID or index in data base)
   if(is.null(which) | is.null(database)) {  # No ID
-    bird <- data.frame(bird_id = NA, species = NA)
+    bird <- data.frame(bird_id = NA, species = "unknown", img = NA, citation = NA, author = NA)
   } else if (is.numeric(which)) {  # ID by database location
     bird <- database[which, c("bird_id", "species")]
     bird$bird_id[nchar(as.character(bird$bird_id)) == 0] <- NA
@@ -113,11 +113,13 @@ get_image <- function(database, which, size = 300, imgs = NULL, imgs_wiki = NULL
     bird$id <- 1:nrow(bird) ## Preserve row order
 
     ## Get img from our pictures
+    suppressWarnings({
     bird <- dplyr::left_join(bird, imgs[, c("bird_id", "img", "citation", "author")], by = "bird_id")
-
-    ## Get img of species from wikimedia if we don't have it
-    bird[is.na(bird$img), c("img", "citation", "author")] <- imgs_wiki[imgs_wiki$species %in% bird$species[is.na(bird$img)], c("img", "citation", "author")]
+    })
   }
+
+  ## Get img of species from wikimedia if we don't have it
+  bird[is.na(bird$img), c("img", "citation", "author")] <- imgs_wiki[imgs_wiki$species %in% bird$species[is.na(bird$img)], c("img", "citation", "author")]
 
   ## Create css to overlay image
   bird$css <- NA
