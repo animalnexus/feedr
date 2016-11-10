@@ -95,8 +95,8 @@ values_list <- function(i = NULL, counts){
 # which = 1:6; size = 300; imgs = NULL; imgs_wiki = NULL
 get_image <- function(database, which, size = 300, imgs = NULL, imgs_wiki = NULL){
 
-  if(is.null(imgs)) imgs <- read.csv(system.file("extdata", "shiny-data", "img_index.csv", package = "feedr"), colClasses = "character")
-  if(is.null(imgs_wiki)) imgs_wiki <- read.csv(system.file("extdata", "shiny-data", "wiki_index.csv", package = "feedr"), colClasses = "character")
+  if(is.null(imgs)) imgs <- read.csv("img_index.csv", colClasses = "character")
+  if(is.null(imgs_wiki)) imgs_wiki <- read.csv("shiny-data", colClasses = "character")
 
   ## Get the bird_id (which is either ID or index in data base)
   if(is.null(which) | is.null(database)) {  # No ID
