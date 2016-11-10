@@ -2,7 +2,6 @@ library(feedr, lib.loc = "/usr/local/lib/R_exp/site-library/")
 library(shiny)
 library(shinyjs)
 library(shinyBS)
-library(leaflet)
 
 shinyServer(function(input, output, session) {
 
