@@ -1,4 +1,4 @@
-library(feedr)
+library(feedr, lib.loc = "/usr/local/lib/R_exp/site-library/")
 library(shiny)
 library(shinyjs)
 library(shinyBS)
@@ -40,6 +40,7 @@ shinyUI(
              #################
              tabPanel("Home",
                       fluidRow(
+                        div(style = "font-size: 200%; padding: 10px; max-width: 350px; margin: auto; text-align:center; border-style: solid; border-radius: 5px; box-shadow: 10px 10px 5px #888888; color: red;", "This is EXPERIMENTAL"),
                         div(style = "text-align:center", HTML("<h1>Welcome to animal<strong>nexus</strong></h1>")),
                         h4(style = "text-align:center", "This webapp is based on R shiny and uses the 'feedr' package to transform, summarize and visualize animal movement data collected from RFID stations."),
                         h4(style = "text-align:center", "To get started, ", actionLink("link_db", "select data from our data base"), "or", actionLink("link_import", "import your own.")),
