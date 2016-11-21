@@ -11,3 +11,4 @@ addons:
       - libxml2-dev
       - libpq-dev
 r_check_revdep: true
+warnings_are_errors: false
