@@ -20,8 +20,9 @@ map_animate_indiv <- function(v) {
   check_time(v)
   check_format(v)
 
-  app <- shiny::shinyApp(ui = shiny::fluidPage(includeCSS(system.file("extra", "style.css", package = "feedr")),
-                                                          mod_UI_map_animate_indiv("standalone")),
+  app <- shiny::shinyApp(ui = shiny::fluidPage(shinyjs::useShinyjs(),
+                                               includeCSS(system.file("extra", "style.css", package = "feedr")),
+                                               mod_UI_map_animate_indiv("standalone")),
                          server = function(input, output, session) {
                            shiny::callModule(mod_map_animate_indiv, "standalone",
                                              v = v)
