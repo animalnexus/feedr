@@ -123,7 +123,6 @@ mod_map_current <- function(input, output, session, db) {
           })
         dbDisconnect(con)
 
-        browser()
         if(nrow(data) > 0) {
           data <- data %>%
             load_format(., tz = "UTC", tz_disp = "America/Vancouver") %>%
