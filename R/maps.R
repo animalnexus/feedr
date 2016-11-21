@@ -78,6 +78,21 @@ map.leaflet.base <- function(locs, marker = "feeder_id", name = "Loggers", contr
   .Deprecated("map_leaflet_base")
 }
 
+path_lines <- function(map, data, p_scale, p_pal, p_title, val_min, val_max, layerId = "path"){
+  addPolylines(map,
+             data = data,
+             ~lon, ~lat,
+             weight = ~scale_area(path_use,
+                                  max = 50 * p_scale,
+                                  val_max = val_max,
+                                  val_min = val_min),
+             opacity = 0.5,
+             color = ~p_pal(path_use),
+             group = p_title,
+             popup = ~htmltools::htmlEscape(as.character(path_use)),
+             layerId = layerId)
+}
+
 #' Add movement layer to leaflet map
 #'
 #' Designed for advanced use (see map_leaflet() for general mapping)
@@ -117,16 +132,9 @@ path_layer <- function(map, p,
 
   # Add movement path lines to map
   for(path in unique(p$move_path)) {
-    map <- addPolylines(map,
-                        data = p[p$move_path == path, ],
-                        ~lon, ~lat,
-                        weight = ~scale_area(path_use, max = 50 * p_scale,
-                                             val_max = max(p$path_use),
-                                             val_min = min(p$path_use)),
-                        opacity = 0.5,
-                        color = ~p_pal(path_use),
-                        group = p_title,
-                        popup = ~htmltools::htmlEscape(as.character(use)))
+    map <- path_lines(map, data = p[p$move_path == path, ],
+                      p_scale = p_scale, p_title = p_title, p_pal = p_pal,
+                      val_max = max(p$path_use), val_min = min(p$path_use))
   }
 
   map <- map %>% addLegend(title = p_title,
@@ -146,6 +154,22 @@ path.layer <- function(map, p,
                        p_scale = 1, p_title = "Path use",
                        p_pal = c("yellow","red"), p.scale, p.title, p.pal, controls = TRUE) {
   .Deprecated("path_layer")
+}
+
+
+use_markers <- function(map, data, u_scale, u_pal, u_title, val_min = NULL, val_max = NULL, layerId = "use") {
+  addCircleMarkers(map,
+                   data = data,
+                   ~lon, ~lat,
+                   weight = 1,
+                   opacity = 1,
+                   fillOpacity = 0.5,
+                   radius = ~ scale_area(amount, max = 50 * u_scale, radius = TRUE, val_min = val_min, val_max = val_max),
+                   color = "black",
+                   fillColor = ~u_pal(amount),
+                   popup = ~htmltools::htmlEscape(as.character(round(amount))),
+                   group = u_title,
+                   layerId = layerId)
 }
 
 #' Add feeding layer to leaflet map
@@ -185,17 +209,18 @@ use_layer <- function(map, u,
   u_pal <- colorNumeric(palette = colorRampPalette(u_pal)(15), domain = u$amount)
 
   # Add feeder use data to map
-  map <- addCircleMarkers(map,
-                           data = u,
-                           ~lon, ~lat,
-                           weight = 1,
-                           opacity = 1,
-                           fillOpacity = 0.5,
-                           radius = ~ scale_area(amount, max = 50 * u_scale, radius = TRUE),
-                           color = "black",
-                           fillColor = ~u_pal(amount),
-                           popup = ~htmltools::htmlEscape(as.character(round(amount))),
-                           group = u_title) %>%
+  map <- use_markers(map, u, u_scale, u_pal, u_title) %>%
+  # addCircleMarkers(map,
+  #                          data = u,
+  #                          ~lon, ~lat,
+  #                          weight = 1,
+  #                          opacity = 1,
+  #                          fillOpacity = 0.5,
+  #                          radius = ~ scale_area(amount, max = 50 * u_scale, radius = TRUE),
+  #                          color = "black",
+  #                          fillColor = ~u_pal(amount),
+  #                          popup = ~htmltools::htmlEscape(as.character(round(amount))),
+  #                          group = u_title) %>%
     addLegend(title = u_title,
               position = 'topright',
               pal = u_pal,
