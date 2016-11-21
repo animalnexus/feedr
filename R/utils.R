@@ -71,3 +71,20 @@ merge_extra <- function(d, extra, only = NULL) {
   if(!is.null(extra$date)) d <- dplyr::left_join(d, extra$date, by = "date")
   return(d)
 }
+
+round_6 <- function(time, by = "12") {
+  h <- lubridate::hour(time)
+  d <- lubridate::date(time)
+  tz <- lubridate::tz(time)
+ if(h >= 6){
+   time <- d + lubridate::hours(6)
+   if (by != 24 & h >= 18) {
+     time <- d + lubridate::hours(18)
+   }
+ } else if (h < 6) {
+   if(by == 12) time <- d - lubridate::days(1) + lubridate::hours(18)
+   if(by == 24) time <- d - lubridate::days(1) + lubridate::hours(6)
+ }
+  time <- lubridate::force_tz(as.POSIXct(time), tz = tz)
+  return(time)
+}
