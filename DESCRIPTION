@@ -33,7 +33,6 @@ Imports:
     tidyr (>= 0.5.1),
     xml2 (>= 0.1.2)
 Suggests:
-    envirocan,
     knitr,
     lazyeval,
     rmarkdown,

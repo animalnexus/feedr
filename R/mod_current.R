@@ -58,13 +58,13 @@ mod_map_current <- function(input, output, session, db) {
     return(circle)
   }
 
-  sp_icons <- leaflet::awesomeIconList("Mountain Chickadee" = leaflet::makeAwesomeIcon(icon = "star",
+  sp_icons <- leaflet::awesomeIconList("MOCH" = leaflet::makeAwesomeIcon(icon = "star",
                                                                                        marker = "green",
                                                                                        iconColor = "white"),
-                                       "House Finch" = leaflet::makeAwesomeIcon(icon = "star",
+                                       "HOFI" = leaflet::makeAwesomeIcon(icon = "star",
                                                                                 marker = "red",
                                                                                 iconColor = "white"),
-                                       "Dark-eyed Junco" = leaflet::makeAwesomeIcon(icon = "star",
+                                       "DEJU" = leaflet::makeAwesomeIcon(icon = "star",
                                                                                     marker = "darkpurple",
                                                                                     iconColor = "white"))
 
@@ -108,7 +108,11 @@ mod_map_current <- function(input, output, session, db) {
                                                 "FROM raw.visits, feeders, birds",
                                                 "WHERE (raw.visits.feeder_id = feeders.feeder_id)",
                                                 "AND (birds.bird_id = raw.visits.bird_id)",
+<<<<<<< HEAD
                                                 "AND birds.species NOT IN ( 'Researcher' )",
+=======
+                                                "AND birds.species NOT IN ( 'XXXX' )",
+>>>>>>> master
                                                 "AND feeders.site_name IN ( 'Kamloops, BC' )",
                                                 "AND raw.visits.time::timestamp > ( CURRENT_TIMESTAMP::timestamp - INTERVAL '24 hours' )"))
 
@@ -117,7 +121,11 @@ mod_map_current <- function(input, output, session, db) {
                                                                        "FROM raw.visits, feeders, birds ",
                                                                        "WHERE (raw.visits.feeder_id = feeders.feeder_id) ",
                                                                        "AND (birds.bird_id = raw.visits.bird_id) ",
+<<<<<<< HEAD
                                                                        "AND birds.species NOT IN ( 'Researcher' )",
+=======
+                                                                       "AND birds.species NOT IN ( 'XXXX' )",
+>>>>>>> master
                                                                        "AND feeders.site_name IN ( 'Kamloops, BC' ) ",
                                                                        "ORDER BY raw.visits.time::timestamp DESC LIMIT 100"))
           })
