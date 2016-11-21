@@ -19,7 +19,9 @@ map_animate <- function(v) {
   check_time(v)
   check_format(v)
 
-  app <- shiny::shinyApp(ui = shiny::fluidPage(mod_UI_map_animate("standalone")),
+  app <- shiny::shinyApp(ui = shiny::fluidPage(shinyjs::useShinyjs(),
+                                               includeCSS(system.file("extra", "style.css", package = "feedr")),
+                                               mod_UI_map_animate("standalone")),
                          server = function(input, output, session) {
                            shiny::callModule(mod_map_animate, "standalone",
                                              v = v)
