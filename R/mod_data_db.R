@@ -112,12 +112,13 @@ mod_data_db <- function(input, output, session, db) {
       setProgress(value = 0.45, detail = "Getting bird data..")
       cat("Getting bird data...\n")
       #  incProgress(3/5)
-      birds_all <- dbGetQuery(con, statement = paste0("SELECT DISTINCT raw.visits.bird_id FROM raw.visits")) %>%
-        dplyr::left_join(dbGetQuery(con, statement = paste0("SELECT bird_id, species, site_name, age, sex, tagged_on FROM birds")), by = "bird_id") %>%
+
+      birds_all <- dbGetQuery(con, statement = paste("SELECT bird_id, species, site_name, age, sex, tagged_on FROM birds",
+                                                      "WHERE birds.species NOT IN ('XXXX')")) %>%
         load_format(tz = "") %>%
         dplyr::mutate(species = factor(species),
-               site_name = factor(site_name),
-               bird_id = factor(bird_id))
+                      site_name = factor(site_name),
+                      bird_id = factor(bird_id))
 
       setProgress(value = 0.60, detail = "Getting sample information..")
       cat("Getting sample information...\n")
@@ -129,13 +130,14 @@ mod_data_db <- function(input, output, session, db) {
                                               "GROUP BY DATE(raw.visits.time), raw.visits.feeder_id, raw.visits.bird_id"#,
                            )) %>%
         load_format(tz = "UTC") %>%
-        dplyr::left_join(birds_all[, c("site_name", "species", "bird_id")], by = "bird_id") %>%
+        dplyr::inner_join(birds_all[, c("site_name", "species", "bird_id")], by = "bird_id") %>%
         dplyr::mutate(date = as.Date(date),
                count = as.numeric(count),
                species = factor(species, levels = sort(unique(birds_all$species))),
                site_name = factor(site_name, levels = sort(sites_all$site_name)),
                bird_id = factor(bird_id, levels = sort(unique(birds_all$bird_id))),
                feeder_id = factor(feeder_id, levels = sort(unique(feeders_all$feeder_id))))
+
       dbDisconnect(con)
     })
 
@@ -164,7 +166,6 @@ mod_data_db <- function(input, output, session, db) {
   # Fires when selection complete
   observe({
     req(startup(input), !is.null(db))
-    #browser()
     ## Invalidate only on the following inputs
     input$data_species
     input$data_date
@@ -215,7 +216,6 @@ mod_data_db <- function(input, output, session, db) {
   ## Subset of counts reflecting species
   counts_species <- reactive({
     req(input$data_species, counts_site())
-    #browser()
     cat("Calculating counts_species()...\n")
     if(is.null(values$input)) species <- unique(values$keep$species) else species <- input$data_species
     droplevels(counts_site()[counts_site()$species %in% species, ])
@@ -323,7 +323,6 @@ mod_data_db <- function(input, output, session, db) {
   ## UI bird_id
   output$UI_data_bird_id <- renderUI({
     req(counts_species())
-    #browser()
     cnts <- get_counts(c = counts_species(), summarize_by = "bird_id")
     checkboxGroupInput(ns("data_bird_id"), "Select bird ids",
                        choices = choices(cnts, "bird_id"),
@@ -410,7 +409,6 @@ mod_data_db <- function(input, output, session, db) {
         dplyr::left_join(sites_all, by = c("choices" = "site_name"))
     )
 
-    #browser()
     leaflet(data = sites_all) %>%
         addTiles(group = "Open Street Map") %>%
         addProviderTiles("Stamen.Toner", group = "Black and White") %>%
@@ -455,7 +453,6 @@ mod_data_db <- function(input, output, session, db) {
   observeEvent(input$data_site_name, {
     req(!is.null(db), input$data_site_name != "")
     cat("Updating markers...\n")
-    #browser()
     f <- feeders_all[feeders_all$site_name == input$data_site_name, ]
     if(nrow(f) > 0) {
       if(unique(f$site_name) == "Kamloops, BC") zoom <- 17
