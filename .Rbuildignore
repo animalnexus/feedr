@@ -6,3 +6,4 @@
 ^ideas$
 ^db_full.R$
 ^docs$
+^\.travis\.yml$
