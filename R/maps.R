@@ -59,11 +59,11 @@ map_leaflet_base <- function(locs, marker = "feeder_id", name = "Loggers", contr
     addCircleMarkers(~lon, ~lat,
                      popup  = htmltools::htmlEscape(as.character(unlist(locs[, marker]))),
                      group = name,
-                     weight = 1,
+                     weight = 2,
                      opacity = 1,
                      fillOpacity = 1,
                      fillColor = "black",
-                     color = "black",
+                     color = "white",
                      radius = 5)
   if(controls) {
     l <- l %>%
