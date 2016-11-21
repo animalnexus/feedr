@@ -132,3 +132,30 @@ get_image <- function(database, which, size = 300, imgs = NULL, imgs_wiki = NULL
   return(html)
 }
 
+
+data_limits <- function() {
+  ## If you have 0-7 day = 5min interval
+  ## If you have > 7 days (1week) = 30min interval
+  ## If you have > 14 days (2 weeks) = 1 hr
+  ## If you have > 21 days (3 weeks) = 3 hr
+  ## If you have > 28 days (1 month) = 6 hours
+  ## If you have > 6 weeks (1.5 months) = 12 hours
+  ## If you have > 8 weeks (2 months) = 24 hours
+
+  list(i = c("5 min" = 5, "15 min" = 15, "30 min" = 30, "1 hr" = 60, "3 hr" = 60*3, "6 hr" = 60*6, "12 hr" = 60 * 12, "24 hr" = 60 *24),
+       n = c(0, 7, 7, 14, 21, 28, 7*6, 7*8) * 60 * 24)
+}
+
+interval_selection <- function(data_range, i = NULL){
+  if(is.null(i)) i <- data_limits()
+  return(last(i$i[i$n <= data_range]))
+}
+
+#' @import magrittr
+data_tz <- function(data) {
+  # Fix time zone to local non-DST
+  cols <- which(sapply(data, lubridate::is.POSIXct))
+  tz <- tz_offset(attr(data[, cols[1]][[1]], "tzone"), tz_name = TRUE)
+  for(i in cols) data[, i] <- lubridate::with_tz(data[, i], tzone = tz)
+  return(data)
+}
