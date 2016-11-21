@@ -10,5 +10,5 @@ addons:
     packages:
       - libxml2-dev
       - libpq-dev
-r_check_revdep: true
+r_check_revdep: false
 warnings_are_errors: false
