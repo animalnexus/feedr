@@ -108,6 +108,7 @@ mod_map_current <- function(input, output, session, db) {
                                                 "FROM raw.visits, feeders, birds",
                                                 "WHERE (raw.visits.feeder_id = feeders.feeder_id)",
                                                 "AND (birds.bird_id = raw.visits.bird_id)",
+                                                "AND birds.species NOT IN ( 'Researcher' )",
                                                 "AND feeders.site_name IN ( 'Kamloops, BC' )",
                                                 "AND raw.visits.time::timestamp > ( CURRENT_TIMESTAMP::timestamp - INTERVAL '24 hours' )"))
 
@@ -116,6 +117,7 @@ mod_map_current <- function(input, output, session, db) {
                                                                        "FROM raw.visits, feeders, birds ",
                                                                        "WHERE (raw.visits.feeder_id = feeders.feeder_id) ",
                                                                        "AND (birds.bird_id = raw.visits.bird_id) ",
+                                                                       "AND birds.species NOT IN ( 'Researcher' )",
                                                                        "AND feeders.site_name IN ( 'Kamloops, BC' ) ",
                                                                        "ORDER BY raw.visits.time::timestamp DESC LIMIT 100"))
           })
