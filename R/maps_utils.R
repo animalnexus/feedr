@@ -1,6 +1,6 @@
 # A scaling function used by mapping functions
 scale_area <- function(r, radius = FALSE,
-                       min = 5, max = 105,
+                       min = 10, max = 105,
                        val_max = NULL, val_min = NULL){
 
   if(is.null(val_max)) val_max = max(r, na.rm = TRUE)
