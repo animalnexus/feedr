@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/steffilazerte/feedr.svg?branch=master)](https://travis-ci.org/steffilazerte/feedr)
 
 # feedr
 
