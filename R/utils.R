@@ -1,3 +1,5 @@
+last <- function(x)  return(x[length(x)])
+
 dep <- function(x){
   if (exists(x)) {
     warning("Argument ", x, " is deprecated; please use ", gsub("\\.", "_", x), " instead.",
