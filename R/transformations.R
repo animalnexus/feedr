@@ -280,7 +280,7 @@ move_single <- function(v1, move_dir, move_path, all = FALSE){
       dplyr::arrange(time) %>%
       dplyr::mutate(move_id = sort(rep(1:(length(bird_id)/2),2))) %>%
       dplyr::group_by(move_id) %>%
-      dplyr::mutate(move_dir = paste0(feeder_id, collapse = "_"),
+      dplyr::mutate(move_dir = factor(paste0(feeder_id, collapse = "_"), levels = move_dir),
                     move_path = factor(paste0(sort(feeder_id), collapse = "_"), levels = move_path),
                     strength = 1 / as.numeric(difftime(time[direction == "arrived"], time[direction == "left"], units = "hours"))) %>%
       dplyr::ungroup()
