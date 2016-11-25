@@ -17,7 +17,14 @@ mod_UI_maps_instructions <- function(id, specific) {
     h3("Instructions:"),
     specific,
     p("Events can be animated over time by clicking on the", strong("small blue arrow"), "to the lower right of the 'Time' slider (right)."),
-    p("The time interval (resolution) and the speed of the animation can be adjusted above."),
+    p("The time interval (resolution) and the speed of the animation can be adjusted below."),
+    hr()
+  )
+}
+
+mod_UI_maps_tips <- function(id, specific) {
+  ns <- NS(id)
+  tagList(
     h3("Tips:"),
     p("To prevent animations from lagging, you are limited in the resolution you can animate over. To animate at a smaller resolution, reduce the time range."),
     p("The time depicted in the slider bar to the left indicates the middle of the time interval over which you are animated. For example, if you pick a resolution of 1 hr and the time shows 2016-01-07 09:30:00, the data has been summarized over 1 hour from 9am until 10am.")
@@ -36,6 +43,7 @@ mod_UI_maps_controls <- function(id) {
       title = "Time range",
       content = "Select a particular time range to look at", options = list(container = "body")),
     hr(),
+    h4("Animation options"),
     popify(
       uiOutput(ns("UI_interval")),
       title = "Resolution",
@@ -51,35 +59,55 @@ mod_UI_maps_controls <- function(id) {
 # Module server function
 #' @import shiny
 #' @export
-mod_maps_controls <- function(input, output, session, times) {
+mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
 
   ns <- session$ns
 
-  start <- reactive({lubridate::floor_date(min(times()), unit = "hour")})
-  end <- reactive({lubridate::ceiling_date(max(times()), unit = "hour")})
-
-  tz_offset <- reactive({
+  t <- reactive({
+    req(times())
+    if(verbose) cat("  Times - Setup\n")
     x <- feedr::tz_offset(tz = attr(times(), "tzone"))
     if(x >= 0) x <- paste0("+", sprintf("%02d", abs(x)), "00") else x <- paste0("-", sprintf("%02d", abs(x)), "00")
-    return(x)
-  })
 
-  tz <- reactive({lubridate::tz(times())})
+    list("times" = times(),
+         "start" = lubridate::floor_date(min(times()), unit = "day"),
+         "end" = lubridate::ceiling_date(max(times()), unit = "day"),
+         "tz" = lubridate::tz(times()),
+         "tz_offset" = x)
+    })
 
   # Time range - select subsection of data
   output$UI_time_range <- renderUI({
-    sliderInput(ns("time_range"), "Time Range",
-                min = start(),
-                max = end(),
-                value = c(start(), end()),
-                step = 60 * 60,
-                timezone = tz_offset())
+    req(t())
+    if(verbose) cat("  UI - Time range\n")
+    isolate({
+      x <- difftime(t()$end, t()$start)
+      if(units(x) == "hours") s <- 60*60
+      if(units(x) == "days") s <- 60*60*24
+
+      sliderInput(ns("time_range"), "Time Range",
+                  min = t()$start,
+                  max = t()$end,
+                  value = c(t()$start, t()$end),
+                  step = s,
+                  timezone = t()$tz_offset,
+                  width = '100%')
+    })
   })
+
+
 
   ## UI Interval
   output$UI_interval <- renderUI({
-    req(times())
-    isolate(radioButtons2(ns("interval"), "Resolution", choices = data_limits()$i, selected = interval_selection(c(min(times()), max(times()))), inline = TRUE))
+    req(t())
+    if(verbose) cat("  UI - Interval\n")
+    isolate(radioButtons2(ns("interval"), "Resolution", choices = data_limits()$i, selected = interval_selection(c(min(t()$times), max(t()$times))), inline = TRUE))
+  })
+
+  interval <- reactive({
+    req(input$interval, input$time_range) ## Fire on changes to time_range too, that way time_range() can fire only on interval() changes...
+    if(verbose) cat("  Input - Interval\n")
+    as.numeric(input$interval)
   })
 
   # Update Interval
@@ -93,34 +121,35 @@ mod_maps_controls <- function(input, output, session, times) {
     ## Adjust selection
     s <- interval_selection(data_range(), i)
     if(s > as.numeric(input$interval)) updateRadioButtons2(session, "interval", selected = s)
+
   })
 
   ## Floor/ceiling to nearest relevant hour. For larger time periods, start at 6am
   time_range <- reactive({
-    req(input$time_range, interval())
-    tr <- lubridate::with_tz(input$time_range, tz())
-    if(interval() <= 60) {
-      tr[1] <- lubridate::floor_date(tr[1], unit = "hour")
-      tr[2] <- lubridate::ceiling_date(tr[2], unit = "hour")
-    } else if(interval() == 180) {
-      tr[1] <- lubridate::floor_date(tr[1], unit = "3 hours")
-      tr[2] <- lubridate::ceiling_date(tr[2], unit = "3 hours")
-    } else if(interval() == 360) {
-      tr[1] <- lubridate::floor_date(tr[1], unit = "6 hours")
-      tr[2] <- lubridate::ceiling_date(tr[2], unit = "6 hours")
-    } else if(interval() == 720) {
-      tr[1] <- round_6(tr[1])
-      tr[2] <- round_6(tr[2])
-    } else if(interval() == 1440) {
-      tr[1] <- lubridate::floor_date(tr[1], unit = "24 hours")
-      tr[2] <- lubridate::ceiling_date(tr[2], unit = "24 hours")
-    }
-    return(tr)
-  })
-
-  interval <- reactive({
-    req(input$interval)
-    as.numeric(input$interval)
+    req(interval())
+    isolate({
+      req(input$time_range)
+      if(verbose) cat("  Input - Time range\n")
+      tr <- lubridate::with_tz(input$time_range, t()$tz)
+      if(interval() <= 60) {
+        tr[1] <- lubridate::floor_date(tr[1], unit = "hour")
+        tr[2] <- lubridate::ceiling_date(tr[2], unit = "hour")
+      } else if(interval() == 180) {
+        tr[1] <- lubridate::floor_date(tr[1], unit = "3 hours")
+        tr[2] <- lubridate::ceiling_date(tr[2], unit = "3 hours")
+      } else if(interval() == 360) {
+        tr[1] <- lubridate::floor_date(tr[1], unit = "6 hours")
+        tr[2] <- lubridate::ceiling_date(tr[2], unit = "6 hours")
+      } else if(interval() == 720) {
+        tr[1] <- round_6(tr[1])
+        tr[2] <- round_6(tr[2])
+      } else if(interval() == 1440) {
+        tr[1] <- lubridate::floor_date(tr[1], unit = "24 hours")
+        tr[2] <- lubridate::ceiling_date(tr[2], unit = "24 hours")
+      }
+      if(tr[1] == tr[2]) tr[2] <- tr[1] + interval()*60
+      return(tr)
+    })
   })
 
   instant_range <- reactive({
@@ -128,15 +157,85 @@ mod_maps_controls <- function(input, output, session, times) {
     lubridate::seconds(interval()*60/2)
   })
 
-  data_range <- reactive({
-    req(time_range(), times())
-    d <- times()[times() >= time_range()[1] & times() <= time_range()[2]]
+  data_range <- eventReactive(time_range(), {
+    req(time_range())
+    d <- t()$times[t()$times >= time_range()[1] & t()$times <= time_range()[2]]
+    if(length(d) == 0) d <- time_range()
     as.numeric(difftime(max(d), min(d), units = "min"))
   })
 
   anim_speed <- reactive({input$anim_speed})
 
-  return(c(interval = interval, instant_range = instant_range, time_range = time_range, anim_speed = reactive({input$anim_speed}), tz = tz, tz_offset = tz_offset))
+  breaks <- reactive({
+    req(interval())
+    isolate({
+      req(time_range(), t())
+      req(interval_selection(data_range()) <= interval())
+      if(verbose) cat("  Breaks\n")
+      breaks <- seq(time_range()[1], time_range()[2], by = paste(interval(), "min"))
+      if(max(breaks) < max(t()$times)) breaks <- seq(time_range()[1], time_range()[2] + instant_range()*2, by = paste(interval(), "min"))
+      return(breaks)
+    })
+  })
+
+
+  return(c(interval = interval, instant_range = instant_range,
+           time_range = time_range, anim_speed = reactive({input$anim_speed}),
+           breaks = breaks,
+           tz = reactive({t()$tz}), tz_offset = reactive({t()$tz_offset})))
+}
+
+
+mod_UI_maps_advanced <- function(id) {
+
+  ns <- NS(id)
+
+  tagList(
+    popify(
+      radioButtons(ns("type"), label = "Summary over time",
+                   choices = c("Cumulative" = "cumulative", "Instant" = "instant"), inline = TRUE),
+      title = "Cumulative vs. Instant",
+      content = "Show cumulative data (i.e. all visits up to and including a particular time block) or instantaneous measures (i.e. only visits measured in a particular time block)",options = list(container = "body")),
+    popify(
+      uiOutput(ns("UI_bird_id")),
+     title = "Individual", placement = "right",
+            content = "ID of the individual to select.<br/>(X mv; Y fd) represent total number of movements and feeding events respectively.",
+            options = list(container = "body")),
+    popify(
+      radioButtons2(ns("summary"), label = "Summary type",
+                    choices = c("Total sum" = "sum", "Average sum per individual" = "sum_indiv")),
+      #, "Total no. individuals" = "total_indiv")),
+      title = "Type of summary",
+      content = "What kind of summary should be shown: total feeding time/movements, totals averaged across individuals, total number of individuals?",options = list(container = "body"))
+  )
+}
+
+
+mod_maps_advanced <- function(input, output, session, samples, verbose = FALSE) {
+
+  ns <- session$ns
+
+  # UIs
+
+  # Bird ID selection
+  output$UI_bird_id <- renderUI({
+    labels <- as.character(samples()$bird_id)
+    names(labels) <- paste0(samples()$bird_id, " (", samples()$move, " mv; ", samples()$feed, " fd)")
+    labels <- c("All" = "all", labels)
+    selectInput(ns("bird_id"), label = "Select Individual",
+                choices = labels)
+  })
+
+  ## Toggle summary buttons
+  observeEvent(input$bird_id, {
+    shinyjs::toggleState(id = "summary_sum_indiv", condition = input$bird_id == "all")
+    #shinyjs::toggleState(id = "summary_total_indiv", condition = input$subset == "all")
+    if(input$bird_id != "all" && input$summary != "sum") updateRadioButtons2(session, "summary", selected = "sum")
+  })
+
+  return(c(type = reactive({input$type}),
+           bird_id = reactive({input$bird_id}),
+           summary = reactive({input$summary})))
 }
 
 
@@ -144,7 +243,8 @@ mod_UI_maps_time <- function(id, type = "the RFID logger (Feeder)") {
 
   ns <- NS(id)
 
-  tagList(tags$style(HTML(paste0(
+  tagList(
+    tags$style(HTML(paste0(
     "div#", ns("plot_time")," {
       text-align: center;
       }"))),
@@ -177,43 +277,71 @@ mod_UI_maps_time <- function(id, type = "the RFID logger (Feeder)") {
 # Module server function
 #' @import shiny
 #' @export
-mod_maps_time <- function(input, output, session, controls, events, lab = "Events") {
+mod_maps_time <- function(input, output, session, controls, events, verbose = FALSE) {
 
   ns <- session$ns
 
   output$UI_time <- renderUI({
-    req(controls$anim_speed(), controls$interval(), controls$time_range())
-    sliderInput(ns("instant"), "Time",
-                min = controls$time_range()[1] + controls$instant_range(),
-                max = controls$time_range()[2] + controls$instant_range(),
-                value = controls$time_range()[1] + controls$instant_range(),
-                step = 60 * controls$interval()[1],
-                timezone = controls$tz_offset(),
-                animate = animationOptions(interval = 500 * (1 - (controls$anim_speed()/100)) + 0.1, loop = FALSE),
-                width = "520px")
+    req(controls$anim_speed(), controls$time_range())
+    isolate({
+      if(verbose) cat("UI - Instant\n")
+      sliderInput(ns("instant"), "Instant",
+                  min = controls$time_range()[1] - controls$instant_range(),
+                  max = controls$time_range()[2] + controls$instant_range(),
+                  value = controls$time_range()[1] - controls$instant_range(),
+                  step = 60 * controls$interval()[1],
+                  timezone = controls$tz_offset(),
+                  animate = animationOptions(interval = 500 * (1 - (controls$anim_speed()/100)) + 0.1, loop = FALSE),
+                  width = "520px")
+    })
   })
 
   ## Convert to proper tz
   instant <- reactive({
-    req(input$instant, controls$tz())
-    lubridate::with_tz(input$instant - controls$instant_range(), controls$tz())
+    req(input$instant)
+    isolate({
+      if(verbose) cat("Instant\n")
+      lubridate::with_tz(input$instant - controls$instant_range(), isolate(controls$tz()))
+    })
   })
 
   # Time figure
   g_time <- eventReactive(events(), {
-    req(events(), controls$instant_range(), controls$interval(), controls$time_range())
-    if(length(unique(events()$type)) > 8) lp <- "none" else lp = "bottom"
+    req(events())
+    isolate({
+      req(controls$time_range())
+      if(verbose) cat("Figure - Events\n")
+      if(length(unique(events()$type)) > 8) lp <- "none" else lp = "bottom"
 
-    ## Shift start of block time to mid point of interval:
-    d <- dplyr::mutate(events(), block = block + controls$instant_range())
-    ggplot2::ggplot(data = d, ggplot2::aes(x = block, y = amount, fill = type)) +
-      ggplot2::theme_bw() +
-      ggplot2::theme(legend.position = lp) +
-      ggplot2::labs(x = "Time", y = lab, fill = "") +
-      ggplot2::scale_y_continuous(expand = c(0,0)) +
-      ggplot2::scale_x_datetime(labels = scales::date_format("%Y %b %d\n%H:%M", tz = controls$tz()),
-                                limits = controls$time_range() + c(-controls$interval()*60, controls$interval()*60)) +
-      ggplot2::geom_bar(stat = "identity", width = controls$interval()*60, colour = "black")
+      ## Get breaks
+      x <- controls$time_range()
+      y <- seq(min(x), max(x), length.out = 8)
+      b <- round(difftime(y[2], y[1])) %>%
+        paste(units(.))
+
+      ## Shift start of block time to mid point of interval:
+      d <- dplyr::mutate(events(), block = block + controls$instant_range()) %>%
+        tidyr::complete(block, type, fill = list(n = 0))
+
+      ## Get limits
+      l <- controls$time_range()
+      l[2] <- l[2] + controls$interval()*60
+      l <- l + c(-0.25, 0.25)* controls$interval()*60
+      if(any(d$block <= min(l)) | any(d$block >= max(l))) browser()
+
+
+      ggplot2::ggplot(data = d, ggplot2::aes(x = block, y = n, fill = type)) +
+        ggplot2::theme_bw() +
+        ggplot2::theme(legend.position = lp) +
+        ggplot2::labs(x = "Time", y = "Proportion of events", fill = "") +
+        ggplot2::scale_y_continuous(expand = c(0,0)) +
+        ggplot2::scale_x_datetime(labels = scales::date_format("%Y %b %d\n%H:%M", tz = controls$tz()),
+                                  limits = ,
+                                  date_breaks = b) +
+        ggplot2::geom_bar(stat = "identity",
+                          width = as.numeric(controls$instant_range()),
+                          position = "dodge")
+    })
   })
 
   output$plot_time <- renderPlot({
@@ -237,7 +365,7 @@ mod_UI_maps_sunrise <- function(id) {
 # Module server function
 #' @import shiny
 #' @export
-mod_maps_sunrise <- function(input, output, session, instant, controls) {
+mod_maps_sunrise <- function(input, output, session, instant, controls, verbose = FALSE) {
 
   ns <- session$ns
   values <- reactiveValues()
@@ -247,10 +375,10 @@ mod_maps_sunrise <- function(input, output, session, instant, controls) {
     req(instant(), input$sunrise == TRUE)
     leafletProxy(ns("map")) %>%
       addTerminator(time = instant() + controls$instant_range(),
-                    layerId = paste0("set-", instant()),
-                    group = "Sunrise/Sunset") %>%
-      removeShape(layerId = paste0("set-", values$time_prev))
-    values$time_prev <- instant()
+                    layerId = "sun",
+                    group = "Sunrise/Sunset")# %>%
+      #removeShape(layerId = paste0("set-", values$time_prev))
+    #values$time_prev <- instant()
   }, priority = 100)
 
   # Get rid of sunrise if radio unselected
@@ -278,167 +406,159 @@ mod_UI_maps_leaflet <- function(id) {
   )
 }
 
-## Map_leaflet_palette server
-map_palette <- function(pal, data, col = "amount", type = "value") {
-
-  if(type == "value") vals <- 1:max(data[col])
-  if(type == "n") vals <- 1:length(data[col])
-
-  if(max(vals) == 1) vals <- 1:5
-
-  leaflet::colorNumeric(palette = pal(max(vals)), domain = vals)
-}
-
 # Map_leaflet Server
 #' @import shiny
 #' @export
-mod_maps_leaflet <- function(input, output, session, data, data_total, title, type = "visits", palette = NULL) {
+mod_maps_leaflet <- function(input, output, session, data, data_total, summary, palette = NULL, verbose = FALSE) {
 
   ns <- session$ns
 
-  values <- reactiveValues()
-  d <- reactiveValues()
-  d_total <- reactiveValues()
-  pal <- reactiveValues()
+  values <- layers <- reactiveValues()
 
-  ## Get data type
-  observeEvent(data(), {
-    req(data(), data_total())
-    if(is.data.frame(data())) {
-      d$visits <- data()
-      d_total$visits <- data_total()
-    } else if(!is.data.frame(data())) {
-      d$feeding <- data()$feeding
-      d$movements <- data()$movements
-      d_total$feeding <- data_total()$feeding
-      d_total$movements <- data_total()$movements
-    }
-  })
-
-  observe({
-    req(names(d_total))
-
-    lapply(names(d_total), function(a) {
-      if(!is.null(d_total[[a]])){
-        if(is.null(palette)) palette <- colorRampPalette(c("yellow","orange", "red"))
-        if(a == "visits") pal[[a]] <- map_palette(palette, d_total[[a]], col = "n", type = "value")
-        if(a == "movements") pal[[a]] <- map_palette(palette, d_total[[a]], col = "path_use", type = "value")
-        if(a == "feeding") pal[[a]] <- map_palette(palette, d_total[[a]], col = "n", type = "value")
-      }
+  ## Data limits for scales
+  lim <- reactive({
+    req(data_total())
+    lapply(data_total(), function(x) {
+      col <- c("n", "amount", "path_use")[c("n", "amount", "path_use") %in% names(x$sub[[1]])]
+      sort(unique(unlist(do.call('rbind', x$sub)[, col], use.names = FALSE)))
     })
   })
 
+  ## Data loggers
+  loggers <- reactive({
+    req(data_total())
+    unique(do.call('rbind', lapply(data_total(), function(x) unique(do.call('rbind', x$sub)[, c("feeder_id", "lat", "lon")]))))
+  })
+
+  move_paths <- reactive({
+    req(data_total())
+    unlist(unique(do.call('rbind', data_total()$movements$sub)[, c("move_path")]), use.names = FALSE)
+  })
+
+  ## Palettes
+  pal <- reactive({
+    req(lim)
+    l <- lim()[sapply(lim(), length) > 0]
+    lapply(l, function(x) {
+      if(!is.null(x)){
+        vals <- x
+        #if(max(vals) == 1) vals <- 1:5
+        if(length(vals) == 1) vals <- sort(vals * c(0.5, 1, 1.5))
+        if(is.null(palette)) palette <- colorRampPalette(c("yellow","orange", "red"))
+        leaflet::colorNumeric(palette = palette(max(vals)), domain = vals)
+      }
+    })
+  })
 
   ## Render Base Map
   output$map <- renderLeaflet({
-    req(names(d_total))
-    loggers <- do.call('rbind', lapply(reactiveValuesToList(d_total), function(a) unique(a[, c("feeder_id", "lat", "lon")])))
-    groups <- stringr::str_to_title(names(d_total))
+    req(lim(), loggers())
+    validate(need(nrow(loggers()) > 0, "No data to summarize, consider a larger time range"))
 
-    map_leaflet_base(locs = loggers) %>%
+        groups <- stringr::str_to_title(names(lim()))
+    if(nrow(loggers()) < 2) minZoom <- 18 else minZoom <- NULL
+    map_leaflet_base(locs = loggers(), minZoom = minZoom) %>%
       addScaleBar(position = "bottomright") %>%
       addLayersControl(baseGroups = c("Satellite", "Terrain", "Open Street Map", "Black and White"),
                        overlayGroups = c("Loggers", "Sunrise/Sunset", groups),
-                       options = layersControlOptions(collapsed = FALSE))
+                       options = layersControlOptions(collapsed = TRUE))
   })
 
-  ## Add points to animated map
-  if(type == "visits"){
-    observe({
-      req(names(d_total), names(pal), title())
-      leafletProxy(ns("map")) %>%
-        addLegend(title = title(),
-                  position = 'topright',
-                  pal = pal$visits,
-                  values = d_total$visits$n,
-                  bins = 5,
-                  opacity = 1,
-                  layerId = "legend")
+  ## Create legends for map
+  observe({
+    req(pal(), "map_bounds" %in% names(input))
+    isolate({
+      leafletProxy(ns("map")) %>% clearGroup("Legends")
+      lapply(names(pal()), function(a) {
+        if(a == "feeding") {
+          title = "Presence"
+          l <- labelFormat(suffix = " min")
+        }
+        if(a == "movements") {
+          title = "Movements"
+          l <- labelFormat()
+        }
+        if(summary() == "sum") title <- paste(title, "<br>(Total)")
+        if(summary() == "sum_indiv") title <- paste(title, "<br>(Mean total)")
+        #if(summary() == "total_indiv") title <- paste(title, "<br>(# Individuals)")
+        vals <- lim()[[a]]
+        if(length(vals) == 1) vals <- sort(vals * c(0.5, 1, 1.5))
+        leafletProxy(ns("map")) %>%
+          addLegend(title = title,
+                    position = 'topright',
+                    pal = pal()[[a]],
+                    values = vals,
+                    bins = 5,
+                    opacity = 1,
+                    labFormat = l,
+                    layerId = paste0("legend_", a))
+      })
     })
+  })
 
-    observe({
-      req(data(), data_total(), values$pal)
+  ## Add points to map
+  observe({
+    req(data(), lim(), pal())
+
+    if("visits" %in% names(data())){
       if(nrow(data()) > 0){
         leafletProxy(ns("map")) %>%
           clearGroup(group = "Visits") %>%
-          use_markers(u = data(), u_scale = 1, u_pal = values$pal, u_title = "Visits", val_min = min(data_total()$amount), val_max = max(data_total()$amount))
+          use_markers(u = data(), u_scale = 1,
+                      u_pal = pal()$visits, u_title = "Visits",
+                      val_min = min(lim()$visits), val_max = max(lim()$visits))
       } else {
         leafletProxy(ns("map")) %>% clearGroup(group = "Visits")
       }
-    })
-  }
+    }
 
-  if(type == "movements"){
-    observe({
-      req(names(d_total), names(pal), title())
-      leafletProxy(ns("map")) %>%
-        addLegend(title = title(),
-                  position = 'topright',
-                  pal = pal$feeding,
-                  values = d_total$feeding$n,
-                  opacity = 1,
-                  layerId = "legend")
-    })
-
-    observe({
-      req(d$feeding, d$movements, names(pal))
-
-      ## Add movements
-      if(!(identical(values$m_old, d$movements))){
-        # Compare to last and see what's different
-        if(!is.null(values$m_old) && nrow(values$m_old) > 0) mv <- d$movements[d$movements$n > max(values$m_old$n), ] else mv <- d$movements
-        if(!is.null(mv) && nrow(mv) > 0) {
-          for(n in sort(unique(mv$n), decreasing = TRUE)) {
-            temp <- mv[mv$n == n, ] %>%
-              dplyr::arrange(direction)
-            leafletProxy(ns("map")) %>%
-              path_lines(data = temp, p_pal = pal$movements,
+    if("movements" %in% names(data())) {
+      if(!compare_data(values$m_old, data()$movements)){
+        if(!is.null(data()$movements) && nrow(data()$movements) > 0) {
+          temp <- data()$movements %>%
+            dplyr::arrange(path_use)
+          for(move_path in unique(temp$move_path)) {
+            temp2 <- temp[temp$move_path == move_path, ]
+            leafletProxy(ns("map"), deferUntilFlush = FALSE) %>%
+              path_lines(data = temp2, p_pal = pal()$movements,
                          p_scale = 1, p_title = "Movements",
-                         val_min = min(d_total$movements$path_use),
-                         val_max = max(d_total$movements$path_use),
-                         layerId = paste0("move_", n))
+                         val_min = min(lim()$movements),
+                         val_max = max(lim()$movements),
+                         layerId = as.character(temp2$move_path[1]))
           }
-        } else if(!is.null(values$m_old)) {
-          ## Which to remove?
-          if(nrow(d$movements) == 0) old_layers <- 1:max(values$m_old$n) else old_layers <- (max(d$movements$n)+1):max(values$m_old$n)
-          if(!is.null(values$m_old) && nrow(values$m_old) > 0) leafletProxy(ns("map")) %>% removeShape(layerId = paste0("move_", old_layers))
+          leafletProxy(ns("map"), deferUntilFlush = FALSE) %>%
+            removeShape(layerId = as.character(move_paths()[!(move_paths() %in% temp$move_path)]))
+        } else {
+          leafletProxy(ns("map")) %>% removeShape(layerId = as.character(move_paths()))
         }
-        values$m_old <- d$movements
+        values$m_old <- data()$movements
       }
-      if(!is.null(d$feeding) && nrow(d$feeding) > 0){
-        if(!(identical(values$f_old, d$feeding))){
-          leafletProxy(ns("map")) %>% clearGroup(group = "Feeding")
-          values$f_old <- d$feeding
-          leafletProxy(ns("map")) %>%
-            use_markers(data = d$feeding,
-                        u_scale = 1, u_pal = pal[['feeding']],
+    }
+
+    if("feeding" %in% names(data())) {
+      if(!compare_data(values$f_old, data()$feeding)){
+        if(!is.null(data()$feeding) && nrow(data()$feeding) > 0){
+          leafletProxy(ns("map"), deferUntilFlush = FALSE) %>%
+            use_markers(data = data()$feeding,
+                        u_scale = 1, u_pal = pal()[['feeding']],
                         u_title = "Feeding",
-                        val_min = min(d_total$feeding$amount),
-                        val_max = max(d_total$feeding$amount))
-
-
-
-          # addCircleMarkers(data = d$feeding,
-            #                  ~lon, ~lat,
-            #                  weight = 2,
-            #                  fillOpacity = 1,
-            #                  radius = ~ n + 10,
-            #                  group = "Feeding",
-            #                  color = NULL,
-            #                  opacity = 1,
-            #                  fillColor = ~pal[['feeding']](n))
+                        val_min = min(lim()$feeding),
+                        val_max = max(lim()$feeding),
+                        layerId = as.character(data()$feeding$feeder_id)) %>%
+            removeMarker(layerId = as.character(loggers()$feeder_id[!(loggers()$feeder_id %in% data()$feeding$feeder_id)]))
+        } else {
+          leafletProxy(ns("map")) %>% removeMarker(layerId = as.character(loggers()$feeder_id))
         }
+        values$f_old <- data()$feeding
       }
-    })
-  }
-
+    }
+  })
 }
-
 
 # Map_data Server
 #' @import shiny
 #' @export
-mod_maps_data <- function(input, output, session, controls, instant, data) {
+mod_maps_data <- function(input, output, session, controls, instant, data, verbose = FALSE) {
   data_instant <- reactive({
     req(instant(), controls$interval(), data())
     data() %>%
@@ -447,3 +567,30 @@ mod_maps_data <- function(input, output, session, controls, instant, data) {
   return(data_instant)
 }
 
+prep_feeding <- function(x, y, type = "cumulative", summary = "sum") {
+  if(type == "cumulative") x <- x[x$block <= y$block[1], ] else if(type == "instant") x <- x[x$block == y$block[1], ]
+
+  x <- x %>%
+    dplyr::group_by(feeder_id, lat, lon) %>%
+    dplyr::summarize(amount = sum(amount)) %>%
+    dplyr::ungroup()
+
+  if(nrow(x) > 0) x <- dplyr::mutate(x,  block = y$block[1])
+  return(x)
+}
+
+prep_movements <- function(x, y, type = "cumulative", summary = "sum") {
+  if(type == "cumulative") x <- x[x$block <= y$block[1], ] else if(type == "instant") x <- x[x$block == y$block[1], ]
+
+  x <- x %>%
+    dplyr::group_by(move_path, feeder_id, lat, lon) %>%
+    dplyr::summarize(path_use = sum(path_use)) %>%
+    dplyr::ungroup()
+
+  if(nrow(x) > 0) x <- dplyr::mutate(x, block = y$block[1])
+  return(x)
+}
+
+compare_data <- function(data1, data2) {
+  identical(data1[, !(names(data1) %in% "block")], data2[, !(names(data2) %in% "block")])
+}
