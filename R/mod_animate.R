@@ -34,7 +34,6 @@ map_animate <- function(v) {
 ## Animated map - UI
 #' @import shiny
 #' @import magrittr
-#' @export
 mod_UI_map_animate <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
@@ -67,7 +66,6 @@ mod_UI_map_animate <- function(id) {
 #' @import magrittr
 #' @import leaflet
 #' @import lubridate
-#' @export
 mod_map_animate <- function(input, output, session, v) {
 
   ns <- session$ns
