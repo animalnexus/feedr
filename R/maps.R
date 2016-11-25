@@ -82,14 +82,14 @@ path_lines <- function(map, data, p_scale, p_pal, p_title, val_min, val_max, lay
   addPolylines(map,
              data = data,
              ~lon, ~lat,
+             color = ~p_pal(path_use),
+             opacity = 0.8,
              weight = ~scale_area(path_use,
                                   max = 50 * p_scale,
                                   val_max = val_max,
                                   val_min = val_min),
-             opacity = 0.5,
-             color = ~p_pal(path_use),
              group = p_title,
-             popup = ~htmltools::htmlEscape(as.character(path_use)),
+             popup = ~htmltools::htmlEscape(as.character(round(path_use, digits = 0))),
              layerId = layerId)
 }
 
@@ -158,16 +158,17 @@ path.layer <- function(map, p,
 
 
 use_markers <- function(map, data, u_scale, u_pal, u_title, val_min = NULL, val_max = NULL, layerId = "use") {
+  if(length(layerId) != nrow(data)) layerId <- paste0(layerId, "-", 1:nrow(data))
   addCircleMarkers(map,
                    data = data,
                    ~lon, ~lat,
                    weight = 1,
                    opacity = 1,
-                   fillOpacity = 0.5,
+                   fillOpacity = 0.8,
                    radius = ~ scale_area(amount, max = 50 * u_scale, radius = TRUE, val_min = val_min, val_max = val_max),
                    color = "black",
                    fillColor = ~u_pal(amount),
-                   popup = ~htmltools::htmlEscape(as.character(round(amount))),
+                   popup = ~htmltools::htmlEscape(as.character(round(amount, digits = 0))),
                    group = u_title,
                    layerId = layerId)
 }
