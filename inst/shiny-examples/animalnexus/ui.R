@@ -46,7 +46,7 @@ shinyUI(
                         h4(style = "text-align:center", "To get started, ", actionLink("link_db", "select data from our data base"), "or", actionLink("link_import", "import your own.")),
                         #actionButton("pause", "Pause"),
 
-                        div(style = "padding: 10px; max-width: 350px; margin: auto; text-align:center; font-size: 100%; border-style: solid; border-radius: 5px; border-color: #337ab7; color: #337ab7; box-shadow: 10px 10px 5px #888888;", id = "loading_app", "Please wait while the app loads..."),
+                        div(class = "alert", id = "loading_app", "Please wait while the app loads..."),
 
                         hr(),
                         h4(style = "text-align:center", "Current activity at feeders on Thompson Rivers University Campus")),

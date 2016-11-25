@@ -12,10 +12,42 @@ body {
   height: 40px;
 }
 
-.shiny-output-error-validation {
-  padding: 1em;
+.stop-button {
+  position: fixed;
+  top: 5px;
+  right: 5px;
+}
+
+.alert {
+  /*padding: 1em;
   font-weight: bold;
-  color: green;
+  color: green;*/
+  padding: 10px;
+  max-width: 350px;
+  max-height: 200px;
+  margin: auto;
+  text-align:center;
+  font-size: 100%;
+  border-style: solid;
+  border-radius: 5px;
+  border-color: #337ab7;
+  color: #337ab7;
+  box-shadow: 10px 10px 5px #888888;
+}
+
+.shiny-output-error-validation {
+  /*padding: 1em;
+  color: green;*/
+  padding: 10px;
+  width: auto;
+  height: auto;
+  margin: auto;
+  font-size: 120%;
+  color: #337ab7;
+  position: relative;
+  top: 50%;
+  left: 50%;
+  font-weight: bold;
 }
 
 .shiny-progress .progress-text {
