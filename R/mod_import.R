@@ -9,12 +9,15 @@
 #' @export
 import_file <- function() {
   app <- shiny::shinyApp(ui = shiny::fluidPage(shinyjs::useShinyjs(),
-                                               mod_UI_data_import("standalone")),
+                                               includeCSS(system.file("extra", "style.css", package = "feedr")),
+                                               mod_UI_data_import("standalone"),
+                                               mod_UI_stop("stp")),
                          server = function(input, output, session) {
                            shiny::callModule(mod_data_import, "standalone", type = "standalone")
+                           shiny::callModule(mod_stop, "stp")
                          }
   )
-  shiny::runApp(app, display.mode = "normal")
+  shiny::runApp(app, launch.browser = TRUE)
 }
 
 ## Get current data
