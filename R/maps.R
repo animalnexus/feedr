@@ -50,8 +50,8 @@ map_prep <- function(u = NULL, p = NULL, locs = NULL) {
 #'
 #' Designed for advanced use (see map_leaflet() for general mapping)
 #' @export
-map_leaflet_base <- function(locs, marker = "feeder_id", name = "Loggers", controls = TRUE) {
-  l <- leaflet(data = locs) %>%
+map_leaflet_base <- function(locs, marker = "feeder_id", name = "Loggers", controls = TRUE, minZoom = NULL, maxZoom = 18) {
+  l <- leaflet(data = locs, options = leafletOptions(minZoom = minZoom, maxZoom = maxZoom)) %>%
     addTiles(group = "Open Street Map") %>%
     addProviderTiles("Stamen.Toner", group = "Black and White") %>%
     addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
