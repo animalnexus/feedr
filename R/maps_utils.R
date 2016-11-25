@@ -6,6 +6,11 @@ scale_area <- function(r, radius = FALSE,
   if(is.null(val_max)) val_max = max(r, na.rm = TRUE)
   if(is.null(val_min)) val_min = min(r, na.rm = TRUE)
 
+  if(val_max == val_min) {
+    val_min <- val_min * 0.5
+    val_max <- val_max * 1.5
+  }
+
   if(radius) {
     min <- pi * (min)^2
     max <- pi * (max)^2
