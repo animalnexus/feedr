@@ -171,11 +171,13 @@ mod_map_animate <- function(input, output, session, v = NULL, f = NULL, m = NULL
         if(summary$summary() == "sum") {
           if(verbose) cat("sum\n")
           f_avg <- dplyr::summarize(f_avg,
-                                    amount = sum(feed_length))
+                                    amount = sum(feed_length),
+                                    n = length(feed_length))
         } else if(summary$summary() == "sum_indiv") {
           if(verbose) cat("sum_indiv\n")
           f_avg <- dplyr::summarize(f_avg,
-                                    amount = sum(feed_length) / length(unique(bird_id)))
+                                    amount = sum(feed_length) / length(unique(bird_id)),
+                                    n = length(feed_length))
         } #else if(summary$summary() == "total_indiv"){
           #if(verbose) cat("total_indiv\n")
           #f_avg <- dplyr::summarize(f_avg,
