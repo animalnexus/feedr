@@ -249,9 +249,9 @@ move <- function(v, all = FALSE, pass = TRUE){
     if(pass == TRUE) m <- merge_extra(m, extra)
 
     # Apply factors
-    m$bird_id <- factor(m$bird_id, levels = bird_id)
     m$feeder_id <- factor(m$feeder_id, levels = feeder_id)
   }
+  m$bird_id <- factor(m$bird_id, levels = bird_id)
 
   return(m)
 }
