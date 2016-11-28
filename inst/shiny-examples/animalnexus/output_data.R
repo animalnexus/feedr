@@ -5,65 +5,24 @@ birds_dl <- reactive({
   birds()
 })
 
-raw_dl <- reactive({
-  req(any(raw()$dataaccess == 0))
-  raw() %>%
-    dplyr::filter(dataaccess == 0) %>%
-    dplyr::select(-dataaccess)
-})
-
-v_dl <- reactive({
-  req(any(raw()$dataaccess == 0))
-  v() %>%
-    dplyr::filter(dataaccess == 0) %>%
-    dplyr::select(-dataaccess)
-})
-
-f_dl <- reactive({
-  req(any(raw()$dataaccess == 0))
-  f() %>%
-    dplyr::filter(dataaccess == 0) %>%
-    dplyr::select(-dataaccess)
-})
-
-m_dl <- reactive({
-  req(any(raw()$dataaccess == 0))
-  m() %>%
-    dplyr::filter(dataaccess == 0) %>%
-    dplyr::select(-dataaccess)
+observeEvent(trans, {
+  req(names(trans))
+  browser()
+  lapply(names(trans), function(x) {
+    trans[[paste0(x, "_dl")]] <- trans[[x]] %>%
+      dplyr::filter(dataaccess == 0) %>%
+      dplyr::select(-dataaccess)
   })
-
-#disp <- reactive({})
-
-#dom_dl <- reactive({})
-
-#a_dl <- reactive({})
-
-#da_dl <- reactive({})
-
-all <- reactive({
-  list(raw = raw_dl(),
-       visits = v_dl(),
-       feeding = f_dl(),
-       movements = m_dl())
+  trans$all_dl <- reactiveValuesToList(trans[[stringr::str_extract(names(trans), "_dl")]])
 })
 
 ## Activate/deactivate buttons depending on whether there is any data to download:
 observe({
   req(raw_dl)
-  if(is.null(raw_dl()) || nrow(raw_dl()) == 0){
-    shinyjs::disable(id = "data_dl_raw")
-    shinyjs::disable(id = "data_dl_visits")
-    shinyjs::disable(id = "data_dl_feeding")
-    shinyjs::disable(id = "data_dl_move")
-    shinyjs::disable(id = "data_dl")
-  } else {
-    shinyjs::enable(id = "data_dl_raw")
-    shinyjs::enable(id = "data_dl_visits")
-    shinyjs::enable(id = "data_dl_feeding")
-    shinyjs::enable(id = "data_dl_move")
-    shinyjs::enable(id = "data_dl")
-  }
+
+  lapply(names(trans), function(x) {
+    shinyjs::toggleState(paste0("data_", x), condition = nrow(trans[[x]] > 0))
+  })
 })
 
 msg_select <- c("Please select data through the Database or by Importing")
@@ -173,6 +132,33 @@ output$data_dl_move <- downloadHandler(
   }
 )
 
+## Displacements
+output$dt_disp <- DT::renderDataTable({
+  validate(need(try(nrow(raw()) > 0, silent = TRUE), msg_select))
+  validate(need(try(nrow(disp()) > 0, silent = TRUE), "No data on displacements"))
+  req(raw())
+  validate(need(sum(disp()$dataaccess == 0) > 0, msg_private))
+
+  DT::datatable(disp_dl(),
+                filter = "top",
+                options = list(pageLength = 100),
+                rownames = FALSE,
+                colnames = gsub("_", " ", names(disp_dl())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE))
+})
+
+
+output$data_dl_disp <- downloadHandler(
+  filename = paste0('displacements_', Sys.Date(), '.csv'),
+  content = function(file) {
+    write.csv(disp_dl(), file, row.names = FALSE)
+  }
+)
+
+
+
+
+
+
 ## Download All
 
 output$data_dl <- downloadHandler(
@@ -197,6 +183,7 @@ output$data_dl <- downloadHandler(
 
 output$data_desc <- renderText({
   req(input$data_tabs)
+  t <- ""
   if(input$data_tabs == "Raw Data") t <- "<h3>Raw RFID data</h3> <p>Each row corresponds to an RFID 'read' event.</p>"
   if(input$data_tabs == "Visits Data") t <- "<h3>Visits</h3> <p>Each row corresponds to a single 'visit' to the reader. Visits are defined as a series of consecutive RFID reads, with each read occurring within 3s of the next. See the visits() function in the feedr package for R to fine tune these settings.</p><p>Bird N and Feeder N refer to the total number of individuals and readers in the data, respectively.</p>"
   if(input$data_tabs == "Feeding Data") t <- "<h3>Feeding bouts</h3> <p>Each row corresponds to a single 'feeding bout' at the reader if the reader is a feeder, or a period of time spent near the reader otherwise. Feeding bouts are defined as a series of visits at a single feeder separated by no more than 15min. See the feeding() function in the feedr package for R to fine tune these settings.</p><p>Feed start and end reflect the start and end of the feeding bout and feed length refers to the length in minutes of the feeding bout.</p><p>Bird N and Feeder N refer to the total number of individuals and readers in the data, respectively.</p>"
