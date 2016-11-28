@@ -81,16 +81,28 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
   callModule(mod_maps_sunrise, "map", instant = instant, controls = controls, verbose = verbose)
   callModule(mod_maps_leaflet, "map",
              summary = summary$summary,
-             data = reactive({list(feeding = f_instant(), movements = m_instant())}),
-             data_total = reactive({list(feeding = f_data(), movements = m_data())}), verbose = verbose)
+             data = data,
+             data_total = data_total, verbose = verbose)
+
+  data <- reactive({
+    req(f_instant())
+    if(nrow(m_avg()) == 0) d <- list(feeding = f_instant()) else d <- list(feeding = f_instant(), movements = m_instant())
+    return(d)
+    })
+
+  data_total <- reactive({
+    req(f_data())
+    if(nrow(m_avg()) == 0) d <- list(feeding = f_data()) else d <- list(feeding = f_data(), movements = m_data())
+    return(d)
+    })
 
   ## Data
   # Fix time zone to local non-DST
   if(!is.null(v)){
     v <- data_tz(v)
-    m <- move(v, all = TRUE)
+    m <- move(v)
     f <- feeding(v)
-    if(nrow(m) == 0 || all(is.na(m$direction))) m <- NULL
+    #if(nrow(m) == 0 || all(is.na(m$direction))) m <- NULL
   } else {
     f <- data_tz(f)
     if(!is.null(m)) m <- data_tz(m)
@@ -102,18 +114,12 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
   ## Summarize movements and feeding
   samples <- f %>%
     dplyr::group_by(bird_id) %>%
-    dplyr::summarize(feed = length(feed_length))
-
-  if(!is.null(m)){
-      samples <- dplyr::full_join(samples,
-                                  m %>%
-                                    dplyr::group_by(bird_id) %>%
-                                    dplyr::summarize(move = floor(length(direction) / 2)),
-                                  by = "bird_id") %>%
-        dplyr::mutate(move = replace(move, is.na(move), 0))
-  } else {
-    samples$move <- 0
-  }
+    dplyr::summarize(feed = length(feed_length)) %>%
+    dplyr::full_join(m %>%
+                       dplyr::group_by(bird_id) %>%
+                       dplyr::summarize(move = floor(length(direction) / 2)),
+                     by = "bird_id") %>%
+    dplyr::mutate(move = replace(move, is.na(move), 0))
 
   ## Subselections - Get bird ID
   f_id <- reactive({
@@ -134,7 +140,7 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
 
   m_id <- reactive({
     req(m, summary$bird_id())
-    validate(need(sum(names(m) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
+    if(nrow(m) > 0) validate(need(sum(names(m) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
     if(verbose) cat("Movements ID: \n")
 
     if(summary$bird_id() == "all"){
@@ -145,7 +151,6 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
       if(verbose) cat("  indiv\n")
       m_id <- m %>% dplyr::filter(bird_id == summary$bird_id())
     }
-    m_id <- dplyr::filter(m_id, !is.na(direction))
     return(m_id)
   })
 
@@ -188,24 +193,26 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
       if(verbose) cat("Movement avg: ")
       withProgress(message = "Updating intervals", detail = "Movements", {
         #req(summary$bird_id() %in% unique(m$bird_id))
-        m_avg <- m_id() %>%
-          dplyr::mutate(move_id = paste0(bird_id, "_", move_id)) %>%
-          dplyr::group_by(move_id) %>%
-          dplyr::mutate(block = as.POSIXct(cut(time[direction == "arrived"], breaks = controls$breaks(), include.lowest = TRUE), tz = controls$tz())) %>%
-          dplyr::ungroup() %>%
-          dplyr::filter(!is.na(block)) %>%
-          dplyr::group_by(block, feeder_id, lat, lon, move_path)
-        if(summary$summary() == "sum") {
-          if(verbose) cat("sum\n")
-          m_avg <- dplyr::summarize(m_avg, path_use = length(move_path))
-        } else if(summary$summary() == "sum_indiv") {
-          if(verbose) cat("sum_indiv\n")
-          m_avg <- dplyr::summarize(m_avg, path_use = length(move_path) / length(unique(bird_id)))
-        } #else if(summary$summary() == "total_indiv"){
-         # if(verbose) cat("total_indiv\n")
-         # m_avg <- dplyr::summarize(m_avg, path_use = length(unique(bird_id)))
-       # }
-        m_avg <- dplyr::ungroup(m_avg)
+        m_avg <- m_id()
+        if(nrow(m_avg) > 0) {
+          m_avg <- m_avg %>%
+            dplyr::mutate(move_id = paste0(bird_id, "_", move_id)) %>%
+            dplyr::group_by(move_id) %>%
+            dplyr::mutate(block = as.POSIXct(cut(time[direction == "arrived"], breaks = controls$breaks(), include.lowest = TRUE), tz = controls$tz())) %>%
+            dplyr::ungroup() %>%
+            dplyr::filter(!is.na(block)) %>%
+            dplyr::group_by(block, feeder_id, lat, lon, move_path)
+          if(summary$summary() == "sum") {
+            if(verbose) cat("sum\n")
+            m_avg <- dplyr::summarize(m_avg, path_use = length(move_path))
+          } else if(summary$summary() == "sum_indiv") {
+            if(verbose) cat("sum_indiv\n")
+            m_avg <- dplyr::summarize(m_avg, path_use = length(move_path) / length(unique(bird_id)))
+          }
+          m_avg <- dplyr::ungroup(m_avg)
+        } else {
+          if(verbose) cat("none\n")
+        }
       })
       return(m_avg)
     })

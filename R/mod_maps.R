@@ -579,14 +579,12 @@ prep_feeding <- function(x, y, type = "cumulative", summary = "sum") {
 }
 
 prep_movements <- function(x, y, type = "cumulative", summary = "sum") {
-  if(type == "cumulative") x <- x[x$block <= y$block[1], ] else if(type == "instant") x <- x[x$block == y$block[1], ]
-
-  x <- x %>%
-    dplyr::group_by(move_path, feeder_id, lat, lon) %>%
-    dplyr::summarize(path_use = sum(path_use)) %>%
-    dplyr::ungroup()
-
-  if(nrow(x) > 0) x <- dplyr::mutate(x, block = y$block[1])
+    if(type == "cumulative") x <- x[x$block <= y$block[1], ] else if(type == "instant") x <- x[x$block == y$block[1], ]
+    x <- x %>%
+      dplyr::group_by(move_path, feeder_id, lat, lon) %>%
+      dplyr::summarize(path_use = sum(path_use)) %>%
+      dplyr::ungroup()
+    if(nrow(x) > 0) x <- dplyr::mutate(x, block = y$block[1])
   return(x)
 }
 
