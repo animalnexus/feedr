@@ -50,15 +50,15 @@ map_prep <- function(u = NULL, p = NULL, locs = NULL) {
 #'
 #' Designed for advanced use (see map_leaflet() for general mapping)
 #' @export
-map_leaflet_base <- function(locs, marker = "feeder_id", name = "Loggers", controls = TRUE, minZoom = NULL, maxZoom = 18) {
+map_leaflet_base <- function(locs, marker = "feeder_id", controls = TRUE, minZoom = NULL, maxZoom = 18) {
   l <- leaflet(data = locs, options = leafletOptions(minZoom = minZoom, maxZoom = maxZoom)) %>%
     addTiles(group = "Open Street Map") %>%
     addProviderTiles("Stamen.Toner", group = "Black and White") %>%
     addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
     addProviderTiles("Esri.WorldTopoMap", group = "Terrain") %>%
     addCircleMarkers(~lon, ~lat,
-                     popup  = htmltools::htmlEscape(as.character(unlist(locs[, marker]))),
-                     group = name,
+                     popup  = htmltools::htmlEscape(paste("Logger:", as.character(unlist(locs[, marker])))),
+                     group = "Loggers",
                      weight = 2,
                      opacity = 1,
                      fillOpacity = 1,
@@ -68,7 +68,7 @@ map_leaflet_base <- function(locs, marker = "feeder_id", name = "Loggers", contr
   if(controls) {
     l <- l %>%
       addLayersControl(baseGroups = c("Satellite", "Terrain", "Open Street Map", "Black and White"),
-                       overlayGroups = name,
+                       overlayGroups = "Loggers",
                        options = layersControlOptions(collapsed = TRUE))
   }
   return(l)
@@ -180,7 +180,7 @@ use_markers <- function(map, data, u_scale, u_pal, u_title, val_min = NULL, val_
 #' @import leaflet
 #' @export
 use_layer <- function(map, u,
-                      u_scale = 1, u_title = "Time", u_pal = c("yellow","red"),
+                      u_scale = 1, u_title = "Presence", u_pal = c("yellow","red"),
                       controls = TRUE,
                       u.scale, u.title, u.pal) {
   if (!missing(u.scale)) {
@@ -211,17 +211,6 @@ use_layer <- function(map, u,
 
   # Add feeder use data to map
   map <- use_markers(map, u, u_scale, u_pal, u_title) %>%
-  # addCircleMarkers(map,
-  #                          data = u,
-  #                          ~lon, ~lat,
-  #                          weight = 1,
-  #                          opacity = 1,
-  #                          fillOpacity = 0.5,
-  #                          radius = ~ scale_area(amount, max = 50 * u_scale, radius = TRUE),
-  #                          color = "black",
-  #                          fillColor = ~u_pal(amount),
-  #                          popup = ~htmltools::htmlEscape(as.character(round(amount))),
-  #                          group = u_title) %>%
     addLegend(title = u_title,
               position = 'topright',
               pal = u_pal,
@@ -575,7 +564,7 @@ map_ggmap <- function(u = NULL, p = NULL, locs = NULL,
 
 map.ggmap <- function(u = NULL, p = NULL, locs = NULL,
                       u_scale = 1, p_scale = 1,
-                      u_title = "Time", p_title = "Path use",
+                      u_title = "Presence", p_title = "Movements",
                       u_pal = c("yellow","red"),
                       p_pal = c("yellow","red"),
                       maptype = "satellite",
