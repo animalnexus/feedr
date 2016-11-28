@@ -2,21 +2,25 @@
 % Please edit documentation in R/mod_animate.R
 \name{map_animate}
 \alias{map_animate}
-\title{Animated map with leaflet}
+\title{Animated map for individuals with leaflet}
 \usage{
-map_animate(v)
+map_animate(v, verbose = FALSE)
 }
 \arguments{
 \item{v}{Data frame. Data frame. Visits data frame created with the
 \code{visits()} function.}
+
+\item{verbose}{Logical. Print to console log events.}
 }
 \description{
-Interactive shiny app to select and animate feeder use of multiple
-individuals over time. Also available through \code{animalnexus()}.
+Interactive shiny app to select and animate presence at and movements between
+RFID loggers over time. Also available online at <http://animalnexus.ca> or
+by launching the local animalnexus app through \code{animalnexus()}.
 }
 \examples{
+
 \dontrun{
-map_animate(visits(finches))
+map_animate_indiv(visits(finches))
 }
 
 }

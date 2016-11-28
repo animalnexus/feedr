@@ -4,7 +4,7 @@
 \alias{use_layer}
 \title{Add feeding layer to leaflet map}
 \usage{
-use_layer(map, u, u_scale = 1, u_title = "Time", u_pal = c("yellow",
+use_layer(map, u, u_scale = 1, u_title = "Presence", u_pal = c("yellow",
   "red"), controls = TRUE, u.scale, u.title, u.pal)
 }
 \description{
