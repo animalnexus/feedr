@@ -11,7 +11,7 @@ shinyServer(function(input, output, session) {
   })
 
   ## Load reactive expressions
-  source("reactive.R", local = TRUE)
+  #source("reactive.R", local = TRUE)
 
   values <- reactiveValues(
     data_reset = TRUE)
@@ -75,6 +75,15 @@ shinyServer(function(input, output, session) {
     data_info()
   })
 
+  ## Transformations
+  trans <- callModule(feedr:::mod_trans, "trans", r = reactive({data()$data}))
+
+  raw <- reactive({trans$raw()})
+  v <- reactive({trans$v()})
+  f <- reactive({trans$f()})
+  m <- reactive({trans$m()})
+
+
   ## Feeders of current data
   feeders <- reactive({
     raw() %>%
@@ -82,20 +91,11 @@ shinyServer(function(input, output, session) {
       unique(.)
   })
 
-  ## Birds of current data
-  birds <- reactive({
-    req(raw())
-    cols <- names(raw())[names(raw()) %in% c("bird_id", "species", "age", "sex", "tagged_on", "site_name")]
-    raw() %>%
-      dplyr::select_(.dots = cols) %>%
-      unique(.)
-  })
-
   ### Visualizations
   ## Animate Data
   observe({
     #browser()
-    req(v(), !values$data_reset)
+    req(v())
     callModule(mod_map_animate, "anim", v = v())
   })
 
@@ -112,18 +112,49 @@ shinyServer(function(input, output, session) {
   # }
 
 
+
+  ## Birds
+  ## Birds of current data
+  birds <- reactive({
+    req(raw())
+    cols <- names(raw())[names(raw()) %in% c("bird_id", "species", "age", "sex", "tagged_on", "site_name")]
+    raw() %>%
+      dplyr::select_(.dots = cols) %>%
+      unique(.)
+  })
+
   ## Look at birds
   output$img_birds <- renderText({
     req(birds())
     # Don't actually know what STRH stands for, assuming Sapphire-throated Hummingbird
     #paste0("<div class = \"bird-img\">",
-           feedr:::get_image(birds(), input$dt_birds_rows_selected, 300)#,
+    feedr:::get_image(birds(), input$dt_birds_rows_selected, 300)#,
     #       "</div>")
-    })
+  })
+
+  ## Get only publically available data
+  birds_dl <- reactive({
+    birds()
+  })
+
+  output$dt_birds <- DT::renderDataTable({
+    validate(need(try(nrow(raw()) > 0, silent = TRUE), msg_select))
+    validate(need(try(nrow(birds()) > 0, silent = TRUE), "No data on individuals"))
+    req(birds())
+
+    DT::datatable(birds_dl(),
+                  filter = "top",
+                  options = list(pageLength = 100),
+                  rownames = FALSE,
+                  colnames = gsub("_", " ", names(birds_dl())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE),
+                  selection = "single")
+  }, server = FALSE)
+
+
 
 
   ## Load transformation data tables
-  source("output_data.R", local = TRUE)
+  #source("output_data.R", local = TRUE)
 
   ## Links to panels
 

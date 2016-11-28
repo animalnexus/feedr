@@ -86,27 +86,7 @@ shinyUI(
             ## DATA
             #################
             tabPanel("Transformations", icon = icon("exchange"),
-                     column(3,
-                            htmlOutput("data_desc"),
-                            hr(),
-                            h3("Downloads"),
-                            p(shinyjs::disabled(downloadButton('data_dl', 'All'))),
-                            p(shinyjs::disabled(downloadButton("data_dl_raw", "Raw"))),
-                            p(shinyjs::disabled(downloadButton("data_dl_visits", "Visits"))),
-                            p(shinyjs::disabled(downloadButton("data_dl_feeding", "Feeding"))),
-                            p(shinyjs::disabled(downloadButton("data_dl_move", "Movements"))),
-                            p(shinyjs::disabled(downloadButton("data_dl_disp", "Displacements"))),
-                            p(shinyjs::disabled(downloadButton("data_dl_dom", "Dominance")))
-                     ),
-                     column(9,
-                            tabsetPanel(type = "tabs", id = "data_tabs",
-                                        tabPanel("Raw Data", DT::dataTableOutput("dt_raw")),
-                                        tabPanel("Visits Data", DT::dataTableOutput("dt_v")),
-                                        tabPanel("Feeding Data", DT::dataTableOutput("dt_f")),
-                                        tabPanel("Movement Data", DT::dataTableOutput("dt_m")),
-                                        tabPanel("Displacement Data", DT::dataTableOutput("dt_disp"))
-                            )
-                     )
+                     mod_UI_trans("trans")
             ),
             tabPanel("Help",
                      navlistPanel(widths = c(2, 10),
