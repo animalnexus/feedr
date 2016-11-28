@@ -72,6 +72,8 @@ mod_data_import <- function(input, output, session, type = NULL) {
 
   ns <- session$ns
 
+  options(shiny.maxRequestSize=10*1024^2)
+
   vars <- reactiveValues()
 
   output$format <- renderText({
