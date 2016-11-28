@@ -7,3 +7,4 @@
 ^db_full.R$
 ^docs$
 ^\.travis\.yml$
+^appveyor\.yml$
