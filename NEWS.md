@@ -2,11 +2,12 @@
 
 ## Bug Fixes
 
-- Fixed minor errors in activity(), move() and feeding() 
+- Fixed minor errors in `activity()`, `move()` and `feeding()`
 - Fixed errors in documentation examples
 - Added new documentation examples
 - Changed factoring to allow use of dplyr's group_by to run transformations on groups of data (e.g. different sites or experiments)
 - Updated "Current activity" style
+- Combined all animations into one function: `map_animate()`
 
 ## Changes
 
