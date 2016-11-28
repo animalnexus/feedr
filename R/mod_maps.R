@@ -285,10 +285,11 @@ mod_maps_time <- function(input, output, session, controls, events, verbose = FA
     req(controls$anim_speed(), controls$time_range())
     isolate({
       if(verbose) cat("UI - Instant\n")
+      # Add + controls$instant_range() to shift 'instant' to middle of block.
       sliderInput(ns("instant"), "Instant",
-                  min = controls$time_range()[1] - controls$instant_range(),
+                  min = controls$time_range()[1] + controls$instant_range(),
                   max = controls$time_range()[2] + controls$instant_range(),
-                  value = controls$time_range()[1] - controls$instant_range(),
+                  value = controls$time_range()[1] + controls$instant_range(),
                   step = 60 * controls$interval()[1],
                   timezone = controls$tz_offset(),
                   animate = animationOptions(interval = 500 * (1 - (controls$anim_speed()/100)) + 0.1, loop = FALSE),
@@ -313,12 +314,6 @@ mod_maps_time <- function(input, output, session, controls, events, verbose = FA
       if(verbose) cat("Figure - Events\n")
       if(length(unique(events()$type)) > 8) lp <- "none" else lp = "bottom"
 
-      ## Get breaks
-      x <- controls$time_range()
-      y <- seq(min(x), max(x), length.out = 8)
-      b <- round(difftime(y[2], y[1])) %>%
-        paste(units(.))
-
       ## Shift start of block time to mid point of interval:
       d <- dplyr::mutate(events(), block = block + controls$instant_range()) %>%
         tidyr::complete(block, type, fill = list(n = 0))
@@ -327,16 +322,20 @@ mod_maps_time <- function(input, output, session, controls, events, verbose = FA
       l <- controls$time_range()
       l[2] <- l[2] + controls$interval()*60
       l <- l + c(-0.25, 0.25)* controls$interval()*60
-      if(any(d$block <= min(l)) | any(d$block >= max(l))) browser()
+      #if(any(d$block <= min(l)) | any(d$block >= max(l))) browser()
 
+      ## Get breaks
+      y <- seq(min(l), max(l), length.out = 8)
+      b <- round(difftime(y[2], y[1])) %>%
+        paste(units(.))
 
       ggplot2::ggplot(data = d, ggplot2::aes(x = block, y = n, fill = type)) +
         ggplot2::theme_bw() +
         ggplot2::theme(legend.position = lp) +
-        ggplot2::labs(x = "Time", y = "Proportion of events", fill = "") +
+        ggplot2::labs(x = "Time", y = "Total # of events", fill = "") +
         ggplot2::scale_y_continuous(expand = c(0,0)) +
         ggplot2::scale_x_datetime(labels = scales::date_format("%Y %b %d\n%H:%M", tz = controls$tz()),
-                                  limits = ,
+                                  limits = l,
                                   date_breaks = b) +
         ggplot2::geom_bar(stat = "identity",
                           width = as.numeric(controls$instant_range()),
