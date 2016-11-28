@@ -528,7 +528,7 @@ mod_data_db <- function(input, output, session, db) {
       if(nrow(total) > 0) {
         g <- ggplot2::ggplot(data = total, ggplot2::aes(x = date, y = count, fill = species, alpha = selected)) +
           ggplot2::geom_bar(stat = "identity") +
-          ggplot2::scale_alpha_manual(values = c(0.1, 1), drop = FALSE, guide = FALSE)
+          ggplot2::scale_alpha_manual(values = c(0.4, 1), drop = FALSE, guide = FALSE)
       }# else {
       #  g <- ggplot(data = data.frame(date = values$input$date, count = 0), aes(x = date, y = count)) +
       #    geom_blank() +
