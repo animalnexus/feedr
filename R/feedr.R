@@ -27,6 +27,6 @@ animalnexus <- function() {
     stop("Could not find example directory. Try re-installing `feedr`.", call. = FALSE)
   }
 
-  shiny::runApp(appDir, display.mode = "normal")
+  shiny::runApp(appDir, launch.browser = TRUE)
 }
 
