@@ -2,15 +2,33 @@
 
 # feedr
 
-`feedr` is a package for R. This collection of functions is designed to load and transform data about feeder visits from birds with RFID tags.
+`feedr` is a package for [R](https://www.r-project.org/). This collection of functions is designed to load, transform and visualize RFID data created when pit-tagged animals are detected by RFID loggers associated with static stations (e.g., seed-feeders, nestboxes, nectare-feeders, etc.).
 
 ## Installation
-`feedr` is available from github and can be installed directly with the package 'devtools'
+`feedr` is available from github and can be installed directly with the package 'devtools':
 
 ```r
-# install.packages("devtools")
+install.packages("devtools")
 devtools::install_github("steffilazerte/feedr")
 ```
+
+### Windows
+If you run R >= v3.3.0 on Windows you may run into an error along the lines of:
+```
+Error in loadNamespace(j <- i[[1L]], c(lib.loc, .libPaths()), version Check = vI[[j]]) :
+  there is no package called 'Rcpp'
+ERROR: lazy loading failed for package 'leaflet'
+```
+
+This is a bug with the current version of `devtools` which results in some dependencies (other packages used by `feedr`) being missed in the installation. A quick fix is to install these packages directly, and then to continue with the `feedr` installation:
+
+```r
+install.packages(c("dplyr", "ggplot2", "htmlwidgets", "scales", "shiny", "stringr"))
+devtools::install_github("steffilazerte/feedr")
+```
+
+### Linux (e.g., Ubuntu)
+
 
 ## Help
 
