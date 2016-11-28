@@ -1,31 +1,45 @@
 
 ############
 
+trans <- reactiveValues()
+
 observeEvent(data_info(), {
   req(data())
-  values$raw <- data()$data
+  trans$raw <- data()$data
 
   withProgress(message = "Transforming Data", detail = "Visits", value = 0, {
 
-    values$v <- visits(values$raw, allow_imp = TRUE)
+    trans$v <- visits(trans$raw, allow_imp = TRUE)
 
-    setProgress(detail = "Movements", value = 0.33)
-    values$m <- values$v %>%
+    setProgress(detail = "Movements", value = 0.15)
+    trans$m <- trans$v %>%
       dplyr::group_by(bird_id) %>%
       dplyr::do(move(.))
 
-    setProgress(detail = "Feeding time", value = 0.66)
-    values$f <- values$v %>%
+    setProgress(detail = "Feeding time", value = 0.3)
+    trans$f <- trans$v %>%
       dplyr::group_by(bird_id) %>%
       dplyr::do(feeding(.))
+
+    setProgress(detail = "Displacements", value = 0.45)
+    trans$disp <- disp(v = trans$v)
+
+    setProgress(detail = "Dominance", value = 0.6)
+    trans$dom <- dom(trans$disp)
+
+    setProgress(detail = "Activity", value = 0.75)
+    trans$a <- activity(trans$f)
+
+    setProgress(detail = "Daily Activity", value = 0.9)
+    trans$da <- daily(trans$a)
   })
-  values$data_reset <- FALSE
+  trans$data_reset <- FALSE
 })
 
-raw <- reactive(values$raw)
-v <- reactive(values$v)
-m <- reactive(values$m)
-f <- reactive(values$f)
+raw <- reactive(trans$raw)
+v <- reactive(trans$v)
+m <- reactive(trans$m)
+f <- reactive(trans$f)
 
 # v <- reactive({
 #   req(nchar(data_info()) > 16) ##check that active data set message is updated first
