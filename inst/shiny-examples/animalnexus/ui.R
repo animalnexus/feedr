@@ -68,41 +68,10 @@ shinyUI(
             ## Visualization
             #################
             tabPanel("Visualizations", icon = icon("eye"),
-                     navlistPanel(widths = c(2, 10),
-                                  "Animated",
-                                  tabPanel("Summary", mod_UI_map_animate("anim")),
-                                  tabPanel("Individual", mod_UI_map_animate_indiv("anim_indiv")),
-                                  "Non-animated",
-                                  tabPanel("Summary", mod_UI_map_summary("vis_sum"))
-                                  #tabPanel("Individual")
+                     column(12,
+                            mod_UI_map_animate("anim")
                      )
             ),
-
-            # tabPanel("Paths (Static)",
-            #          column(3,
-            #                 h1("Data"),
-            #                 uiOutput("UI_static_bird_id"),
-            #                 h3("To Do:"),
-            #                 div("Based on feedr package visualizations"),
-            #                 div("Change feedr functions to have map and layers separate, so doesn't refresh entire map for each bird")
-            #                 #sliderInput("speed", "Speed",
-            #                 #            min = 0, max = 100,
-            #                 #            post = "%",
-            #                 #            value = 50),
-            #                 #sliderInput("interval", "Interval",
-            #                 #            min = 1,
-            #                 #            max = 24,
-            #                 #            value = 1,
-            #                 #            post = " hour(s)")
-            #          ),
-            #          column(9,
-            #                 fluidRow(leafletOutput("map_static", height = 600))
-            #          ),
-            #          fluidRow(
-            #                   #DT::dataTableOutput("dt_paths")
-            #                   )
-            #
-            # ),
             #################
             ## BIRDS
             #################
