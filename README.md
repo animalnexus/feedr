@@ -28,7 +28,10 @@ devtools::install_github("steffilazerte/feedr")
 ```
 
 ### Linux (e.g., Ubuntu)
+On linux systems some packages require libraries to be installed on the system first. For Debian distributions (e.g., Ubuntu, etc.) these can be installed with the following command in the terminal:
 
+Libraries for `devtools`: `sudo apt install libcurl4-openssl-dev libssh2-1-dev libssl-dev`
+Libraries for `feedr`: `sudo apt install libpq-dev libxml2-dev`
 
 ## Help
 
