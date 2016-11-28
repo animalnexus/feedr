@@ -1,11 +1,12 @@
 #' Animated map for individuals with leaflet
 #'
-#' Interactive shiny app to select and animate movements and feeder use of
-#' different individuals over time. Also available through \code{animalnexus()}.
+#' Interactive shiny app to select and animate presence at and movements between
+#' RFID loggers over time. Also available online at <http://animalnexus.ca> or
+#' by launching the local animalnexus app through \code{animalnexus()}.
 #'
 #' @param v Data frame. Data frame. Visits data frame created with the
 #'   \code{visits()} function.
-#' @parm verbose Logical. Print to console log events.
+#' @param verbose Logical. Print to console log events.
 #'
 #' @examples
 #'
@@ -14,7 +15,7 @@
 #' }
 #'
 #' @export
-map_animate_indiv <- function(v, verbose = FALSE) {
+map_animate <- function(v, verbose = FALSE) {
 
   # Check for correct formatting
   check_name(v, c("bird_id", "feeder_id", "start", "end"))
@@ -24,9 +25,9 @@ map_animate_indiv <- function(v, verbose = FALSE) {
   app <- shiny::shinyApp(ui = shiny::fluidPage(shinyjs::useShinyjs(),
                                                includeCSS(system.file("extra", "style.css", package = "feedr")),
                                                mod_UI_stop("stp"),
-                                               mod_UI_map_animate_indiv("standalone")),
+                                               mod_UI_map_animate("standalone")),
                          server = function(input, output, session) {
-                           shiny::callModule(mod_map_animate_indiv, "standalone", v = v, verbose = verbose)
+                           shiny::callModule(mod_map_animate, "standalone", v = v, verbose = verbose)
                            shiny::callModule(mod_stop, "stp")
                          }
   )
@@ -37,7 +38,7 @@ map_animate_indiv <- function(v, verbose = FALSE) {
 #' @import shiny
 #' @import magrittr
 #' @export
-mod_UI_map_animate_indiv <- function(id) {
+mod_UI_map_animate <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
 
@@ -66,7 +67,7 @@ mod_UI_map_animate_indiv <- function(id) {
 #' @import magrittr
 #' @import leaflet
 #' @export
-mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m = NULL, verbose = FALSE) {
+mod_map_animate <- function(input, output, session, v = NULL, f = NULL, m = NULL, verbose = FALSE) {
 
   ns <- session$ns
 
