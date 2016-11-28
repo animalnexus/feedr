@@ -120,7 +120,7 @@ get_image <- function(database, which, size = 300, imgs = NULL, imgs_wiki = NULL
 
   ## Get img of species from wikimedia if we don't have it
   bird$species[!(bird$species %in% imgs_wiki$species)] <- "unknown"
-  bird[is.na(bird$img), c("img", "citation", "author")] <- imgs_wiki[imgs_wiki$species %in% bird$species[is.na(bird$img)], c("img", "citation", "author")]
+  bird[is.na(bird$img), c("img", "citation", "author")] <- imgs_wiki[match(bird$species[is.na(bird$img)], imgs_wiki$species), c("img", "citation", "author")]
 
   ## Create css to overlay image
   bird$css <- NA
