@@ -302,7 +302,7 @@ mod_maps_time <- function(input, output, session, controls, events, verbose = FA
     req(input$instant)
     isolate({
       if(verbose) cat("Instant\n")
-      lubridate::with_tz(input$instant - controls$instant_range(), isolate(controls$tz()))
+      lubridate::with_tz(round(input$instant, unit = "sec") - controls$instant_range(), isolate(controls$tz()))
     })
   })
 

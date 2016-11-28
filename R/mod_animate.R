@@ -239,7 +239,8 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
   f_instant <- reactive({
     req(f_data(), instant())
     isolate({
-      req(instant() %in% controls$breaks())
+      req(as.numeric(instant()) %in% controls$breaks())
+      req(as.numeric(instant()) %in% f_data()$block)
       if(verbose) cat("Feed instant\n")
       f_data()$sub[[which(f_data()$block == instant())]]
     })
@@ -248,7 +249,8 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
   m_instant <- reactive({
     req(m_data(),  instant())
     isolate({
-      req(instant() %in% controls$breaks())
+      req(as.numeric(instant()) %in% controls$breaks())
+      req(as.numeric(instant()) %in% m_data()$block)
       if(verbose) cat("Movement instant\n")
       m_data()$sub[[which(m_data()$block == instant())]]
     })
@@ -258,7 +260,7 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
   t_id <- reactive({
     req(m_id(), f_id())
     if(verbose) cat("Times ID\n")
-    sort(lubridate::with_tz(c(m_id()$time, f_id()$feed_start, f_id()$feed_end), tz = lubridate::tz(m_id()$time)))
+    sort(lubridate::with_tz(c(f_id()$feed_start, f_id()$feed_end), tz = lubridate::tz(f_id()$feed_start)))
   })
 
   ## Summary for time figure
@@ -266,25 +268,28 @@ mod_map_animate_indiv <- function(input, output, session, v = NULL, f = NULL, m 
     req(f_avg(), m_avg(), any(nrow(m_avg()) > 0, nrow(f_avg()) > 0))
 
     if(verbose) cat("Events\n")
-    m_events <- m_avg()
-    f_events <- f_avg()
 
-    events <- f_events %>%
-      dplyr::select(block, n = amount) %>%
-      dplyr::mutate(type = "Feeding",
-                    n = n) %>%
-      dplyr::bind_rows(m_events %>%
-                         dplyr::select(block, move_path, path_use) %>%
-                         dplyr::group_by(block, move_path) %>%
-                         dplyr::summarize(type = "Movements",
-                                          n = unique(path_use)) %>%
-                         dplyr::ungroup()) %>%
+    if(nrow(m_avg()) == 0) {
+      m_events <- f_avg() %>%
+        dplyr::select(block) %>%
+        dplyr::mutate(type = "Movements",
+                      n = 0)
+    } else {
+      m_events <- m_avg() %>%
+        dplyr::select(block, move_path, path_use) %>%
+        dplyr::group_by(block, move_path) %>%
+        dplyr::summarize(type = "Movements",
+                         n = unique(path_use)) %>%
+        dplyr::ungroup()
+    }
+
+    f_avg() %>%
+      dplyr::select(block, n) %>%
+      dplyr::mutate(type = "Feeding") %>%
+      dplyr::bind_rows(m_events) %>%
       dplyr::group_by(block, type) %>%
       dplyr::summarize(n = sum(n)) %>%
-      dplyr::group_by(type) %>%
-      dplyr::mutate(n = n / sum(n)) %>%
       dplyr::ungroup()
-    return(events)
   })
 
   observeEvent(input$pause, {
