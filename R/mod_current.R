@@ -10,7 +10,7 @@ mod_current <- function() {
                            shiny::callModule(mod_map_current, "standalone", db = db)
                          }
   )
-  shiny::runApp(app, display.mode = "normal")
+  shiny::runApp(app, launch.browser = TRUE)
 }
 
 
@@ -139,7 +139,8 @@ mod_map_current <- function(input, output, session, db) {
     data
   })
 
-  output$current_time <- renderText(paste0("Most recent activity: ", as.character(max(current()$most_recent))))
+  output$current_time <- renderText(paste0("Most recent activity: ", as.character(max(current()$most_recent)), " Pacific<br>",
+                                           "Most recent update: ", as.character(lubridate::with_tz(values$current_time, tz = "America/Vancouver")), " Pacific"))
 
   ## Map of current activity
   output$map_current <- renderLeaflet({
@@ -147,20 +148,7 @@ mod_map_current <- function(input, output, session, db) {
     cat("Initializing map of current activity (", as.character(Sys.time()), ") ...\n")
     isolate({
       d <- feeders_all %>% dplyr::filter(site_name == "Kamloops, BC")
-      map <- leaflet(data = d) %>%
-        addTiles(group = "Open Street Map") %>%
-        addProviderTiles("Stamen.Toner", group = "Black and White") %>%
-        addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
-        addProviderTiles("Esri.WorldTopoMap", group = "Terrain") %>%
-        addCircleMarkers(~lon, ~lat,
-                         popup  = htmltools::htmlEscape(as.character(unlist(d$feeder_id))),
-                         group = "Loggers",
-                         weight = 1,
-                         opacity = 1,
-                         fillOpacity = 1,
-                         fillColor = "#337ab7",
-                         color = "black",
-                         radius = 7) %>%
+      map <- map_leaflet_base(locs = d) %>%
         leaflet::addScaleBar(position = "bottomright") %>%
         leaflet::addAwesomeMarkers(data = current(),
                                    icon = ~sp_icons[species],
