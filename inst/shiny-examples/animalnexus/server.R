@@ -139,11 +139,14 @@ shinyServer(function(input, output, session) {
     req("current-map_current_bounds" %in% names(input))
     session$sendCustomMessage('activeNavs', 'Database')
     session$sendCustomMessage('activeNavs', 'Import')
+    session$sendCustomMessage('activeNavs', 'Help')
+    hide('loading_app')
+  })
+
+  observe({
+    req(data())
     session$sendCustomMessage('activeNavs', 'Visualizations')
     session$sendCustomMessage('activeNavs', 'Individuals')
     session$sendCustomMessage('activeNavs', 'Transformations')
-    session$sendCustomMessage('activeNavs', 'Help')
-
-    hide('loading_app')
   })
 })
