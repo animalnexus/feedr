@@ -7,7 +7,7 @@
 #' An interactive shiny app for loading simple data.
 #'
 #' @export
-import_file <- function() {
+ui_import <- function() {
   app <- shiny::shinyApp(ui = shiny::fluidPage(shinyjs::useShinyjs(),
                                                includeCSS(system.file("extra", "style.css", package = "feedr")),
                                                mod_UI_data_import("standalone"),
@@ -184,11 +184,12 @@ mod_data_import <- function(input, output, session, type = NULL) {
   })
 
 
-  data <- eventReactive(vars$data, {
-    req(is.null(type), !is.null(vars$data), input$file1)
-    list(data = vars$data, time = Sys.time(), name = input$file1$name)
-  })
+  # data <- eventReactive(vars$data, {
+  #   req(is.null(type), !is.null(vars$data), input$file1)
+  #   list(data = vars$data, time = Sys.time(), name = input$file1$name)
+  # })
 
-  return(data)
-
+  return(c(r = reactive({vars$data}),
+           time = reactive({if(is.null(vars$data)) NULL else Sys.Time()}),
+           name = reactive({input$file1$name})))
 }
