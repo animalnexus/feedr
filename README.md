@@ -13,7 +13,7 @@ devtools::install_github("steffilazerte/feedr")
 ```
 
 ### Windows
-If you run R >= v3.3.0 on Windows you may run into an error along the lines of:
+If you run R on Windows you may run into an error along the lines of:
 ```
 Error in loadNamespace(j <- i[[1L]], c(lib.loc, .libPaths()), version Check = vI[[j]]) :
   there is no package called 'Rcpp'
@@ -31,6 +31,7 @@ devtools::install_github("steffilazerte/feedr")
 On linux systems some packages require libraries to be installed on the system first. For Debian distributions (e.g., Ubuntu, etc.) these can be installed with the following command in the terminal:
 
 Libraries for `devtools`: `sudo apt install libcurl4-openssl-dev libssh2-1-dev libssl-dev`
+
 Libraries for `feedr`: `sudo apt install libpq-dev libxml2-dev`
 
 ## Help
