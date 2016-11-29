@@ -1,7 +1,7 @@
 
 # Launch current
 
-transformations <- function(r) {
+ui_trans <- function(r) {
   app <- shiny::shinyApp(ui = shiny::fluidPage(shinyjs::useShinyjs(),
                                                includeCSS(system.file("extra", "style.css", package = "feedr")),
                                                mod_UI_trans("standalone")),
@@ -23,16 +23,16 @@ mod_UI_trans <- function(id) {
            hr(),
            h3("Downloads"),
            p(shinyjs::disabled(downloadButton('data_dl', 'All'))),
-           p(shinyjs::disabled(downloadButton("data_dl_raw", "Raw"))),
-           p(shinyjs::disabled(downloadButton("data_dl_visits", "Visits"))),
-           p(shinyjs::disabled(downloadButton("data_dl_feeding", "Feeding"))),
-           p(shinyjs::disabled(downloadButton("data_dl_move", "Movements"))),
+           p(shinyjs::disabled(downloadButton("data_dl_r", "Raw"))),
+           p(shinyjs::disabled(downloadButton("data_dl_v", "Visits"))),
+           p(shinyjs::disabled(downloadButton("data_dl_f", "Feeding"))),
+           p(shinyjs::disabled(downloadButton("data_dl_m", "Movements"))),
            p(shinyjs::disabled(downloadButton("data_dl_disp", "Displacements"))),
            p(shinyjs::disabled(downloadButton("data_dl_dom", "Dominance")))
     ),
     column(9,
            tabsetPanel(type = "tabs", id = "data_tabs",
-                       tabPanel("Raw Data", DT::dataTableOutput(ns("dt_raw"))),
+                       tabPanel("Raw Data", DT::dataTableOutput(ns("dt_r"))),
                        tabPanel("Visits Data", DT::dataTableOutput(ns("dt_v"))),
                        tabPanel("Feeding Data", DT::dataTableOutput(ns("dt_f"))),
                        tabPanel("Movement Data", DT::dataTableOutput(ns("dt_m"))),
@@ -54,37 +54,21 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
 
   ns <- session$ns
 
-  types <- c("raw", "v", "f", "m", "disp", "dom", "a", "da")
+  types <- c("r", "v", "f", "m", "disp", "dom", "a", "da")
 
   trans <- reactiveValues()
 
   observeEvent(r(), {
     req(r())
-    trans$raw <- r()
-
-    withProgress(message = "Transforming Data", detail = "Visits", value = 0, {
-
-      trans$v <- try(visits(trans$raw, allow_imp = TRUE), silent = TRUE)
-
-      setProgress(detail = "Movements", value = 0.15)
-      trans$m <- try(move(trans$v), silent = TRUE)
-
-      setProgress(detail = "Feeding time", value = 0.3)
-      trans$f <- try(feeding(trans$v), silent = TRUE)
-
-      setProgress(detail = "Displacements", value = 0.45)
-
-      trans$disp <- try(disp(v = trans$v), silent = TRUE)
-
-
-      setProgress(detail = "Dominance", value = 0.6)
-      trans$dom <- try(dom(trans$disp), silent = TRUE)
-
-      setProgress(detail = "Activity", value = 0.75)
-      trans$a <- try(activity(trans$f), silent = TRUE)
-
-      setProgress(detail = "Daily Activity", value = 0.9)
-      trans$da <- try(daily(trans$a), silent = TRUE)
+    trans$r <- r()
+    withProgress(message = "Transforming Data", {
+      setProgress(detail = "Visits", value = 0); trans$v <- try(visits(trans$r, allow_imp = TRUE), silent = TRUE)
+      setProgress(detail = "Movements", value = 0.15); trans$m <- try(move(trans$v), silent = TRUE)
+      setProgress(detail = "Feeding time", value = 0.3); trans$f <- try(feeding(trans$v), silent = TRUE)
+      setProgress(detail = "Displacements", value = 0.45); trans$disp <- try(disp(v = trans$v), silent = TRUE)
+      setProgress(detail = "Dominance", value = 0.6); trans$dom <- try(dom(trans$disp), silent = TRUE)
+      setProgress(detail = "Activity", value = 0.75); trans$a <- try(activity(trans$f), silent = TRUE)
+      setProgress(detail = "Daily Activity", value = 0.9); trans$da <- try(daily(trans$a), silent = TRUE)
     })
 
     lapply(names(trans), function(x) {
@@ -111,7 +95,7 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
 
   ## Activate/deactivate buttons depending on whether there is any data to download:
   observe({
-    req("raw_dl" %in% names(trans))
+    req("r_dl" %in% names(trans))
 
     lapply(types, function(x) {
       shinyjs::toggleState(paste0("data_dl_", x), condition = nrow(trans[[paste0(x, "_dl")]]) > 0)
@@ -124,7 +108,7 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
   Some of data in our Database is restricted to visualizations only to protect the hard work of scientists until they've had a chance to publish their findings."
 
 
-  observeEvent(trans$raw_dl, {
+  observeEvent(trans$r_dl, {
 
     lapply(types, function(x) {
       temp <- req(trans[[x]])
@@ -182,7 +166,7 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
   })
 
 
-  return(c(raw = reactive({trans$raw}),
+  return(c(r = reactive({trans$r}),
            v = reactive({trans$v}),
            f = reactive({trans$f}),
            m = reactive({trans$m})))
