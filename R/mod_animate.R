@@ -15,7 +15,7 @@
 #' }
 #'
 #' @export
-map_animate <- function(v, verbose = FALSE) {
+ui_animate <- function(v, verbose = FALSE) {
 
   # Check for correct formatting
   check_name(v, c("bird_id", "feeder_id", "start", "end"))
