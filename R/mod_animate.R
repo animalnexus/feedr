@@ -27,7 +27,7 @@ ui_animate <- function(v, verbose = FALSE) {
                                                mod_UI_stop("stp"),
                                                mod_UI_map_animate("standalone")),
                          server = function(input, output, session) {
-                           shiny::callModule(mod_map_animate, "standalone", v = v, verbose = verbose)
+                           shiny::callModule(mod_map_animate, "standalone", visits = reactive({v}), verbose = verbose)
                            shiny::callModule(mod_stop, "stp")
                          }
   )
@@ -67,15 +67,13 @@ mod_UI_map_animate <- function(id) {
 #' @import magrittr
 #' @import leaflet
 #' @export
-mod_map_animate <- function(input, output, session, v = NULL, f = NULL, m = NULL, verbose = FALSE) {
+mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
 
   ns <- session$ns
 
-  if(is.null(v) & is.null(f) & is.null(m)) stop("Require 'v' or 'f' and/or 'm'.")
-
   ## Controls
   controls <- callModule(mod_maps_controls, "setup", times = t_id, verbose = verbose)
-  summary <- callModule(mod_maps_advanced, "adv", samples = reactive({samples}), verbose = verbose)
+  summary <- callModule(mod_maps_advanced, "adv", samples = samples, verbose = verbose)
   instant <- callModule(mod_maps_time, "setup_time", controls = controls, events = events, verbose = verbose)
 
   ## Maps
@@ -99,58 +97,67 @@ mod_map_animate <- function(input, output, session, v = NULL, f = NULL, m = NULL
 
   ## Data
   # Fix time zone to local non-DST
-  if(!is.null(v)){
-    v <- data_tz(v)
-    m <- move(v)
-    f <- feeding(v)
-    #if(nrow(m) == 0 || all(is.na(m$direction))) m <- NULL
-  } else {
-    f <- data_tz(f)
-    if(!is.null(m)) m <- data_tz(m)
-  }
-
-  ## Fix one visit feeding bouts (technically length == 0)
-  f$feed_length[f$feed_length == 0] <- 3/60
+  
+  v <- reactive({
+    req(visits())
+    data_tz(visits())
+  })
+  
+  m <- reactive({
+    req(v())
+    move(v())
+  })
+  
+  f <- reactive({
+    req(v())
+    f <- feeding(v())
+    ## Fix one visit feeding bouts (technically length == 0)
+    f$feed_length[f$feed_length == 0] <- 3/60
+    return(f)
+  })
 
   ## Summarize movements and feeding
-  samples <- f %>%
-    dplyr::group_by(bird_id) %>%
-    dplyr::summarize(feed = length(feed_length)) %>%
-    dplyr::full_join(m %>%
-                       dplyr::group_by(bird_id) %>%
-                       dplyr::summarize(move = floor(length(direction) / 2)),
-                     by = "bird_id") %>%
-    dplyr::mutate(move = replace(move, is.na(move), 0))
+  samples <- reactive({
+    req(f(), m())
+    f() %>%
+      dplyr::group_by(bird_id) %>%
+      dplyr::summarize(feed = length(feed_length)) %>%
+      dplyr::full_join(m() %>%
+                         dplyr::group_by(bird_id) %>%
+                         dplyr::summarize(move = floor(length(direction) / 2)),
+                       by = "bird_id") %>%
+      dplyr::mutate(move = replace(move, is.na(move), 0))
+  })
 
   ## Subselections - Get bird ID
   f_id <- reactive({
-    req(f, summary$bird_id())
-    validate(need(sum(names(f) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
+    req(f(), summary$bird_id())
+    validate(need(sum(names(f()) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
     if(verbose) cat("Feeder ID: \n")
 
     if(summary$bird_id() == "all") {
       if(verbose) cat("  all\n")
-      f_id <- f
+      f_id <- f()
     } else {
       req(summary$bird_id() %in% samples$bird_id)
       if(verbose) cat("  indiv\n")
-      f_id <- f %>% dplyr::filter(bird_id == summary$bird_id())
+      f_id <- f() %>% dplyr::filter(bird_id == summary$bird_id())
     }
     return(f_id)
   })
 
   m_id <- reactive({
-    req(m, summary$bird_id())
-    if(nrow(m) > 0) validate(need(sum(names(m) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
+    req(m(), summary$bird_id())
+    if(nrow(m()) > 0) validate(need(sum(names(m()) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
     if(verbose) cat("Movements ID: \n")
 
     if(summary$bird_id() == "all"){
       if(verbose) cat("  all\n")
-      m_id <- m
+      m_id <- m()
     } else {
       req(summary$bird_id() %in% samples$bird_id)
       if(verbose) cat("  indiv\n")
-      m_id <- m %>% dplyr::filter(bird_id == summary$bird_id())
+      m_id <- m() %>% dplyr::filter(bird_id == summary$bird_id())
     }
     return(m_id)
   })
