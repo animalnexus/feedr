@@ -190,6 +190,6 @@ mod_data_import <- function(input, output, session, type = NULL) {
   # })
 
   return(c(r = reactive({vars$data}),
-           time = reactive({if(is.null(vars$data)) NULL else Sys.Time()}),
+           time = reactive({if(is.null(vars$data)) NULL else Sys.time()}),
            name = reactive({input$file1$name})))
 }

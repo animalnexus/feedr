@@ -356,7 +356,7 @@ mod_data_db <- function(input, output, session, db) {
   ####################
 
   ## Download Selected Data
-  raw <- eventReactive(input$data_get, {
+  r <- eventReactive(input$data_get, {
     req(values$keep, !is.null(db))
     cat("Downloading selected data...\n")
 
@@ -555,10 +555,7 @@ mod_data_db <- function(input, output, session, db) {
     "Drag and select a date range to further refine the data selection"
   })
 
-  data <- reactive({
-    req(raw())
-    list(data = raw(), time = Sys.time(), name = raw()$site_name[1])
-  })
-
-  return(data)
+  return(c(r = r,
+           time = reactive({if(is.null(r())) NULL else Sys.time()}),
+           name = reactive({r()$site_name[1]})))
 }

@@ -14,7 +14,9 @@ shinyServer(function(input, output, session) {
   #source("reactive.R", local = TRUE)
 
   values <- reactiveValues(
-    data_reset = TRUE)
+    data_reset = TRUE,
+    data_import = NULL,
+    data_db = NULL)
 
   ## Get Database access if we have it
   if(file.exists("/usr/local/share/feedr/db_full.R")) {
@@ -31,73 +33,60 @@ shinyServer(function(input, output, session) {
   data_db <- callModule(feedr:::mod_data_db, "access", db = db)
   data_import <- callModule(feedr:::mod_data_import, "import")
 
-  observeEvent(data_db(), {
-    values$data_reset <- TRUE
-    values$data_db <- data_db()
+  observe({
+    req(data_db$r())
+    values$data_db <- data_db
+  })
+  
+  observe({
+    req(data_import$r())
+    values$data_import <- data_import
   })
 
-  observeEvent(data_import(), {
-    values$data_reset <- TRUE
-    values$data_import <- data_import()
+  # Which data?
+  observe({
+    raw <- list(values$data_db, values$data_import)
+    raw <- raw[sapply(raw, function(x) !is.null(x$r))]
+    if(length(raw) > 1) raw <- raw[which.max(c(raw[[1]]$time(), raw[[2]]$time()))]
+    if(length(raw) > 0){
+      raw <- raw[[1]]
+      values$r <- raw$r()
+      values$data_name <- raw$name()
+      values$data_time <- raw$time()
+    }
   })
 
-  data <- reactive({
-    #browser()
-    if(!is.null(values$data_db) & !is.null(values$data_import)) {
-      if(values$data_db$time > values$data_import$time) {
-        data <- values$data_db
-        } else {
-          data <- values$data_import
-          data$data$dataaccess <- 0  ## Allow users to download their own data
-        }
-    } else if (!is.null(values$data_db) & is.null(values$data_import)) {
-      data <- values$data_db
-    } else if (is.null(values$data_db) & !is.null(values$data_import)) {
-      data <- values$data_import
-      data$data$dataaccess <- 0  ## Allow users to download their own data
-    } else data <- NULL
-    return(data)
-  })
-
-  data_info <- reactive({
+  output$data_info <- renderText({
     cat("Update active dataset\n")
     t <- "Active dataset: "
-    if(is.null(data())) {
+
+    if(is.null(values$r)) {
       t <- paste0(t, "None")
     } else {
-      t <- paste0(t, data()$name, ". Loaded at ", data()$time)
+      t <- paste0(t, values$data_name, ". Loaded at ", values$data_time)
     }
     return(t)
   })
 
-  output$data_info <- renderText({
-    req(data_info())
-    data_info()
-  })
-
   ## Transformations
-  trans <- callModule(feedr:::mod_trans, "trans", r = reactive({data()$data}))
+  trans <- callModule(feedr:::mod_trans, "trans", r = reactive({values$r}))
 
-  raw <- reactive({trans$raw()})
+  r <- reactive({trans$r()})
   v <- reactive({trans$v()})
   f <- reactive({trans$f()})
   m <- reactive({trans$m()})
 
-
   ## Feeders of current data
   feeders <- reactive({
-    raw() %>%
+    req(r())
+    r() %>%
       dplyr::select(feeder_id, site_name, lon, lat) %>%
       unique(.)
   })
 
   ### Visualizations
   ## Animate Data
-  observe({
-    #browser()
-    req(v())
-    callModule(mod_map_animate, "anim", v = v())
-  })
+  callModule(mod_map_animate, "anim", visits = v)
 
   ## Add weather data
   #Get weather data
@@ -112,13 +101,12 @@ shinyServer(function(input, output, session) {
   # }
 
 
-
   ## Birds
   ## Birds of current data
   birds <- reactive({
-    req(raw())
-    cols <- names(raw())[names(raw()) %in% c("bird_id", "species", "age", "sex", "tagged_on", "site_name")]
-    raw() %>%
+    req(r())
+    cols <- names(r())[names(r()) %in% c("bird_id", "species", "age", "sex", "tagged_on", "site_name")]
+    r() %>%
       dplyr::select_(.dots = cols) %>%
       unique(.)
   })
@@ -138,7 +126,7 @@ shinyServer(function(input, output, session) {
   })
 
   output$dt_birds <- DT::renderDataTable({
-    validate(need(try(nrow(raw()) > 0, silent = TRUE), msg_select))
+    validate(need(try(nrow(r()) > 0, silent = TRUE), msg_select))
     validate(need(try(nrow(birds()) > 0, silent = TRUE), "No data on individuals"))
     req(birds())
 
@@ -149,9 +137,6 @@ shinyServer(function(input, output, session) {
                   colnames = gsub("_", " ", names(birds_dl())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE),
                   selection = "single")
   }, server = FALSE)
-
-
-
 
   ## Load transformation data tables
   #source("output_data.R", local = TRUE)
