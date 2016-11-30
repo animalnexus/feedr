@@ -139,7 +139,7 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
       if(verbose) cat("  all\n")
       f_id <- f()
     } else {
-      req(summary$bird_id() %in% samples$bird_id)
+      req(summary$bird_id() %in% samples()$bird_id)
       if(verbose) cat("  indiv\n")
       f_id <- f() %>% dplyr::filter(bird_id == summary$bird_id())
     }
@@ -155,7 +155,7 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
       if(verbose) cat("  all\n")
       m_id <- m()
     } else {
-      req(summary$bird_id() %in% samples$bird_id)
+      req(summary$bird_id() %in% samples()$bird_id)
       if(verbose) cat("  indiv\n")
       m_id <- m() %>% dplyr::filter(bird_id == summary$bird_id())
     }
