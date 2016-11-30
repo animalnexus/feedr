@@ -15,6 +15,10 @@
 #'   file name ("filename") or from the first line of the file ("firstline").
 #' @param feeder_pattern Character. A regular expression matching the feeder_id
 #'   in the file name or from the first line of the file (see \code{feeder_id_loc}).
+#' @param time_format Character. The time format of the 'time' column. Defaults
+#'   to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
+#'   function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
+#'   etc.).
 #' @param extra_pattern Character vector. A vector of regular expressions
 #'   matching any extra information in the file or directory names or in the
 #'   first line of the file.
@@ -51,7 +55,7 @@
 #' @export
 load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL,
                      feeder_id_loc = "filename", feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
-                     extra_pattern = NULL, extra_name = NULL,
+                     time_format = "mdy HMS", extra_pattern = NULL, extra_name = NULL,
                      sep = "", skip = 1) {
 
   if(length(r_file) > 1) stop("r_file can only be length 1, the file name.")
@@ -80,7 +84,7 @@ load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL,
       r$bird_id <- as.character(r$bird_id)
 
       # Convert times
-      r$time <- lubridate::parse_date_time(paste(r$date, r$time), orders = "mdy HMS", tz = tz)
+      r$time <- lubridate::parse_date_time(paste(r$date, r$time), orders = time_format, tz = tz)
       if(!is.null(tz_disp)) r$time <- lubridate::with_tz(r$time, tz_disp)
 
       # Reorder columns
@@ -123,6 +127,10 @@ load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
 #'   \code{OlsonNames())}.
 #' @param feeder_pattern Character. A regular expression matching the feeder id
 #'   in the file name.
+#' @param time_format Character. The time format of the 'time' column. Defaults
+#'   to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
+#'   function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
+#'   etc.).
 #' @param extra_pattern Character vector. A vector of regular expressions
 #'   matching any extra information in the file or directory names.
 #' @param extra_name Character vector. A vector of column names matching the
@@ -139,6 +147,7 @@ load_raw_all <- function(r_dir,
                          tz = "America/Vancouver",
                          tz_disp = NULL,
                          feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
+                         time_format = "mdy HMS", 
                          extra_pattern = NULL,
                          extra_name = NULL,
                          sep = "",
@@ -156,6 +165,7 @@ load_raw_all <- function(r_dir,
                                load_raw,
                                tz = tz,
                                feeder_pattern = feeder_pattern,
+                               time_format = time_format,
                                extra_pattern = extra_pattern,
                                extra_name = extra_name,
                                sep = sep, skip = skip))
