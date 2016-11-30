@@ -43,7 +43,9 @@ mod_UI_data_db <- function(id) {
                  p(),
                  shinyjs::disabled(actionButton(ns("data_get"), "Get Data", style="color: #fff; background-color: #337ab7; border-color: #2e6da4")),
                  p(),
-                 shinyjs::disabled(actionButton(ns("data_reset"), "Reset inputs"))
+                 shinyjs::disabled(actionButton(ns("data_reset"), "Reset inputs")),
+                 hr()
+                 #actionButton(ns("showadv"), "Show Advanced Options")
              )
       ),
       column(8,
@@ -61,11 +63,9 @@ mod_UI_data_db <- function(id) {
       )
     ),
     fluidRow(
-      hr(),
-      h3("Advanced Options"),
       #actionButton(ns("pause"), "Pause"),
-      actionButton(ns("showadv"), "Show Advanced Options"),
-      shinyjs::hidden(div(id = "advanced",
+      shinyjs::hidden(div(id = ns("advanced"),
+                          h3("Advanced Options"),
                           uiOutput(ns("UI_data_bird_id")),
                           uiOutput(ns("UI_data_feeder_id"))))
     )
