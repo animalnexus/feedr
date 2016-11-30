@@ -4,9 +4,11 @@
 ui_trans <- function(r) {
   app <- shiny::shinyApp(ui = shiny::fluidPage(shinyjs::useShinyjs(),
                                                includeCSS(system.file("extra", "style.css", package = "feedr")),
-                                               mod_UI_trans("standalone")),
+                                               mod_UI_trans("standalone"),
+                                               mod_UI_stop("stp")),
                          server = function(input, output, session) {
                            shiny::callModule(mod_trans, "standalone", r = reactive({r}))
+                           shiny::callModule(mod_stop, "stp")
                          }
   )
   shiny::runApp(app, launch.browser = TRUE)
