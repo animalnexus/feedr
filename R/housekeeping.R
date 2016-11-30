@@ -18,6 +18,10 @@
 #' @param omit Character vector. All the values of \code{species} in the
 #'   bird id index which you would like to omit from your data. Defaults to
 #'   \code{c("wand", "error")}.
+#' @param id_length Numeric. How many characters are expected in each id? This
+#'   will test to make sure all animal_ids are the right length (i.e. make sure
+#'   leading zeros haven't been omitted). NA skips this test.
+#'   
 #' @return A data frame without the specified bird ids. Messages are printed to
 #'   inform the user of matching or non-matching bird ids.
 #'
@@ -32,14 +36,18 @@
 #' r <- check.ids(r, bird_ids = b)
 #' }
 #' @export
-check_ids <- function(r, bird_ids, omit = c("wand", "error")){
+check_ids <- function(r, bird_ids, omit = c("wand", "error"), id_length = 10){
   if(length(bird_ids) > 1 & !is.data.frame(bird_ids)) stop("bird_ids should either be the name of a comma separated file (csv) OR should be a data frame. In either case, the data should contain headers 'bird_id' and 'species'")
 
   if(!is.data.frame(bird_ids)) bird_ids <- read.csv(bird_ids)
 
   # Check for other id problems
-  if(any(nchar(as.character(bird_ids$bird_id)) != 10)) stop("You have some bird_ids in your bird_id index that are not 10 characters long")
-  if(any(nchar(as.character(r$bird_id)) != 10)) stop("You have some bird_ids in your read data that are not 10 characters long")
+  if(!is.na(id_length)){
+    msg <- character()
+    if(any(nchar(as.character(bird_ids$bird_id)) != id_length)) msg[1] <- paste0("You have some bird_ids in your bird_id index that are not ", id_length, " characters long")
+    if(any(nchar(as.character(r$bird_id)) != id_length)) msg[2] <- paste0("You have some bird_ids in your read data that are not ", id_length, " characters long")
+    if(length(msg) > 0) stop(paste0(msg, collapse = "\n  "))
+  }
 
   # Look for unknown ids in your data
   unlisted <- unique(r$bird_id[!(r$bird_id  %in% unique(bird_ids$bird_id))])
