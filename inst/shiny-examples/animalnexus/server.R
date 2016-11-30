@@ -73,8 +73,6 @@ shinyServer(function(input, output, session) {
 
   r <- reactive({trans$r()})
   v <- reactive({trans$v()})
-  f <- reactive({trans$f()})
-  m <- reactive({trans$m()})
 
   ## Feeders of current data
   feeders <- reactive({
@@ -125,6 +123,7 @@ shinyServer(function(input, output, session) {
     birds()
   })
 
+  msg_select <- "Please select data through the Database or by Importing"
   output$dt_birds <- DT::renderDataTable({
     validate(need(try(nrow(r()) > 0, silent = TRUE), msg_select))
     validate(need(try(nrow(birds()) > 0, silent = TRUE), "No data on individuals"))
@@ -160,7 +159,7 @@ shinyServer(function(input, output, session) {
   })
 
   observe({
-    req(data())
+    req(r())
     session$sendCustomMessage('activeNavs', 'Visualizations')
     session$sendCustomMessage('activeNavs', 'Individuals')
     session$sendCustomMessage('activeNavs', 'Transformations')
