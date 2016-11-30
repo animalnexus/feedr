@@ -155,6 +155,7 @@ shinyServer(function(input, output, session) {
     session$sendCustomMessage('activeNavs', 'Database')
     session$sendCustomMessage('activeNavs', 'Import')
     session$sendCustomMessage('activeNavs', 'Help')
+    shinyjs::show("get-started")
     hide('loading_app')
   })
 
