@@ -86,7 +86,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 
   # Get spacing between visits, whether same bird or not, and whether same feeder or not
   r <- r[order(r$time),]
-  diff_time <- (r$time[-1] - r$time[-nrow(r)]) > bw
+  diff_time <- difftime(r$time[-1], r$time[-nrow(r)], units = "sec") > bw
   diff_bird <- r$bird_id[-nrow(r)] != r$bird_id[-1]
   diff_feeder <- r$feeder_id[-nrow(r)] != r$feeder_id[-1]
 
@@ -391,19 +391,19 @@ feeding <- function(v, bw = 15, pass = TRUE){
 
 
 # Calculate feeding bouts for single bird
-feeding_single <- function(v1, bw = 15){
+feeding_single <- function(v1, bw = bw){
 
   v1 <- v1[order(v1$start),]
-  feeder_diff <- v1$feeder_id[-1] != v1$feeder_id[-nrow(v1)]
+  diff_feeder <- v1$feeder_id[-1] != v1$feeder_id[-nrow(v1)]
   v1$feed_end <- v1$feed_start <- FALSE
 
   if(!is.null(bw)){
-    time_diff <- v1$start[-1] - v1$end[-nrow(v1)]
-    v1$feed_start[c(TRUE, (time_diff > bw*60 | feeder_diff))] <- TRUE
-    v1$feed_end[c((time_diff > bw*60 | feeder_diff), TRUE)] <- TRUE
+    diff_time <- difftime(v1$start[-1], v1$end[-nrow(v1)], units = "min")
+    v1$feed_start[c(TRUE, (diff_time > bw | diff_feeder))] <- TRUE
+    v1$feed_end[c((diff_time > bw | diff_feeder), TRUE)] <- TRUE
   } else {
-    v1$feed_start[c(TRUE, feeder_diff)] <- TRUE
-    v1$feed_end[c(feeder_diff, TRUE)] <- TRUE
+    v1$feed_start[c(TRUE, diff_feeder)] <- TRUE
+    v1$feed_end[c(diff_feeder, TRUE)] <- TRUE
   }
 
   ## Create the feeding data frame.
@@ -515,12 +515,12 @@ disp <- function(v, bw = 5, pass = TRUE){
   #  (b) the arrival of the 2nd bird occurred within 'bw' seconds of the
   #      departure of the 1st
   #  (c) all of this occurs at the same feeder
-  bird_diff <- v$bird_id[-1] != v$bird_id[-nrow(v)]
-  time_diff <- (v$start[-1] - v$end[-nrow(v)]) < bw
-  feeder_diff <- v$feeder_id[-1] == v$feeder_id[-nrow(v)]
+  diff_bird <- v$bird_id[-1] != v$bird_id[-nrow(v)]
+  diff_time <- difftime(v$start[-1], v$end[-nrow(v)], units = "sec") < bw
+  diff_feeder <- v$feeder_id[-1] == v$feeder_id[-nrow(v)]
 
-  d <- rbind(v[c(bird_diff & time_diff & feeder_diff, FALSE), c("bird_id", "feeder_id", "date", "start", "end")],
-             v[c(FALSE, bird_diff & time_diff & feeder_diff), c("bird_id", "feeder_id", "date", "start", "end")])
+  d <- rbind(v[c(diff_bird & diff_time & diff_feeder, FALSE), c("bird_id", "feeder_id", "date", "start", "end")],
+             v[c(FALSE, diff_bird & diff_time & diff_feeder), c("bird_id", "feeder_id", "date", "start", "end")])
 
   if(nrow(d) == 0) stop(paste0("There are no displacement events with a bw = ", bw, ", stopping now"))
 
@@ -528,8 +528,8 @@ disp <- function(v, bw = 5, pass = TRUE){
   d$role <- c("displacee", "displacer")
   d <- d[order(d$role, d$start), ]
 
-  d$left <- rep(v$end[c(bird_diff & time_diff & feeder_diff, FALSE)], 2)
-  d$arrived <- rep(v$start[c(FALSE, bird_diff & time_diff & feeder_diff)], 2)
+  d$left <- rep(v$end[c(diff_bird & diff_time & diff_feeder, FALSE)], 2)
+  d$arrived <- rep(v$start[c(FALSE, diff_bird & diff_time & diff_feeder)], 2)
 
   d <- dplyr::select(d, bird_id, date, left, arrived, feeder_id, role) %>%
     dplyr::arrange(left, feeder_id, role)
@@ -664,7 +664,7 @@ dom <- function(d, tries = 50, omit_cutoff = 3){
 
   ## Setup the matrix
   d <- tidyr::spread(d, displacee, n)
-  d <- as.matrix(d[,-grep("^displacer$", names(d))])
+  d <- as.matrix(d[, -grep("^displacer$", names(d))])
   rownames(d) <- colnames(d)
 
   ## Setup Loop
