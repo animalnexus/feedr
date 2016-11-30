@@ -69,7 +69,7 @@ shinyUI(
             #################
             tabPanel("Visualizations", icon = icon("eye"),
                      column(12,
-                            mod_UI_map_animate("anim")
+                            feedr:::mod_UI_map_animate("anim")
                      )
             ),
             #################
@@ -86,7 +86,7 @@ shinyUI(
             ## DATA
             #################
             tabPanel("Transformations", icon = icon("exchange"),
-                     mod_UI_trans("trans")
+                     feedr:::mod_UI_trans("trans")
             ),
             tabPanel("Help",
                      navlistPanel(widths = c(2, 10),
