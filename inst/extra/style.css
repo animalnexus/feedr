@@ -112,7 +112,7 @@ element.style {
   border-left-width: 3pt;
   margin: 5px;
   bottom: 1px;
-  left: 1px;
+  right: 1px;
   position: fixed;
 }
 
@@ -121,7 +121,7 @@ element.style {
   font-weight:bold;
   font-size: 85%;
   margin: 5px;
-  bottom: 1px;
+  bottom: 25px;
   right: 1px;
   position: fixed;
 }
