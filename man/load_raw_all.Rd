@@ -6,7 +6,8 @@
 \usage{
 load_raw_all(r_dir, pattern = "DATA", tz = "America/Vancouver",
   tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
-  extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1)
+  time_format = "mdy HMS", extra_pattern = NULL, extra_name = NULL,
+  sep = "", skip = 1)
 }
 \arguments{
 \item{r_dir}{Character. The director that holds all your raw data files (can
@@ -25,6 +26,11 @@ the zones produced by \code{OlsonNames())}.}
 
 \item{feeder_pattern}{Character. A regular expression matching the feeder id
 in the file name.}
+
+\item{time_format}{Character. The time format of the 'time' column. Defaults
+to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
+function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
+etc.).}
 
 \item{extra_pattern}{Character vector. A vector of regular expressions
 matching any extra information in the file or directory names.}

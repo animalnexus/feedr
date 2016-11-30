@@ -6,7 +6,8 @@
 \usage{
 load_raw(r_file, tz = "America/Vancouver", tz_disp = NULL,
   feeder_id_loc = "filename", feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
-  extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1)
+  time_format = "mdy HMS", extra_pattern = NULL, extra_name = NULL,
+  sep = "", skip = 1)
 }
 \arguments{
 \item{r_file}{Character. The location of a single file to load.}
@@ -20,6 +21,11 @@ the zones produced by \code{OlsonNames())}.}
 
 \item{feeder_pattern}{Character. A regular expression matching the feeder_id
 in the file name or from the first line of the file (see \code{feeder_id_loc}).}
+
+\item{time_format}{Character. The time format of the 'time' column. Defaults
+to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
+function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
+etc.).}
 
 \item{extra_pattern}{Character vector. A vector of regular expressions
 matching any extra information in the file or directory names or in the
