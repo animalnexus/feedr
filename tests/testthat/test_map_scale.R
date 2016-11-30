@@ -50,11 +50,11 @@ test_that("scale_area() returns expected values", {
 
   for(r in s) {
     #cat(r, "\n")
-    r <- scale_area(r)
+    r <- scale_area(r, min = 5)
     expect_equal(r, c(5, 30, 55, 80, 105))
   }
 
-  expect_equal(round(scale_area(c(4, 8, 19, 500, 6000, 30000)), 6),
+  expect_equal(round(scale_area(c(4, 8, 19, 500, 6000, 30000), min = 5), 6),
                c(5, 5.013335, 5.050007, 6.653554, 24.989332, 105.000000))
 })
 
@@ -67,10 +67,10 @@ test_that("scale_area(radius) returns expected values", {
 
   for(r in s) {
     #cat(r, "\n")
-    r <- scale_area(r, radius = TRUE)
+    r <- scale_area(r, radius = TRUE, min = 5)
     expect_equal(round(r, 5), c(5.00000, 52.67827, 74.33034, 90.96703, 105.00000))
   }
 
-  expect_equal(round(scale_area(c(4,8,19,500,6000,30000), radius = TRUE), 6),
+  expect_equal(round(scale_area(c(4,8,19,500,6000,30000), radius = TRUE, min = 5), 6),
               c(5.000000, 5.144595, 5.522747, 14.383703, 47.157465, 105.000000))
 })
