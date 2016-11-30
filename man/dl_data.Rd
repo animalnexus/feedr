@@ -6,7 +6,7 @@
 \usage{
 dl_data(start = NULL, end = NULL,
   url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
-  feeder_details = c("loc"), bird_details = c("species"),
+  logger_details = c("loc"), animal_details = c("species"),
   tz_disp = "America/Vancouver")
 }
 \arguments{
@@ -22,12 +22,12 @@ NULL, get records to end.}
 where users go to download their data by hand. The default should not need
 to be changed.}
 
-\item{feeder_details}{Character vector. This specifies extra columns with
-details about the feeders to download. Use NULL to download no extra
+\item{logger_details}{Character vector. This specifies extra columns with
+details about the loggers to download. Use NULL to download no extra
 columns.}
 
-\item{bird_details}{Character vector. This specifies extra columns with
-details about the birds to download. Use NULL to download no extra columns.}
+\item{animal_details}{Character vector. This specifies extra columns with
+details about the animals to download. Use NULL to download no extra columns.}
 
 \item{tz_disp}{Character vector. Timezone data should be displayed in (should match one of
 the zones produced by \code{OlsonNames()})}
@@ -48,7 +48,7 @@ HH:MM:SS and truncate as needed. Note that truncated times are interpreted as
 00 and trucated dates as the first of the month and the first month of the
 year. Thus "2015" will be sumbitted as "2015-01-01 00:00:00".
 
-For specifying extra \code{bird_details}:
+For specifying extra \code{animal_details}:
 
 \itemize{
   \item "species" gives species name
@@ -58,10 +58,10 @@ Hatch Year, Second Year, and Hatch Year) See
 \href{https://www.pwrc.usgs.gov/BBL/manual/age.cfm}{USGS banding lab} for
 details about banding
   \item "tagged_on" gives you the date the RFID tag was
-mounted on the bird
+mounted on the animal
 }
 
-For specifying extra \code{feeder_details}:
+For specifying extra \code{logger_details}:
 
 \itemize{
  \item "site_name" gives site name
@@ -80,7 +80,7 @@ r <- dl_date(start = "2016")
 # Get specific data
 r <- dl_data(start = "2016-01-01 09:34:12",
               end = "2016-02-01",
-              bird_details = c("species", "age", "sex", "tagged_on"))
+              animal_details = c("species", "age", "sex", "tagged_on"))
 }
 
 }

@@ -4,17 +4,27 @@
 #' merely a wrapper function that does many things that you can do yourself.
 #' It's utility depends on how standardized your data is, and whether you have
 #' extra details you need to address.
+#' 
+#' Logger details are the logger_id and the lat/lon for the logger. A value of 0
+#' reflects that the logger_id is in the file name, defined by the pattern 
+#' logger_pattern. A value of 1 reflects that the logger_id is in the first line
+#' of the file, also defined by the pattern logger_pattern. A value of 2 
+#' reflects that in addition to the logger_id being in the first line ofthe 
+#' file, the lat/lon information is on the second line, in the format of 
+#' "latitude, longitude" both in decimal format (spacing doesn't matter, but the
+#' comma does).
 #'
 #' @param r_file Character. The location of a single file to load.
 #' @param tz Character. The time zone the date/times are in (should match one of
-#'   the zones produced by \code{OlsonNames())}.
+#'   the zones produced by \code{OlsonNames())}. Defaults to user's system
+#'   timezone.
 #' @param tz_disp Character. The time zone the date/times should be displayed in
 #'   (if not the same as \code{tz}; should match one of the zones produced by
 #'   \code{OlsonNames())}.
-#' @param feeder_id_loc. Character. Where to extract feeder_id from: either the
-#'   file name ("filename") or from the first line of the file ("firstline").
-#' @param feeder_pattern Character. A regular expression matching the feeder_id
-#'   in the file name or from the first line of the file (see \code{feeder_id_loc}).
+#' @param details. Numeric. Where to find logger details, either 0 (file name),
+#'   1 (first line) or 2 (first two lines). See 'details'.
+#' @param logger_pattern Character. A regular expression matching the logger_id
+#'   in the file name or from the first line of the file (see \code{logger_id_loc}).
 #' @param time_format Character. The time format of the 'time' column. Defaults
 #'   to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
 #'   function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
@@ -27,69 +37,94 @@
 #' @param sep Character. An override for the separator in the
 #'   \code{read.table()} call (see \code{sep =} under \code{?read.table} for
 #'   more details).
-#' @param skip Character. How many lines to skip before the data starts.
-#'   feeder_id or extra details in the first line do not count as data and
-#'   should be skipped. If there are headers (column labels) in the data, these
-#'   should also be skipped.
+#' @param skip Character. Extra lines to skip in addition to the lines specified
+#'   by details.
 #'
 #' @examples
 #' \dontrun{
 #' # Load a single raw file: r <- load_raw("GPR13DATA_2015_12_01.csv")
 #'
-#' # Load a single raw file where the feeder id is not the default, and is
+#' # Load a single raw file where the logger id is not the default, and is
 #' rather something like: 2300, 2500, 2550
-#' r <- load_raw("2300.csv", feeder_pattern = "[0-9]{4}")
+#' r <- load_raw("2300.csv", logger_pattern = "[0-9]{4}")
 #'
-#' # Load a file where the feeder id is detected as the first line in the file,
+#' # Load a file where the logger id is detected as the first line in the file,
 #' not the file name (still use default skip = 1):
-#' r <- load_raw("2016-01-01_09_30.csv", feeder_id_loc = "firstline")
+#' r <- load_raw("2016-01-01_09_30.csv", details = 1)
 #'
 #' # Note that the following won't work because the pattern matches both the
-#' feeder id as well as the year:
-#' r <- load_raw("2300_2015_12_01.csv", feeder_pattern = "[0-9]{4}")
+#' logger id as well as the year:
+#' r <- load_raw("2300_2015_12_01.csv", logger_pattern = "[0-9]{4}")
 #'
 #' # Extract extra data to be stored in another column:
 #' r <- load_raw("2300.csv", extra_pattern = "exp[0-9]{1}", extra_name = experiment)
 #'
 #' }
 #' @export
-load_raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL,
-                     feeder_id_loc = "filename", feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
-                     time_format = "mdy HMS", extra_pattern = NULL, extra_name = NULL,
-                     sep = "", skip = 1) {
+load_raw <- function(r_file, 
+                     tz = Sys.timezone(), 
+                     tz_disp = NULL,
+                     details = 1, 
+                     logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
+                     time_format = "mdy HMS", 
+                     extra_pattern = NULL, 
+                     extra_name = NULL,
+                     sep = "", 
+                     skip = 0) {
 
   if(length(r_file) > 1) stop("r_file can only be length 1, the file name.")
   if(!is.character(r_file)) stop("r_file must be character")
-
-    r <- read.table(r_file[1],
-                    col.names = c("bird_id","date","time"),
-                    colClasses = "character",
-                    skip = skip,
-                    sep = sep)
-
+  if(!(details %in% 0:2)) stop("'details' must be one of 0, 1, or 2.")
+  
+  skip <- details + skip
+  
+  r <- tryCatch(read.table(r_file[1],
+                           col.names = c("animal_id","date","time"),
+                           colClasses = "character",
+                           skip = skip,
+                           sep = sep),
+                error = function(c) {
+                  if(grepl("did not have 3 elements", c$message)) {
+                    c$message <- paste0(c$message, "\n\nA line did not have the three columns required. Did you specify appropriate 'details' and 'skip' values?")}
+                  stop(c)
+                })
+  
+  
     if(nrow(r) > 0){
       # Trim leading or trailing whitespace
       r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
 
-      # Get feeder ids
-      if(feeder_id_loc == "firstline") { # Get feeder id from first line
-        r$feeder_id <- stringr::str_extract(readLines(r_file, n = 1), feeder_pattern)
-      } else if (feeder_id_loc == "filename") { # Match patterns in file name
-        r$feeder_id <- stringr::str_extract(r_file, feeder_pattern)
-      } else {
-        stop("'feeder_id_loc' must be either 'filename' or 'firstline'")
+      # Get logger ids
+      if(details == 0) { # Get logger id from first line
+        r$logger_id <- stringr::str_extract(r_file, logger_pattern)
+      } else if (details > 0) { # Match patterns in file name
+        r$logger_id <- stringr::str_extract(readLines(r_file, n = 1), logger_pattern)
+      }
+      
+      # Get lat, lon
+      if(details == 2) {
+        locs <- readLines(r_file, n = 2)[2] %>% 
+          strsplit(split = ",") %>%
+          unlist() %>%
+          trimws() %>%
+          as.numeric()
+        if(length(locs) < 2) stop("details = 2, so expecting 1 lat and 1 lon on second line, but found fewer. Check format, should be e.g. 53.91448, -122.76925")
+        if(length(locs) > 2) stop("details = 2, so expecting 1 lat and 1 lon on second line, but found more. Check format, should be e.g. 53.91448, -122.76925")
+        r$lat <- locs[1]
+        r$lon <- locs[2]
       }
 
-      # Convert bird_id to character for combining later on
-      r$bird_id <- as.character(r$bird_id)
+      # Convert animal_id to character for combining later on
+      r$animal_id <- as.character(r$animal_id)
 
       # Convert times
       r$time <- lubridate::parse_date_time(paste(r$date, r$time), orders = time_format, tz = tz)
       if(!is.null(tz_disp)) r$time <- lubridate::with_tz(r$time, tz_disp)
 
       # Reorder columns
-      r <- dplyr::select(r, bird_id, time, feeder_id) %>%
-        dplyr::arrange(bird_id, time)
+      cols <- names(r)[names(r) %in% c("animal_id", "time", "logger_id", "lat", "lon")]
+      r <- dplyr::select_(r, .dots = cols) %>%
+        dplyr::arrange(animal_id, time)
 
       # Get any extra columns by matching patterns in file name as specified by extra_pattern and extra_name
       if(!is.null(extra_pattern)){
@@ -119,6 +154,15 @@ load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
 #' 
 #' Note that if both \code{r_dir} and \code{r_list} are specified, the directory
 #' overrides the file list.
+#' 
+#' Logger details are the logger_id and the lat/lon for the logger. A value of 0
+#' reflects that the logger_id is in the file name, defined by the pattern 
+#' logger_pattern. A value of 1 reflects that the logger_id is in the first line
+#' of the file, also defined by the pattern logger_pattern. A value of 2 
+#' reflects that in addition to the logger_id being in the first line ofthe 
+#' file, the lat/lon information is on the second line, in the format of 
+#' "latitude, longitude" both in decimal format (spacing doesn't matter, but the
+#' comma does).
 #'
 #' @param r_dir Character. The director that holds all your raw data files (can
 #'   be in subdirectories).
@@ -127,11 +171,14 @@ load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
 #'   you wish to include. Defaults to "DATA" to include only DATA files and not
 #'   NOTE files.
 #' @param tz Character. The time zone the date/times are in (should match one of
-#'   the zones produced by \code{OlsonNames())}.
+#'   the zones produced by \code{OlsonNames())}. Defaults to user's system
+#'   timezone.
 #' @param tz_disp Character. The time zone the date/times should be displayed in
 #'   (if not the same as \code{tz}; should match one of the zones produced by
 #'   \code{OlsonNames())}.
-#' @param feeder_pattern Character. A regular expression matching the feeder id
+#' @param details. Numeric. Where to find logger details, either 0 (file name),
+#'   1 (first line) or 2 (first two lines). See 'details'.
+#' @param logger_pattern Character. A regular expression matching the logger id
 #'   in the file name.
 #' @param time_format Character. The time format of the 'time' column. Defaults
 #'   to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
@@ -144,21 +191,22 @@ load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
 #' @param sep Character. An override for the separator in the
 #'   \code{read.table()} call (see \code{sep =} under \code{?read.table} for
 #'   more details).
-#' @param skip Character. An override for the skip in the \code{read.table()}
-#'   call (see \code{skip =} under \code{?read.table} for more details).
+#' @param skip Character. Extra lines to skip in addition to the lines specified
+#'   by details.
 #'
 #' @export
 load_raw_all <- function(r_dir,
                          r_list,
                          pattern = "DATA",
-                         tz = "America/Vancouver",
+                         tz = Sys.timezone(),
                          tz_disp = NULL,
-                         feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
+                         details = 1,
+                         logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
                          time_format = "mdy HMS", 
                          extra_pattern = NULL,
                          extra_name = NULL,
                          sep = "",
-                         skip = 1) {
+                         skip = 0) {
   
   if(!missing(r_dir)) {
     # Get file locations (match pattern and get all subfiles)
@@ -168,10 +216,10 @@ load_raw_all <- function(r_dir,
   }
 
   # Load in data and assign extra colums
-  r <- do.call('rbind', lapply(r_list,
-                               load_raw,
+  r <- do.call('rbind', lapply(r_list, load_raw,
+                               details = details,
                                tz = tz,
-                               feeder_pattern = feeder_pattern,
+                               logger_pattern = logger_pattern,
                                time_format = time_format,
                                extra_pattern = extra_pattern,
                                extra_name = extra_name,
@@ -213,7 +261,7 @@ load.raw.all <- function(r_dir,
 #' 00 and trucated dates as the first of the month and the first month of the
 #' year. Thus "2015" will be sumbitted as "2015-01-01 00:00:00".
 #'
-#' For specifying extra \code{bird_details}:
+#' For specifying extra \code{animal_details}:
 #'
 #' \itemize{
 #'   \item "species" gives species name
@@ -223,10 +271,10 @@ load.raw.all <- function(r_dir,
 #' \href{https://www.pwrc.usgs.gov/BBL/manual/age.cfm}{USGS banding lab} for
 #' details about banding
 #'   \item "tagged_on" gives you the date the RFID tag was
-#' mounted on the bird
+#' mounted on the animal
 #' }
 #'
-#' For specifying extra \code{feeder_details}:
+#' For specifying extra \code{logger_details}:
 #'
 #' \itemize{
 #'  \item "site_name" gives site name
@@ -242,11 +290,11 @@ load.raw.all <- function(r_dir,
 #' @param url Character. This is the url for the web form action. _Not_ the url
 #'   where users go to download their data by hand. The default should not need
 #'   to be changed.
-#' @param feeder_details Character vector. This specifies extra columns with
-#'   details about the feeders to download. Use NULL to download no extra
+#' @param logger_details Character vector. This specifies extra columns with
+#'   details about the loggers to download. Use NULL to download no extra
 #'   columns.
-#' @param bird_details Character vector. This specifies extra columns with
-#'   details about the birds to download. Use NULL to download no extra columns.
+#' @param animal_details Character vector. This specifies extra columns with
+#'   details about the animals to download. Use NULL to download no extra columns.
 #' @param tz_disp Character vector. Timezone data should be displayed in (should match one of
 #'   the zones produced by \code{OlsonNames()})
 #'
@@ -262,15 +310,15 @@ load.raw.all <- function(r_dir,
 #' # Get specific data
 #' r <- dl_data(start = "2016-01-01 09:34:12",
 #'               end = "2016-02-01",
-#'               bird_details = c("species", "age", "sex", "tagged_on"))
+#'               animal_details = c("species", "age", "sex", "tagged_on"))
 #' }
 #'
 #' @export
 dl_data <- function(start = NULL,
                      end = NULL,
                      url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
-                     feeder_details = c("loc"),
-                     bird_details = c("species"),
+                     logger_details = c("loc"),
+                     animal_details = c("species"),
                      tz_disp = "America/Vancouver") {
 
   # Get data from website in GMT, if tz not in selection, then convert later
@@ -299,8 +347,8 @@ dl_data <- function(start = NULL,
   sites <- "qskam"
 
   # Get form options
-  params <- as.list(rep("1", length(c(feeder_details, bird_details, sites))))
-  names(params) <- c(feeder_details, bird_details, sites)
+  params <- as.list(rep("1", length(c(logger_details, animal_details, sites))))
+  names(params) <- c(logger_details, animal_details, sites)
   params <- append(params,
                    list(feeder_id = "1",
                         bird_id = "1",
@@ -333,9 +381,9 @@ get.data <- function(start = NULL,
   .Deprecated("dl_data")
 }
 
-#' Internal function: Format data
+#' Format data
 #'
-#' Formats manually loaded data. Not necessary if using any of the helper loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, \code{data_dl()}, or \code{load_web()}.
+#' Formats manually loaded data. Not necessary if using any of the helper loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, or \code{data_dl()}.
 #'
 #' @param r Data frame. Data frame to format.
 #' @param tz Character. The time zone the date/times are in (should match one of
@@ -361,9 +409,18 @@ load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, time_format = "y
   if(!is.null(tz_disp)) r$time <- lubridate::with_tz(r$time, tz_disp)
 
   # Make sure all factors are factors:
-  if(any(names(r) == "bird_id")) r$bird_id <- as.factor(r$bird_id)
-  if(any(names(r) == "feeder_id")) r$feeder_id <- as.factor(r$feeder_id)
-
+  if(any(names(r) == "bird_id")) {
+    r$animal_id <- as.factor(r$bird_id)
+    message("Renaming 'bird_id' to 'animal_id'. Use of 'bird_id' is now depreciated.")
+  }
+  if(any(names(r) == "feeder_id")) {
+    r$logger_id <- as.factor(r$feeder_id)
+    message("Renaming 'feeder_id' to 'logger_id'. Use of 'feeder_id' is now depreciated.")
+  }
+  if(any(names(r) == "animal_id")) r$animal_id <- as.factor(r$animal_id)
+  if(any(names(r) == "logger_id")) r$logger_id <- as.factor(r$logger_id)
+  
+  
   # If locs already present, convert to numeric
   if(all(c("lat", "lon") %in% names(r))) {
     r$lon <- as.numeric(as.character(r$lon))
@@ -378,7 +435,7 @@ load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, time_format = "y
   }
 
   # Reorder columns
-  cols <- c("bird_id", "time", "feeder_id")
+  cols <- c("animal_id", "time", "logger_id")
   cols <- cols[which(cols %in% names(r))]
   r <- r[, c(cols, names(r)[!(names(r) %in% cols)])]
 

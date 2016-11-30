@@ -2,7 +2,7 @@
 % Please edit documentation in R/load.R
 \name{load_format}
 \alias{load_format}
-\title{Internal function: Format data}
+\title{Format data}
 \usage{
 load_format(r, tz = Sys.timezone(), tz_disp = NULL,
   time_format = "ymd HMS")
@@ -24,6 +24,6 @@ function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
 etc.).}
 }
 \description{
-Formats manually loaded data. Not necessary if using any of the helper loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, \code{data_dl()}, or \code{load_web()}.
+Formats manually loaded data. Not necessary if using any of the helper loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, or \code{data_dl()}.
 }
 
