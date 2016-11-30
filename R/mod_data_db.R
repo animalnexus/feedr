@@ -466,13 +466,14 @@ mod_data_db <- function(input, output, session, db) {
 
   # Add circle markers for sample sizes
   observe({
-    req(startup(input), !is.null(db), input$data_site_name != "")
 
     ## Watch for changes in either of these
     input$map_update
     input$data_site_name
 
     isolate({
+      req(startup(input), !is.null(db), input$data_site_name != "")
+      
       values$data_map <- values$keep  ## Keep track of current map values
       c <- values$keep
 
