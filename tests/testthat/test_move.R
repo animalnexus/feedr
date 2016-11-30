@@ -33,7 +33,7 @@ test_that("move() returns expected data", {
   expect_equal(m$feeder_n[1], 4)
   expect_equal(round(m$lon[2], 4), -120.3624)
   expect_equal(round(m$lat[2], 5), 50.66896)
-  expect_equal(m$move_dir[1], "2400_2100")
+  expect_equal(m$move_dir[1], factor("2400_2100", levels = c("2200_2100", "2400_2100", "2700_2100", "2100_2200", "2400_2200", "2700_2200", "2100_2400", "2200_2400", "2700_2400", "2100_2700", "2200_2700", "2400_2700")))
   expect_equal(m$move_path[1], factor("2100_2400", levels = c("2100_2200", "2100_2400", "2100_2700", "2200_2400", "2200_2700", "2400_2700")))
   expect_equal(m$species[1], "House Finch")
   expect_true(length(unique(m$move_path)) != length(unique(m$move_dir))) ## 47 visits > 0 seconds
