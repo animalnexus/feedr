@@ -112,11 +112,17 @@ load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
 
 #' Load and combine raw data files
 #'
-#' This is a wrapper function which loads and combines all raw data files from a
-#' series of nested folders.
+#' This is a wrapper function which loads and combines raw data files. If
+#' \code{r_dir} is specified, these include all files in series of nested
+#' folders, if \code{r_list} is specified it includes only the list of files
+#' specified.
+#' 
+#' Note that if both \code{r_dir} and \code{r_list} are specified, the directory
+#' overrides the file list.
 #'
 #' @param r_dir Character. The director that holds all your raw data files (can
-#'   be in subdirectories)
+#'   be in subdirectories).
+#' @param r_list Character. A list of files to import.
 #' @param pattern Character. A regular expression pattern that matches the files
 #'   you wish to include. Defaults to "DATA" to include only DATA files and not
 #'   NOTE files.
@@ -143,6 +149,7 @@ load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
 #'
 #' @export
 load_raw_all <- function(r_dir,
+                         r_list,
                          pattern = "DATA",
                          tz = "America/Vancouver",
                          tz_disp = NULL,
@@ -152,13 +159,13 @@ load_raw_all <- function(r_dir,
                          extra_name = NULL,
                          sep = "",
                          skip = 1) {
-  # Get file locations (match pattern and get all subfiles)
-  r_list <- list.files(r_dir, pattern = pattern, recursive = TRUE, full.names = TRUE)
-
-  # Remove temporary files
-  r_list <- r_list[!grepl("~", r_list)]
-
-  if(length(r_list) == 0) stop("Either the directory is empty or your pattern matches no files")
+  
+  if(!missing(r_dir)) {
+    # Get file locations (match pattern and get all subfiles)
+    r_list <- list.files(r_dir, pattern = pattern, recursive = TRUE, full.names = TRUE)
+    r_list <- r_list[!grepl("~", r_list)] # Omit temporary files
+    if(length(r_list) == 0) stop("Either the directory is empty or your pattern matches no files")
+  }
 
   # Load in data and assign extra colums
   r <- do.call('rbind', lapply(r_list,

@@ -4,14 +4,16 @@
 \alias{load_raw_all}
 \title{Load and combine raw data files}
 \usage{
-load_raw_all(r_dir, pattern = "DATA", tz = "America/Vancouver",
+load_raw_all(r_dir, r_list, pattern = "DATA", tz = "America/Vancouver",
   tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
   time_format = "mdy HMS", extra_pattern = NULL, extra_name = NULL,
   sep = "", skip = 1)
 }
 \arguments{
 \item{r_dir}{Character. The director that holds all your raw data files (can
-be in subdirectories)}
+be in subdirectories).}
+
+\item{r_list}{Character. A list of files to import.}
 
 \item{pattern}{Character. A regular expression pattern that matches the files
 you wish to include. Defaults to "DATA" to include only DATA files and not
@@ -46,7 +48,13 @@ more details).}
 call (see \code{skip =} under \code{?read.table} for more details).}
 }
 \description{
-This is a wrapper function which loads and combines all raw data files from a
-series of nested folders.
+This is a wrapper function which loads and combines raw data files. If
+\code{r_dir} is specified, these include all files in series of nested
+folders, if \code{r_list} is specified it includes only the list of files
+specified.
+}
+\details{
+Note that if both \code{r_dir} and \code{r_list} are specified, the directory
+overrides the file list.
 }
 
