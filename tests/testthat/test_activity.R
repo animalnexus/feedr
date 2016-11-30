@@ -24,12 +24,32 @@ test_that("activity() in general", {
 })
 
 # activity()
+test_that("activity() no lat/lon", {
+  f <- finches[, !(names(finches) %in% c("lat", "lon"))]
+  expect_message(expect_error(a <- activity(feeding(visits(f))), NA))
+  expect_true(!all(c("lat", "lon") %in% names(a)))
+  expect_equal(a$feeder_id[1], factor(NA, levels = c("2100", "2200", "2400", "2700")))
+  expect_equal(nrow(a), 386)
+})
+
+# activity()
+test_that("activity() no lat/lon, by feeder", {
+  f <- finches[, !(names(finches) %in% c("lat", "lon"))]
+  expect_message(expect_error(a <- activity(feeding(visits(f)), by_feeder = TRUE), NA))
+  expect_true(!all(c("lat", "lon") %in% names(a)))
+  expect_equal(a$feeder_id[1], factor(2100, levels = c("2100", "2200", "2400", "2700")))
+  expect_equal(nrow(a), 1544)
+})
+
+# activity()
 test_that("activity() no missing, by feeder", {
   a <- activity(feeding(visits(finches)), by_feeder = TRUE)
 
   expect_equal(a$feeder_id[1], factor(2100, levels = c("2100", "2200", "2400", "2700")))
   expect_equal(nrow(a), 1544)
 })
+
+
 
 # activity()
 test_that("activity() missing", {

@@ -75,7 +75,7 @@ activity <- function(f, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE,
 
   # Get factor levels for whole dataset
   if(is.factor(f$bird_id)) bird_id <- levels(f$bird_id) else bird_id <- unique(f$bird_id)
-  feeders <- unique(f[, c("feeder_id", "lat", "lon")])
+  feeders <- unique(tibble::as_tibble(f[, names(f) %in% c("feeder_id", "lat", "lon")]))
 
   # Keep extra cols
   if(pass) {
