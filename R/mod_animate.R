@@ -53,9 +53,6 @@ mod_UI_map_animate <- function(id) {
            feedr:::mod_UI_maps_tips(ns("tips"))
     ),
     column(8,
-           # popify(fluidRow(leafletOutput(ns("map"), height = 600)),
-           #        title = "Movements and feeder use",
-           #        content = "This map shows individual movements and use of different feeders over time.<br/><b>Colour:</b> Time (pale blue is early, dark blue is late)<br/><b>Line width:</b> Increases with number of movements<br/><b>Circle size:</b> Increases with number of feeding bouts (note, <em>number of bouts</em>, not total feeding time)", options = list(container = "body")),
            feedr:::mod_UI_maps_leaflet(ns("map")),
            feedr:::mod_UI_maps_time(ns("setup_time"), type = "Feeding/Movement events")
     )
