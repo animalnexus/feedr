@@ -3,7 +3,7 @@
 #' This function will take feeding bouts and calculate activity status (active
 #' vs. inactive) at a resolution of \code{res}.
 #'
-#' A message will alert you to when the \code{res} is larger than the 50% of the
+#' A message will alert you to when the \code{res} is larger than the 50\% of the
 #' feeding bouts. This may result in missed feeding bouts, and it may be better
 #' to choose a smaller \code{res}.
 #'
