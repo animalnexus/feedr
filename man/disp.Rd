@@ -2,7 +2,7 @@
 % Please edit documentation in R/transformations.R
 \name{disp}
 \alias{disp}
-\title{'Visits' to 'displacements'}
+\title{Displacements}
 \usage{
 disp(v, bw = 5, pass = TRUE)
 }
@@ -38,16 +38,16 @@ A list with the following named items: \enumerate{ \item
 }
 \description{
 For an entire \code{visits} data frame, identifies displacement events.
-Displacements are events when one bird is forced to leave the feeder due to
-the imminent arrival of a more dominant bird.
+Displacements are events when one bird leaves the feeder right before the
+arrival of another. In some species this can be used to infer dominance.
 }
 \details{
-The first and last visits on the record are automatically assumed to be non
-displacer and non-displacee, respectively.
+The first and last visits on the record are automatically assumed to be
+non-displacer and non-displacee, respectively.
 }
 \examples{
 
-# Lookat displacements for chickadees in experiment 2
+# Look at displacements for chickadees in experiment 2
  v <- visits(chickadees[chickadees$experiment == "exp2",])
  d <- disp(v)
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/transformations.R
 \name{dom}
 \alias{dom}
-\title{'displacements' to 'dominance'}
+\title{Displacements}
 \usage{
 dom(d, tries = 50, omit_cutoff = 3)
 }
@@ -14,9 +14,31 @@ returned by \code{disp()}.}
 \item{tries}{Numeric. The maximum number of iterations to find the 'best guess'}
 
 \item{omit_cutoff}{Numeric. Minimum number of interactions (sum of wins and
-  losses) individuals must have (omitted otherwise).
+losses) individuals must have (omitted otherwise).}
+}
+\value{
+The best guess dominance hierarchies (there may be more than one).
 
-#' @examples
+A list with the following named items: 
+\enumerate{ 
+  \item \code{dominance}: A best guess at the dominance hierarchy (most to
+least dominant) (one vector per 'best guess')
+
+  \item \code{reversals}: Which individuals show reversals? (i.e. A > B, B >
+  C but C > A) (one vector per 'best guess')
+   
+  \item \code{interactions}: A matrix of dominance interactions. Displacers 
+  across the top, displacees down the side. Values are the numbers of wins
+  (upper triangle) or losses (lower triangle) against the opposing
+  individual. (one matrix per 'best guess')
+  
+  }
+}
+\description{
+Takes output from \code{disp()} and calculates dominance hierarchies. Should
+be considered experimental.
+}
+\examples{
 
  # Look at dominance for chickadees in experiment 2
  v <- visits(chickadees[chickadees$experiment == "exp2",])
@@ -26,19 +48,19 @@ returned by \code{disp()}.}
  # But not necessary to specify interactions:
  dm <- dom(d)
 
-#'  # Calculate across different experiments (expect warnings about unequal factor levels):
+ # Calculate across different experiments (expect warnings about unequal factor levels):
 library(dplyr)
 
-v <- chickadees %>%
-  group_by(experiment) %>%
+v <- chickadees \%>\%
+  group_by(experiment) \%>\%
   do(visits(.))
 
-d <- v %>%
-  group_by(experiment) %>%
+d <- v \%>\%
+  group_by(experiment) \%>\%
   do(data = disp(.))
 
-dm <- d %>%
-  group_by(experiment) %>%
+dm <- d \%>\%
+  group_by(experiment) \%>\%
   do(data = dom(.$data[[1]]))
 
 # Look at the dominance data stored in the 2nd experiment:
@@ -49,9 +71,8 @@ dm$data[[1]]
 # Look at the dominance matrices from 3nd experiment:
 dm$data[dm$experiment == "exp3"][[1]]$matrices #or
 dm[["data"]][[2]]$matrices #or
-dm$data[[2]]$matrices}
-}
-\description{
-'displacements' to 'dominance'
+dm$data[[2]]$matrices
+
+
 }
 

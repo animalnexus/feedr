@@ -2,7 +2,7 @@
 % Please edit documentation in R/transformations.R
 \name{feeding}
 \alias{feeding}
-\title{'Visits' to 'feeding bouts'}
+\title{Presence at a logger}
 \usage{
 feeding(v, bw = 15, pass = TRUE)
 }

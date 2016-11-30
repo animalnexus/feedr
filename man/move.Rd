@@ -2,7 +2,7 @@
 % Please edit documentation in R/transformations.R
 \name{move}
 \alias{move}
-\title{'Visits' to 'movements'}
+\title{Movements between loggers}
 \usage{
 move(v, all = FALSE, pass = TRUE)
 }

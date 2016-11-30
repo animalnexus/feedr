@@ -2,7 +2,7 @@
 % Please edit documentation in R/transformations.R
 \name{visits}
 \alias{visits}
-\title{'Raw' data to 'visits' data}
+\title{Visits}
 \usage{
 visits(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE,
   allow.imp, na.rm)

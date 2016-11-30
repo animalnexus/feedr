@@ -1,5 +1,4 @@
-#' 'Raw' data to 'visits' data
-#'
+#' Visits
 #'
 #' Raw data from RFID feeders contain multiple reads per individual simply
 #' because the individual sat there long enough. In \code{visits()} these reads
@@ -152,7 +151,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 }
 
 
-#' 'Visits' to 'movements'
+#' Movements between loggers
 #'
 #' Turns visits to mulitple feeders into movements between feeders
 #'
@@ -302,7 +301,7 @@ move_single <- function(v1, move_dir, move_path, all = FALSE){
   return(m)
 }
 
-#' 'Visits' to 'feeding bouts'
+#' Presence at a logger
 #'
 #' Turns visits at mulitple feeders into feeding bouts. Feeding bouts are
 #' separated by switching feeders (when \code{bw = NULL}). If \code{bw} is not
@@ -419,14 +418,14 @@ feeding_single <- function(v1, bw = 15){
 }
 
 
-#' 'Visits' to 'displacements'
+#' Displacements
 #'
 #' For an entire \code{visits} data frame, identifies displacement events.
-#' Displacements are events when one bird is forced to leave the feeder due to
-#' the imminent arrival of a more dominant bird.
+#' Displacements are events when one bird leaves the feeder right before the
+#' arrival of another. In some species this can be used to infer dominance.
 #'
-#' The first and last visits on the record are automatically assumed to be non
-#' displacer and non-displacee, respectively.
+#' The first and last visits on the record are automatically assumed to be
+#' non-displacer and non-displacee, respectively.
 #'
 #' @param v Dataframe. A visits data frame containing \strong{all} visits from
 #'   \strong{all} birds. From the output of \code{visits}. Must contain columns
@@ -456,7 +455,7 @@ feeding_single <- function(v1, bw = 15){
 #'
 #' @examples
 #'
-#' # Lookat displacements for chickadees in experiment 2
+#' # Look at displacements for chickadees in experiment 2
 #'  v <- visits(chickadees[chickadees$experiment == "exp2",])
 #'  d <- disp(v)
 #'
@@ -566,7 +565,10 @@ disp <- function(v, bw = 5, pass = TRUE){
   return(list("displacements" = d, "summaries" = s, "interactions" = t))
 }
 
-#' 'displacements' to 'dominance'
+#' Displacements
+#' 
+#' Takes output from \code{disp()} and calculates dominance hierarchies. Should
+#' be considered experimental.
 #'
 #' @param d Data frame or List. Either the interactions data frame which is
 #'   returned as a list item from \code{disp()}, or the whole displacements list
@@ -575,7 +577,24 @@ disp <- function(v, bw = 5, pass = TRUE){
 #' @param omit_cutoff Numeric. Minimum number of interactions (sum of wins and
 #'   losses) individuals must have (omitted otherwise).
 #'
-#' #' @examples
+#' @return The best guess dominance hierarchies (there may be more than one).
+#' 
+#' A list with the following named items: 
+#' \enumerate{ 
+#'   \item \code{dominance}: A best guess at the dominance hierarchy (most to
+#' least dominant) (one vector per 'best guess')
+#'
+#'   \item \code{reversals}: Which individuals show reversals? (i.e. A > B, B >
+#'   C but C > A) (one vector per 'best guess')
+#'    
+#'   \item \code{interactions}: A matrix of dominance interactions. Displacers 
+#'   across the top, displacees down the side. Values are the numbers of wins
+#'   (upper triangle) or losses (lower triangle) against the opposing
+#'   individual. (one matrix per 'best guess')
+#'   
+#'   }
+#'
+#' @examples
 #'
 #'  # Look at dominance for chickadees in experiment 2
 #'  v <- visits(chickadees[chickadees$experiment == "exp2",])
@@ -585,7 +604,7 @@ disp <- function(v, bw = 5, pass = TRUE){
 #'  # But not necessary to specify interactions:
 #'  dm <- dom(d)
 #'
-#' #'  # Calculate across different experiments (expect warnings about unequal factor levels):
+#'  # Calculate across different experiments (expect warnings about unequal factor levels):
 #' library(dplyr)
 #'
 #' v <- chickadees %>%
