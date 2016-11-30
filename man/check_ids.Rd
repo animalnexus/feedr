@@ -4,7 +4,7 @@
 \alias{check_ids}
 \title{Check for and omit non-bird bird ids}
 \usage{
-check_ids(r, bird_ids, omit = c("wand", "error"))
+check_ids(r, bird_ids, omit = c("wand", "error"), id_length = 10)
 }
 \arguments{
 \item{r}{Data frame. A data frame of read data, with at least column
@@ -18,6 +18,10 @@ and \code{species}.}
 \item{omit}{Character vector. All the values of \code{species} in the
 bird id index which you would like to omit from your data. Defaults to
 \code{c("wand", "error")}.}
+
+\item{id_length}{Numeric. How many characters are expected in each id? This
+will test to make sure all animal_ids are the right length (i.e. make sure
+leading zeros haven't been omitted). NA skips this test.}
 }
 \value{
 A data frame without the specified bird ids. Messages are printed to
