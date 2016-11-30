@@ -332,14 +332,18 @@ get.data <- function(start = NULL,
 #'
 #' @param r Data frame. Data frame to format.
 #' @param tz Character. The time zone the date/times are in (should match one of
-#'   the zones produced by \code{OlsonNames())}.
+#'   the zones produced by \code{OlsonNames())}. Defaults to user's system
+#'   timezone.
 #' @param tz_disp Character. The time zone the date/times should be displayed in
 #'   (if not the same as \code{tz}; should match one of the zones produced by
 #'   \code{OlsonNames())}.
-#' @param time_format Character. The time format of the 'time' column. Defaults to "ymd HMS". Should be in formats usable by the \code{parse_date_time()} function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.).
+#' @param time_format Character. The time format of the 'time' column. Defaults
+#'   to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
+#'   function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
+#'   etc.).
 #'
 #' @export
-load_format <- function(r, tz, tz_disp = NULL, time_format = "ymd HMS"){
+load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, time_format = "ymd HMS"){
 
   # Trim leading or trailing whitespace
   r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
