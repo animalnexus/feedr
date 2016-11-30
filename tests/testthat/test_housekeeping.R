@@ -31,6 +31,10 @@ test_that("check_ids catches and removes correctly", {
   r$bird_id <- as.character(r$bird_id)
   r$bird_id[1] <- substr(r$bird_id[1], 1, 4)
   expect_error(check_ids(r, b), "You have some bird_ids in your read data that are not 10 characters long")
+  expect_error(check_ids(r, b, id_length = 4), 
+"You have some bird_ids in your bird_id index that are not 4 characters long
+  You have some bird_ids in your read data that are not 4 characters long")
+  
 })
 
 # check_problems()
