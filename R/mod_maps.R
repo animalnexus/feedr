@@ -38,21 +38,19 @@ mod_UI_maps_controls <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)
   tagList(
-    popify(
+    tipify(
       uiOutput(ns("UI_time_range")),
-      title = "Time range",
-      content = "Select a particular time range to look at", options = list(container = "body")),
+      title = "Select a particular time range to look at", options = list(container = "body")),
     hr(),
     h4("Animation options"),
-    popify(
+    tipify(
       uiOutput(ns("UI_interval")),
-      title = "Resolution",
-      content = "Amount of time to advance in each frame.", options = list(container = "body")),
-    popify(sliderInput(ns("anim_speed"), "Animation speed",
+      title = "Amount of time to advance in each frame.", options = list(container = "body")),
+    tipify(sliderInput(ns("anim_speed"), "Animation speed",
                        min = 0, max = 100,
                        post = "%",
                        value = 50),
-           title = "Animation speed", content = "How fast should the animated steps advance.", options = list(container = "body"))
+           title = "How fast should the animated steps advance.", options = list(container = "body"))
   )
 }
 
@@ -191,22 +189,21 @@ mod_UI_maps_advanced <- function(id) {
   ns <- NS(id)
 
   tagList(
-    popify(
+    tipify(
       radioButtons(ns("type"), label = "Summary over time",
                    choices = c("Cumulative" = "cumulative", "Instant" = "instant"), inline = TRUE),
-      title = "Cumulative vs. Instant",
-      content = "Show cumulative data (i.e. all visits up to and including a particular time block) or instantaneous measures (i.e. only visits measured in a particular time block)",options = list(container = "body")),
-    popify(
+      title = "Show cumulative data (i.e. all visits up to and including a particular time block) or instantaneous measures (i.e. only visits measured in a particular time block)",options = list(container = "body")),
+    tipify(
       uiOutput(ns("UI_bird_id")),
-     title = "Individual", placement = "right",
-            content = "ID of the individual to select.<br/>(X mv; Y fd) represent total number of movements and feeding events respectively.",
-            options = list(container = "body")),
-    popify(
-      radioButtons2(ns("summary"), label = "Summary type",
+      title = "ID of the individual to select.<br/>(X mv; Y fd) represent total number of movements and feeding events respectively.", placement = "right",
+      options = list(container = "body")),
+    tipify(
+      radioButtons2(ns("summary"), 
+                    label = "Summary type",
                     choices = c("Total sum" = "sum", "Average sum per individual" = "sum_indiv")),
       #, "Total no. individuals" = "total_indiv")),
-      title = "Type of summary",
-      content = "What kind of summary should be shown: total feeding time/movements, totals averaged across individuals, total number of individuals?",options = list(container = "body"))
+      title = "What kind of summary should be shown: total feeding time/movements, totals averaged across individuals, total number of individuals?", 
+      options = list(container = "body"))
   )
 }
 
@@ -263,9 +260,8 @@ mod_UI_maps_time <- function(id, type = "the RFID logger (Feeder)") {
       }"))),
     div(
            fluidRow(uiOutput(ns("UI_time")), style = "text-align: center;"),
-           fluidRow(div(popify(plotOutput(ns("plot_time"), height = "100%"),
-                               placement = "left", title = "Summary over time",
-                               content = "Summarized data over time."),
+           fluidRow(div(tipify(plotOutput(ns("plot_time"), height = "100%"),
+                               placement = "left", title = "Summarized data over time."),
                         style = "height: 200px")),
            fluidRow(div(
              strong("Note that times are in Local Standard Time (no DST)"), br(),
@@ -355,9 +351,9 @@ mod_maps_time <- function(input, output, session, controls, events, verbose = FA
 mod_UI_maps_sunrise <- function(id) {
   ns <- NS(id)
   tagList(
-    popify(radioButtons(ns("sunrise"), "Show sunrise/sunset?",
+    tipify(radioButtons(ns("sunrise"), "Show sunrise/sunset?",
                         choices = list("Yes" = TRUE, "No" = FALSE), inline = TRUE),
-           title = "Sunrise/Sunset", content = "Whether or not to include a shadow layer on the map demonstrating daytime and nighttime.", options = list(container = "body"))
+           title = "Whether or not to include a shadow layer on the map demonstrating daytime and nighttime.", options = list(container = "body"))
   )
 }
 
@@ -398,9 +394,8 @@ mod_maps_sunrise <- function(input, output, session, instant, controls, verbose 
 mod_UI_maps_leaflet <- function(id) {
   ns <- NS(id)
   tagList(
-    popify(fluidRow(leafletOutput(ns("map"), height = 600)),
-           title = "Activity summaries",
-           content = "Circles show the amount of activity at each feeder for the given time interval.",
+    tipify(fluidRow(leafletOutput(ns("map"), height = 600)),
+           title = "Circles show the amount of activity at each feeder for the given time interval.",
            options = list(container = "body"))
   )
 }

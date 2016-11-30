@@ -25,14 +25,14 @@ mod_UI_data_db <- function(id) {
              #div(img(src = "logo.jpg", width = 400), style="text-align: left;"),
              h3("Select Data"),
              div(id = "selection",
-                 popify(uiOutput(ns("UI_data_site_name")),
-                           title = "Site name", content = "Filter by site",
-                           placement = "right", options = list(container = "body", offset = c(0,0))),
-                 popify(uiOutput(ns("UI_data_species")),
-                           title = "Species", content = "Species to include/exclude",
+                 tipify(uiOutput(ns("UI_data_site_name")),
+                           title = "Filter by site",
                            placement = "right", options = list(container = "body")),
-                 popify(uiOutput(ns("UI_data_date")),
-                           title = "Dates", content = "Filter by date range",
+                 tipify(uiOutput(ns("UI_data_species")),
+                           title = "Species to include/exclude",
+                           placement = "right", options = list(container = "body")),
+                 tipify(uiOutput(ns("UI_data_date")),
+                           title = "Filter by date range",
                            placement = "right", options = list(container = "body")),
                  hr(),
                  h3("Selected Data"),
@@ -52,7 +52,7 @@ mod_UI_data_db <- function(id) {
              div(shinyjs::disabled(actionButton(ns("map_update"), "Update map")), style = "text-align: center"),
              p(),
              leafletOutput(ns("map_data"), height = 600),
-             bsPopover(ns("map_data"), "Sampling", "Circle area depicts the amount of visits recorded per site or feeder given the options selected", placement = "top", trigger = "hover"),
+             bsTooltip(ns("map_data"), "Circle area depicts the amount of visits recorded per site or feeder given the options selected", placement = "top"),
              plotOutput(ns("plot_data_ggplot"),
                         brush = brushOpts(
                           id = ns("plot_data_brush"),
@@ -473,7 +473,6 @@ mod_data_db <- function(input, output, session, db) {
 
     isolate({
       req(startup(input), !is.null(db), input$data_site_name != "")
-      
       values$data_map <- values$keep  ## Keep track of current map values
       c <- values$keep
 
