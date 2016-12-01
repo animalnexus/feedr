@@ -4,7 +4,7 @@
 \alias{ui_import}
 \title{Import files}
 \usage{
-ui_import()
+ui_import(r)
 }
 \description{
 An interactive shiny app for loading simple data.
