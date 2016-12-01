@@ -413,11 +413,11 @@ load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, time_format = "y
 
   # Make sure all factors are factors:
   if(any(names(r) == "bird_id")) {
-    r$animal_id <- as.factor(r$bird_id)
+    r <- dplyr::rename(r, animal_id = bird_id)
     message("Renaming 'bird_id' to 'animal_id'. Use of 'bird_id' is now depreciated.")
   }
   if(any(names(r) == "feeder_id")) {
-    r$logger_id <- as.factor(r$feeder_id)
+    r <- dplyr::rename(r, logger_id = feeder_id)
     message("Renaming 'feeder_id' to 'logger_id'. Use of 'feeder_id' is now depreciated.")
   }
   if(any(names(r) == "animal_id")) r$animal_id <- as.factor(r$animal_id)
