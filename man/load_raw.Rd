@@ -19,8 +19,10 @@ timezone.}
 (if not the same as \code{tz}; should match one of the zones produced by
 \code{OlsonNames())}.}
 
-\item{logger_pattern}{Character. A regular expression matching the logger_id
-in the file name or from the first line of the file (see \code{logger_id_loc}).}
+\item{logger_pattern}{Character. A regular expression matching the logger_id 
+in the file name or from the first line of the file. An NA value matches file name
+(extension omitted) or first line of the file. See \code{details}
+parameter.}
 
 \item{time_format}{Character. The time format of the 'time' column. Defaults
 to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}

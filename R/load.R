@@ -23,8 +23,10 @@
 #'   \code{OlsonNames())}.
 #' @param details. Numeric. Where to find logger details, either 0 (file name),
 #'   1 (first line) or 2 (first two lines). See 'details'.
-#' @param logger_pattern Character. A regular expression matching the logger_id
-#'   in the file name or from the first line of the file (see \code{logger_id_loc}).
+#' @param logger_pattern Character. A regular expression matching the logger_id 
+#'   in the file name or from the first line of the file. An NA value matches file name
+#'   (extension omitted) or first line of the file. See \code{details}
+#'   parameter.
 #' @param time_format Character. The time format of the 'time' column. Defaults
 #'   to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
 #'   function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
@@ -78,7 +80,7 @@ load_raw <- function(r_file,
   
   skip <- details + skip
   
-  r <- tryCatch(read.table(r_file[1],
+  r <- tryCatch(read.table(r_file,
                            col.names = c("animal_id","date","time"),
                            colClasses = "character",
                            skip = skip,
@@ -95,10 +97,12 @@ load_raw <- function(r_file,
       r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
 
       # Get logger ids
-      if(details == 0) { # Get logger id from first line
-        r$logger_id <- stringr::str_extract(r_file, logger_pattern)
-      } else if (details > 0) { # Match patterns in file name
-        r$logger_id <- stringr::str_extract(readLines(r_file, n = 1), logger_pattern)
+      if(details == 0) { # Match patterns in file name
+        if(is.na(logger_pattern)) r$logger_id <- stringr::str_extract(basename(r_file), "^[^.]*")
+        if(!is.na(logger_pattern)) r$logger_id <- stringr::str_extract(r_file, logger_pattern)
+      } else if (details > 0) { # Get logger id from first line
+        if(is.na(logger_pattern)) r$logger_id <- readLines(r_file, n = 1)
+        if(!is.na(logger_pattern)) r$logger_id <- stringr::str_extract(readLines(r_file, n = 1), logger_pattern)
       }
       
       # Get lat, lon
@@ -106,10 +110,9 @@ load_raw <- function(r_file,
         locs <- readLines(r_file, n = 2)[2] %>% 
           strsplit(split = ",") %>%
           unlist() %>%
-          trimws() %>%
-          as.numeric()
-        if(length(locs) < 2) stop("details = 2, so expecting 1 lat and 1 lon on second line, but found fewer. Check format, should be e.g. 53.91448, -122.76925")
-        if(length(locs) > 2) stop("details = 2, so expecting 1 lat and 1 lon on second line, but found more. Check format, should be e.g. 53.91448, -122.76925")
+          trimws()
+        locs <- suppressWarnings(try(as.numeric(locs), silent = TRUE))
+        if(class(locs) == "try-error" || is.na(locs) || length(locs) != 2) stop("Expecting one pair of lat/lon on second line of the file(s). Check format or change 'details' (Format should be e.g.,  53.91448, -122.76925).")
         r$lat <- locs[1]
         r$lon <- locs[2]
       }
