@@ -7,17 +7,24 @@
 #' An interactive shiny app for loading simple data.
 #'
 #' @export
-ui_import <- function() {
-  app <- shiny::shinyApp(ui = shiny::fluidPage(shinyjs::useShinyjs(),
-                                               includeCSS(system.file("extra", "style.css", package = "feedr")),
-                                               mod_UI_data_import("standalone"),
-                                               mod_UI_stop("stp")),
-                         server = function(input, output, session) {
-                           shiny::callModule(mod_data_import, "standalone", type = "standalone")
-                           shiny::callModule(mod_stop, "stp")
-                         }
-  )
-  shiny::runApp(app, launch.browser = TRUE)
+# ui_import <- function() {
+#   
+#   addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
+#   
+#   app <- shiny::shinyApp(ui = shiny::fluidPage(theme = "assets/style.css",
+#                                                shinyjs::useShinyjs(),
+#                                                mod_UI_data_import("standalone"),
+#                                                mod_UI_stop("stp")),
+#                          server = function(input, output, session) {
+#                            shiny::callModule(mod_data_import, "standalone", type = "standalone")
+#                            shiny::callModule(mod_stop, "stp")
+#                          }
+#   )
+#   shiny::runApp(app)
+# }
+
+ui_import <- function(r) {
+  ui_app(name = "data_import")
 }
 
 ## Get current data

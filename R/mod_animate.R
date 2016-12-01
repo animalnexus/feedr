@@ -15,24 +15,34 @@
 #' }
 #'
 #' @export
-ui_animate <- function(v, verbose = FALSE) {
+# ui_animate <- function(v, verbose = FALSE) {
+# 
+#   # Check for correct formatting
+#   check_name(v, c("bird_id", "feeder_id", "start", "end"))
+#   check_time(v)
+#   check_format(v)
+# 
+#   app <- shiny::shinyApp(ui = shiny::fluidPage(shinyjs::useShinyjs(),
+#                                                includeCSS(system.file("extra", "style.css", package = "feedr")),
+#                                                mod_UI_stop("stp"),
+#                                                mod_UI_map_animate("standalone")),
+#                          server = function(input, output, session) {
+#                            shiny::callModule(mod_map_animate, "standalone", visits = reactive({v}), verbose = verbose)
+#                            shiny::callModule(mod_stop, "stp")
+#                          }
+#   )
+#   shiny::runApp(app, launch.browser = TRUE)
+# }
 
+ui_animate <-  function(v, verbose = FALSE) {
   # Check for correct formatting
   check_name(v, c("bird_id", "feeder_id", "start", "end"))
   check_time(v)
   check_format(v)
-
-  app <- shiny::shinyApp(ui = shiny::fluidPage(shinyjs::useShinyjs(),
-                                               includeCSS(system.file("extra", "style.css", package = "feedr")),
-                                               mod_UI_stop("stp"),
-                                               mod_UI_map_animate("standalone")),
-                         server = function(input, output, session) {
-                           shiny::callModule(mod_map_animate, "standalone", visits = reactive({v}), verbose = verbose)
-                           shiny::callModule(mod_stop, "stp")
-                         }
-  )
-  shiny::runApp(app, launch.browser = TRUE)
+  
+  ui_app(name = "map_animate", visits = reactive({v}), verbose = verbose)
 }
+
 
 ## Animated map - UI
 #' @import shiny

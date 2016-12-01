@@ -1,3 +1,19 @@
+ui_app <- function(name, ..., launch.browser = getOption("shiny.launch.browser", interactive())) {
+  
+  addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
+  
+  app <- shiny::shinyApp(ui = shiny::fluidPage(theme = "assets/style.css",
+                                               shinyjs::useShinyjs(),
+                                               get(paste0("mod_UI_", name))("standalone"),
+                                               mod_UI_stop("stp")),
+                         server = function(input, output, session) {
+                           shiny::callModule(get(paste0("mod_", name)), id = "standalone", ...)
+                           shiny::callModule(mod_stop, "stp")
+                         }
+  )
+  shiny::runApp(app)
+}
+
 startup <- function(x) {
   #require that input objects were at least created (first pass)
   all(c("data_site_name",
