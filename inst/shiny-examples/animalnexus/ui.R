@@ -7,8 +7,9 @@ shinyUI(
 
   tagList(
     shinyjs::useShinyjs(),
-    includeCSS("../../extra/style.css"),
-    tags$head(tags$script("
+    tags$head(
+      tags$link(rel = "stylesheet", href = "assets/style.css"),
+      tags$script("
 
 
         window.onload = function() {

@@ -4,6 +4,8 @@ library(shiny)
 library(shinyjs)
 library(shinyBS)
 
+addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
+
 shinyServer(function(input, output, session) {
 
   output$package_version <- renderText({

@@ -2,6 +2,26 @@ body {
   padding-top: 70px;
 }
 
+code {
+  color: #337ab7;
+  background-color: #F5F5F5;
+}
+
+.help {
+  position: relative;
+  bottom: 5px;
+  font-size: 8pt;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #337ab7;
+  border-width: 0;
+  border-radius: 50%;
+  box-shadow: 0.25em 0.25em 0.25em #888888;
+  width: 1.75em;
+  height: 1.75em;
+  padding: 0;
+}
+
 .nav-pills > li > a {
   padding: 5px;
 }
@@ -44,9 +64,6 @@ body {
   margin: auto;
   font-size: 120%;
   color: #337ab7;
-  position: relative;
-  top: 50%;
-  left: 50%;
   font-weight: bold;
 }
 
