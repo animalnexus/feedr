@@ -2,7 +2,7 @@
 % Please edit documentation in R/load.R
 \name{get.data}
 \alias{get.data}
-\title{Depreciated: Download data from original BirdMoves website.}
+\title{Deprecated: Download data from original BirdMoves website.}
 \usage{
 get.data(start = NULL, end = NULL,
   url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
@@ -10,6 +10,6 @@ get.data(start = NULL, end = NULL,
   tz_disp = "America/Vancouver", sites = "Kamloops")
 }
 \description{
-Depreciated use \code{\link{dl_data}} instead.
+Deprecated use \code{\link{dl_data}} instead.
 }
 

@@ -2,13 +2,13 @@
 % Please edit documentation in R/load.R
 \name{load.raw.all}
 \alias{load.raw.all}
-\title{Depreciated: Load and combine raw data files}
+\title{Deprecated: Load and combine raw data files}
 \usage{
 load.raw.all(r_dir, pattern = "DATA", tz = "America/Vancouver",
   tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
   extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1)
 }
 \description{
-Depreciated, see \code{\link{load_raw_all}}.
+Deprecated, see \code{\link{load_raw_all}}.
 }
 

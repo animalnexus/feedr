@@ -2,13 +2,13 @@
 % Please edit documentation in R/load.R
 \name{load.raw}
 \alias{load.raw}
-\title{Depreciated: Load raw read data}
+\title{Deprecated: Load raw read data}
 \usage{
 load.raw(r_file, tz = "America/Vancouver", tz_disp = NULL,
   feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL,
   extra_name = NULL, sep = "", skip = 1)
 }
 \description{
-Depreciated, see \code{\link{load_raw}}.
+Deprecated, see \code{\link{load_raw}}.
 }
 

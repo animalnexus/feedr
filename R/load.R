@@ -139,9 +139,9 @@ load_raw <- function(r_file,
     } else message("Empty file skipped: ", r_file)
 }
 
-#'  Depreciated: Load raw read data
+#'  Deprecated: Load raw read data
 #'
-#'  Depreciated, see \code{\link{load_raw}}.
+#'  Deprecated, see \code{\link{load_raw}}.
 #'
 #' @export
 load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1){
@@ -231,9 +231,9 @@ load_raw_all <- function(r_dir,
   return(r)
 }
 
-#' Depreciated: Load and combine raw data files
+#' Deprecated: Load and combine raw data files
 #'
-#' Depreciated, see \code{\link{load_raw_all}}.
+#' Deprecated, see \code{\link{load_raw_all}}.
 #'
 #' @export
 load.raw.all <- function(r_dir,
@@ -369,9 +369,9 @@ dl_data <- function(start = NULL,
   return(r)
 }
 
-#' Depreciated: Download data from original BirdMoves website.
+#' Deprecated: Download data from original BirdMoves website.
 #'
-#' Depreciated use \code{\link{dl_data}} instead.
+#' Deprecated use \code{\link{dl_data}} instead.
 #'
 #' @export
 get.data <- function(start = NULL,
@@ -414,11 +414,11 @@ load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, time_format = "y
   # Make sure all factors are factors:
   if(any(names(r) == "bird_id")) {
     r <- dplyr::rename(r, animal_id = bird_id)
-    message("Renaming 'bird_id' to 'animal_id'. Use of 'bird_id' is now depreciated.")
+    message("Renaming 'bird_id' to 'animal_id'. Use of 'bird_id' is now deprecated.")
   }
   if(any(names(r) == "feeder_id")) {
     r <- dplyr::rename(r, logger_id = feeder_id)
-    message("Renaming 'feeder_id' to 'logger_id'. Use of 'feeder_id' is now depreciated.")
+    message("Renaming 'feeder_id' to 'logger_id'. Use of 'feeder_id' is now deprecated.")
   }
   if(any(names(r) == "animal_id")) r$animal_id <- as.factor(r$animal_id)
   if(any(names(r) == "logger_id")) r$logger_id <- as.factor(r$logger_id)
@@ -445,9 +445,9 @@ load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, time_format = "y
   return(r)
 }
 
-#' Depreciated: Internal function: Format data
+#' Deprecated: Internal function: Format data
 #'
-#' Depreciated use \code{\link{load_format}} instead.
+#' Deprecated use \code{\link{load_format}} instead.
 #'
 #' @export
 load.format <- function(r, tz, tz_disp = NULL) {
