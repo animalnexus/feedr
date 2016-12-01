@@ -127,7 +127,7 @@ load_raw <- function(r_file,
       # Reorder columns
       cols <- names(r)[names(r) %in% c("animal_id", "time", "logger_id", "lat", "lon")]
       r <- dplyr::select_(r, .dots = cols) %>%
-        dplyr::arrange(animal_id, time)
+        dplyr::arrange(time, animal_id)
 
       # Get any extra columns by matching patterns in file name as specified by extra_pattern and extra_name
       if(!is.null(extra_pattern)){
