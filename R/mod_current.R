@@ -79,7 +79,7 @@ mod_map_current <- function(input, output, session, db) {
   if(!is.null(db)){
     con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
     suppressWarnings({
-      feeders_all <- dbGetQuery(con,
+      loggers_all <- dbGetQuery(con,
                                 statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
                                                   "FROM feeders, fieldsites",
                                                   "WHERE (fieldsites.site_name = feeders.site_name)")) %>%
@@ -127,11 +127,11 @@ mod_map_current <- function(input, output, session, db) {
           data <- data %>%
             load_format(., tz = "UTC", tz_disp = "America/Vancouver") %>%
             visits(.) %>%
-            dplyr::group_by(bird_id, feeder_id, species, age, sex, lon, lat) %>%
+            dplyr::group_by(animal_id, logger_id, species, age, sex, lon, lat) %>%
             dplyr::summarize(most_recent = max(end),
-                             n = length(bird_id),
+                             n = length(animal_id),
                              time = round(sum(end - start)/60, 2)) %>%
-            dplyr::group_by(feeder_id) %>%
+            dplyr::group_by(logger_id) %>%
             dplyr::do(circle(point = unique(.[, c("lat", "lon")]), data = ., radius = 0.01))
         } else data <- NULL
       })
@@ -147,15 +147,15 @@ mod_map_current <- function(input, output, session, db) {
     req(current())
     cat("Initializing map of current activity (", as.character(Sys.time()), ") ...\n")
     isolate({
-      d <- feeders_all %>% dplyr::filter(site_name == "Kamloops, BC")
+      d <- loggers_all %>% dplyr::filter(site_name == "Kamloops, BC")
       map <- map_leaflet_base(locs = d) %>%
         leaflet::addScaleBar(position = "bottomright") %>%
         leaflet::addAwesomeMarkers(data = current(),
                                    icon = ~sp_icons[species],
                                    popup = ~paste0("<div class = \"current\">",
-                                                   feedr:::get_image(current(), bird_id, 100),
+                                                   get_image(current(), animal_id, 100),
                                                    "<strong>Species:</strong> ", species, "<br>",
-                                                   "<strong>Bird ID:</strong> ", bird_id, "<br>",
+                                                   "<strong>Animal ID:</strong> ", animal_id, "<br>",
                                                    "<strong>No. RFID reads:</strong> ", n, "<br>",
                                                    "<strong>Total time:</strong> ", time, "min <br>",
                                                    "<strong>Most recent visit:</strong> ", most_recent, "<br>",
@@ -180,10 +180,10 @@ mod_map_current <- function(input, output, session, db) {
         leaflet::addAwesomeMarkers(data = current(),
                                    icon = ~sp_icons[species],
                                    popup = ~paste0("<strong>Species:</strong> ", species, "<br>",
-                                                   "<strong>Bird ID:</strong> ", bird_id, "<br>",
+                                                   "<strong>Animal ID:</strong> ", animal_id, "<br>",
                                                    "<strong>No. RFID reads:</strong> ", n, "<br>",
                                                    "<strong>Total time:</strong> ", time, "min <br>",
-                                                   feedr:::get_image(current(), bird_id, 100)),
+                                                   get_image(current(), animal_id, 100)),
                                    lng = ~lon, lat = ~lat, group = "Activity")
 
     } else {
@@ -197,9 +197,9 @@ mod_map_current <- function(input, output, session, db) {
     req(current())
     paste0("<strong>Time:</strong> ", Sys.time(), "<br>",
            "<strong>Interval:</strong> 7 minutes", "<br>",
-           "<strong>No. birds:</strong> ", length(unique(current()$bird_id)), "<br>",
-           "<strong>No. feeders:</strong> ", length(unique(current()$feeder_id)), "<br>",
-           "<strong>Total feeding time:</strong> ", sum(current()$time), " minutes", "<br>"
+           "<strong>No. animals:</strong> ", length(unique(current()$animal_id)), "<br>",
+           "<strong>No. loggers:</strong> ", length(unique(current()$logger_id)), "<br>",
+           "<strong>Total time present:</strong> ", sum(current()$time), " minutes", "<br>"
     )
   })
 

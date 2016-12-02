@@ -2,13 +2,13 @@
 % Please edit documentation in R/housekeeping.R
 \name{check_problems}
 \alias{check_problems}
-\title{Check for and correct odd bird ids}
+\title{Check for and correct odd animal ids}
 \usage{
 check_problems(r, problems)
 }
 \arguments{
 \item{r}{Data frame. A data frame of read data, with at least column
-\code{bird_id}.}
+\code{animal_id}.}
 
 \item{problems}{Character or Data frame. Either the name and location of a
 .csv file containing the problem index or a data frame of the problem
@@ -20,7 +20,7 @@ A data frame with corrected ids. Messages are printed to inform the
   user of any corrections made.
 }
 \description{
-This function compares the bird ids in your data file to those in a problem
+This function compares the animal ids in your data file to those in a problem
 index file. Any ids matched will be replaced with the corrected value in the
 problem index.
 }

@@ -9,7 +9,7 @@ visits(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE,
 }
 \arguments{
 \item{r}{Dataframe. Contains raw reads from an RFID reader with colums
-\code{bird_id}, \code{feeder_id}, \code{time}.}
+\code{animal_id}, \code{logger_id}, \code{time}.}
 
 \item{bw}{Numerical. The minimum interval, in seconds, between reads for two
 successive reads to be considered separate visits.}
@@ -26,13 +26,13 @@ them to the output.}
 \item{allow.imp, na.rm}{Depreciated.}
 }
 \value{
-A data frame with visits specifying \code{bird_id} and
-  \code{feeder_id} as well as the \code{start} and \code{end} of the visit.
-  Any extra columns that are unique at the level of bird_id or feeder_id will
-  also be passed through (i.e. age, sex, feeder location, etc.).
+A data frame with visits specifying \code{animal_id} and
+  \code{logger_id} as well as the \code{start} and \code{end} of the visit.
+  Any extra columns that are unique at the level of animal_id or logger_id will
+  also be passed through (i.e. age, sex, logger location, etc.).
 }
 \description{
-Raw data from RFID feeders contain multiple reads per individual simply
+Raw data from RFID loggers contain multiple reads per individual simply
 because the individual sat there long enough. In \code{visits()} these reads
 are collapsed into one visit.
 }
@@ -40,13 +40,13 @@ are collapsed into one visit.
 Visits are defined by three pieces of data:
 \itemize{
 \item How much time has passed between reads (\code{bw})
-\item A change in identity between two successive reads (\code{bird_id})
-\item A change in feeder for a single individual (\code{feeder_id})
+\item A change in identity between two successive reads (\code{animal_id})
+\item A change in logger for a single individual (\code{logger_id})
 }
 
 The function will return an error if impossible visits are detected (unless
-  \code{allow_imp = TRUE}) . A visit is deemed impossible if a single bird
-  travels between feeders in less time than specified by \code{bw}.
+  \code{allow_imp = TRUE}) . A visit is deemed impossible if a single animal
+  travels between loggers in less time than specified by \code{bw}.
 }
 \examples{
 v <- visits(finches)

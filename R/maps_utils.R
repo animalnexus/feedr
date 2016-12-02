@@ -48,10 +48,10 @@ rename_locs <- function(d) {
 get_locs <- function(d) {
   lat <- c("lat", "latitude")
   lon <- c("lon", "long", "longitude")
-  if(any(lat %in% names(d)) & any(lon %in% names(d)) & "feeder_id" %in% names(d)) {
+  if(any(lat %in% names(d)) & any(lon %in% names(d)) & "logger_id" %in% names(d)) {
     if(sum(lat %in% names(d)) > 1 | sum(lon %in% names(d)) > 1) stop(paste0("Muliple latitude or longitudes in data possible. Looking for latitude (", paste0(lat, collapse = ", "), ") or longitude (", paste0(lon, collapse = ", "),")"))
     d <- rename_locs(d)
-    locs <- d[ , c("feeder_id", "lat", "lon")]
+    locs <- d[ , c("logger_id", "lat", "lon")]
     return(locs)
   } else return(data.frame())
 }

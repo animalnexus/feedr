@@ -2,63 +2,64 @@
 % Please edit documentation in R/activity.R
 \name{activity}
 \alias{activity}
-\title{Calculate activity from feeding data}
+\title{Activity}
 \usage{
-activity(f, res = 15, by_feeder = FALSE, missing = NULL, sun = TRUE,
-  keep_all = FALSE, pass = TRUE)
+activity(p, res = 15, by_logger = FALSE, missing = NULL, sun = TRUE,
+  keep_all = FALSE, pass = TRUE, f)
 }
 \arguments{
-\item{f}{Dataframe. A feeding bout data frame (may contain multiple bird_ids). From
-the output of \code{feeding}. Must contain columns \code{bird_id},
-\code{feeder_id}, \code{feed_start}, and \code{feed_end}.}
+\item{p}{Dataframe. A \code{\link{presence}} data frame (may contain multiple
+animal_ids).}
 
 \item{res}{Character. The resolution over which to calculate activity. Should
 be in the format of "15 min" or "1 hour", etc.}
 
-\item{by_feeder}{Logical. Should the activity be calculated overall, or
-individually for each feeder visited? If there is only one feeder,
-by_feeder will automatically revert to TRUE to enable passing of
-feeder-related variables.}
+\item{by_logger}{Logical. Should the activity be calculated overall, or
+individually for each logger visited? If there is only one logger,
+by_logger will automatically revert to TRUE to enable passing of
+logger-related variables.}
 
 \item{missing}{Data frame. (NOT AVAILABLE) If there are known times for a
-particular feeder for which activity can't be recorded (i.e. times during
-which a feeder was inactive).}
+particular logger for which activity can't be recorded (i.e. times during
+which a logger was inactive).}
 
-\item{sun}{Logical. Calculate sun rise/set? If by_feeder = FALSE, returns
-median sun rise/set across all feeders for each day.}
+\item{sun}{Logical. Calculate sun rise/set? If by_logger = FALSE, returns
+median sun rise/set across all loggers for each day.}
 
 \item{keep_all}{Logical. Keep all individuals, even ones with less than 24hrs of data.}
 
 \item{pass}{Logical. Pass 'extra' columns through the function and append them to the output.}
+
+\item{f}{Depreciated. Use \code{p}.}
 }
 \description{
-This function will take feeding bouts and calculate activity status (active
-vs. inactive) at a resolution of \code{res}.
+Calculate activity status (active vs. inactive) at a resolution of \code{res}
+from \code{\link{presence}} data.
 }
 \details{
-A message will alert you to when the \code{res} is larger than the 50\% of the
-feeding bouts. This may result in missed feeding bouts, and it may be better
-to choose a smaller \code{res}.
+A message will alert you to when the \code{res} is larger than the 50\% of
+the presence bout lengths. This may result in missed activity, and it may be
+better to choose a smaller \code{res}.
 
 The \code{missing} data frame should have columns \code{start} and \code{end}
 corresponding to the start and end times of the missing data. Any activity between
 those start/end times will be scored as unknown, regardless of the
-\code{feeder_id}. However, if \code{by_feeder} is TRUE, \code{missing} may
-also include the column \code{feeder_id}. In this case, only activity for the
-feeder with the missing start/end times will be scored as unknown. If
-\code{by_feeder} is TRUE but \code{missing} does not contain the column
-\code{feeder_id}, all activity between the start and end times will be scored
-as unknown, regardless of the feeder. See examples.
+\code{logger_id}. However, if \code{by_logger} is TRUE, \code{missing} may
+also include the column \code{logger_id}. In this case, only activity for the
+logger with the missing start/end times will be scored as unknown. If
+\code{by_logger} is TRUE but \code{missing} does not contain the column
+\code{logger_id}, all activity between the start and end times will be scored
+as unknown, regardless of the logger. See examples.
 }
 \examples{
 
 v <- visits(chickadees)
-f <- feeding(v)
-a <- activity(f, res = 1)
+p <- presence(v)
+a <- activity(p, res = 1)
 
-# By feeder (may take a while)
+# By logger (may take a while)
 \dontrun{
-a <- activity(f, res = 1, by_feeder = TRUE)
+a <- activity(p, res = 1, by_logger = TRUE)
 }
 
 }

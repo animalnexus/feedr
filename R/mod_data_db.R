@@ -52,7 +52,7 @@ mod_UI_data_db <- function(id) {
              div(shinyjs::disabled(actionButton(ns("map_update"), "Update map")), style = "text-align: center"),
              p(),
              leafletOutput(ns("map_data"), height = 600),
-             bsTooltip(ns("map_data"), "Circle area depicts the amount of visits recorded per site or feeder given the options selected", placement = "top"),
+             bsTooltip(ns("map_data"), "Circle area depicts the amount of visits recorded per site or logger given the options selected", placement = "top"),
              plotOutput(ns("plot_data_ggplot"),
                         brush = brushOpts(
                           id = ns("plot_data_brush"),
@@ -66,8 +66,8 @@ mod_UI_data_db <- function(id) {
       #actionButton(ns("pause"), "Pause"),
       shinyjs::hidden(div(id = ns("advanced"),
                           h3("Advanced Options"),
-                          uiOutput(ns("UI_data_bird_id")),
-                          uiOutput(ns("UI_data_feeder_id"))))
+                          uiOutput(ns("UI_data_animal_id")),
+                          uiOutput(ns("UI_data_logger_id"))))
     )
   )
 }
@@ -92,10 +92,10 @@ mod_data_db <- function(input, output, session, db) {
       cat("Connecting to server...\n")
       con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
 
-      setProgress(value = 0.15, detail = "Getting feeder data..")
-      cat("Getting feeder data...\n")
+      setProgress(value = 0.15, detail = "Getting logger data..")
+      cat("Getting logger data...\n")
       #   incProgress(1/5)
-      feeders_all <- dbGetQuery(con, statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
+      loggers_all <- dbGetQuery(con, statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
                                                        "FROM feeders, fieldsites",
                                                        "WHERE (fieldsites.site_name = feeders.site_name)")) %>%
         load_format(tz = "") %>%
@@ -104,21 +104,21 @@ mod_data_db <- function(input, output, session, db) {
       setProgress(value = 0.30, detail = "Getting site data..")
       cat("Getting site data...\n")
       #    incProgress(2/5)
-      sites_all <- feeders_all %>%
+      sites_all <- loggers_all %>%
         dplyr::group_by(site_name) %>%
         dplyr::summarize(lon = mean(lon), lat = mean(lat), dataaccess = unique(dataaccess)) %>%
         dplyr::mutate(site_name = factor(site_name))
 
-      setProgress(value = 0.45, detail = "Getting bird data..")
-      cat("Getting bird data...\n")
+      setProgress(value = 0.45, detail = "Getting animal data..")
+      cat("Getting animal data...\n")
       #  incProgress(3/5)
 
-      birds_all <- dbGetQuery(con, statement = paste("SELECT bird_id, species, site_name, age, sex, tagged_on FROM birds",
+      animals_all <- dbGetQuery(con, statement = paste("SELECT bird_id, species, site_name, age, sex, tagged_on FROM birds",
                                                       "WHERE birds.species NOT IN ('XXXX')")) %>%
         load_format(tz = "") %>%
         dplyr::mutate(species = factor(species),
                       site_name = factor(site_name),
-                      bird_id = factor(bird_id))
+                      animal_id = factor(animal_id))
 
       setProgress(value = 0.60, detail = "Getting sample information..")
       cat("Getting sample information...\n")
@@ -130,13 +130,13 @@ mod_data_db <- function(input, output, session, db) {
                                               "GROUP BY DATE(raw.visits.time), raw.visits.feeder_id, raw.visits.bird_id"#,
                            )) %>%
         load_format(tz = "UTC") %>%
-        dplyr::inner_join(birds_all[, c("site_name", "species", "bird_id")], by = "bird_id") %>%
+        dplyr::inner_join(animals_all[, c("site_name", "species", "animal_id")], by = "animal_id") %>%
         dplyr::mutate(date = as.Date(date),
                count = as.numeric(count),
-               species = factor(species, levels = sort(unique(birds_all$species))),
+               species = factor(species, levels = sort(unique(animals_all$species))),
                site_name = factor(site_name, levels = sort(sites_all$site_name)),
-               bird_id = factor(bird_id, levels = sort(unique(birds_all$bird_id))),
-               feeder_id = factor(feeder_id, levels = sort(unique(feeders_all$feeder_id))))
+               animal_id = factor(animal_id, levels = sort(unique(animals_all$animal_id))),
+               logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id))))
 
       dbDisconnect(con)
     })
@@ -149,8 +149,8 @@ mod_data_db <- function(input, output, session, db) {
       get_counts(counts, summarize_by = "site_name"),
       get_counts(counts, summarize_by = "species"),
       get_counts(counts, summarize_by = "date"),
-      get_counts(counts, summarize_by = "bird_id"),
-      get_counts(counts, summarize_by = "feeder_id"))
+      get_counts(counts, summarize_by = "animal_id"),
+      get_counts(counts, summarize_by = "logger_id"))
 
     })
   }
@@ -170,8 +170,8 @@ mod_data_db <- function(input, output, session, db) {
     input$data_species
     input$data_date
     input$plot_data_brush
-    input$data_bird_id
-    input$data_feeder_id
+    input$data_animal_id
+    input$data_logger_id
 
     isolate({
       values$input_previous <- values$input  ## Save old inputs
@@ -183,8 +183,8 @@ mod_data_db <- function(input, output, session, db) {
         ## Added to current selection:
         added <- list(
           "species" = setdiff(values$input$species, values$input_previous$species),
-          "bird_id" = setdiff(values$input$bird_id, values$input_previous$bird_id),
-          "feeder_id" = setdiff(values$input$feeder_id, values$input_previous$feeder_id))
+          "animal_id" = setdiff(values$input$animal_id, values$input_previous$animal_id),
+          "logger_id" = setdiff(values$input$logger_id, values$input_previous$logger_id))
         added <- added[sapply(added, length) > 0]
 
         ## Force added back in:
@@ -320,24 +320,24 @@ mod_data_db <- function(input, output, session, db) {
   })
 
 
-  ## UI bird_id
-  output$UI_data_bird_id <- renderUI({
+  ## UI animal_id
+  output$UI_data_animal_id <- renderUI({
     req(counts_species())
-    cnts <- get_counts(c = counts_species(), summarize_by = "bird_id")
-    checkboxGroupInput(ns("data_bird_id"), "Select bird ids",
-                       choices = choices(cnts, "bird_id"),
-                       selected = selected(cnts, "bird_id"), inline = TRUE)
+    cnts <- get_counts(c = counts_species(), summarize_by = "animal_id")
+    checkboxGroupInput(ns("data_animal_id"), "Select animal ids",
+                       choices = choices(cnts, "animal_id"),
+                       selected = selected(cnts, "animal_id"), inline = TRUE)
   })
 
 
 
-  ## UI feeder_id
-  output$UI_data_feeder_id <- renderUI({
+  ## UI logger_id
+  output$UI_data_logger_id <- renderUI({
     req(counts_species())
-    cnts <- get_counts(c = counts_species(), summarize_by = "feeder_id")
-    checkboxGroupInput(ns("data_feeder_id"), "Select feeder ids",
-                       choices = choices(cnts, "feeder_id"),
-                       selected = selected(cnts, "feeder_id"), inline = TRUE)
+    cnts <- get_counts(c = counts_species(), summarize_by = "logger_id")
+    checkboxGroupInput(ns("data_logger_id"), "Select logger ids",
+                       choices = choices(cnts, "logger_id"),
+                       selected = selected(cnts, "logger_id"), inline = TRUE)
   })
 
   ## Toggle advanced options
@@ -348,8 +348,8 @@ mod_data_db <- function(input, output, session, db) {
   ## Render UIs even when hidden
   outputOptions(output, 'UI_data_species', suspendWhenHidden = FALSE)
   outputOptions(output, 'UI_data_date', suspendWhenHidden = FALSE)
-  outputOptions(output, 'UI_data_bird_id', suspendWhenHidden = FALSE)
-  outputOptions(output, 'UI_data_feeder_id', suspendWhenHidden = FALSE)
+  outputOptions(output, 'UI_data_animal_id', suspendWhenHidden = FALSE)
+  outputOptions(output, 'UI_data_logger_id', suspendWhenHidden = FALSE)
 
   ####################
   ## Get DATA
@@ -377,7 +377,7 @@ mod_data_db <- function(input, output, session, db) {
                    data <- dbGetQuery(con,
                                       statement = paste0("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time ",
                                                          "FROM raw.visits ",
-                                                         "WHERE raw.visits.bird_id IN ( '", paste0(unique(d$bird_id), collapse = "', '"), "' ) ",
+                                                         "WHERE raw.visits.bird_id IN ( '", paste0(unique(d$animal_id), collapse = "', '"), "' ) ",
                                                          dates
                                       ))
                  )
@@ -388,10 +388,10 @@ mod_data_db <- function(input, output, session, db) {
       cat("Formatting selected data...")
       data <- data %>%
         load_format(., tz = "") %>%
-        dplyr::mutate(bird_id = factor(bird_id, levels = sort(unique(birds_all$bird_id))),
-               feeder_id = factor(feeder_id, levels = sort(unique(feeders_all$feeder_id)))) %>%
-        dplyr::left_join(birds_all, by = c("bird_id")) %>%
-        dplyr::left_join(feeders_all, by = c("feeder_id", "site_name"))
+        dplyr::mutate(animal_id = factor(animal_id, levels = sort(unique(animals_all$animal_id))),
+               logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id)))) %>%
+        dplyr::left_join(animals_all, by = c("animal_id")) %>%
+        dplyr::left_join(loggers_all, by = c("logger_id", "site_name"))
     } else data <- NULL
 
     return(data)
@@ -423,7 +423,7 @@ mod_data_db <- function(input, output, session, db) {
         addScaleBar(position = "bottomright") %>%
         setView(lng = -98.857903, lat = 21.363297, zoom = 2) %>%
         addCircleMarkers(data = s, lng = ~lon, lat = ~lat, group = "Points",
-                         radius = ~feedr:::scale_area(sum, val_min = 0),
+                         radius = ~scale_area(sum, val_min = 0),
                          fillOpacity = 0.7,
                          fillColor = "orange")
   })
@@ -443,23 +443,23 @@ mod_data_db <- function(input, output, session, db) {
       addCircleMarkers(data = suppressWarnings(get_counts(counts, summarize_by = "site_name") %>% dplyr::left_join(sites_all, by = c("choices" = "site_name"))),
                        lng = ~lon, lat = ~lat,
                        group = "Points",
-                       radius = ~feedr:::scale_area(sum, val_min = 0),
+                       radius = ~scale_area(sum, val_min = 0),
                        fillOpacity = 0.7,
                        fillColor = "orange")
   })
 
 
-  # Update map feeder sites automatically on site selection
+  # Update map logger sites automatically on site selection
   observeEvent(input$data_site_name, {
     req(!is.null(db), input$data_site_name != "")
     cat("Updating markers...\n")
-    f <- feeders_all[feeders_all$site_name == input$data_site_name, ]
+    f <- loggers_all[loggers_all$site_name == input$data_site_name, ]
     if(nrow(f) > 0) {
       if(unique(f$site_name) == "Kamloops, BC") zoom <- 17
       if(unique(f$site_name) == "Costa Rica") zoom <- 12
       leafletProxy(ns("map_data")) %>%
         clearGroup(group = "Sites") %>%
-        addMarkers(data = f, lng = ~lon, lat = ~lat, group = "Sites", popup = ~htmltools::htmlEscape(feeder_id)) %>%
+        addMarkers(data = f, lng = ~lon, lat = ~lat, group = "Sites", popup = ~htmltools::htmlEscape(logger_id)) %>%
         setView(lat = mean(f$lat, na.rm = TRUE), lng = mean(f$lon, na.rm = TRUE), zoom = zoom, options = list('animate' = TRUE))
     }
   }, priority = 50)
@@ -486,15 +486,15 @@ mod_data_db <- function(input, output, session, db) {
           })
         } else {
           suppressWarnings(
-            s <- get_counts(c, summarize_by = "feeder_id") %>%
-              dplyr::left_join(feeders_all, by = c("choices" = "feeder_id"))
+            s <- get_counts(c, summarize_by = "logger_id") %>%
+              dplyr::left_join(loggers_all, by = c("choices" = "logger_id"))
           )
         }
         s <- s[s$sum > 0, ]
         leafletProxy(ns("map_data")) %>%
           clearGroup(group = "Points") %>%
           addCircleMarkers(data = s, lng = ~lon, lat = ~lat, group = "Points",
-                           radius = ~feedr:::scale_area(sum, val_min = 0),
+                           radius = ~scale_area(sum, val_min = 0),
                            fillOpacity = 0.7,
                            fillColor = "orange")
       } else {
@@ -507,7 +507,7 @@ mod_data_db <- function(input, output, session, db) {
 
   ## GGPLOT: Plot of counts overtime
   plot_data_ggplot <- reactive({
-    #req(startup(input), !is.null(db), input$data_bird_id, input$data_feeder_id)
+    #req(startup(input), !is.null(db), input$data_animal_id, input$data_logger_id)
     req(startup(input), !is.null(db), values$input)
     cat("Refreshing Time Plot...\n")
 
@@ -519,8 +519,8 @@ mod_data_db <- function(input, output, session, db) {
                       selected = replace(selected,
                                          species %in% i$species &
                                            date %within% interval(as.Date(i$date[1]), as.Date(i$date[2])) &
-                                           bird_id %in% i$bird_id &
-                                           feeder_id %in% i$feeder_id,
+                                           animal_id %in% i$animal_id &
+                                           logger_id %in% i$logger_id,
                                          "selected")) %>%
         dplyr::group_by(species, date, selected) %>%
         dplyr::summarize(count = sum(count))

@@ -18,7 +18,7 @@
 # ui_animate <- function(v, verbose = FALSE) {
 # 
 #   # Check for correct formatting
-#   check_name(v, c("bird_id", "feeder_id", "start", "end"))
+#   check_name(v, c("animal_id", "logger_id", "start", "end"))
 #   check_time(v)
 #   check_format(v)
 # 
@@ -36,7 +36,7 @@
 
 ui_animate <-  function(v, verbose = FALSE) {
   # Check for correct formatting
-  check_name(v, c("bird_id", "feeder_id", "start", "end"))
+  check_name(v, c("animal_id", "logger_id", "start", "end"))
   check_time(v)
   check_format(v)
   
@@ -64,7 +64,7 @@ mod_UI_map_animate <- function(id) {
     ),
     column(8,
            feedr:::mod_UI_maps_leaflet(ns("map")),
-           feedr:::mod_UI_maps_time(ns("setup_time"), type = "Feeding/Movement events")
+           feedr:::mod_UI_maps_time(ns("setup_time"), type = "Presence/Movement events")
     )
   )
 }
@@ -91,14 +91,14 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
              data_total = data_total, verbose = verbose)
 
   data <- reactive({
-    req(f_instant())
-    if(nrow(m_avg()) == 0) d <- list(feeding = f_instant()) else d <- list(feeding = f_instant(), movements = m_instant())
+    req(p_instant())
+    if(nrow(m_avg()) == 0) d <- list(presence = p_instant()) else d <- list(presence = p_instant(), movements = m_instant())
     return(d)
     })
 
   data_total <- reactive({
-    req(f_data())
-    if(nrow(m_avg()) == 0) d <- list(feeding = f_data()) else d <- list(feeding = f_data(), movements = m_data())
+    req(p_data())
+    if(nrow(m_avg()) == 0) d <- list(presence = p_data()) else d <- list(presence = p_data(), movements = m_data())
     return(d)
     })
 
@@ -115,91 +115,91 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
     move(v())
   })
   
-  f <- reactive({
+  p <- reactive({
     req(v())
-    f <- feeding(v())
-    ## Fix one visit feeding bouts (technically length == 0)
-    f$feed_length[f$feed_length == 0] <- 3/60
-    return(f)
+    p <- presence(v())
+    ## Fix one visit presence bouts (technically length == 0)
+    p$length[p$length == 0] <- 3/60
+    return(p)
   })
 
-  ## Summarize movements and feeding
+  ## Summarize movements and presence
   samples <- reactive({
-    req(f(), m())
-    f() %>%
-      dplyr::group_by(bird_id) %>%
-      dplyr::summarize(feed = length(feed_length)) %>%
+    req(p(), m())
+    p() %>%
+      dplyr::group_by(animal_id) %>%
+      dplyr::summarize(presence = length(length)) %>%
       dplyr::full_join(m() %>%
-                         dplyr::group_by(bird_id) %>%
+                         dplyr::group_by(animal_id) %>%
                          dplyr::summarize(move = floor(length(direction) / 2)),
-                       by = "bird_id") %>%
+                       by = "animal_id") %>%
       dplyr::mutate(move = replace(move, is.na(move), 0))
   })
 
-  ## Subselections - Get bird ID
-  f_id <- reactive({
-    req(f(), summary$bird_id())
-    validate(need(sum(names(f()) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
-    if(verbose) cat("Feeder ID: \n")
+  ## Subselections - Get animal ID
+  p_id <- reactive({
+    req(p(), summary$animal_id())
+    validate(need(sum(names(p()) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
+    if(verbose) cat("Logger ID: \n")
 
-    if(summary$bird_id() == "all") {
+    if(summary$animal_id() == "all") {
       if(verbose) cat("  all\n")
-      f_id <- f()
+      p_id <- p()
     } else {
-      req(summary$bird_id() %in% samples()$bird_id)
+      req(summary$animal_id() %in% samples()$animal_id)
       if(verbose) cat("  indiv\n")
-      f_id <- f() %>% dplyr::filter(bird_id == summary$bird_id())
+      p_id <- p() %>% dplyr::filter(animal_id == summary$animal_id())
     }
-    return(f_id)
+    return(p_id)
   })
 
   m_id <- reactive({
-    req(m(), summary$bird_id())
+    req(m(), summary$animal_id())
     if(nrow(m()) > 0) validate(need(sum(names(m()) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
     if(verbose) cat("Movements ID: \n")
 
-    if(summary$bird_id() == "all"){
+    if(summary$animal_id() == "all"){
       if(verbose) cat("  all\n")
       m_id <- m()
     } else {
-      req(summary$bird_id() %in% samples()$bird_id)
+      req(summary$animal_id() %in% samples()$animal_id)
       if(verbose) cat("  indiv\n")
-      m_id <- m() %>% dplyr::filter(bird_id == summary$bird_id())
+      m_id <- m() %>% dplyr::filter(animal_id == summary$animal_id())
     }
     return(m_id)
   })
 
-  ## Get ranges (don't depend on f_id/m_id, as those are updated, breaks() will be updated, so best to THEN activate
-  f_avg <- reactive({
+  ## Get ranges (don't depend on p_id/m_id, as those are updated, breaks() will be updated, so best to THEN activate
+  p_avg <- reactive({
     req(controls$breaks(), summary$summary())
-    #req(summary$bird_id() %in% unique(f$bird_id))
+    #req(summary$animal_id() %in% unique(p$animal_id))
     isolate({
-      req(controls$tz(), f_id())
-      if(verbose) cat("Feed avg: ")
-      withProgress(message = "Updating intervals", detail = "Feeding bouts", {
-        f_avg <- f_id() %>%
-          dplyr::filter(feed_start >= min(controls$breaks()) & feed_end <= max(controls$breaks())) %>%
-          dplyr::mutate(block = as.POSIXct(cut(feed_start, breaks = controls$breaks(), include.lowest = TRUE), tz = controls$tz())) %>%
-          dplyr::group_by(block, feeder_id, lat, lon)
+      req(controls$tz(), p_id())
+      if(verbose) cat("Presence avg: ")
+      withProgress(message = "Updating intervals", detail = "Presence", {
+        p_avg <- p_id() %>%
+          dplyr::filter(start >= min(controls$breaks()) & end <= max(controls$breaks())) %>%
+          dplyr::mutate(block = as.POSIXct(cut(start, breaks = controls$breaks(), include.lowest = TRUE), tz = controls$tz())) %>%
+          dplyr::group_by(block, logger_id, lat, lon)
 
         if(summary$summary() == "sum") {
           if(verbose) cat("sum\n")
-          f_avg <- dplyr::summarize(f_avg,
-                                    amount = sum(feed_length),
-                                    n = length(feed_length))
+          p_avg <- dplyr::summarize(p_avg,
+                                    amount = sum(length),
+                                    n = length(length))
         } else if(summary$summary() == "sum_indiv") {
           if(verbose) cat("sum_indiv\n")
-          f_avg <- dplyr::summarize(f_avg,
-                                    amount = sum(feed_length) / length(unique(bird_id)),
-                                    n = length(feed_length))
+          p_avg <- dplyr::summarize(p_avg,
+                                    amount = sum(length) / length(unique(animal_id)),
+                                    n = length(length))
         } #else if(summary$summary() == "total_indiv"){
           #if(verbose) cat("total_indiv\n")
-          #f_avg <- dplyr::summarize(f_avg,
-          #                          amount = length(unique(bird_id)))
+          #p_avg <- dplyr::summarize(p_avg,
+          #                          amount = length(unique(animal_id)))
         #}
-        f_avg <- dplyr::ungroup(f_avg)
+        p_avg <- dplyr::ungroup(p_avg)
       })
-      return(f_avg)
+      return(p_avg)
     })
   })
 
@@ -209,22 +209,22 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
       req(controls$tz(), m_id())
       if(verbose) cat("Movement avg: ")
       withProgress(message = "Updating intervals", detail = "Movements", {
-        #req(summary$bird_id() %in% unique(m$bird_id))
+        #req(summary$animal_id() %in% unique(m$animal_id))
         m_avg <- m_id()
         if(nrow(m_avg) > 0) {
           m_avg <- m_avg %>%
-            dplyr::mutate(move_id = paste0(bird_id, "_", move_id)) %>%
+            dplyr::mutate(move_id = paste0(animal_id, "_", move_id)) %>%
             dplyr::group_by(move_id) %>%
             dplyr::mutate(block = as.POSIXct(cut(time[direction == "arrived"], breaks = controls$breaks(), include.lowest = TRUE), tz = controls$tz())) %>%
             dplyr::ungroup() %>%
             dplyr::filter(!is.na(block)) %>%
-            dplyr::group_by(block, feeder_id, lat, lon, move_path)
+            dplyr::group_by(block, logger_id, lat, lon, move_path)
           if(summary$summary() == "sum") {
             if(verbose) cat("sum\n")
             m_avg <- dplyr::summarize(m_avg, path_use = length(move_path))
           } else if(summary$summary() == "sum_indiv") {
             if(verbose) cat("sum_indiv\n")
-            m_avg <- dplyr::summarize(m_avg, path_use = length(move_path) / length(unique(bird_id)))
+            m_avg <- dplyr::summarize(m_avg, path_use = length(move_path) / length(unique(animal_id)))
           }
           m_avg <- dplyr::ungroup(m_avg)
         } else {
@@ -236,16 +236,16 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
   })
 
   ## Get multiple data sets corresponding to all instants
-  f_data <- reactive({
-    req(f_avg(), summary$type()) #cumulative vs. instant
-    if(verbose) cat("Feed data\n")
-    withProgress(message = "Updating intervals", detail = "Feeding intervals", {
-      f_data <- tibble::tibble(block = isolate(controls$breaks())) %>%
+  p_data <- reactive({
+    req(p_avg(), summary$type()) #cumulative vs. instant
+    if(verbose) cat("Presence data\n")
+    withProgress(message = "Updating intervals", detail = "Presence intervals", {
+      p_data <- tibble::tibble(block = isolate(controls$breaks())) %>%
         dplyr::group_by(block) %>%
-        dplyr::do(sub = prep_feeding(x = f_avg(), y = ., type = summary$type())) %>%
+        dplyr::do(sub = prep_presence(x = p_avg(), y = ., type = summary$type())) %>%
         dplyr::ungroup()
     })
-    return(f_data)
+    return(p_data)
   })
 
   m_data <- reactive({
@@ -260,13 +260,13 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
   })
 
   ## Get data corresponding to specific instant
-  f_instant <- reactive({
-    req(f_data(), instant())
+  p_instant <- reactive({
+    req(p_data(), instant())
     isolate({
       req(as.numeric(instant()) %in% controls$breaks())
-      req(as.numeric(instant()) %in% f_data()$block)
-      if(verbose) cat("Feed instant\n")
-      f_data()$sub[[which(f_data()$block == instant())]]
+      req(as.numeric(instant()) %in% p_data()$block)
+      if(verbose) cat("Presence instant\n")
+      p_data()$sub[[which(p_data()$block == instant())]]
     })
   })
 
@@ -282,19 +282,19 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
 
   ## Total time range
   t_id <- reactive({
-    req(m_id(), f_id())
+    req(m_id(), p_id())
     if(verbose) cat("Times ID\n")
-    sort(lubridate::with_tz(c(f_id()$feed_start, f_id()$feed_end), tz = lubridate::tz(f_id()$feed_start)))
+    sort(lubridate::with_tz(c(p_id()$start, p_id()$end), tz = lubridate::tz(p_id()$start)))
   })
 
   ## Summary for time figure
   events <- reactive({
-    req(f_avg(), m_avg(), any(nrow(m_avg()) > 0, nrow(f_avg()) > 0))
+    req(p_avg(), m_avg(), any(nrow(m_avg()) > 0, nrow(p_avg()) > 0))
 
     if(verbose) cat("Events\n")
 
     if(nrow(m_avg()) == 0) {
-      m_events <- f_avg() %>%
+      m_events <- p_avg() %>%
         dplyr::select(block) %>%
         dplyr::mutate(type = "Movements",
                       n = 0)
@@ -307,9 +307,9 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
         dplyr::ungroup()
     }
 
-    f_avg() %>%
+    p_avg() %>%
       dplyr::select(block, n) %>%
-      dplyr::mutate(type = "Feeding") %>%
+      dplyr::mutate(type = "Presence") %>%
       dplyr::bind_rows(m_events) %>%
       dplyr::group_by(block, type) %>%
       dplyr::summarize(n = sum(n)) %>%

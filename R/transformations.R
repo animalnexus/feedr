@@ -1,22 +1,22 @@
 #' Visits
 #'
-#' Raw data from RFID feeders contain multiple reads per individual simply
+#' Raw data from RFID loggers contain multiple reads per individual simply
 #' because the individual sat there long enough. In \code{visits()} these reads
 #' are collapsed into one visit.
 #'
 #' Visits are defined by three pieces of data:
 #' \itemize{
 #' \item How much time has passed between reads (\code{bw})
-#' \item A change in identity between two successive reads (\code{bird_id})
-#' \item A change in feeder for a single individual (\code{feeder_id})
+#' \item A change in identity between two successive reads (\code{animal_id})
+#' \item A change in logger for a single individual (\code{logger_id})
 #' }
 #'
 #' The function will return an error if impossible visits are detected (unless
-#'   \code{allow_imp = TRUE}) . A visit is deemed impossible if a single bird
-#'   travels between feeders in less time than specified by \code{bw}.
+#'   \code{allow_imp = TRUE}) . A visit is deemed impossible if a single animal
+#'   travels between loggers in less time than specified by \code{bw}.
 #'
 #' @param r Dataframe. Contains raw reads from an RFID reader with colums
-#'   \code{bird_id}, \code{feeder_id}, \code{time}.
+#'   \code{animal_id}, \code{logger_id}, \code{time}.
 #' @param bw Numerical. The minimum interval, in seconds, between reads for two
 #'   successive reads to be considered separate visits.
 #' @param allow_imp Logical. Whether impossible visits should be allowed (see
@@ -27,10 +27,10 @@
 #'   them to the output.
 #' @param allow.imp,na.rm Depreciated.
 #'
-#' @return A data frame with visits specifying \code{bird_id} and
-#'   \code{feeder_id} as well as the \code{start} and \code{end} of the visit.
-#'   Any extra columns that are unique at the level of bird_id or feeder_id will
-#'   also be passed through (i.e. age, sex, feeder location, etc.).
+#' @return A data frame with visits specifying \code{animal_id} and
+#'   \code{logger_id} as well as the \code{start} and \code{end} of the visit.
+#'   Any extra columns that are unique at the level of animal_id or logger_id will
+#'   also be passed through (i.e. age, sex, logger location, etc.).
 #'
 #' @examples
 #' v <- visits(finches)
@@ -62,12 +62,12 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 
 
   # Confirm that expected columns and formats are present
-  check_name(r, n = c("bird_id", "feeder_id", "time"), "raw RFID")
+  check_name(r, n = c("animal_id", "logger_id", "time"), "raw RFID")
   check_time(r, n = "time", internal = FALSE)
   check_format(r)
 
   # Check for NAs, remove if specified by na_rm = TRUE
-  if(any(is.na(r[, c("bird_id", "feeder_id", "time")]))){
+  if(any(is.na(r[, c("animal_id", "logger_id", "time")]))){
     if(na_rm == FALSE) stop("NAs found. To automatically remove NAs, specify 'na_rm = TRUE'.")
     if(na_rm == TRUE) r <- r[rowSums(is.na(r)) == 0,]
   }
@@ -75,8 +75,8 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
   ## Make factors and get date
   r <- dplyr::mutate(r,
                      date = as.Date(time),
-                     feeder_id = factor(feeder_id),
-                     bird_id = factor(bird_id))
+                     logger_id = factor(logger_id),
+                     animal_id = factor(animal_id))
 
   # Grab unique extra cols
   if(pass == TRUE) extra <- keep_extra(r, n = "time")
@@ -84,37 +84,37 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
   # Grab the timezone
   tz <- attr(r$time, "tzone")
 
-  # Get spacing between visits, whether same bird or not, and whether same feeder or not
+  # Get spacing between visits, whether same animal or not, and whether same logger or not
   r <- r[order(r$time),]
   diff_time <- difftime(r$time[-1], r$time[-nrow(r)], units = "sec") > bw
-  diff_bird <- r$bird_id[-nrow(r)] != r$bird_id[-1]
-  diff_feeder <- r$feeder_id[-nrow(r)] != r$feeder_id[-1]
+  diff_animal <- r$animal_id[-nrow(r)] != r$animal_id[-1]
+  diff_logger <- r$logger_id[-nrow(r)] != r$logger_id[-1]
 
-  # Check for impossible combos: where less than bw, still the same bird, but a different feeder
+  # Check for impossible combos: where less than bw, still the same animal, but a different logger
   if(!allow_imp) {
-    impos <- which(rowSums(matrix(c(!diff_time, !diff_bird, diff_feeder), ncol = 3)) > 2)
+    impos <- which(rowSums(matrix(c(!diff_time, !diff_animal, diff_logger), ncol = 3)) > 2)
     impos <- r[unique(c(impos, impos + 1)), ]
     if(nrow(impos) > 0) {
-      impos <- impos[order(impos$bird_id, impos$time), ]
+      impos <- impos[order(impos$animal_id, impos$time), ]
       end <- "hellow"
       rows <- nrow(impos)
       if(nrow(impos) > 5) {
         rows <- 5
         end <- "\n..."
       }
-      stop("Impossible visits found, no specification for how to handle.\nTime between reads is less than 'bw' (", bw, "s) for a single individual, yet the\nreads occur at different feeders. You should fix, remove or\nallow (allow_imp = TRUE) these rows and try again.\n\n", paste0(capture.output(impos[1:rows, ]), collapse = "\n"))
+      stop("Impossible visits found, no specification for how to handle.\nTime between reads is less than 'bw' (", bw, "s) for a single individual, yet the\nreads occur at different loggers. You should fix, remove or\nallow (allow_imp = TRUE) these rows and try again.\n\n", paste0(capture.output(impos[1:rows, ]), collapse = "\n"))
     }
   }
   # Start if
   # - time before is greater than 'bw' OR
-  # - bird before is not the same OR
-  # - feeder before is not the same
+  # - animal before is not the same OR
+  # - logger before is not the same
   # End if
   # - time after is great than 'bw' OR
-  # - bird after is not the same OR
-  # - feeder after is not the same
+  # - animal after is not the same OR
+  # - logger after is not the same
 
-  new_visit <- apply(cbind(diff_time, diff_bird, diff_feeder), 1, any)
+  new_visit <- apply(cbind(diff_time, diff_animal, diff_logger), 1, any)
   r$end <- r$start <- as.POSIXct(NA, tz = tz)
   r$start[c(TRUE, new_visit)] <- r$time[c(TRUE, new_visit)]
   r$end[c(new_visit, TRUE)] <- r$time[c(new_visit, TRUE)]
@@ -122,17 +122,17 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
   # Get visits
   v <- r %>%
     dplyr::filter(!(is.na(start) & is.na(end))) %>%
-    dplyr::select(feeder_id, bird_id, start, end) %>%
+    dplyr::select(logger_id, animal_id, start, end) %>%
     tidyr::gather(variable, value, start, end) %>%
     dplyr::filter(!is.na(value)) %>%
     dplyr::arrange(value) %>%
-    dplyr::group_by(feeder_id, bird_id, variable) %>%
+    dplyr::group_by(logger_id, animal_id, variable) %>%
     dplyr::mutate(n = 1:length(value)) %>%
     tidyr::spread(variable, value) %>%
     dplyr::select(-n) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(bird_n = length(unique(bird_id)),         # Get sample sizes
-                  feeder_n = length(unique(feeder_id)),
+    dplyr::mutate(animal_n = length(unique(animal_id)),         # Get sample sizes
+                  logger_n = length(unique(logger_id)),
                   date = as.Date(start))
 
   # Set timezone attributes
@@ -141,8 +141,8 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 
   # Order data frame
   v <- v %>%
-    dplyr::select(bird_id, date, start, end, feeder_id, bird_n, feeder_n) %>%
-    dplyr::arrange(bird_id, start)
+    dplyr::select(animal_id, date, start, end, logger_id, animal_n, logger_n) %>%
+    dplyr::arrange(animal_id, start)
 
   # Add in extra variables
   if(pass == TRUE) v <- merge_extra(v, extra)
@@ -153,26 +153,26 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 
 #' Movements between loggers
 #'
-#' Turns visits to mulitple feeders into movements between feeders
+#' Turns visits to mulitple loggers into movements between loggers
 #'
-#' @param v Dataframe. A visits data frame (may contain multiple bird_ids). From
-#'   the output of \code{visits}. Must contain columns \code{bird_id},
-#'   \code{feeder_id}, \code{start}, and \code{end}.
-#' @param all Logical. Should all bird_ids be returned, even if the bird made no
+#' @param v Dataframe. A visits data frame (may contain multiple animal_ids). From
+#'   the output of \code{visits}. Must contain columns \code{animal_id},
+#'   \code{logger_id}, \code{start}, and \code{end}.
+#' @param all Logical. Should all animal_ids be returned, even if the animal made no
 #'   movements? If TRUE, a data frame with NAs for all columns except
-#'   \code{bird_id} will be returned, if FALSE, an empty data frame will be
+#'   \code{animal_id} will be returned, if FALSE, an empty data frame will be
 #'   returned.
 #' @param pass Logical. Pass 'extra' columns through the function and append
 #'   them to the output.
 #'
 #' @return A data frame of movements. These are defined as the bout of time from
-#'   leaving one feeder to arriving at a second one. Each movement bout consists
+#'   leaving one logger to arriving at a second one. Each movement bout consists
 #'   of two rows of data containing:
 #'   \itemize{
-#'   \item ID of the bird (\code{bird_id})
+#'   \item ID of the animal (\code{animal_id})
 #'   \item Date of event (\code{date})
 #'   \item Time of event (\code{time})
-#'   \item The ID of feeders involved (\code{feeder_id})
+#'   \item The ID of loggers involved (\code{logger_id})
 #'   \item The movement path including direction (\code{move_dir})
 #'   \item The movement path independent of direction (\code{move_path})
 #'   \item The 'strength' of the connection (inverse of time taken to move
@@ -191,7 +191,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 #' library(dplyr)
 #'
 #' m.totals <- m %>%
-#'   group_by(bird_id, move_path) %>%
+#'   group_by(animal_id, move_path) %>%
 #'   summarize(n_path = length(move_path) /2)
 #'
 #' # Calculate across different experiments:
@@ -211,59 +211,59 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 move <- function(v, all = FALSE, pass = TRUE){
 
   # Check for correct formatting
-  check_name(v, c("bird_id", "feeder_id", "date", "start", "end"))
+  check_name(v, c("animal_id", "logger_id", "date", "start", "end"))
   check_time(v)
   check_format(v)
 
   # Get factor levels for whole dataset
-  if(is.factor(v$bird_id)) bird_id <- levels(v$bird_id) else bird_id <- unique(v$bird_id)
-  if(is.factor(v$feeder_id)) feeder_id <- levels(v$feeder_id) else feeder_id <- unique(v$feeder_id)
+  if(is.factor(v$animal_id)) animal_id <- levels(v$animal_id) else animal_id <- unique(v$animal_id)
+  if(is.factor(v$logger_id)) logger_id <- levels(v$logger_id) else logger_id <- unique(v$logger_id)
 
   # Remove factors to allow silent joins between different levels
-  v$bird_id <- as.character(v$bird_id)
-  v$feeder_id <- as.character(v$feeder_id)
+  v$animal_id <- as.character(v$animal_id)
+  v$logger_id <- as.character(v$logger_id)
 
   # Get extra columns
   if(pass == TRUE) extra <- keep_extra(v, n = c("start", "end"))
 
   # Get movement options
-  move_dir <- expand.grid(feeder_left = feeder_id, feeder_arrived = feeder_id)
-  move_dir <- move_dir[move_dir$feeder_left != move_dir$feeder_arrived,]
-  move_dir <- paste0(move_dir$feeder_left, "_", move_dir$feeder_arrived)
+  move_dir <- expand.grid(logger_left = logger_id, logger_arrived = logger_id)
+  move_dir <- move_dir[move_dir$logger_left != move_dir$logger_arrived,]
+  move_dir <- paste0(move_dir$logger_left, "_", move_dir$logger_arrived)
   move_path <- unique(sapply(move_dir, FUN = mp))
 
-  # Apply individually to each bird
+  # Apply individually to each animal
   m <- v %>%
-    dplyr::group_by(bird_id) %>%
+    dplyr::group_by(animal_id) %>%
     dplyr::do(move_single(., move_dir = move_dir, move_path = move_path, all = all)) %>%
     dplyr::ungroup()
 
   if(nrow(m) > 0){
     # Order
     m <- m %>%
-      dplyr::select(bird_id, date, time, feeder_id, direction, move_id, move_dir, move_path, strength) %>%
-      dplyr::arrange(bird_id, time)
+      dplyr::select(animal_id, date, time, logger_id, direction, move_id, move_dir, move_path, strength) %>%
+      dplyr::arrange(animal_id, time)
 
     # Add in extra cols
     if(pass == TRUE) m <- merge_extra(m, extra)
 
     # Apply factors
-    m$feeder_id <- factor(m$feeder_id, levels = feeder_id)
+    m$logger_id <- factor(m$logger_id, levels = logger_id)
   }
-  m$bird_id <- factor(m$bird_id, levels = bird_id)
+  m$animal_id <- factor(m$animal_id, levels = animal_id)
 
   return(m)
 }
 
-# Movement function for single bird
+# Movement function for single animal
 move_single <- function(v1, move_dir, move_path, all = FALSE){
 
-  if(length(unique(v1$feeder_id)) > 1) { # Only proceed if there are actual data!
+  if(length(unique(v1$logger_id)) > 1) { # Only proceed if there are actual data!
 
     # If there are movements, calculate events
-    v1 <- v1[, c("bird_id", "date", "start", "end", "feeder_id")]
+    v1 <- v1[, c("animal_id", "date", "start", "end", "logger_id")]
     v1 <- v1[order(v1$start),]
-    diff <- v1$feeder_id[-1] != v1$feeder_id[-nrow(v1)]
+    diff <- v1$logger_id[-1] != v1$logger_id[-nrow(v1)]
     v1$arrived <- v1$left <- FALSE
     v1$left[c(diff, FALSE)] <- TRUE
     v1$arrived[c(FALSE, diff)] <- TRUE
@@ -277,18 +277,18 @@ move_single <- function(v1, move_dir, move_path, all = FALSE){
                     (direction == "left" & type == "end")) %>%
       dplyr::select(-value, -type) %>%
       dplyr::arrange(time) %>%
-      dplyr::mutate(move_id = sort(rep(1:(length(bird_id)/2),2))) %>%
+      dplyr::mutate(move_id = sort(rep(1:(length(animal_id)/2),2))) %>%
       dplyr::group_by(move_id) %>%
-      dplyr::mutate(move_dir = factor(paste0(feeder_id, collapse = "_"), levels = move_dir),
-                    move_path = factor(paste0(sort(feeder_id), collapse = "_"), levels = move_path),
+      dplyr::mutate(move_dir = factor(paste0(logger_id, collapse = "_"), levels = move_dir),
+                    move_path = factor(paste0(sort(logger_id), collapse = "_"), levels = move_path),
                     strength = 1 / as.numeric(difftime(time[direction == "arrived"], time[direction == "left"], units = "hours"))) %>%
       dplyr::ungroup()
   } else if (all == TRUE) {
-    # Create the movement data frame for birds that didn't move between feeders
-    m <- tibble::data_frame(bird_id = v1$bird_id[1],
+    # Create the movement data frame for animals that didn't move between loggers
+    m <- tibble::data_frame(animal_id = v1$animal_id[1],
                             date = as.Date(NA),
                             time = as.POSIXct(NA),
-                            feeder_id = as.character(NA),
+                            logger_id = as.character(NA),
                             direction = as.character(NA),
                             move_id = as.numeric(NA),
                             move_dir = factor(NA, levels = move_dir),
@@ -303,41 +303,47 @@ move_single <- function(v1, move_dir, move_path, all = FALSE){
 
 #' Presence at a logger
 #'
-#' Turns visits at mulitple feeders into feeding bouts. Feeding bouts are
-#' separated by switching feeders (when \code{bw = NULL}). If \code{bw} is not
-#' \code{NULL}, they are separated by switching feeders or by \code{bw} minutes.
+#' Turns multiple visits at specific loggers into overall presence events.
+#' Presence is different from a visit in that a visit is considered a specific
+#' period of time in which the individual was in range of a logger to the
+#' exclusion of others. In contrast, presence reflects a period of time where
+#' the individual was making regular visits to the logger but not necessarily in
+#' range at all times, or to the exclusion of other individuals. Presence can be
+#' considered a less precise 'smoothing' of the data.
+#' 
+#' The start and end of a period of presence is determined by either switching
+#' loggers (when \code{bw = NULL}) or by both switching loggers and by a cutoff
+#' time of \code{bw} minutes.
 #'
 #'
-#' @param v Dataframe. A visits data frame from the output of \code{visits} (may
-#'   contain more than one bird_id). Must contain columns \code{bird_id},
-#'   \code{feeder_id}, \code{start}, and \code{end}.
-#' @param bw Numeric. The minimum number of minutes between visits for two
-#'   successive visits to be considered separate feeding bouts. When \code{bw} =
-#'   NULL only visits to another feeder are scored as a separate feeding bout.
+#' @param v Dataframe. A visits data frame from the output of \code{\link{visits}} (may
+#'   contain more than one animal_id). Must contain columns \code{animal_id},
+#'   \code{logger_id}, \code{start}, and \code{end}.
+#' @param bw Numeric. The maximum number of minutes between visits for them to
+#'   be considered the same event. When \code{bw} = NULL only
+#'   visits to another logger are scored as a separate event.
 #' @param pass Logical. Pass 'extra' columns through the function and append
 #'   them to the output.
 #'
-#' @return A data frame of feeding bouts. A feeding bout is defined as the bout
-#'   of time spent making regular visits to a feeder, in which each visit
-#'   occurrred within some cutoff time of the last. This data frame has the
-#'   following columns:
+#' @return A data frame of presence events. This data frame has the following
+#'   columns:
 #'   \itemize{
-#'   \item ID of the bird (\code{bird_id})
-#'   \item ID of the feeder(\code{feeder_id})
-#'   \item Time of the start of the feeding bout (\code{feed_start})
-#'   \item Time of the end of the feeding bout (\code{feed_end})
+#'   \item ID of the animal (\code{animal_id})
+#'   \item ID of the logger(\code{logger_id})
+#'   \item Time of the start of the event (\code{start})
+#'   \item Time of the end of the event (\code{end})
 #'   }
 #'
 #' @examples
 #'
 #' v <- visits(finches)
-#' f <- feeding(v)
+#' p <- presence(v)
 #'
-#' # Summarize a movement dataframe (get total time spent feeding)
+#' # Summarize a movement dataframe (get total time present per logger per animal)
 #' library(dplyr)
-#' f.totals <- f %>%
-#'     group_by(bird_id, feeder_id) %>%
-#'     summarize(feed_length = sum(feed_length))
+#' p_totals <- p %>%
+#'     group_by(animal_id, logger_id) %>%
+#'     summarize(length = sum(length))
 #'
 #' # Calculate across different experiments (expect warnings about unequal factor levels):
 #' library(dplyr)
@@ -346,107 +352,108 @@ move_single <- function(v1, move_dir, move_path, all = FALSE){
 #'   group_by(experiment) %>%
 #'   do(visits(.))
 #'
-#' f <- v %>%
+#' p <- v %>%
 #'   group_by(experiment) %>%
-#'   do(feeding(.))
+#'   do(presence(.))
 #'
 #'
 #' @export
 
-feeding <- function(v, bw = 15, pass = TRUE){
+presence <- function(v, bw = 15, pass = TRUE){
 
   ## Check for correct formatting
-  check_name(v, c("bird_id","feeder_id", "date", "start","end"))
+  check_name(v, c("animal_id","logger_id", "date", "start", "end"))
   check_time(v)
   check_format(v)
 
-
   # Get factor levels for whole dataset
-  if(is.factor(v$bird_id)) bird_id <- levels(v$bird_id) else bird_id <- unique(v$bird_id)
-  if(is.factor(v$feeder_id)) feeder_id <- levels(v$feeder_id) else feeder_id <- unique(v$feeder_id)
+  if(is.factor(v$animal_id)) animal_id <- levels(v$animal_id) else animal_id <- unique(v$animal_id)
+  if(is.factor(v$logger_id)) logger_id <- levels(v$logger_id) else logger_id <- unique(v$logger_id)
 
   # Remove factors for now
-  v$bird_id <- as.character(v$bird_id)
-  v$feeder_id <- as.character(v$feeder_id)
+  v$animal_id <- as.character(v$animal_id)
+  v$logger_id <- as.character(v$logger_id)
 
   # Keep extra cols
   if(pass == TRUE) extra <- keep_extra(v, n = c("start", "end"))
 
   # Calculate for each individual
-  f <- v %>%
-    dplyr::group_by(bird_id) %>%
-    dplyr::do(feeding_single(., bw = bw)) %>%
+  p <- v %>%
+    dplyr::group_by(animal_id) %>%
+    dplyr::do(presence_single(., bw = bw)) %>%
     dplyr::ungroup()
 
   # Get extra columns and add in
-  if(pass == TRUE) f <- merge_extra(f, extra)
-  f <- f[order(f$bird_id, f$feed_start, f$feeder_id), ]
+  if(pass == TRUE) p <- merge_extra(p, extra)
+  p <- p[order(p$animal_id, p$start, p$logger_id), ]
 
   # Apply factors
-  f$bird_id <- factor(f$bird_id, levels = bird_id)
-  f$feeder_id <- factor(f$feeder_id, levels = feeder_id)
+  p$animal_id <- factor(p$animal_id, levels = animal_id)
+  p$logger_id <- factor(p$logger_id, levels = logger_id)
 
-  return(f)
+  return(p)
 }
 
 
-# Calculate feeding bouts for single bird
-feeding_single <- function(v1, bw = bw){
+# Calculate presence bouts for single animal
+presence_single <- function(v1, bw = bw){
 
   v1 <- v1[order(v1$start),]
-  diff_feeder <- v1$feeder_id[-1] != v1$feeder_id[-nrow(v1)]
-  v1$feed_end <- v1$feed_start <- FALSE
+  v1$start_orig <- v1$start
+  v1$end_orig <- v1$end
+  diff_logger <- v1$logger_id[-1] != v1$logger_id[-nrow(v1)]
+  v1$end <- v1$start <- FALSE
 
   if(!is.null(bw)){
-    diff_time <- difftime(v1$start[-1], v1$end[-nrow(v1)], units = "min")
-    v1$feed_start[c(TRUE, (diff_time > bw | diff_feeder))] <- TRUE
-    v1$feed_end[c((diff_time > bw | diff_feeder), TRUE)] <- TRUE
+    diff_time <- difftime(v1$start_orig[-1], v1$end_orig[-nrow(v1)], units = "min")
+    v1$start[c(TRUE, (diff_time > bw | diff_logger))] <- TRUE
+    v1$end[c((diff_time > bw | diff_logger), TRUE)] <- TRUE
   } else {
-    v1$feed_start[c(TRUE, diff_feeder)] <- TRUE
-    v1$feed_end[c(diff_feeder, TRUE)] <- TRUE
+    v1$start[c(TRUE, diff_logger)] <- TRUE
+    v1$end[c(diff_logger, TRUE)] <- TRUE
   }
 
-  ## Create the feeding data frame.
-  f <- tibble::data_frame(bird_id = v1$bird_id[1],
-                          date = as.Date(v1$start[v1$feed_start == TRUE]),
-                          feeder_id = v1$feeder_id[v1$feed_start == TRUE],
-                          feed_start = v1$start[v1$feed_start == TRUE],
-                          feed_end = v1$end[v1$feed_end == TRUE],
-                          feed_length = difftime(v1$end[v1$feed_end == TRUE], v1$start[v1$feed_start == TRUE], units = "mins"))
+  ## Create the presence data frame.
+  p <- tibble::data_frame(animal_id = v1$animal_id[1],
+                          date = as.Date(v1$start_orig[v1$start == TRUE]),
+                          logger_id = v1$logger_id[v1$start == TRUE],
+                          start = v1$start_orig[v1$start == TRUE],
+                          end = v1$end_orig[v1$end == TRUE],
+                          length = difftime(v1$end_orig[v1$end == TRUE], v1$start_orig[v1$start == TRUE], units = "mins"))
 
-  return(f)
+  return(p)
 }
 
 
 #' Displacements
 #'
 #' For an entire \code{visits} data frame, identifies displacement events.
-#' Displacements are events when one bird leaves the feeder right before the
+#' Displacements are events when one animal leaves the logger right before the
 #' arrival of another. In some species this can be used to infer dominance.
 #'
 #' The first and last visits on the record are automatically assumed to be
 #' non-displacer and non-displacee, respectively.
 #'
 #' @param v Dataframe. A visits data frame containing \strong{all} visits from
-#'   \strong{all} birds. From the output of \code{visits}. Must contain columns
-#'   \code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.
+#'   \strong{all} animals. From the output of \code{visits}. Must contain columns
+#'   \code{animal_id}, \code{logger_id}, \code{start}, and \code{end}.
 #' @param bw Numeric. The maximum interval in seconds between visits by two
-#'   different birds for the interaction to be considered a displacement.
+#'   different animals for the interaction to be considered a displacement.
 #' @param pass Logical. Pass 'extra' columns through the function and append
 #'   them to the output.
 #'
 #' @return A list with the following named items: \enumerate{ \item
 #'   \code{displacements}: A data frame of individual displacement events,
-#'   including the following columns: \itemize{ \item \code{feeder_id}: ID of
-#'   the feeder at which the event occurred \item ID of the bird being displaced
-#'   (\code{displacee}) \item ID of the bird doing the displacing
+#'   including the following columns: \itemize{ \item \code{logger_id}: ID of
+#'   the logger at which the event occurred \item ID of the animal being displaced
+#'   (\code{displacee}) \item ID of the animal doing the displacing
 #'   (\code{displacer}) \item Time of the departure of the displacee
 #'   (\code{left}) \item Time of the arrival of the displacer (\code{arrived}) }
 #'
 #'   \item \code{summaries}: A data frame of overall wins/lossess per
 #'   individual, containing the following columns: \itemize{ \item ID of the
-#'   bird (\code{bird_id}) \item No. of times the bird was displaced
-#'   (\code{displacee}) \item No. of times the bird was a displacer
+#'   animal (\code{animal_id}) \item No. of times the animal was displaced
+#'   (\code{displacee}) \item No. of times the animal was a displacer
 #'   (\code{displacer}) \item Proportion of wins (\code{p_win}) } \item
 #'   \code{interactions}: A data frame of interaction summaries, containing the
 #'   following columns: \itemize{ \item ID of the displacee (\code{displacee})
@@ -497,13 +504,13 @@ feeding_single <- function(v1, bw = bw){
 disp <- function(v, bw = 5, pass = TRUE){
 
   ## Check for correct formatting
-  check_name(v, c("bird_id", "feeder_id", "date", "start", "end"))
+  check_name(v, c("animal_id", "logger_id", "date", "start", "end"))
   check_time(v)
   check_format(v)
 
   # Get factor levels for whole dataset
-  if(is.factor(v$bird_id)) bird_id <- levels(v$bird_id) else bird_id <- unique(v$bird_id)
-  if(is.factor(v$feeder_id)) feeder_id <- levels(v$feeder_id) else feeder_id <- unique(v$feeder_id)
+  if(is.factor(v$animal_id)) animal_id <- levels(v$animal_id) else animal_id <- unique(v$animal_id)
+  if(is.factor(v$logger_id)) logger_id <- levels(v$logger_id) else logger_id <- unique(v$logger_id)
 
   v <- v[order(v$start), ]
 
@@ -511,16 +518,16 @@ disp <- function(v, bw = 5, pass = TRUE){
   if(pass == TRUE) extra <- keep_extra(v, n = c("start", "end"))
 
   ## Define displacee and displacer by
-  #  (a) whether subsequent visit was a different bird, AND
-  #  (b) the arrival of the 2nd bird occurred within 'bw' seconds of the
+  #  (a) whether subsequent visit was a different animal, AND
+  #  (b) the arrival of the 2nd animal occurred within 'bw' seconds of the
   #      departure of the 1st
-  #  (c) all of this occurs at the same feeder
-  diff_bird <- v$bird_id[-1] != v$bird_id[-nrow(v)]
+  #  (c) all of this occurs at the same logger
+  diff_animal <- v$animal_id[-1] != v$animal_id[-nrow(v)]
   diff_time <- difftime(v$start[-1], v$end[-nrow(v)], units = "sec") < bw
-  diff_feeder <- v$feeder_id[-1] == v$feeder_id[-nrow(v)]
+  diff_logger <- v$logger_id[-1] == v$logger_id[-nrow(v)]
 
-  d <- rbind(v[c(diff_bird & diff_time & diff_feeder, FALSE), c("bird_id", "feeder_id", "date", "start", "end")],
-             v[c(FALSE, diff_bird & diff_time & diff_feeder), c("bird_id", "feeder_id", "date", "start", "end")])
+  d <- rbind(v[c(diff_animal & diff_time & diff_logger, FALSE), c("animal_id", "logger_id", "date", "start", "end")],
+             v[c(FALSE, diff_animal & diff_time & diff_logger), c("animal_id", "logger_id", "date", "start", "end")])
 
   if(nrow(d) == 0) stop(paste0("There are no displacement events with a bw = ", bw, ", stopping now"))
 
@@ -528,39 +535,39 @@ disp <- function(v, bw = 5, pass = TRUE){
   d$role <- c("displacee", "displacer")
   d <- d[order(d$role, d$start), ]
 
-  d$left <- rep(v$end[c(diff_bird & diff_time & diff_feeder, FALSE)], 2)
-  d$arrived <- rep(v$start[c(FALSE, diff_bird & diff_time & diff_feeder)], 2)
+  d$left <- rep(v$end[c(diff_animal & diff_time & diff_logger, FALSE)], 2)
+  d$arrived <- rep(v$start[c(FALSE, diff_animal & diff_time & diff_logger)], 2)
 
-  d <- dplyr::select(d, bird_id, date, left, arrived, feeder_id, role) %>%
-    dplyr::arrange(left, feeder_id, role)
+  d <- dplyr::select(d, animal_id, date, left, arrived, logger_id, role) %>%
+    dplyr::arrange(left, logger_id, role)
 
   if(pass == TRUE) d <- merge_extra(d, extra)
 
   ## Summarize totals
   s <- d %>%
-    dplyr::group_by(role, bird_id) %>%
-    dplyr::summarize(n = length(bird_id)) %>%
-    tidyr::complete(bird_id, role, fill = list("n" = 0)) %>%
+    dplyr::group_by(role, animal_id) %>%
+    dplyr::summarize(n = length(animal_id)) %>%
+    tidyr::complete(animal_id, role, fill = list("n" = 0)) %>%
     tidyr::spread(role, n) %>%
     dplyr::mutate(p_win = displacer / (displacee + displacer)) %>%
     dplyr::arrange(desc(p_win))
 
   ## Summarize interactions
   t <- d %>%
-    dplyr::select(left, bird_id, role) %>%
-    tidyr::spread(role, bird_id) %>%
+    dplyr::select(left, animal_id, role) %>%
+    tidyr::spread(role, animal_id) %>%
     dplyr::group_by(displacer, displacee) %>%
     dplyr::summarize(n = length(displacee)) %>%
     dplyr::ungroup()
 
-  t$displacee <- factor(t$displacee, levels = bird_id)
-  t$displacer <- factor(t$displacer, levels = bird_id)
+  t$displacee <- factor(t$displacee, levels = animal_id)
+  t$displacer <- factor(t$displacer, levels = animal_id)
 
   t <- t %>%
     tidyr::complete(displacer, displacee, fill = list("n" = 0)) %>%
     dplyr::filter(displacee != displacer)
 
-  t <- t[order(match(t$displacer, s$bird_id)),]  ##Sort according to the p_win value from s
+  t <- t[order(match(t$displacer, s$animal_id)),]  ##Sort according to the p_win value from s
 
   return(list("displacements" = d, "summaries" = s, "interactions" = t))
 }
@@ -655,7 +662,7 @@ dom <- function(d, tries = 50, omit_cutoff = 3){
     omit <- o$displacer[(o$win + o$loss) < omit_cutoff]
     o <- o[!(o$displacer %in% omit), ]
     d <- d[!(d$displacee %in% omit) & !(d$displacer %in% omit), ]
-    if(length(omit) > 0) message("bird_ids with fewer than ", omit_cutoff, " interactions have been omitted: ", paste0(omit, collapse = ", "))
+    if(length(omit) > 0) message("animal_ids with fewer than ", omit_cutoff, " interactions have been omitted: ", paste0(omit, collapse = ", "))
   }
 
   if(nrow(o[(o$win + o$loss) <= 2, ]) / nrow(o) > 0.5) message("More than 50% of your interactions (", round(nrow(d[d$n == 0, ]) / nrow(d)*100), "%) have 2 or fewer observations, this matrix may be founded on too little data.")

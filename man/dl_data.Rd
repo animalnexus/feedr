@@ -7,7 +7,7 @@
 dl_data(start = NULL, end = NULL,
   url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
   logger_details = c("loc"), animal_details = c("species"),
-  tz_disp = "America/Vancouver")
+  tz_disp = "America/Vancouver", feeder_details, bird_details)
 }
 \arguments{
 \item{start}{Character. This is the start date (with or without time) for the
@@ -31,6 +31,10 @@ details about the animals to download. Use NULL to download no extra columns.}
 
 \item{tz_disp}{Character vector. Timezone data should be displayed in (should match one of
 the zones produced by \code{OlsonNames()})}
+
+\item{feeder_details}{Deprecated. Use logger_details in stead}
+
+\item{bird_details}{Deprecated. Use animal_details instead.}
 }
 \description{
 This function uses RCurl to submit an HTML form and retrieve the csv file.

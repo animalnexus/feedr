@@ -50,7 +50,7 @@ shinyUI(
                         div(class = "alert", id = "loading_app", "Please wait while the app loads..."),
 
                         hr(),
-                        h4(style = "text-align:center", "Current activity at feeders on Thompson Rivers University Campus")),
+                        h4(style = "text-align:center", "Current activity at RFID-enabled feeders on Thompson Rivers University Campus")),
                       fluidRow(
                         column(10, offset = 1,
                                div(style = "max-width: 800px; margin-left: auto; margin-right:auto;", feedr:::mod_UI_map_current("current"))
@@ -74,14 +74,14 @@ shinyUI(
                      )
             ),
             #################
-            ## BIRDS
+            ## INDIVIDUALS
             #################
             tabPanel("Individuals",
                      column(9,
-                            fluidRow(DT::dataTableOutput("dt_birds"))),
+                            fluidRow(DT::dataTableOutput("dt_animals"))),
                      column(3,
                             h4("Click on a row for more information"),
-                            htmlOutput("img_birds", class = "bird-img"))
+                            htmlOutput("img_animals", class = "animal-img"))
             ),
             #################
             ## DATA

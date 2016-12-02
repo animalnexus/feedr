@@ -1,4 +1,4 @@
-experiment,feeder_name ,lat,lon
+experiment,logger_name,lat,lon
 exp2,GR10,53.89086,-122.81933
 exp2,GR11,53.88999,-122.82098
 exp2,GR12,53.88997,-122.81934

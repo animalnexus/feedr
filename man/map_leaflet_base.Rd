@@ -4,7 +4,7 @@
 \alias{map_leaflet_base}
 \title{Base map for leaflet}
 \usage{
-map_leaflet_base(locs, marker = "feeder_id", controls = TRUE,
+map_leaflet_base(locs, marker = "logger_id", controls = TRUE,
   minZoom = NULL, maxZoom = 18)
 }
 \description{

@@ -27,6 +27,7 @@
 #'   in the file name or from the first line of the file. An NA value matches file name
 #'   (extension omitted) or first line of the file. See \code{details}
 #'   parameter.
+#' @param feeder_pattern Deprecated. Use logger_pattern.
 #' @param time_format Character. The time format of the 'time' column. Defaults
 #'   to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
 #'   function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
@@ -72,7 +73,15 @@ load_raw <- function(r_file,
                      extra_pattern = NULL, 
                      extra_name = NULL,
                      sep = "", 
-                     skip = 0) {
+                     skip = 0,
+                     feeder_pattern) {
+  
+  if (!missing(feeder_pattern)) {
+    warning("Argument feeder_pattern is deprecated; please use logger_pattern instead.",
+            call. = FALSE)
+    logger_pattern <- feeder_pattern
+  }
+  
 
   if(length(r_file) > 1) stop("r_file can only be length 1, the file name.")
   if(!is.character(r_file)) stop("r_file must be character")
@@ -183,6 +192,7 @@ load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
 #'   1 (first line) or 2 (first two lines). See 'details'.
 #' @param logger_pattern Character. A regular expression matching the logger id
 #'   in the file name.
+#' @param feeder_pattern Deprecated. Use logger_pattern instead.
 #' @param time_format Character. The time format of the 'time' column. Defaults
 #'   to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
 #'   function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
@@ -209,7 +219,14 @@ load_raw_all <- function(r_dir,
                          extra_pattern = NULL,
                          extra_name = NULL,
                          sep = "",
-                         skip = 0) {
+                         skip = 0, 
+                         feeder_pattern) {
+  
+  if (!missing(feeder_pattern)) {
+    warning("Argument feeder_pattern is deprecated; please use logger_pattern instead.",
+            call. = FALSE)
+    logger_pattern <- feeder_pattern
+  }
   
   if(!missing(r_dir)) {
     # Get file locations (match pattern and get all subfiles)
@@ -296,8 +313,10 @@ load.raw.all <- function(r_dir,
 #' @param logger_details Character vector. This specifies extra columns with
 #'   details about the loggers to download. Use NULL to download no extra
 #'   columns.
+#' @param feeder_details Deprecated. Use logger_details in stead
 #' @param animal_details Character vector. This specifies extra columns with
 #'   details about the animals to download. Use NULL to download no extra columns.
+#' @param bird_details Deprecated. Use animal_details instead.
 #' @param tz_disp Character vector. Timezone data should be displayed in (should match one of
 #'   the zones produced by \code{OlsonNames()})
 #'
@@ -318,12 +337,25 @@ load.raw.all <- function(r_dir,
 #'
 #' @export
 dl_data <- function(start = NULL,
-                     end = NULL,
-                     url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
-                     logger_details = c("loc"),
-                     animal_details = c("species"),
-                     tz_disp = "America/Vancouver") {
+                    end = NULL,
+                    url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
+                    logger_details = c("loc"),
+                    animal_details = c("species"),
+                    tz_disp = "America/Vancouver",
+                    feeder_details, bird_details) {
 
+  if (!missing(feeder_details)) {
+    warning("Argument feeder_details is deprecated; please use logger_details instead.",
+            call. = FALSE)
+    logger_details <- feeder_details
+  }
+  
+  if (!missing(bird_details)) {
+    warning("Argument bird_details is deprecated; please use animal_details instead.",
+            call. = FALSE)
+    animal_details <- bird_details
+  }
+  
   # Get data from website in GMT, if tz not in selection, then convert later
   if(!(tz_disp %in% c("America/Vancouver", "GMT"))) {
     tz <- "GMT"

@@ -44,7 +44,7 @@ mod_UI_figures <- function(id) {
 #' @import magrittr
 #' @import ggplot2
 #' @export
-mod_figures <- function(input, output, session, r, v, f, m) {
+mod_figures <- function(input, output, session, r, v, p, m) {
 
   ns <- session$ns
 
@@ -59,7 +59,7 @@ mod_figures <- function(input, output, session, r, v, f, m) {
     } else {
       d <- visits(r)
       if(input$data == "Visits") d <- dplyr::rename(d, time = start)
-      if(input$data == "Feeding Bouts") d <- feeding(d) %>% dplyr::rename(d, time = feed_start)
+      if(input$data == "Feeding Bouts") d <- presence(d) %>% dplyr::rename(d, time = start)
       if(input$data == "Movements") d <- move(d)
     }
     d
@@ -69,9 +69,9 @@ mod_figures <- function(input, output, session, r, v, f, m) {
   output$UI_var_y <- renderUI({
     req(data(), input$data)
 
-    if(input$data == "Raw RDIF Reads") c <- c("Total Birds", "Total Reads", "Total Feeders")
-    if(input$data == "Visits") c <- c("Avg. Visit Duration", "Total Birds", "Total Visits", "Total Feeders", "Total Visit Duration")
-    if(input$data == "Feeding Bouts") c <- c("Avg. Feeding Duration", "Total Birds", "Total Feeding Bouts", "Total Feeders", "Total Feeding Duration")
+    if(input$data == "Raw RDIF Reads") c <- c("Total Animals", "Total Reads", "Total Loggerss")
+    if(input$data == "Visits") c <- c("Avg. Visit Duration", "Total Animals", "Total Visits", "Total Loggers", "Total Visit Duration")
+    if(input$data == "Presence") c <- c("Avg. Presence Duration", "Total Animals", "Total # times Present", "Total Loggers", "Total Presence Duration")
     if(input$data == "Movements") c <- c("Total Movements")
 
     selectizeInput(ns("var_y"), label = "Plot:",
@@ -80,7 +80,7 @@ mod_figures <- function(input, output, session, r, v, f, m) {
 
   output$UI_var_x <- renderUI({
     req(data(), input$data)
-    c <- c("Time" = "time", "Date" = "date", "Species" = "species", "Age" = "age", "Sex" = "sex", "Bird ID" = "bird_id", "Feeder ID" = "feeder_id")
+    c <- c("Time" = "time", "Date" = "date", "Species" = "species", "Age" = "age", "Sex" = "sex", "Animal ID" = "animal_id", "Logger ID" = "logger_id")
     if(input$data == "Movements") c <- c(c, "Path", "Path/Direction")
 
     selectizeInput(ns("var_x"), label = "By:",
@@ -89,7 +89,7 @@ mod_figures <- function(input, output, session, r, v, f, m) {
 
   output$UI_var_fill <- renderUI({
     req(data())
-    c <- c("None" = "none", "Species" = "species", "Age" = "age", "Sex" = "sex", "Bird ID" = "bird_id", "Feeder ID" = "feeder_id")
+    c <- c("None" = "none", "Species" = "species", "Age" = "age", "Sex" = "sex", "Animal ID" = "animal_id", "Logger ID" = "logger_id")
     selectizeInput(ns("var_fill"), label = "Colour by:",
                  choices = c)
   })
@@ -97,7 +97,7 @@ mod_figures <- function(input, output, session, r, v, f, m) {
   # Which facet?
   output$UI_var_facet <- renderUI({
     req(data())
-    c <- c("None" = "none", "Species" = "species", "Age" = "age", "Sex" = "sex", "Bird ID" = "bird_id", "Feeder ID" = "feeder_id")
+    c <- c("None" = "none", "Species" = "species", "Age" = "age", "Sex" = "sex", "Animal ID" = "animal_id", "Logger ID" = "logger_id")
     radioButtons(ns("var_facet"), label = "Facet by:",
                        choices = c)
   })
@@ -123,14 +123,14 @@ mod_figures <- function(input, output, session, r, v, f, m) {
         dplyr::group_by(facet, add = TRUE)
     }
 
-    if(input$var_y == "Total Birds") d <- dplyr::summarize(d, y = length(unique(bird_id)))
-    if(input$var_y == "Total Feeders") d <- dplyr::summarize(d, y = length(unique(feeder_id)))
-    if(input$var_y %in% c("Total Reads", "Total Visits", "Total Feeding Bouts")) d <- dplyr::summarize(d, y = length(bird_id))
+    if(input$var_y == "Total Animals") d <- dplyr::summarize(d, y = length(unique(animal_id)))
+    if(input$var_y == "Total Loggers") d <- dplyr::summarize(d, y = length(unique(logger_id)))
+    if(input$var_y %in% c("Total Reads", "Total Visits", "Total Feeding Bouts")) d <- dplyr::summarize(d, y = length(animal_id))
 
     if(input$var_y == "Total Visit Duration") d <- dplyr::summarize(d, y = as.numeric(sum(difftime(end, time, units = "min"))))
-    if(input$var_y == "Total Feeding Duration") d <- dplyr::summarize(d, y = as.numeric(sum(difftime(feed_end, time, units = "min"))))
+    if(input$var_y == "Total Feeding Duration") d <- dplyr::summarize(d, y = as.numeric(sum(difftime(end, time, units = "min"))))
     if(input$var_y == "Avg. Visit Duration") d <- dplyr::summarize(d, y = as.numeric(mean(difftime(end, time, units = "min"))))
-    if(input$var_y == "Avg. Feeding Duration") d <- dplyr::summarize(d, y = as.numeric(mean(difftime(feed_end, time, units = "min"))))
+    if(input$var_y == "Avg. Feeding Duration") d <- dplyr::summarize(d, y = as.numeric(mean(difftime(end, time, units = "min"))))
 
     d
   })

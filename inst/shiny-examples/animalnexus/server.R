@@ -76,11 +76,11 @@ shinyServer(function(input, output, session) {
   r <- reactive({trans$r()})
   v <- reactive({trans$v()})
 
-  ## Feeders of current data
-  feeders <- reactive({
+  ## loggers of current data
+  loggers <- reactive({
     req(r())
     r() %>%
-      dplyr::select(feeder_id, site_name, lon, lat) %>%
+      dplyr::select(logger_id, site_name, lon, lat) %>%
       unique(.)
   })
 
@@ -101,41 +101,41 @@ shinyServer(function(input, output, session) {
   # }
 
 
-  ## Birds
-  ## Birds of current data
-  birds <- reactive({
+  ## Animals
+  ## Animals of current data
+  animals <- reactive({
     req(r())
-    cols <- names(r())[names(r()) %in% c("bird_id", "species", "age", "sex", "tagged_on", "site_name")]
+    cols <- names(r())[names(r()) %in% c("animal_id", "species", "age", "sex", "tagged_on", "site_name")]
     r() %>%
       dplyr::select_(.dots = cols) %>%
       unique(.)
   })
 
-  ## Look at birds
-  output$img_birds <- renderText({
-    req(birds())
-    # Don't actually know what STRH stands for, assuming Sapphire-throated Hummingbird
-    #paste0("<div class = \"bird-img\">",
-    feedr:::get_image(birds(), input$dt_birds_rows_selected, 300)#,
+  ## Look at animals
+  output$img_animals <- renderText({
+    req(animals())
+    # Don't actually know what STRH stands for, assuming Sapphire-throated Humminganimal
+    #paste0("<div class = \"animal-img\">",
+    feedr:::get_image(animals(), input$dt_animals_rows_selected, 300)#,
     #       "</div>")
   })
 
   ## Get only publically available data
-  birds_dl <- reactive({
-    birds()
+  animals_dl <- reactive({
+    animals()
   })
 
   msg_select <- "Please select data through the Database or by Importing"
-  output$dt_birds <- DT::renderDataTable({
+  output$dt_animals <- DT::renderDataTable({
     validate(need(try(nrow(r()) > 0, silent = TRUE), msg_select))
-    validate(need(try(nrow(birds()) > 0, silent = TRUE), "No data on individuals"))
-    req(birds())
+    validate(need(try(nrow(animals()) > 0, silent = TRUE), "No data on individuals"))
+    req(animals())
 
-    DT::datatable(birds_dl(),
+    DT::datatable(animals_dl(),
                   filter = "top",
                   options = list(pageLength = 100),
                   rownames = FALSE,
-                  colnames = gsub("_", " ", names(birds_dl())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE),
+                  colnames = gsub("_", " ", names(animals_dl())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE),
                   selection = "single")
   }, server = FALSE)
 

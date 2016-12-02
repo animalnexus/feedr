@@ -10,11 +10,11 @@ test_that("load_raw loads and formats data correctly - logger id from file name"
   expect_is(r$logger_id, "character")
   expect_is(r$time, "POSIXct")
 
-  expect_equal(r$animal_id[2], "062000014F")
+  expect_equal(r$animal_id[2], "062000038F")
   expect_equal(r$logger_id[2], "GR10")
-  expect_equal(r$time[2], as.POSIXct("2016-01-11 12:00:54", tz = "America/Vancouver"))
-  expect_equal(load_raw(f, tz = "America/Vancouver", tz_disp = "America/Toronto")$time[2], as.POSIXct("2016-01-11 15:00:54", tz = "America/Toronto"))
-  expect_equal(load_raw(f)$time[2], as.POSIXct("2016-01-11 12:00:54", tz = Sys.timezone()))
+  expect_equal(r$time[2], as.POSIXct("2016-01-11 10:48:50", tz = "America/Vancouver"))
+  expect_equal(load_raw(f, tz = "America/Vancouver", tz_disp = "America/Toronto")$time[2], as.POSIXct("2016-01-11 13:48:50", tz = "America/Toronto"))
+  expect_equal(load_raw(f)$time[2], as.POSIXct("2016-01-11 10:48:50", tz = Sys.timezone()))
 })
 
 # load_raw() - logger_id from first line
@@ -26,11 +26,11 @@ test_that("load_raw loads and formats data correctly - logger id from first line
   expect_is(r$logger_id, "character")
   expect_is(r$time, "POSIXct")
 
-  expect_equal(r$animal_id[2], "062000014F")
+  expect_equal(r$animal_id[2], "062000038F")
   expect_equal(r$logger_id[2], "GR10")
-  expect_equal(r$time[2], as.POSIXct("2016-01-11 12:00:54", tz = "America/Vancouver"))
-  expect_equal(load_raw(f, details = 1, tz = "America/Vancouver", tz_disp = "America/Toronto")$time[2], as.POSIXct("2016-01-11 15:00:54", tz = "America/Toronto"))
-  expect_equal(load_raw(f)$time[2], as.POSIXct("2016-01-11 12:00:54", tz = Sys.timezone()))
+  expect_equal(r$time[2], as.POSIXct("2016-01-11 10:48:50", tz = "America/Vancouver"))
+  expect_equal(load_raw(f, details = 1, tz = "America/Vancouver", tz_disp = "America/Toronto")$time[2], as.POSIXct("2016-01-11 13:48:50", tz = "America/Toronto"))
+  expect_equal(load_raw(f)$time[2], as.POSIXct("2016-01-11 10:48:50", tz = Sys.timezone()))
 })
 
 # load_raw() empty file
@@ -51,10 +51,10 @@ test_that("load_raw_all loads and formats data correctly", {
   expect_is(load$logger_id, "factor")
   expect_is(load$time, "POSIXct")
 
-  expect_equal(load$animal_id[1], factor("0000000000", levels =  c("0000000000", "011017A536", "011017A605", "03000314F9", "0620000062", "062000014F", "06200001F0", "06200002E7", "0620000380", "062000038D", "062000038F", "0620000392", "06200003A7", "06200003B4", "06200003C3", "06200003F3", "0620000400", "0620000418", "06200004A9", "06200004BB", "06200004BE", "06200004BF", "06200004E4", "0620000525", "07008D9E08", "0700ED9E0E", "0700EDAB15", "0700EDF012", "0700EDF015", "0700EE022B", "0700EE0E42", "0700EE1461", "0700EE1467", "0700EE147F", "0700EE1504", "0700EE19CE", "0700EE2B10", "0700EE2B11")))
+  expect_equal(load$animal_id[1], factor("06200004BF", levels =  c("0000000000", "011017A536", "011017A605", "03000314F9", "0620000062", "062000014F", "06200001F0", "06200002E7", "0620000380", "062000038D", "062000038F", "0620000392", "06200003A7", "06200003B4", "06200003C3", "06200003F3", "0620000400", "0620000418", "06200004A9", "06200004BB", "06200004BE", "06200004BF", "06200004E4", "0620000525", "07008D9E08", "0700ED9E0E", "0700EDAB15", "0700EDF012", "0700EDF015", "0700EE022B", "0700EE0E42", "0700EE1461", "0700EE1467", "0700EE147F", "0700EE1504", "0700EE19CE", "0700EE2B10", "0700EE2B11")))
   expect_equal(load$logger_id[1], factor("GR10", levels = c("GR10", "GR11", "GR12", "GR13")))
-  expect_equal(load$time[1], as.POSIXct("2016-01-11 11:34:08", tz = "America/Vancouver"))
-  expect_equal(load2$time[1], as.POSIXct("2016-01-11 14:34:08", tz = "America/Toronto"))
+  expect_equal(load$time[1], as.POSIXct("2016-01-11 10:48:49", tz = "America/Vancouver"))
+  expect_equal(load2$time[1], as.POSIXct("2016-01-11 13:48:49", tz = "America/Toronto"))
 })
 
 # dl_data()

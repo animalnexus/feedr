@@ -5,10 +5,10 @@ output: html_document
 
 ## FAQ
 
-### 1. What is the difference between feedr and animal__nexus__?
+### 1. What is the difference between `feedr` and animal__nexus__?
 [feedr](http://github.com/steffilazerte/feedr) is an [R](https://cran.r-project.org/) package for loading, cleaning, transforming and visualizing data collected on individual movements to and from static stations, especially RFID data.
 
-animal__nexus__ is a webapp that allows users to apply functions from feedr to their data without have to use or even load R. If you have feedr installed on your computer, you can run this webapp locally from R using the command `feedr::animalnexus()`. However you will not have database access.
+animal__nexus__ is a webapp that allows users to apply functions from `feedr` to their data without have to use or even install R. If you have `feedr` installed on your computer, you can run this webapp locally from R using the function `animalnexus()`. However you will not have database access.
 
 ### 2. I have a function I wrote in R that would be useful, how can I get involved?
 Contact [Stefanie LaZerte](mailto:slazerte@tru.ca), we'd love to include your function!

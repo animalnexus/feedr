@@ -7,7 +7,7 @@
 load_raw_all(r_dir, r_list, pattern = "DATA", tz = Sys.timezone(),
   tz_disp = NULL, details = 1, logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
   time_format = "mdy HMS", extra_pattern = NULL, extra_name = NULL,
-  sep = "", skip = 0)
+  sep = "", skip = 0, feeder_pattern)
 }
 \arguments{
 \item{r_dir}{Character. The director that holds all your raw data files (can
@@ -47,6 +47,8 @@ more details).}
 
 \item{skip}{Character. Extra lines to skip in addition to the lines specified
 by details.}
+
+\item{feeder_pattern}{Deprecated. Use logger_pattern instead.}
 
 \item{details.}{Numeric. Where to find logger details, either 0 (file name),
 1 (first line) or 2 (first two lines). See 'details'.}

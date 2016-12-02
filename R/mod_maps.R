@@ -64,7 +64,7 @@ mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
   t <- reactive({
     req(times())
     if(verbose) cat("  Times - Setup\n")
-    x <- feedr::tz_offset(tz = attr(times(), "tzone"))
+    x <- tz_offset(tz = attr(times(), "tzone"))
     if(x >= 0) x <- paste0("+", sprintf("%02d", abs(x)), "00") else x <- paste0("-", sprintf("%02d", abs(x)), "00")
 
     list("times" = times(),
@@ -194,15 +194,15 @@ mod_UI_maps_advanced <- function(id) {
                    choices = c("Cumulative" = "cumulative", "Instant" = "instant"), inline = TRUE),
       title = "Show cumulative data (i.e. all visits up to and including a particular time block) or instantaneous measures (i.e. only visits measured in a particular time block)",options = list(container = "body")),
     tipify(
-      uiOutput(ns("UI_bird_id")),
-      title = "ID of the individual to select.<br/>(X mv; Y fd) represent total number of movements and feeding events respectively.", placement = "right",
+      uiOutput(ns("UI_animal_id")),
+      title = "ID of the individual to select.<br/>(X mv; Y fd) represent total number of times present at and movements between loggers respectively.", placement = "right",
       options = list(container = "body")),
     tipify(
       radioButtons2(ns("summary"), 
                     label = "Summary type",
                     choices = c("Total sum" = "sum", "Average sum per individual" = "sum_indiv")),
       #, "Total no. individuals" = "total_indiv")),
-      title = "What kind of summary should be shown: total feeding time/movements, totals averaged across individuals, total number of individuals?", 
+      title = "What kind of summary should be shown: total time present/no movements, totals averaged across individuals, total number of individuals?", 
       options = list(container = "body"))
   )
 }
@@ -214,29 +214,29 @@ mod_maps_advanced <- function(input, output, session, samples, verbose = FALSE) 
 
   # UIs
 
-  # Bird ID selection
-  output$UI_bird_id <- renderUI({
-    labels <- as.character(samples()$bird_id)
-    names(labels) <- paste0(samples()$bird_id, " (", samples()$move, " mv; ", samples()$feed, " fd)")
+  # Animal ID selection
+  output$UI_animal_id <- renderUI({
+    labels <- as.character(samples()$animal_id)
+    names(labels) <- paste0(samples()$animal_id, " (", samples()$move, " mv; ", samples()$presence, " fd)")
     labels <- c("All" = "all", labels)
-    selectInput(ns("bird_id"), label = "Select Individual",
+    selectInput(ns("animal_id"), label = "Select Individual",
                 choices = labels)
   })
 
   ## Toggle summary buttons
-  observeEvent(input$bird_id, {
-    shinyjs::toggleState(id = "summary_sum_indiv", condition = input$bird_id == "all")
+  observeEvent(input$animal_id, {
+    shinyjs::toggleState(id = "summary_sum_indiv", condition = input$animal_id == "all")
     #shinyjs::toggleState(id = "summary_total_indiv", condition = input$subset == "all")
-    if(input$bird_id != "all" && input$summary != "sum") updateRadioButtons2(session, "summary", selected = "sum")
+    if(input$animal_id != "all" && input$summary != "sum") updateRadioButtons2(session, "summary", selected = "sum")
   })
 
   return(c(type = reactive({input$type}),
-           bird_id = reactive({input$bird_id}),
+           animal_id = reactive({input$animal_id}),
            summary = reactive({input$summary})))
 }
 
 
-mod_UI_maps_time <- function(id, type = "the RFID logger (Feeder)") {
+mod_UI_maps_time <- function(id, type = "the RFID logger") {
 
   ns <- NS(id)
 
@@ -395,7 +395,7 @@ mod_UI_maps_leaflet <- function(id) {
   ns <- NS(id)
   tagList(
     tipify(fluidRow(leafletOutput(ns("map"), height = 600)),
-           title = "Circles show the amount of activity at each feeder for the given time interval.",
+           title = "Circles show the amount of activity at each logger for the given time interval.",
            options = list(container = "body"))
   )
 }
@@ -421,7 +421,7 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
   ## Data loggers
   loggers <- reactive({
     req(data_total())
-    unique(do.call('rbind', lapply(data_total(), function(x) unique(do.call('rbind', x$sub)[, c("feeder_id", "lat", "lon")]))))
+    unique(do.call('rbind', lapply(data_total(), function(x) unique(do.call('rbind', x$sub)[, c("logger_id", "lat", "lon")]))))
   })
 
   move_paths <- reactive({
@@ -439,7 +439,7 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
         #if(max(vals) == 1) vals <- 1:5
         if(length(vals) == 1) vals <- sort(vals * c(0.5, 1, 1.5))
         if(is.null(palette)) palette <- colorRampPalette(c("yellow","orange", "red"))
-        leaflet::colorNumeric(palette = palette(max(vals)), domain = vals)
+        leaflet::colorNumeric(palette = palette(15), domain = vals)
       }
     })
   })
@@ -448,14 +448,14 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
   output$map <- renderLeaflet({
     req(lim(), loggers())
     validate(need(nrow(loggers()) > 0, "No data to summarize, consider a larger time range"))
-
-        groups <- stringr::str_to_title(names(lim()))
+    
+    groups <- stringr::str_to_title(names(lim()))
     if(nrow(loggers()) < 2) minZoom <- 18 else minZoom <- NULL
     map_leaflet_base(locs = loggers(), minZoom = minZoom) %>%
-      addScaleBar(position = "bottomright") %>%
-      addLayersControl(baseGroups = c("Satellite", "Terrain", "Open Street Map", "Black and White"),
-                       overlayGroups = c("Loggers", "Sunrise/Sunset", groups),
-                       options = layersControlOptions(collapsed = TRUE))
+      leaflet::addScaleBar(position = "bottomright") %>%
+      leaflet::addLayersControl(baseGroups = c("Satellite", "Terrain", "Open Street Map", "Black and White"),
+                                overlayGroups = c("Loggers", "Sunrise/Sunset", groups),
+                                options = leaflet::layersControlOptions(collapsed = TRUE))
   })
 
   ## Create legends for map
@@ -464,7 +464,7 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
     isolate({
       leafletProxy(ns("map")) %>% clearGroup("Legends")
       lapply(names(pal()), function(a) {
-        if(a == "feeding") {
+        if(a == "presence") {
           title = "Presence"
           l <- labelFormat(suffix = " min")
         }
@@ -477,15 +477,15 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
         #if(summary() == "total_indiv") title <- paste(title, "<br>(# Individuals)")
         vals <- lim()[[a]]
         if(length(vals) == 1) vals <- sort(vals * c(0.5, 1, 1.5))
-        leafletProxy(ns("map")) %>%
-          addLegend(title = title,
-                    position = 'topright',
-                    pal = pal()[[a]],
-                    values = vals,
-                    bins = 5,
-                    opacity = 1,
-                    labFormat = l,
-                    layerId = paste0("legend_", a))
+        leaflet::leafletProxy(ns("map")) %>%
+          leaflet::addLegend(title = title,
+                             position = 'topright',
+                             pal = pal()[[a]],
+                             values = vals,
+                             bins = 5,
+                             opacity = 1,
+                             labFormat = l,
+                             layerId = paste0("legend_", a))
       })
     })
   })
@@ -496,13 +496,13 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
 
     if("visits" %in% names(data())){
       if(nrow(data()) > 0){
-        leafletProxy(ns("map")) %>%
-          clearGroup(group = "Visits") %>%
-          use_markers(u = data(), u_scale = 1,
-                      u_pal = pal()$visits, u_title = "Visits",
-                      val_min = min(lim()$visits), val_max = max(lim()$visits))
+        leaflet::leafletProxy(ns("map")) %>%
+          leaflet::clearGroup(group = "Visits") %>%
+          presence_markers(p = data(), p_scale = 1,
+                           p_pal = pal()$visits, p_title = "Visits",
+                           val_min = min(lim()$visits), val_max = max(lim()$visits))
       } else {
-        leafletProxy(ns("map")) %>% clearGroup(group = "Visits")
+        leaflet::leafletProxy(ns("map")) %>% leaflet::clearGroup(group = "Visits")
       }
     }
 
@@ -513,9 +513,9 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
             dplyr::arrange(path_use)
           for(move_path in unique(temp$move_path)) {
             temp2 <- temp[temp$move_path == move_path, ]
-            leafletProxy(ns("map"), deferUntilFlush = FALSE) %>%
-              path_lines(data = temp2, p_pal = pal()$movements,
-                         p_scale = 1, p_title = "Movements",
+            leaflet::leafletProxy(ns("map"), deferUntilFlush = FALSE) %>%
+              path_lines(data = temp2, m_pal = pal()$movements,
+                         m_scale = 1, m_title = "Movements",
                          val_min = min(lim()$movements),
                          val_max = max(lim()$movements),
                          layerId = as.character(temp2$move_path[1]))
@@ -529,21 +529,21 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
       }
     }
 
-    if("feeding" %in% names(data())) {
-      if(!compare_data(values$f_old, data()$feeding)){
-        if(!is.null(data()$feeding) && nrow(data()$feeding) > 0){
+    if("presence" %in% names(data())) {
+      if(!compare_data(values$f_old, data()$presence)){
+        if(!is.null(data()$presence) && nrow(data()$presence) > 0){
           leafletProxy(ns("map"), deferUntilFlush = FALSE) %>%
-            use_markers(data = data()$feeding,
-                        u_scale = 1, u_pal = pal()[['feeding']],
-                        u_title = "Feeding",
-                        val_min = min(lim()$feeding),
-                        val_max = max(lim()$feeding),
-                        layerId = as.character(data()$feeding$feeder_id)) %>%
-            removeMarker(layerId = as.character(loggers()$feeder_id[!(loggers()$feeder_id %in% data()$feeding$feeder_id)]))
+            presence_markers(data = data()$presence,
+                        p_scale = 1, p_pal = pal()[['presence']],
+                        p_title = "Presence",
+                        val_min = min(lim()$presence),
+                        val_max = max(lim()$presence),
+                        layerId = as.character(data()$presence$logger_id)) %>%
+            removeMarker(layerId = as.character(loggers()$logger_id[!(loggers()$logger_id %in% data()$presence$logger_id)]))
         } else {
-          leafletProxy(ns("map")) %>% removeMarker(layerId = as.character(loggers()$feeder_id))
+          leafletProxy(ns("map")) %>% removeMarker(layerId = as.character(loggers()$logger_id))
         }
-        values$f_old <- data()$feeding
+        values$f_old <- data()$presence
       }
     }
   })
@@ -561,11 +561,11 @@ mod_maps_data <- function(input, output, session, controls, instant, data, verbo
   return(data_instant)
 }
 
-prep_feeding <- function(x, y, type = "cumulative", summary = "sum") {
+prep_presence <- function(x, y, type = "cumulative", summary = "sum") {
   if(type == "cumulative") x <- x[x$block <= y$block[1], ] else if(type == "instant") x <- x[x$block == y$block[1], ]
 
   x <- x %>%
-    dplyr::group_by(feeder_id, lat, lon) %>%
+    dplyr::group_by(logger_id, lat, lon) %>%
     dplyr::summarize(amount = sum(amount)) %>%
     dplyr::ungroup()
 
@@ -576,7 +576,7 @@ prep_feeding <- function(x, y, type = "cumulative", summary = "sum") {
 prep_movements <- function(x, y, type = "cumulative", summary = "sum") {
     if(type == "cumulative") x <- x[x$block <= y$block[1], ] else if(type == "instant") x <- x[x$block == y$block[1], ]
     x <- x %>%
-      dplyr::group_by(move_path, feeder_id, lat, lon) %>%
+      dplyr::group_by(move_path, logger_id, lat, lon) %>%
       dplyr::summarize(path_use = sum(path_use)) %>%
       dplyr::ungroup()
     if(nrow(x) > 0) x <- dplyr::mutate(x, block = y$block[1])

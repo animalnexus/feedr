@@ -8,11 +8,11 @@ disp(v, bw = 5, pass = TRUE)
 }
 \arguments{
 \item{v}{Dataframe. A visits data frame containing \strong{all} visits from
-\strong{all} birds. From the output of \code{visits}. Must contain columns
-\code{bird_id}, \code{feeder_id}, \code{start}, and \code{end}.}
+\strong{all} animals. From the output of \code{visits}. Must contain columns
+\code{animal_id}, \code{logger_id}, \code{start}, and \code{end}.}
 
 \item{bw}{Numeric. The maximum interval in seconds between visits by two
-different birds for the interaction to be considered a displacement.}
+different animals for the interaction to be considered a displacement.}
 
 \item{pass}{Logical. Pass 'extra' columns through the function and append
 them to the output.}
@@ -20,16 +20,16 @@ them to the output.}
 \value{
 A list with the following named items: \enumerate{ \item
   \code{displacements}: A data frame of individual displacement events,
-  including the following columns: \itemize{ \item \code{feeder_id}: ID of
-  the feeder at which the event occurred \item ID of the bird being displaced
-  (\code{displacee}) \item ID of the bird doing the displacing
+  including the following columns: \itemize{ \item \code{logger_id}: ID of
+  the logger at which the event occurred \item ID of the animal being displaced
+  (\code{displacee}) \item ID of the animal doing the displacing
   (\code{displacer}) \item Time of the departure of the displacee
   (\code{left}) \item Time of the arrival of the displacer (\code{arrived}) }
 
   \item \code{summaries}: A data frame of overall wins/lossess per
   individual, containing the following columns: \itemize{ \item ID of the
-  bird (\code{bird_id}) \item No. of times the bird was displaced
-  (\code{displacee}) \item No. of times the bird was a displacer
+  animal (\code{animal_id}) \item No. of times the animal was displaced
+  (\code{displacee}) \item No. of times the animal was a displacer
   (\code{displacer}) \item Proportion of wins (\code{p_win}) } \item
   \code{interactions}: A data frame of interaction summaries, containing the
   following columns: \itemize{ \item ID of the displacee (\code{displacee})
@@ -38,7 +38,7 @@ A list with the following named items: \enumerate{ \item
 }
 \description{
 For an entire \code{visits} data frame, identifies displacement events.
-Displacements are events when one bird leaves the feeder right before the
+Displacements are events when one animal leaves the logger right before the
 arrival of another. In some species this can be used to infer dominance.
 }
 \details{
