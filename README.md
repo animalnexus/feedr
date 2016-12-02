@@ -2,7 +2,7 @@
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/steffilazerte/feedr?branch=master&svg=true)](https://ci.appveyor.com/project/steffilazerte/feedr)
 # feedr
 
-`feedr` is a package for [R](https://www.r-project.org/). This collection of functions is designed to load, transform and visualize RFID data created when pit-tagged animals are detected by RFID loggers associated with static stations (e.g., seed-feeders, nestboxes, nectare-feeders, etc.).
+`feedr` is a package for [R](https://www.r-project.org/). This collection of functions is designed to load, transform and visualize RFID data created when pit-tagged animals are detected by RFID loggers associated with static stations (e.g., seed-feeders, nestboxes, nectar-feeders, etc.).
 
 ## Installation
 `feedr` is available from github and can be installed directly with the package 'devtools':
