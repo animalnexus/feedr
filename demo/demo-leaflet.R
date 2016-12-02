@@ -1,25 +1,30 @@
 
 library(feedr)
-library(plyr)
+library(dplyr)
 
-v <- visits(chickadees)
-v <- v[v$experiment == "exp1", ] ## Only look at first experiment
+v <- chickadees %>%
+  group_by(experiment) %>%
+  do(visits(.))
 
-v <- ddply(v, "experiment", transform, bird_n_exp = length(unique(bird_id)))
-m <- ddply(v, "bird_id", move)
-f <- ddply(v, "bird_id", feeding)
+m <- v %>%
+  group_by(experiment) %>%
+  do(move(.))
 
-## Feeder Use (u)
-f.all <- ddply(f, "feeder_id", summarise,
-               amount = sum(feed_length) / bird_n_exp[1])
+p <- v %>%
+  group_by(experiment) %>%
+  do(presence(.))
 
-## Movements along paths (p)
-m.all <- ddply(m, c("feeder_id", "move_path"), summarise,
-               path_use = length(move_path) / bird_n_exp[1] / 2)
+## Movements
+m_all <- m %>%
+  group_by(experiment, logger_id, move_path, lat, lon) %>%
+  summarise(path_use = length(move_path) / unique(animal_n)) %>%
+  ungroup(m_all)
 
-## Locations (l)
-l <- unique(f[, c("feeder_id", "lat", "lon")])
-l <- rbind(l, data.frame(feeder_id = "exp1-GR11", lat = 53.89304, lon = -122.81827))
+## Presence averaged
+p_all <- p %>%
+  group_by(experiment, logger_id) %>%
+  summarize(amount = sum(length) / unique(animal_n)) %>%
+  ungroup(p_all)
 
 ## Map
-map_leaflet(u = f.all, p = m.all, locs = l)
+map_leaflet(p = p_all, m = m_all)
