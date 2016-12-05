@@ -1,9 +1,11 @@
+cat("Starting server...\n")
 library(feedr, lib.loc = "/usr/local/lib/R_exp/site-library/")
 library(magrittr)
 library(shiny)
 library(shinyjs)
 library(shinyBS)
 
+cat("Add assets path\n")
 addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
 
 shinyServer(function(input, output, session) {
@@ -20,10 +22,15 @@ shinyServer(function(input, output, session) {
     data_import = NULL,
     data_db = NULL)
 
+  cat("Get Database access if we have it\n")
   ## Get Database access if we have it
   if(file.exists("/usr/local/share/feedr/db_full.R")) {
+    cat("  Getting credentials\n")
     source("/usr/local/share/feedr/db_full.R")
-  } else db <- NULL
+  } else {
+    cat("  No credentials\n")
+    db <- NULL
+  }
 
   ## Current activity
   callModule(module = feedr:::mod_map_current, id = "current", db = db)
@@ -31,6 +38,10 @@ shinyServer(function(input, output, session) {
   ## Pause
   observeEvent(input$pause, browser())
 
+  ## Individuals
+  
+  callModule(feedr:::mod_indiv, id = "indiv", r = r)
+  
   ## Database or Import
   data_db <- callModule(feedr:::mod_data_db, "access", db = db)
   data_import <- callModule(feedr:::mod_data_import, "import")
@@ -101,49 +112,7 @@ shinyServer(function(input, output, session) {
   # }
 
 
-  ## Animals
-  ## Animals of current data
-  animals <- reactive({
-    req(r())
-    cols <- names(r())[names(r()) %in% c("animal_id", "species", "age", "sex", "tagged_on", "site_name")]
-    r() %>%
-      dplyr::select_(.dots = cols) %>%
-      unique(.)
-  })
-
-  ## Look at animals
-  output$img_animals <- renderText({
-    req(animals())
-    # Don't actually know what STRH stands for, assuming Sapphire-throated Humminganimal
-    #paste0("<div class = \"animal-img\">",
-    feedr:::get_image(animals(), input$dt_animals_rows_selected, 300)#,
-    #       "</div>")
-  })
-
-  ## Get only publically available data
-  animals_dl <- reactive({
-    animals()
-  })
-
-  msg_select <- "Please select data through the Database or by Importing"
-  output$dt_animals <- DT::renderDataTable({
-    validate(need(try(nrow(r()) > 0, silent = TRUE), msg_select))
-    validate(need(try(nrow(animals()) > 0, silent = TRUE), "No data on individuals"))
-    req(animals())
-
-    DT::datatable(animals_dl(),
-                  filter = "top",
-                  options = list(pageLength = 100),
-                  rownames = FALSE,
-                  colnames = gsub("_", " ", names(animals_dl())) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE),
-                  selection = "single")
-  }, server = FALSE)
-
-  ## Load transformation data tables
-  #source("output_data.R", local = TRUE)
-
   ## Links to panels
-
   observeEvent(input$link_db, {
     updateTabsetPanel(session, "main", "Database")
   })

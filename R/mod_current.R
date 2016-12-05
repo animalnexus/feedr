@@ -174,7 +174,7 @@ mod_map_current <- function(input, output, session, db) {
         leaflet::addAwesomeMarkers(data = current(),
                                    icon = ~sp_icons[species],
                                    popup = ~paste0("<div class = \"current\">",
-                                                   get_image(current(), animal_id, 100),
+                                                   get_image(current(), animal_id, "100px"),
                                                    "<strong>Species:</strong> ", species, "<br>",
                                                    "<strong>Animal ID:</strong> ", animal_id, "<br>",
                                                    "<strong>No. RFID reads:</strong> ", n, "<br>",

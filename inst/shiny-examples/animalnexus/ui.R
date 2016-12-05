@@ -82,11 +82,7 @@ shinyUI(
             ## INDIVIDUALS
             #################
             tabPanel("Individuals",
-                     column(9,
-                            fluidRow(DT::dataTableOutput("dt_animals"))),
-                     column(3,
-                            h4("Click on a row for more information"),
-                            htmlOutput("img_animals", class = "animal-img"))
+                     feedr:::mod_UI_indiv("indiv")
             ),
             #################
             ## DATA

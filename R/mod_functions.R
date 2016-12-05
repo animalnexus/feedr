@@ -112,6 +112,8 @@ values_list <- function(i = NULL, counts){
 # which = 1:6; size = 300; imgs = NULL; imgs_wiki = NULL
 get_image <- function(database, which, size = 300, imgs = NULL, imgs_wiki = NULL){
 
+  if(!("species" %in% names(database))) database$species <- "XXXX"
+  
   if(is.null(imgs)) imgs <- read.csv(system.file("extdata", "shiny-data", "img_index.csv", package = "feedr"), colClasses = "character")
   if(is.null(imgs_wiki)) imgs_wiki <- read.csv(system.file("extdata", "shiny-data", "wiki_index.csv", package = "feedr"), colClasses = "character")
 
@@ -134,6 +136,8 @@ get_image <- function(database, which, size = 300, imgs = NULL, imgs_wiki = NULL
     animal <- dplyr::left_join(animal, imgs[, c("animal_id", "img", "citation", "author")], by = "animal_id")
     })
   }
+  
+  animal$species <- as.character(animal$species)
 
   ## Get img of species from wikimedia if we don't have it
   animal$species[!(animal$species %in% imgs_wiki$species)] <- "unknown"
@@ -145,7 +149,7 @@ get_image <- function(database, which, size = 300, imgs = NULL, imgs_wiki = NULL
   animal$css[is.na(animal$citation)] <- paste0("<div class = \"wiki-watermark\">", animal$author[is.na(animal$citation)], "</div>")
 
   ## Create div for img
-  html <- paste0("<img src='", animal$img, "' height = ", size, ">\n", animal$css)
+  html <- paste0("<img src='", animal$img, "' style = 'max-height:", size, "'>\n", animal$css)
   return(html)
 }
 
