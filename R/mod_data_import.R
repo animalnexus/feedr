@@ -256,13 +256,24 @@ mod_data_import <- function(input, output, session, type = NULL) {
 06200004BB 02/06/16 12:39:24
 0700EE19CE 02/06/16 12:40:49
 0700EE0E42 02/06/16 12:40:52", style = "width:80%; margin: auto;"),
-          
+
         h4("Providing Lat/Lon for each logger"),
         strong("In a logger_index file"),
         tags$ul(
           tags$li("Choose 'logger_index file' under", strong("Lat/Lon Information")),
-          tags$li("The file must be a comma-separated file called 'logger_index' with at least one column:", code("logger_id"), "*"),
-          tags$li("Columns", code("lat"), "and", code("lon"), "can also be provided, but any other columns will be ignored")),
+          tags$li("The file must be a comma-separated file called 'logger_index' with columns:", code("logger_id"), "*", code("lat"), "and", code("lon")),
+          tags$li("Any other columns will be ignored")),
+        div(strong("Example of", a("logger_index file", href = "assets/logger_index_example.csv", target = "blank")), style = "text-align: center;"),
+        pre("logger_id, lat, lon
+GR10, 53.914484, -122.769248
+GR11, 53.88821,	-122.8205
+GR13, 53.88689,	-122.8208", style = "width:80%; margin: auto;"),
+        p("Note: These ids match the file ids only when", strong("Logger id pattern"), "is set to 'TRU loggers'"),
+
+        strong("In the data file"),
+        tags$ul(
+          tags$li("Choose 'data file' under", strong("Lat/Lon Information")),
+          tags$li("In addition to the logger id on the first line, the lat/lon information must be on the second line of each data file")),
         div(strong("Example of a", a("data file", href = "assets/logger_example2.txt", target = "blank"), "with inline lat/lon"), style = "text-align: center;"),
         pre("GR10DATA
 53.914484, -122.769248
@@ -270,35 +281,23 @@ mod_data_import <- function(input, output, session, type = NULL) {
 0700EE19CE 02/06/16 12:40:49
 0700EE0E42 02/06/16 12:40:52", style = "width:80%; margin: auto;"),
 
-        strong("In the data file"),
-        tags$ul(
-          tags$li("Choose 'data file' under", strong("Lat/Lon Information")),
-          tags$li("In addition to the logger id on the first line, the lat/lon information must be on the second line")),
-        div(strong("Example of", a("logger_index file", href = "assets/logger_index_example.csv", target = "blank")), style = "text-align: center;"),
-        pre("logger_id, lat, lon
-GR10, 53.914484, -122.769248
-GR11, 53.88821,	-122.8205
-GR13, 53.88689,	-122.8208", style = "width:80%; margin: auto;"),
-        "Note: These ids match the file ids only when", strong("Logger id pattern"), "is set to 'TRU loggers'",
-  
       hr(),
-      "* For compatibility with earlier versions,", code("bird_id"), "and", code("feeder_id"), "are also accepted, but will be renamed to", code("animal_id"), "and", code("logger_id"), "respectively"),
-      easyClose = TRUE
+      "* For compatibility with earlier versions,", code("bird_id"), "and", code("feeder_id"), "are also accepted, but will be renamed to", code("animal_id"), "and", code("logger_id"), "respectively")
     ))
   })
-  
+
   observeEvent(input$help_options, {
     showModal(modalDialog(size = "m",
     title = "Other Options",
+    easyClose = TRUE,
     tagList(
       tags$ul(
         tags$li(strong("Date/Time Format:"), "The order of Day, Month, Year in the data. The exact format doesn't matter"),
         tags$li(strong("Data Timezone:"),"Timezone that the data was recorded in"),
         tags$li(strong("Separator:"), "For pre-formatted files, how are the columns separated?"),
-        tags$li(strong("Skip:"), "Extra lines to skip at the top of all data files. For Logger files, this is", em("in addition"), "to the first (or first two) rows which will be automatically skipped."))),
-      easyClose = TRUE
+        tags$li(strong("Skip:"), "Extra lines to skip at the top of all data files. For Logger files, this is", em("in addition"), "to the first (or first two) rows which will be automatically skipped.")))
     ))
-  })    
+  })
 
   observeEvent(input$pause, {
     browser()
