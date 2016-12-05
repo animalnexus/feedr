@@ -1,16 +1,23 @@
 # Launch current
 
-mod_current <- function() {
+# mod_current <- function() {
+#   if(file.exists("/usr/local/share/feedr/db_full.R")) {
+#     source("/usr/local/share/feedr/db_full.R")
+#   } else db <- NULL
+# 
+#   app <- shiny::shinyApp(ui = shiny::fluidPage(mod_UI_map_current("standalone")),
+#                          server = function(input, output, session) {
+#                            shiny::callModule(mod_map_current, "standalone", db = db)
+#                          }
+#   )
+#   shiny::runApp(app, launch.browser = TRUE)
+# }
+
+ui_current <- function(){
   if(file.exists("/usr/local/share/feedr/db_full.R")) {
     source("/usr/local/share/feedr/db_full.R")
   } else db <- NULL
-
-  app <- shiny::shinyApp(ui = shiny::fluidPage(mod_UI_map_current("standalone")),
-                         server = function(input, output, session) {
-                           shiny::callModule(mod_map_current, "standalone", db = db)
-                         }
-  )
-  shiny::runApp(app, launch.browser = TRUE)
+  ui_app(name = "map_current", db = db)
 }
 
 
