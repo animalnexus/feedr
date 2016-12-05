@@ -72,10 +72,11 @@ mod_UI_data_db <- function(id) {
 mod_data_db <- function(input, output, session, db) {
 
   ns <- session$ns
-  
+
   observeEvent(input$help_data, {
     showModal(modalDialog(size = "m",
                           title = "Data selection",
+                          easyClose = TRUE,
                           tagList(h4("Site selection"),
                                   tags$ul(
                                     tags$li("First select a site by which to filter the data."),
@@ -94,10 +95,11 @@ mod_data_db <- function(input, output, session, db) {
                           )
               ))
   })
-  
+
   observeEvent(input$help_selected, {
     showModal(modalDialog(size = "m",
                           title = "Selected data",
+                          easyClose = TRUE,
               tagList(h4("Data Access:"),
                       "Some data in the Database is restricted to visualizations only to protect the hard work of scientists until they've had a chance to publish their findings.",
                       tags$ul(
@@ -111,26 +113,28 @@ mod_data_db <- function(input, output, session, db) {
                       tags$ul(tags$li("Resets data selection to default"))
     )))
   })
-  
+
   observeEvent(input$help_map, {
     showModal(modalDialog(size = "m",
                           title = "Map of data available",
+                          easyClose = TRUE,
                           tagList(tags$ul(
                                     tags$li("Circle area depicts the amount of visits recorded per site or logger given the options selected"),
                                     tags$li("Update Map button can be used to activily update the map of selected data"))
                           )))
   })
-  
+
   observeEvent(input$help_adv, {
     showModal(modalDialog(size = "m",
                           title = "Advanced Options",
+                          easyClose = TRUE,
                           tagList(tags$ul(
                             tags$li("Select specific animal ids or logger ids"),
                             tags$li("Numbers in brackets indicate the total number of reads in the database for each individual or logger"))
                           )))
   })
-  
-  
+
+
 
   if(!is.null(db) && !curl::has_internet()) db <- NULL
 
@@ -248,7 +252,7 @@ mod_data_db <- function(input, output, session, db) {
                                  start = min(values$keep$date),
                                  end = max(values$keep$date))
           }
-          
+
           ## Uncheck species boxes if counts == 0 (But only if still checked)
           cnts <- get_counts(c = values$keep, summarize_by = "species")
           if(any(cnts$choices[cnts$sum == 0] %in% input$data_species)){
@@ -256,7 +260,7 @@ mod_data_db <- function(input, output, session, db) {
             updateCheckboxGroupInput(session, "data_species",
                                      selected = selected(cnts, "species"))
           }
-          
+
           ## Uncheck id boxes if counts == 0 (But only if still checked)
           cnts <- get_counts(c = values$keep, summarize_by = "animal_id")
           if(any(cnts$choices[cnts$sum == 0] %in% input$data_animal_id)){
@@ -264,7 +268,7 @@ mod_data_db <- function(input, output, session, db) {
             updateCheckboxGroupInput(session, "data_animal_id",
                                      selected = selected(cnts, "animal_id"))
           }
-          
+
           ## Uncheck id boxes if counts == 0 (But only if still checked)
           cnts <- get_counts(c = values$keep, summarize_by = "logger_id")
           if(any(cnts$choices[cnts$sum == 0] %in% input$data_logger_id)){
@@ -274,12 +278,12 @@ mod_data_db <- function(input, output, session, db) {
           }
         } else {
           ## If no values that match all options, keep time range, unselect all species and all ids:
-          
+
           freezeReactiveValue(input, "data_date")
           updateDateRangeInput(session, "data_date",
                                start = min(values$input$date),
                                end = max(values$input$date))
-          
+
           freezeReactiveValue(input, "data_species")
           updateCheckboxGroupInput(session, "data_species",
                                    selected = character(0))
@@ -287,7 +291,7 @@ mod_data_db <- function(input, output, session, db) {
           freezeReactiveValue(input, "data_animal_id")
           updateCheckboxGroupInput(session, "data_animal_id",
                                    selected = character(0))
-          
+
           freezeReactiveValue(input, "data_logger_id")
           updateCheckboxGroupInput(session, "data_logger_id",
                                    selected = character(0))
@@ -306,7 +310,7 @@ mod_data_db <- function(input, output, session, db) {
   counts_species <- reactive({
     req(input$data_species, counts_site())
     cat("Calculating counts_species()...\n")
-    #if(is.null(values$input)) species <- unique(values$keep$species) else 
+    #if(is.null(values$input)) species <- unique(values$keep$species) else
     species <- input$data_species
     droplevels(counts_site()[counts_site()$species %in% species, ])
   })
@@ -536,7 +540,7 @@ mod_data_db <- function(input, output, session, db) {
                  lng = ~lon, lat = ~lat,
                  popup  = htmltools::htmlEscape(sites_all$site_name),
                  group = "Sites") %>%
-      addCircleMarkers(data = suppressWarnings(get_counts(counts, summarize_by = "site_name") %>% 
+      addCircleMarkers(data = suppressWarnings(get_counts(counts, summarize_by = "site_name") %>%
                                                  dplyr::left_join(sites_all, by = c("choices" = "site_name"))),
                        lng = ~lon, lat = ~lat,
                        group = "Points",

@@ -8,9 +8,9 @@
 #'
 #' @export
 # ui_import <- function() {
-#   
+#
 #   addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
-#   
+#
 #   app <- shiny::shinyApp(ui = shiny::fluidPage(theme = "assets/style.css",
 #                                                shinyjs::useShinyjs(),
 #                                                mod_UI_data_import("standalone"),
@@ -89,16 +89,16 @@ mod_data_import <- function(input, output, session, type = NULL) {
                             "Day Month Year" = "dmy HMS"), selected = s,
                 width = "150px")
   })
-  
+
   output$UI_details <- renderUI({
     req(input$format == "logger")
     radioButtons(ns('details'), 'Lat/Lon Information',
-                 choices = c("None" = "1", 
-                             "Logger index" = "file1", 
+                 choices = c("None" = "1",
+                             "Logger index" = "file1",
                              "Data files" = "inline2"),
                  selected = "1", inline = TRUE)
   })
-  
+
   output$UI_id_pattern <- renderUI({
     req(input$format == "logger")
     selectInput(ns("id_pattern"), "Logger id pattern",
@@ -106,10 +106,10 @@ mod_data_import <- function(input, output, session, type = NULL) {
                             "TRU loggers" = "[GPR]{2,3}[0-9]{1,2}"),
                 selected = "", width = "150px")
   })
-  # 
+  #
   # output$UI_id_custom <- renderUI({
   #   req(input$id_pattern == "custom")
-  #   textInput(ns("id_custom"), 
+  #   textInput(ns("id_custom"),
   #             label = "Custom id regex pattern",
   #             value = "[GPR]{2,3}[0-9]{1,2}")
   # })
@@ -132,16 +132,16 @@ mod_data_import <- function(input, output, session, type = NULL) {
     paste0(d, collapse = "\r\n")
   })
 
-  
+
   ## File details
   path <- reactive({
     input$file1$datapath[!grepl("logger_index", input$file1$name)]
   })
-  
+
   logger <- reactive({
     input$file1$datapath[grepl("logger_index", input$file1$name)]
   })
-  
+
   ## Preview Data
   preview_data <- reactive({
     req(input$file1, input$format, input$tz, path())
@@ -194,13 +194,13 @@ mod_data_import <- function(input, output, session, type = NULL) {
       if(input$format == "all") vars$pre_data <- import_all(path(), input)
     }, message = "Importing...")
   })
-  
+
   output$validations <- renderText({
     req(vars$pre_data)
     check_data(vars$pre_data)
     vars$quality <- TRUE
   })
-  
+
   observeEvent(vars$quality, {
     req(vars$quality == TRUE, vars$pre_data)
     if(ns("") == "standalone-") {
@@ -211,19 +211,20 @@ mod_data_import <- function(input, output, session, type = NULL) {
     }
     vars$pre_data <- NULL
   })
-  
+
   ## Help dialogues
   observeEvent(input$help_file, {
     showModal(modalDialog(size = "l",
       title = "File setup",
+      easyClose = TRUE,
       tagList(
         if(ns("") != "standalone-") {"After the session any data you have imported will be deleted (we do not keep your data)."},
-        
+
         h4("Selecting files", style = "font-weight: bold;"),
         tags$ul(
           tags$li("Browse your local hard-drive for a file to import"),
           tags$li("Hold down SHIFT or CTRL to select more than one file")),
-        
+
         hr(),
         h4("Data Format - Preformatted", style = "font-weight: bold;"),
         "This format is for data that has already been processed to some degree",
@@ -236,9 +237,9 @@ mod_data_import <- function(input, output, session, type = NULL) {
 0620000500,2015-09-11 14:32:22,2100,House Finch,F,-120.3624278,50.66895556
 0620000500,2015-09-11 14:32:25,2100,House Finch,F,-120.3624278,50.66895556
 0620000500,2015-09-11 14:45:06,2100,House Finch,F,-120.3624278,50.66895556", style = "width:80%; margin: auto;"),
-             
+
         hr(),
-        
+
         h4("Data Format - Logger Download", style = "font-weight: bold;"),
         "This format is for raw data exported from RFID loggers.",
         tags$ul(
@@ -311,17 +312,17 @@ GR13, 53.88689,	-122.8208", style = "width:80%; margin: auto;"),
 
 import_logger <- function(path, logger, input) {
   req(input$details)
-  
-  d <- try(load_raw_all(r_list = path, 
-                        tz = input$tz, 
+
+  d <- try(load_raw_all(r_list = path,
+                        tz = input$tz,
                         logger_pattern = if(input$id_pattern == "NA") NA else input$id_pattern,
                         time_format = input$time,
                         details = as.numeric(stringr::str_extract(input$details, "[012]")),
-                        skip = input$skip), 
+                        skip = input$skip),
            silent = TRUE)
-  
+
   if(class(d) == "try-error") validate(need(!grepl("Expecting one pair of lat/lon", d), "Expecting one pair of lat/lon on second line of the file(s). Check format or change 'details' (Format should be e.g.,  53.91448, -122.76925)."))
-  
+
   validate(need(class(d) != "try-error", "Error importing data, try a different format or settings."))
 
   if(input$details == "file1") {
@@ -337,16 +338,16 @@ import_logger <- function(path, logger, input) {
 import_all <- function(path, input, nrows = -1) {
   req(!is.null(input$sep), !is.null(input$skip))
 
-  d <- try(dplyr::bind_rows(lapply(path, read.csv, sep = input$sep, skip = input$skip, nrows = nrows)) %>% 
+  d <- try(dplyr::bind_rows(lapply(path, read.csv, sep = input$sep, skip = input$skip, nrows = nrows)) %>%
     load_format(tz = input$tz, time_format = input$time), silent = TRUE)
-    
- return(d) 
+
+ return(d)
 }
 
 check_data <- function(d) {
   validate(need(class(d) != "try-error", "Error importing data, try a different format or settings."))
   validate(need(sum(names(d) %in% c("time", "bird_id", "feeder_id")) == 3 |
-                sum(names(d) %in% c("time", "animal_id", "logger_id")) == 3, 
+                sum(names(d) %in% c("time", "animal_id", "logger_id")) == 3,
                 "Error importing data, try a different format."))
   validate(need(all(!is.na(d$logger_id)), "Cannot proceed: Some or all of your logger ids are missing"))
   validate(need(all(!is.na(d$time)), "Cannot proceed: NA times detected, check your time format"))

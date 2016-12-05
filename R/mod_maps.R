@@ -19,52 +19,53 @@ mod_UI_maps_instructions <- function(id, specific) {
 }
 
 mod_maps_instructions <- function(input, output, session) {
-  
+
   ns <- session$ns
- 
+
   observeEvent(input$help_instructions, {
     showModal(modalDialog(size = "l",
                           title = "Animations",
+                          easyClose = TRUE,
     tagList(
       h4("General Instructions"),
       p("Events can be animated over time by clicking on the", strong("small blue arrow"), "to the lower right of the 'Time' slider (right)."),
       p("The time interval (resolution) and the speed of the animation can be adjusted below."),
       hr(),
-      
+
       h4("Summary over time"),
       tags$ul(
         tags$li("Cumulative: All data up to and including a particular time block"),
         tags$li("Instantaneous: Data only in a particular time block")),
-      
+
       h4("Select Individual"),
       tags$ul(
         tags$li("All: Summarize over all indivdiuals"),
         tags$li("Choose the specific individual"),
         tags$li("(X mv; Y fd) represent total number of times present at and movements between loggers respectively.")),
-     
+
       h4("Summary Type"),
       tags$ul(tags$li("What kind of summary should be shown"),
               tags$ul(tags$li("Total sum: Sum of all time present and sum of all movements over time (cumulative) or within a particular time block (instantaneous)"),
                       tags$li("Average sum: Average per individual of sum of all time present and of all movements over time (cumulative) or within a particular time block (instanteneous)"))),
-      
+
       h4("Time Range"),
       tags$ul(tags$li("Select the particular time range to use"),
               tags$li("The plot under the map shows events over time within this time range")),
-      
+
       h4("Resolution"),
       tags$ul(tags$li("Data is summarized within blocks of time, this is the resolution of those blocks."),
               tags$li("Also the 'frame' of the animtions")),
-      
+
       h4("Animation Speed"),
       tags$ul(tags$li("Speed of the animation")),
-      
+
       h4("Show sunrise/sunset"),
       tags$ul(tags$li("Show a shawdow overlay on the map during nighttime hours")),
-     
+
        h4("Map"),
       tags$ul(tags$li("Circles show the amount of activity at each logger for the given time interval."))
     )))
-    
+
   })
 
 }
@@ -102,7 +103,7 @@ mod_UI_maps_controls <- function(id) {
 mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
 
   ns <- session$ns
-  
+
   t <- reactive({
     req(times())
     if(verbose) cat("  Times - Setup\n")
@@ -234,7 +235,7 @@ mod_UI_maps_advanced <- function(id) {
       radioButtons(ns("type"), label = "Summary over time",
                    choices = c("Cumulative" = "cumulative", "Instant" = "instant"), inline = TRUE),
       uiOutput(ns("UI_animal_id")),
-      radioButtons2(ns("summary"), 
+      radioButtons2(ns("summary"),
                     label = "Summary type",
                     choices = c("Total sum" = "sum", "Average sum per individual" = "sum_indiv"))
   )
@@ -477,7 +478,7 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
   output$map <- renderLeaflet({
     req(lim(), loggers())
     validate(need(nrow(loggers()) > 0, "No data to summarize, consider a larger time range"))
-    
+
     groups <- stringr::str_to_title(names(lim()))
     if(nrow(loggers()) < 2) minZoom <- 18 else minZoom <- NULL
     map_leaflet_base(locs = loggers(), minZoom = minZoom) %>%

@@ -61,11 +61,11 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
   trans <- reactiveValues()
   msg <- reactiveValues()
   all <- reactiveValues()
-  
+
   ## Transform data
   observeEvent(r(), {
     req(r())
-    
+
     all$r <- r()
     if(!("dataaccess" %in% names(all$r))) all$r$dataaccess <- 0
     trans$r <- all$r %>%
@@ -80,7 +80,7 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
         sink(con <- textConnection("temp","w"), type = "message")
         if(is.null(trans[[x$req]])) message(paste0("No ", types$names[types$n == x$req], " data"))
         if(x$n == "dom") message("Note that only first matrix returned (there may be alternatives)")
-        trans[[x$n]] <- switch(x$n, 
+        trans[[x$n]] <- switch(x$n,
                                "v" = try(visits(all$r, allow_imp = TRUE)),
                                "m" = try(move(trans$v)),
                                "f" = try(presence(trans$v)),
@@ -91,7 +91,7 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
         if(any(class(trans[[x$n]]) == "try-error")) trans[[x$n]] <- NULL
         msg[[x$n]] <- temp
         sink(type = "message"); close(con)
-        
+
         if(x$n == "v") {
           all$v <- trans[[x$n]]
           if(!is.null(trans[[x$n]])){
@@ -104,14 +104,14 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
     })
   })
 
-  ## Create download buttons 
+  ## Create download buttons
   output$dl_buttons <- renderUI({
     lapply(1:nrow(types), function(x) {
       x <- types[x, ]
       p(downloadButton(ns(paste0('data_dl_', x$n)), x$names))
     })
   })
-  
+
   ## Activate/deactivate buttons
   observe({
     req("data_tabs" %in% names(input))
@@ -150,7 +150,7 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
       })
     })
   })
-  
+
   ## Setup downloads
   observeEvent(trans$r, {
     lapply(1:nrow(types), function(x) {
@@ -162,8 +162,8 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
         })
     })
   })
-  
-  
+
+
   ## Download All
   output$data_dl <- downloadHandler(
     filename = paste0("feedr_all_", Sys.Date(), ".zip"),
@@ -171,13 +171,13 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
       tmpdir <- tempdir()
       setwd(tempdir())
       cat(tempdir())
-      
+
       fs <- paste0(types$f_name, "_", Sys.Date(), ".csv")
       for(d in 1:nrow(types)){
         write.csv(trans[[types$n[d]]], file = fs[d], row.names = FALSE)
       }
       cat(fs)
-      
+
       zip(zipfile = file, files = fs)
     },
     contentType = "application/zip"
