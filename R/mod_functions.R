@@ -1,8 +1,9 @@
+#' @import shiny
 ui_app <- function(name, ..., launch.browser = getOption("shiny.launch.browser", interactive())) {
   
   addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
   
-  app <- shiny::shinyApp(ui = shiny::fluidPage(theme = "assets/style.css",
+  app <- shiny::shinyApp(ui = shiny::fluidPage(includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
                                                shinyjs::useShinyjs(),
                                                get(paste0("mod_UI_", name))("standalone"),
                                                mod_UI_stop("stp")),

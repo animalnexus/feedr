@@ -22,12 +22,11 @@ mod_UI_map_current <- function(id) {
   ns <- NS(id)
 
   tagList(
-    includeCSS(system.file("extra", "style.css", package = "feedr")),
     fluidRow(
       column(12,
              leafletOutput(ns("map_current"), height = 500),
              htmlOutput(ns("current_time")),
-             actionButton(ns("current_update"), "Update Now", style = "margin: 0 auto")#,
+             div(actionButton(ns("current_update"), "Update Now", style = "margin: 0 auto"), actionButton(ns("help_update"), "?", class = "help"))#,
              #htmlOutput(ns("summary_current")),
              #actionButton(ns("pause"), "Pause")
       )
@@ -42,6 +41,38 @@ mod_UI_map_current <- function(id) {
 mod_map_current <- function(input, output, session, db) {
 
   ns <- session$ns
+  
+  sp_icons <- leaflet::awesomeIconList("MOCH" = leaflet::makeAwesomeIcon(icon = "star",
+                                                                         marker = "green",
+                                                                         iconColor = "white"),
+                                       "HOFI" = leaflet::makeAwesomeIcon(icon = "star",
+                                                                         marker = "red",
+                                                                         iconColor = "white"),
+                                       "DEJU" = leaflet::makeAwesomeIcon(icon = "star",
+                                                                         marker = "darkpurple",
+                                                                         iconColor = "white"))
+  
+  get_icon <- function(x) {
+    cols <- c("red" = "#D43E2A",
+              "green" = "#6FAB25",
+              "darkpurple" = "#5A386A")
+    
+    span(class="fa-stack fa-md",
+         div(icon("circle", class = "fa-stack-2x"), style = paste0("color:", cols[x$markerColor])),
+         icon(x$icon, class = "fa-stack-1x fa-inverse"))
+  }
+  
+  observeEvent(input$help_update, {
+    showModal(modalDialog(size = "m",
+                          title = "Update Current Activity",
+                          tagList("This map reflects recent activity at RFID-enabled bird feeders by tagged birds on campus at Thompson Rivers University.",
+                                  tags$ul(style = "margin-top: 10px;",
+                                    tags$li("The map will automatically refresh every five minutes, or you can force an update by clicking on the 'Update Now' button."),
+                                    tags$li("Click on a 'pin' to get more information about the individual and the visit."),
+                                    tags$li("Pin colour reflects species:"),
+                                  lapply(1:length(sp_icons), function(x) tagList(get_icon(sp_icons[[x]]), " = ", names(sp_icons)[x]))))
+                          ))
+  })
 
   if(!is.null(db) && !curl::has_internet()) db <- NULL
 
@@ -57,16 +88,6 @@ mod_map_current <- function(input, output, session, db) {
     circle <- cbind(data, temp)
     return(circle)
   }
-
-  sp_icons <- leaflet::awesomeIconList("MOCH" = leaflet::makeAwesomeIcon(icon = "star",
-                                                                                       marker = "green",
-                                                                                       iconColor = "white"),
-                                       "HOFI" = leaflet::makeAwesomeIcon(icon = "star",
-                                                                                marker = "red",
-                                                                                iconColor = "white"),
-                                       "DEJU" = leaflet::makeAwesomeIcon(icon = "star",
-                                                                                    marker = "darkpurple",
-                                                                                    iconColor = "white"))
 
   values <- reactiveValues(
     current_map = NULL,

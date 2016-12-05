@@ -23,36 +23,27 @@ mod_UI_data_db <- function(id) {
     fluidRow(
       column(4,
              #div(img(src = "logo.jpg", width = 400), style="text-align: left;"),
-             h3("Select Data"),
+             h3("Select Data", actionButton(ns("help_data"), "?", class = "help")),
              div(id = "selection",
-                 tipify(uiOutput(ns("UI_data_site_name")),
-                           title = "Filter by site",
-                           placement = "right", options = list(container = "body")),
-                 tipify(uiOutput(ns("UI_data_species")),
-                           title = "Species to include/exclude",
-                           placement = "right", options = list(container = "body")),
-                 tipify(uiOutput(ns("UI_data_date")),
-                           title = "Filter by date range",
-                           placement = "right", options = list(container = "body")),
+                 uiOutput(ns("UI_data_site_name")),
+                 uiOutput(ns("UI_data_species")),
+                 uiOutput(ns("UI_data_date")),
                  hr(),
-                 h3("Selected Data"),
+                 h3("Selected Data", actionButton(ns("help_selected"), "?", class = "help")),
                  strong("Data Access: "), textOutput(ns("data_access"), inline = TRUE),
                  tableOutput(ns("data_selection")),
-                 bsTooltip(ns("data_selection"), "Number of visits per species given the options selected.",
-                           "right", options = list(container = "body")),
                  p(),
                  shinyjs::disabled(actionButton(ns("data_get"), "Get Data", style="color: #fff; background-color: #337ab7; border-color: #2e6da4")),
                  p(),
                  shinyjs::disabled(actionButton(ns("data_reset"), "Reset inputs")),
-                 hr()
-                 #actionButton(ns("showadv"), "Show Advanced Options")
+                 hr(),
+                 div(actionButton(ns("showadv"), "Show Advanced Options"), actionButton(ns("help_adv"), "?", class = "help"))
              )
       ),
       column(8,
-             div(shinyjs::disabled(actionButton(ns("map_update"), "Update map")), style = "text-align: center"),
+             div(shinyjs::disabled(actionButton(ns("map_update"), "Update map")), style = "text-align: center", actionButton(ns("help_map"), "?", class = "help")),
              p(),
              leafletOutput(ns("map_data"), height = 600),
-             bsTooltip(ns("map_data"), "Circle area depicts the amount of visits recorded per site or logger given the options selected", placement = "top"),
              plotOutput(ns("plot_data_ggplot"),
                         brush = brushOpts(
                           id = ns("plot_data_brush"),
@@ -81,6 +72,65 @@ mod_UI_data_db <- function(id) {
 mod_data_db <- function(input, output, session, db) {
 
   ns <- session$ns
+  
+  observeEvent(input$help_data, {
+    showModal(modalDialog(size = "m",
+                          title = "Data selection",
+                          tagList(h4("Site selection"),
+                                  tags$ul(
+                                    tags$li("First select a site by which to filter the data."),
+                                    tags$li("You may only select data from one site at a time.")),
+                                  h4("Species"),
+                                  tags$ul(
+                                    tags$li("Select which species to include/exclude"),
+                                    tags$li("The selection will update depending on your other selections (i.e. if you select a date range with no visits by a particular species, that species will be deselected"),
+                                    tags$li("Numbers in brackets reflect the total number of RFID reads per species.")),
+                                  h4("Dates"),
+                                  tags$ul(
+                                    tags$li("Select date range with slider bar, OR"),
+                                    tags$li("by clicking and dragging over the time plot"),
+                                    tags$ul(tags$li("The time plot actively updates to show the current data selection (dark colours are selected, pale are not)"))),
+                                  strong("Note:"), "Order of selection matters. To select all of a particular species within a particular time range, first select the species, then the time range. Adding in a species later will broaden the time range to include that species."
+                          )
+              ))
+  })
+  
+  observeEvent(input$help_selected, {
+    showModal(modalDialog(size = "m",
+                          title = "Selected data",
+              tagList(h4("Data Access:"),
+                      "Some data in the Database is restricted to visualizations only to protect the hard work of scientists until they've had a chance to publish their findings.",
+                      tags$ul(
+                        tags$li(strong("Fully Public:"), "Users may visualize and download the data"),
+                        tags$li(strong("Visualizations Only:"), "Users may visualize but not download the data")),
+                      h4("Selected Data Table"),
+                      tags$ul(tags$li("Current number of reads per species in the selected data")),
+                      h4("Get Data"),
+                      tags$ul(tags$li("Load the selected data set")),
+                      h4("Reset Data"),
+                      tags$ul(tags$li("Resets data selection to default"))
+    )))
+  })
+  
+  observeEvent(input$help_map, {
+    showModal(modalDialog(size = "m",
+                          title = "Map of data available",
+                          tagList(tags$ul(
+                                    tags$li("Circle area depicts the amount of visits recorded per site or logger given the options selected"),
+                                    tags$li("Update Map button can be used to activily update the map of selected data"))
+                          )))
+  })
+  
+  observeEvent(input$help_adv, {
+    showModal(modalDialog(size = "m",
+                          title = "Advanced Options",
+                          tagList(tags$ul(
+                            tags$li("Select specific animal ids or logger ids"),
+                            tags$li("Numbers in brackets indicate the total number of reads in the database for each individual or logger"))
+                          )))
+  })
+  
+  
 
   if(!is.null(db) && !curl::has_internet()) db <- NULL
 

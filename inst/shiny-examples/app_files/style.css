@@ -22,6 +22,11 @@ code {
   padding: 0;
 }
 
+.modal-body h4 {
+  font-weight: bold;
+}
+
+
 .nav-pills > li > a {
   padding: 5px;
 }
@@ -141,17 +146,4 @@ element.style {
   bottom: 25px;
   right: 1px;
   position: fixed;
-}
-
-.popover {
-  max-width: 600px;
-  width:auto;
-}
-.popover-title {
-  font-size: 15px;
-  font-weight: bold;
-}
-
-.popover-content {
-  font-size: 12px;
 }

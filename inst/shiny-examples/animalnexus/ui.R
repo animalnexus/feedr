@@ -1,14 +1,17 @@
+cat("Starting UI...\n")
 library(feedr, lib.loc = "/usr/local/lib/R_exp/site-library/")
 library(shiny)
 library(shinyjs)
 library(shinyBS)
 
-shinyUI(
+addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
 
+shinyUI(
   tagList(
     shinyjs::useShinyjs(),
     tags$head(
-      tags$link(rel = "stylesheet", href = "assets/style.css"),
+      #tags$link(rel = "stylesheet", href = "assets/style.css"),
+      cat("UI - Javascripts...\n"),
       tags$script("
 
 
@@ -26,11 +29,13 @@ shinyUI(
         });
 
    ")),
+    cat("UI - navbarPage...\n"),
     navbarPage(title = a(href = "http://animalnexus.ca", HTML("animal<strong>nexus</strong>")),
                id = "main",
                position = "fixed-top",
                collapsible = TRUE,
                windowTitle = "animalnexus",
+               header = includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
                footer = column(12,
                                hr(),
                                div(class = "data-status", textOutput("data_info")),

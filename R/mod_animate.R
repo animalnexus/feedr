@@ -54,8 +54,7 @@ mod_UI_map_animate <- function(id) {
 
   tagList(
     column(4,
-           feedr:::mod_UI_maps_instructions(ns("details"),
-                                            specific = tagList(p("Select which data you wish to summarize and how you wish to summarize it. Hover the mouse over options for more details."))),
+           feedr:::mod_UI_maps_instructions(ns("details")),
            feedr:::mod_UI_maps_advanced(ns("adv")),
            feedr:::mod_UI_maps_controls(ns("setup")),
 
@@ -78,6 +77,9 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
 
   ns <- session$ns
 
+  ## Instructions
+  callModule(mod_maps_instructions, "details")
+  
   ## Controls
   controls <- callModule(mod_maps_controls, "setup", times = t_id, verbose = verbose)
   summary <- callModule(mod_maps_advanced, "adv", samples = samples, verbose = verbose)
