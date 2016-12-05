@@ -1,25 +1,30 @@
-# feedr 0.7.0.0002
+# feedr 0.8.0 (2016-12-05)
 
 ## New features
 
 - New standalone shiny app to launch dialogue for transformations: `ui_trans()`
+- Can now import and combine multiple files in `ui_import`
 
 ## Changes
 
 - Combined all animations into one
 - Updated "Current activity" style
 - Altered display of pictures of species/individuals on animalnexus.ca
-- Renamed standalone shiny apps to reflect the user-interface: `import_data()` is now `ui_import()`, `map_animate()` is now `ui_animate()`
+- Added new documentation examples
+- Renamed standalone shiny apps to reflect the user-interface
+    - `import_data()` -> `ui_import()`
+    - `map_animate()` -> `ui_animate()`
+- Changed termniology to reflect more general usage
+    - `bird_id -> animal_id`
+    - `feeder_id -> logger_id`
+    - `feeding() -> presence()`
 
 ## Bug Fixes
 
 - Fixed minor errors in `activity()`, `move()` and `feeding()`
 - Fixed errors in documentation examples
-- Added new documentation examples
+
 - Changed factoring to allow use of dplyr's group_by to run transformations on groups of data (e.g. different sites or experiments)
-
-
-
 
 # feedr 0.7.0 (2016-11-03)
 
