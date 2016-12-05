@@ -27,7 +27,7 @@ install.packages(c("dplyr", "ggplot2", "htmlwidgets", "scales", "shiny", "string
 devtools::install_github("steffilazerte/feedr")
 ```
 
-### Linux (e.g., Ubuntu)
+### Linux
 On linux systems some packages require libraries to be installed on the system first. For Debian distributions (e.g., Ubuntu, etc.) these can be installed with the following command in the terminal:
 
 Libraries for `devtools`: `sudo apt install libcurl4-openssl-dev libssh2-1-dev libssl-dev`
