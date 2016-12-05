@@ -4,7 +4,7 @@
 #   if(file.exists("/usr/local/share/feedr/db_full.R")) {
 #     source("/usr/local/share/feedr/db_full.R")
 #   } else db <- NULL
-# 
+#
 #   app <- shiny::shinyApp(ui = shiny::fluidPage(mod_UI_map_current("standalone")),
 #                          server = function(input, output, session) {
 #                            shiny::callModule(mod_map_current, "standalone", db = db)
@@ -48,7 +48,7 @@ mod_UI_map_current <- function(id) {
 mod_map_current <- function(input, output, session, db) {
 
   ns <- session$ns
-  
+
   sp_icons <- leaflet::awesomeIconList("MOCH" = leaflet::makeAwesomeIcon(icon = "star",
                                                                          marker = "green",
                                                                          iconColor = "white"),
@@ -58,20 +58,21 @@ mod_map_current <- function(input, output, session, db) {
                                        "DEJU" = leaflet::makeAwesomeIcon(icon = "star",
                                                                          marker = "darkpurple",
                                                                          iconColor = "white"))
-  
+
   get_icon <- function(x) {
     cols <- c("red" = "#D43E2A",
               "green" = "#6FAB25",
               "darkpurple" = "#5A386A")
-    
+
     span(class="fa-stack fa-md",
          div(icon("circle", class = "fa-stack-2x"), style = paste0("color:", cols[x$markerColor])),
          icon(x$icon, class = "fa-stack-1x fa-inverse"))
   }
-  
+
   observeEvent(input$help_update, {
     showModal(modalDialog(size = "m",
                           title = "Update Current Activity",
+                          easyClose = TRUE,
                           tagList("This map reflects recent activity at RFID-enabled bird feeders by tagged birds on campus at Thompson Rivers University.",
                                   tags$ul(style = "margin-top: 10px;",
                                     tags$li("The map will automatically refresh every five minutes, or you can force an update by clicking on the 'Update Now' button."),
