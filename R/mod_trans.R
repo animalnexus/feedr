@@ -14,6 +14,13 @@
 #   shiny::runApp(app, launch.browser = TRUE)
 # }
 
+#' Transform data
+#'
+#' An interactive shiny app for transforming data
+#'
+#' See indivdial data transformations for more details: \code{visits()}, \code{presence()}, \code{move()}, \code{disp()}, \code{dom()}, \code{activity()}, and \code{daily()}.
+#'
+#' @export
 ui_trans <- function(r) {
   ui_app(name = "trans", r = reactive({r}), launch.browser = TRUE)
 }
