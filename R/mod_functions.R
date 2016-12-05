@@ -34,16 +34,18 @@ get_counts <- function(c, filter = NULL, summarize_by = NULL) {
     if("logger_id" %in% names(filter)) c <- dplyr::filter(c, logger_id %in% filter$logger_id)
   }
 
-  if(!is.null(summarize_by)){
-    c <- c %>%
-      dplyr::group_by_(summarize_by) %>%
-      dplyr::summarize(sum = sum(count)) %>%
-      tidyr::complete_(summarize_by, fill = list('sum' = 0)) %>%
-      dplyr::arrange_(summarize_by) %>%
-      dplyr::mutate_(name = lazyeval::interp(~ paste0(var, " (", sum, ")"), var = as.name(summarize_by)),
-              variable = ~summarize_by) %>%
-      dplyr::rename_("choices" = summarize_by) %>%
-      dplyr::mutate(choices = as.character(choices))
+  if(!is.null(summarize_by)) {
+    if(nrow(c) > 0) {
+      c <- c %>%
+        dplyr::group_by_(summarize_by) %>%
+        dplyr::summarize(sum = sum(count)) %>%
+        tidyr::complete_(summarize_by, fill = list('sum' = 0)) %>%
+        dplyr::arrange_(summarize_by) %>%
+        dplyr::mutate_(name = lazyeval::interp(~ paste0(var, " (", sum, ")"), var = as.name(summarize_by)),
+                       variable = ~summarize_by) %>%
+        dplyr::rename_("choices" = summarize_by) %>%
+        dplyr::mutate(choices = as.character(choices))
+    } else c <- NULL
   }
   return(c)
 }
