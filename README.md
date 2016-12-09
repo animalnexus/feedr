@@ -34,25 +34,6 @@ Libraries for `devtools`: `sudo apt install libcurl4-openssl-dev libssh2-1-dev l
 
 Libraries for `feedr`: `sudo apt install libpq-dev libxml2-dev`
 
-## Help
-
-** Note: ** These tutorials are in the process of being updated.
-
-An overview of this package and how to use the functions is accessible [here](http://steffi.ca/thinkR/feedr.html).
-
-This is also accessible as a vignette in R, provided you install the package with vignettes built:
-
-```r
-devtools::install_github("steffilazerte/feedr", build_vignettes = TRUE)
-```
-
-For documentation and examples on how to use a particular function use the `?` R command. For example:
-
-```r
-?load_raw_all
-?visits
-```
-
 ## Demos
 
 And there is one demo for using `map_leaflet()` which you can run as follows:
