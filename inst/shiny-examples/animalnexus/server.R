@@ -1,5 +1,5 @@
 cat("Starting server...\n")
-library(feedr, lib.loc = "/usr/local/lib/R_exp/site-library/")
+library(feedr)
 library(magrittr)
 library(shiny)
 library(shinyjs)
@@ -39,9 +39,9 @@ shinyServer(function(input, output, session) {
   observeEvent(input$pause, browser())
 
   ## Individuals
-  
+
   callModule(feedr:::mod_indiv, id = "indiv", r = r)
-  
+
   ## Database or Import
   data_db <- callModule(feedr:::mod_data_db, "access", db = db)
   data_import <- callModule(feedr:::mod_data_import, "import")
@@ -50,7 +50,7 @@ shinyServer(function(input, output, session) {
     req(data_db$r())
     values$data_db <- data_db
   })
-  
+
   observe({
     req(data_import$r())
     values$data_import <- data_import
