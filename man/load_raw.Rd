@@ -4,22 +4,31 @@
 \alias{load_raw}
 \title{Load raw read data}
 \usage{
-load_raw(r_file, tz = "America/Vancouver", tz_disp = NULL,
-  feeder_id_loc = "filename", feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
-  extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1)
+load_raw(r_file, tz = Sys.timezone(), tz_disp = NULL, details = 1,
+  logger_pattern = "[GPR]{2,3}[0-9]{1,2}", time_format = "mdy HMS",
+  extra_pattern = NULL, extra_name = NULL, sep = "", skip = 0,
+  feeder_pattern)
 }
 \arguments{
 \item{r_file}{Character. The location of a single file to load.}
 
 \item{tz}{Character. The time zone the date/times are in (should match one of
-the zones produced by \code{OlsonNames())}.}
+the zones produced by \code{OlsonNames())}. Defaults to user's system
+timezone.}
 
 \item{tz_disp}{Character. The time zone the date/times should be displayed in
 (if not the same as \code{tz}; should match one of the zones produced by
 \code{OlsonNames())}.}
 
-\item{feeder_pattern}{Character. A regular expression matching the feeder_id
-in the file name or from the first line of the file (see \code{feeder_id_loc}).}
+\item{logger_pattern}{Character. A regular expression matching the logger_id 
+in the file name or from the first line of the file. An NA value matches file name
+(extension omitted) or first line of the file. See \code{details}
+parameter.}
+
+\item{time_format}{Character. The time format of the 'time' column. Defaults
+to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
+function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
+etc.).}
 
 \item{extra_pattern}{Character vector. A vector of regular expressions
 matching any extra information in the file or directory names or in the
@@ -32,13 +41,13 @@ order of \code{extra_pattern} for storing the results of the pattern.}
 \code{read.table()} call (see \code{sep =} under \code{?read.table} for
 more details).}
 
-\item{skip}{Character. How many lines to skip before the data starts.
-feeder_id or extra details in the first line do not count as data and
-should be skipped. If there are headers (column labels) in the data, these
-should also be skipped.}
+\item{skip}{Character. Extra lines to skip in addition to the lines specified
+by details.}
 
-\item{feeder_id_loc.}{Character. Where to extract feeder_id from: either the
-file name ("filename") or from the first line of the file ("firstline").}
+\item{feeder_pattern}{Deprecated. Use logger_pattern.}
+
+\item{details.}{Numeric. Where to find logger details, either 0 (file name),
+1 (first line) or 2 (first two lines). See 'details'.}
 }
 \description{
 Loads raw read data and formats for use with the feedr functions. This is
@@ -46,21 +55,31 @@ merely a wrapper function that does many things that you can do yourself.
 It's utility depends on how standardized your data is, and whether you have
 extra details you need to address.
 }
+\details{
+Logger details are the logger_id and the lat/lon for the logger. A value of 0
+reflects that the logger_id is in the file name, defined by the pattern 
+logger_pattern. A value of 1 reflects that the logger_id is in the first line
+of the file, also defined by the pattern logger_pattern. A value of 2 
+reflects that in addition to the logger_id being in the first line ofthe 
+file, the lat/lon information is on the second line, in the format of 
+"latitude, longitude" both in decimal format (spacing doesn't matter, but the
+comma does).
+}
 \examples{
 \dontrun{
 # Load a single raw file: r <- load_raw("GPR13DATA_2015_12_01.csv")
 
-# Load a single raw file where the feeder id is not the default, and is
+# Load a single raw file where the logger id is not the default, and is
 rather something like: 2300, 2500, 2550
-r <- load_raw("2300.csv", feeder_pattern = "[0-9]{4}")
+r <- load_raw("2300.csv", logger_pattern = "[0-9]{4}")
 
-# Load a file where the feeder id is detected as the first line in the file,
+# Load a file where the logger id is detected as the first line in the file,
 not the file name (still use default skip = 1):
-r <- load_raw("2016-01-01_09_30.csv", feeder_id_loc = "firstline")
+r <- load_raw("2016-01-01_09_30.csv", details = 1)
 
 # Note that the following won't work because the pattern matches both the
-feeder id as well as the year:
-r <- load_raw("2300_2015_12_01.csv", feeder_pattern = "[0-9]{4}")
+logger id as well as the year:
+r <- load_raw("2300_2015_12_01.csv", logger_pattern = "[0-9]{4}")
 
 # Extract extra data to be stored in another column:
 r <- load_raw("2300.csv", extra_pattern = "exp[0-9]{1}", extra_name = experiment)

@@ -1,8 +1,12 @@
-library(feedr)
+cat("Starting server...\n")
+library(feedr, lib.loc = "/usr/local/lib/R_exp/site-library/")
 library(magrittr)
 library(shiny)
 library(shinyjs)
 library(shinyBS)
+
+cat("Add assets path\n")
+addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
 
 shinyServer(function(input, output, session) {
 
@@ -11,15 +15,22 @@ shinyServer(function(input, output, session) {
   })
 
   ## Load reactive expressions
-  source("reactive.R", local = TRUE)
+  #source("reactive.R", local = TRUE)
 
   values <- reactiveValues(
-    data_reset = TRUE)
+    data_reset = TRUE,
+    data_import = NULL,
+    data_db = NULL)
 
+  cat("Get Database access if we have it\n")
   ## Get Database access if we have it
   if(file.exists("/usr/local/share/feedr/db_full.R")) {
+    cat("  Getting credentials\n")
     source("/usr/local/share/feedr/db_full.R")
-  } else db <- NULL
+  } else {
+    cat("  No credentials\n")
+    db <- NULL
+  }
 
   ## Current activity
   callModule(module = feedr:::mod_map_current, id = "current", db = db)
@@ -27,88 +38,66 @@ shinyServer(function(input, output, session) {
   ## Pause
   observeEvent(input$pause, browser())
 
+  ## Individuals
+  
+  callModule(feedr:::mod_indiv, id = "indiv", r = r)
+  
   ## Database or Import
   data_db <- callModule(feedr:::mod_data_db, "access", db = db)
   data_import <- callModule(feedr:::mod_data_import, "import")
 
-  observeEvent(data_db(), {
-    values$data_reset <- TRUE
-    values$data_db <- data_db()
+  observe({
+    req(data_db$r())
+    values$data_db <- data_db
+  })
+  
+  observe({
+    req(data_import$r())
+    values$data_import <- data_import
   })
 
-  observeEvent(data_import(), {
-    values$data_reset <- TRUE
-    values$data_import <- data_import()
+  # Which data?
+  observe({
+    raw <- list(values$data_db, values$data_import)
+    raw <- raw[sapply(raw, function(x) !is.null(x$r))]
+    if(length(raw) > 1) raw <- raw[which.max(c(raw[[1]]$time(), raw[[2]]$time()))]
+    if(length(raw) > 0){
+      raw <- raw[[1]]
+      values$r <- raw$r()
+      values$data_name <- raw$name()
+      values$data_time <- raw$time()
+    }
   })
 
-  data <- reactive({
-    #browser()
-    if(!is.null(values$data_db) & !is.null(values$data_import)) {
-      if(values$data_db$time > values$data_import$time) {
-        data <- values$data_db
-        } else {
-          data <- values$data_import
-          data$data$dataaccess <- 0  ## Allow users to download their own data
-        }
-    } else if (!is.null(values$data_db) & is.null(values$data_import)) {
-      data <- values$data_db
-    } else if (is.null(values$data_db) & !is.null(values$data_import)) {
-      data <- values$data_import
-      data$data$dataaccess <- 0  ## Allow users to download their own data
-    } else data <- NULL
-    return(data)
-  })
-
-  data_info <- reactive({
+  output$data_info <- renderText({
     cat("Update active dataset\n")
     t <- "Active dataset: "
-    if(is.null(data())) {
+
+    if(is.null(values$r)) {
       t <- paste0(t, "None")
     } else {
-      t <- paste0(t, data()$name, ". Loaded at ", data()$time)
+      t <- paste0(t, values$data_name, ". Loaded at ", values$data_time)
     }
     return(t)
   })
 
-  output$data_info <- renderText({
-    req(data_info())
-    data_info()
-  })
+  ## Transformations
+  trans <- callModule(feedr:::mod_trans, "trans", r = reactive({values$r}))
 
-  ## Feeders of current data
-  feeders <- reactive({
-    raw() %>%
-      dplyr::select(feeder_id, site_name, lon, lat) %>%
-      unique(.)
-  })
+  r <- reactive({trans$r()})
+  v <- reactive({trans$v()})
 
-  ## Birds of current data
-  birds <- reactive({
-    req(raw())
-    cols <- names(raw())[names(raw()) %in% c("bird_id", "species", "age", "sex", "tagged_on", "site_name")]
-    raw() %>%
-      dplyr::select_(.dots = cols) %>%
+  ## loggers of current data
+  loggers <- reactive({
+    req(r())
+    r() %>%
+      dplyr::select(logger_id, site_name, lon, lat) %>%
       unique(.)
   })
 
   ### Visualizations
   ## Animate Data
-  observe({
-    #browser()
-    req(v(), !values$data_reset)
-    callModule(mod_map_animate, "anim", v = v())
-  })
-
-  observe({
-    req(v(), !values$data_reset)
-    callModule(mod_map_animate_indiv, "anim_indiv", v = v())
-  })
-
-  ## Non-animated Maps
-  observe({
-    req(v(), !values$data_reset)
-    callModule(mod_map_summary, "vis_sum", v = v())
-  })
+  callModule(mod_map_animate, "anim", visits = v)
 
   ## Add weather data
   #Get weather data
@@ -123,21 +112,7 @@ shinyServer(function(input, output, session) {
   # }
 
 
-  ## Look at birds
-  output$img_birds <- renderText({
-    req(birds())
-    # Don't actually know what STRH stands for, assuming Sapphire-throated Hummingbird
-    #paste0("<div class = \"bird-img\">",
-           feedr:::get_image(birds(), input$dt_birds_rows_selected, 300)#,
-    #       "</div>")
-    })
-
-
-  ## Load transformation data tables
-  source("output_data.R", local = TRUE)
-
   ## Links to panels
-
   observeEvent(input$link_db, {
     updateTabsetPanel(session, "main", "Database")
   })
@@ -150,11 +125,15 @@ shinyServer(function(input, output, session) {
     req("current-map_current_bounds" %in% names(input))
     session$sendCustomMessage('activeNavs', 'Database')
     session$sendCustomMessage('activeNavs', 'Import')
+    session$sendCustomMessage('activeNavs', 'Help')
+    shinyjs::show("get-started")
+    hide('loading_app')
+  })
+
+  observe({
+    req(r())
     session$sendCustomMessage('activeNavs', 'Visualizations')
     session$sendCustomMessage('activeNavs', 'Individuals')
     session$sendCustomMessage('activeNavs', 'Transformations')
-    session$sendCustomMessage('activeNavs', 'Help')
-
-    hide('loading_app')
   })
 })

@@ -4,8 +4,8 @@
 \alias{path_layer}
 \title{Add movement layer to leaflet map}
 \usage{
-path_layer(map, p, p_scale = 1, p_title = "Path use", p_pal = c("yellow",
-  "red"), controls = TRUE, p.scale, p.title, p.pal)
+path_layer(map, m, m_scale = 1, m_title = "Path use", m_pal = c("yellow",
+  "orange", "red"), controls = TRUE, p.scale, p.title, p.pal)
 }
 \description{
 Designed for advanced use (see map_leaflet() for general mapping)

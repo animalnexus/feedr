@@ -1,10 +1,15 @@
 # A scaling function used by mapping functions
 scale_area <- function(r, radius = FALSE,
-                       min = 5, max = 105,
+                       min = 10, max = 105,
                        val_max = NULL, val_min = NULL){
 
   if(is.null(val_max)) val_max = max(r, na.rm = TRUE)
   if(is.null(val_min)) val_min = min(r, na.rm = TRUE)
+
+  if(val_max == val_min) {
+    val_min <- val_min * 0.5
+    val_max <- val_max * 1.5
+  }
 
   if(radius) {
     min <- pi * (min)^2
@@ -43,10 +48,10 @@ rename_locs <- function(d) {
 get_locs <- function(d) {
   lat <- c("lat", "latitude")
   lon <- c("lon", "long", "longitude")
-  if(any(lat %in% names(d)) & any(lon %in% names(d)) & "feeder_id" %in% names(d)) {
+  if(any(lat %in% names(d)) & any(lon %in% names(d)) & "logger_id" %in% names(d)) {
     if(sum(lat %in% names(d)) > 1 | sum(lon %in% names(d)) > 1) stop(paste0("Muliple latitude or longitudes in data possible. Looking for latitude (", paste0(lat, collapse = ", "), ") or longitude (", paste0(lon, collapse = ", "),")"))
     d <- rename_locs(d)
-    locs <- d[ , c("feeder_id", "lat", "lon")]
+    locs <- d[ , c("logger_id", "lat", "lon")]
     return(locs)
   } else return(data.frame())
 }

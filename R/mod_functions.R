@@ -1,10 +1,27 @@
+#' @import shiny
+ui_app <- function(name, ..., launch.browser = getOption("shiny.launch.browser", interactive())) {
+  
+  addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
+  
+  app <- shiny::shinyApp(ui = shiny::fluidPage(includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
+                                               shinyjs::useShinyjs(),
+                                               get(paste0("mod_UI_", name))("standalone"),
+                                               mod_UI_stop("stp")),
+                         server = function(input, output, session) {
+                           shiny::callModule(get(paste0("mod_", name)), id = "standalone", ...)
+                           shiny::callModule(mod_stop, "stp")
+                         }
+  )
+  shiny::runApp(app)
+}
+
 startup <- function(x) {
   #require that input objects were at least created (first pass)
   all(c("data_site_name",
         "data_species",
         "data_date",
-        "data_bird_id",
-        "data_feeder_id"
+        "data_animal_id",
+        "data_logger_id"
   ) %in% names(x))
 }
 
@@ -13,20 +30,22 @@ get_counts <- function(c, filter = NULL, summarize_by = NULL) {
   if(!is.null(filter)){
     if("species" %in% names(filter))   c <- dplyr::filter(c, species %in% filter$species)
     if("date" %in% names(filter))      c <- dplyr::filter(c, date %within% interval(filter$date[1], filter$date[2]))
-    if("bird_id" %in% names(filter))   c <- dplyr::filter(c, bird_id %in% filter$bird_id)
-    if("feeder_id" %in% names(filter)) c <- dplyr::filter(c, feeder_id %in% filter$feeder_id)
+    if("animal_id" %in% names(filter))   c <- dplyr::filter(c, animal_id %in% filter$animal_id)
+    if("logger_id" %in% names(filter)) c <- dplyr::filter(c, logger_id %in% filter$logger_id)
   }
 
-  if(!is.null(summarize_by)){
-    c <- c %>%
-      dplyr::group_by_(summarize_by) %>%
-      dplyr::summarize(sum = sum(count)) %>%
-      tidyr::complete_(summarize_by, fill = list('sum' = 0)) %>%
-      dplyr::arrange_(summarize_by) %>%
-      dplyr::mutate_(name = lazyeval::interp(~ paste0(var, " (", sum, ")"), var = as.name(summarize_by)),
-              variable = ~summarize_by) %>%
-      dplyr::rename_("choices" = summarize_by) %>%
-      dplyr::mutate(choices = as.character(choices))
+  if(!is.null(summarize_by)) {
+    if(nrow(c) > 0) {
+      c <- c %>%
+        dplyr::group_by_(summarize_by) %>%
+        dplyr::summarize(sum = sum(count)) %>%
+        tidyr::complete_(summarize_by, fill = list('sum' = 0)) %>%
+        dplyr::arrange_(summarize_by) %>%
+        dplyr::mutate_(name = lazyeval::interp(~ paste0(var, " (", sum, ")"), var = as.name(summarize_by)),
+                       variable = ~summarize_by) %>%
+        dplyr::rename_("choices" = summarize_by) %>%
+        dplyr::mutate(choices = as.character(choices))
+    } else c <- NULL
   }
   return(c)
 }
@@ -61,8 +80,8 @@ values_list <- function(i = NULL, counts){
     d <- list(
       'species' = i$data_species,
       'date' = dates,
-      'bird_id' = i$data_bird_id,
-      'feeder_id' = i$data_feeder_id)
+      'animal_id' = i$data_animal_id,
+      'logger_id' = i$data_logger_id)
   } else {
     if(is.null(i)) {
       i <- counts_sum
@@ -71,64 +90,68 @@ values_list <- function(i = NULL, counts){
       d <- list(
         'species' = selected(i, "species"),
         'date' = c(min(as.Date(selected(i, "date"))), max(as.Date(selected(i, "date")))),
-        'bird_id' = selected(i, "bird_id"),
-        'feeder_id' = selected(i, "feeder_id"))
+        'animal_id' = selected(i, "animal_id"),
+        'logger_id' = selected(i, "logger_id"))
     } else {
       d <- list('species' = as.character(unique(i$species)),
                 'date' = c(min(i$date), max(i$date)),
-                'bird_id' = as.character(unique(i$bird_id)),
-                'feeder_id' = as.character(unique(i$feeder_id)))
+                'animal_id' = as.character(unique(i$animal_id)),
+                'logger_id' = as.character(unique(i$logger_id)))
     }
   }
 
   d$species <- sort(as.character(d$species))
   d$date <- as.Date(d$date)
-  d$bird_id <- sort(as.character(d$bird_id))
-  d$feeder_id <- sort(as.character(d$feeder_id))
+  d$animal_id <- sort(as.character(d$animal_id))
+  d$logger_id <- sort(as.character(d$logger_id))
 
   return(d)
 
 }
 
-## Get bird image
-# database <- unique(finches[, c("bird_id", "species")])
+## Get animal image
+# database <- unique(finches[, c("animal_id", "species")])
 # which = 1:6; size = 300; imgs = NULL; imgs_wiki = NULL
 get_image <- function(database, which, size = 300, imgs = NULL, imgs_wiki = NULL){
 
+  if(!("species" %in% names(database))) database$species <- "XXXX"
+  
   if(is.null(imgs)) imgs <- read.csv(system.file("extdata", "shiny-data", "img_index.csv", package = "feedr"), colClasses = "character")
   if(is.null(imgs_wiki)) imgs_wiki <- read.csv(system.file("extdata", "shiny-data", "wiki_index.csv", package = "feedr"), colClasses = "character")
 
-  ## Get the bird_id (which is either ID or index in data base)
+  ## Get the animal_id (which is either ID or index in data base)
   if(is.null(which) | is.null(database)) {  # No ID
-    bird <- data.frame(bird_id = NA, species = "unknown", img = NA, citation = NA, author = NA)
+    animal <- data.frame(animal_id = NA, species = "unknown", img = NA, citation = NA, author = NA)
   } else if (is.numeric(which)) {  # ID by database location
-    bird <- database[which, c("bird_id", "species")]
-    bird$bird_id[nchar(as.character(bird$bird_id)) == 0] <- NA
+    animal <- database[which, c("animal_id", "species")]
+    animal$animal_id[nchar(as.character(animal$animal_id)) == 0] <- NA
   } else {  # Actual ID
-    bird <- database[database$bird_id %in% which, c("bird_id", "species")]
+    animal <- database[database$animal_id %in% which, c("animal_id", "species")]
   }
 
   ## Get image if we have it
-  if(any(!is.na(bird$bird_id))){
-    bird$id <- 1:nrow(bird) ## Preserve row order
+  if(any(!is.na(animal$animal_id))){
+    animal$id <- 1:nrow(animal) ## Preserve row order
 
     ## Get img from our pictures
     suppressWarnings({
-    bird <- dplyr::left_join(bird, imgs[, c("bird_id", "img", "citation", "author")], by = "bird_id")
+    animal <- dplyr::left_join(animal, imgs[, c("animal_id", "img", "citation", "author")], by = "animal_id")
     })
   }
+  
+  animal$species <- as.character(animal$species)
 
   ## Get img of species from wikimedia if we don't have it
-  bird$species[!(bird$species %in% imgs_wiki$species)] <- "unknown"
-  bird[is.na(bird$img), c("img", "citation", "author")] <- imgs_wiki[imgs_wiki$species %in% bird$species[is.na(bird$img)], c("img", "citation", "author")]
+  animal$species[!(animal$species %in% imgs_wiki$species)] <- "unknown"
+  animal[is.na(animal$img), c("img", "citation", "author")] <- imgs_wiki[match(animal$species[is.na(animal$img)], imgs_wiki$species), c("img", "citation", "author")]
 
   ## Create css to overlay image
-  bird$css <- NA
-  bird$css[!is.na(bird$citation)] <- paste0("<div class = \"wiki-watermark\">Wiki: <a href = \"", bird$citation[!is.na(bird$citation)],"\" target=\"blank\">", bird$author[!is.na(bird$citation)], "</a></div>")
-  bird$css[is.na(bird$citation)] <- paste0("<div class = \"wiki-watermark\">", bird$author[is.na(bird$citation)], "</div>")
+  animal$css <- NA
+  animal$css[!is.na(animal$citation)] <- paste0("<div class = \"wiki-watermark\">Wiki: <a href = \"", animal$citation[!is.na(animal$citation)],"\" target=\"blank\">", animal$author[!is.na(animal$citation)], "</a></div>")
+  animal$css[is.na(animal$citation)] <- paste0("<div class = \"wiki-watermark\">", animal$author[is.na(animal$citation)], "</div>")
 
   ## Create div for img
-  html <- paste0("<img src='", bird$img, "' height = ", size, ">\n", bird$css)
+  html <- paste0("<img src='", animal$img, "' style = 'max-height:", size, "'>\n", animal$css)
   return(html)
 }
 

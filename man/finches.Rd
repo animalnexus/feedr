@@ -6,9 +6,9 @@
 \title{Finches visits to RFID-enabled feeders}
 \format{A data frame with 412 rows and 5 variables:
 \describe{
-  \item{bird_id}{Unique RFID tag attached to a finch}
+  \item{animal_id}{Unique RFID tag attached to a finch}
   \item{time}{Time of read}
-  \item{feeder_id}{Unique id of feeder where read was made}
+  \item{logger_id}{Unique id of logger where read was made}
   \item{lat}{Latitude}
   \item{lon}{Longitude}
   \item{species}{Individual species}}}
@@ -16,8 +16,8 @@
 finches
 }
 \description{
-A dataset containing raw reads of finches visiting feeders on Thompson Rivers
-University campus in Kamloops, BC, Canada
+A dataset containing raw reads of finches visiting feeders (RFID loggers) on
+Thompson Rivers University campus in Kamloops, BC, Canada
 }
 \keyword{datasets}
 

@@ -2,18 +2,18 @@
 % Please edit documentation in R/transformations.R
 \name{move}
 \alias{move}
-\title{'Visits' to 'movements'}
+\title{Movements between loggers}
 \usage{
 move(v, all = FALSE, pass = TRUE)
 }
 \arguments{
-\item{v}{Dataframe. A visits data frame (may contain multiple bird_ids). From
-the output of \code{visits}. Must contain columns \code{bird_id},
-\code{feeder_id}, \code{start}, and \code{end}.}
+\item{v}{Dataframe. A visits data frame (may contain multiple animal_ids). From
+the output of \code{visits}. Must contain columns \code{animal_id},
+\code{logger_id}, \code{start}, and \code{end}.}
 
-\item{all}{Logical. Should all bird_ids be returned, even if the bird made no
+\item{all}{Logical. Should all animal_ids be returned, even if the animal made no
 movements? If TRUE, a data frame with NAs for all columns except
-\code{bird_id} will be returned, if FALSE, an empty data frame will be
+\code{animal_id} will be returned, if FALSE, an empty data frame will be
 returned.}
 
 \item{pass}{Logical. Pass 'extra' columns through the function and append
@@ -21,13 +21,13 @@ them to the output.}
 }
 \value{
 A data frame of movements. These are defined as the bout of time from
-  leaving one feeder to arriving at a second one. Each movement bout consists
+  leaving one logger to arriving at a second one. Each movement bout consists
   of two rows of data containing:
   \itemize{
-  \item ID of the bird (\code{bird_id})
+  \item ID of the animal (\code{animal_id})
   \item Date of event (\code{date})
   \item Time of event (\code{time})
-  \item The ID of feeders involved (\code{feeder_id})
+  \item The ID of loggers involved (\code{logger_id})
   \item The movement path including direction (\code{move_dir})
   \item The movement path independent of direction (\code{move_path})
   \item The 'strength' of the connection (inverse of time taken to move
@@ -38,7 +38,7 @@ A data frame of movements. These are defined as the bout of time from
   }
 }
 \description{
-Turns visits to mulitple feeders into movements between feeders
+Turns visits to mulitple loggers into movements between loggers
 }
 \examples{
 
@@ -49,7 +49,7 @@ m <- move(v)
 library(dplyr)
 
 m.totals <- m \%>\%
-  group_by(bird_id, move_path) \%>\%
+  group_by(animal_id, move_path) \%>\%
   summarize(n_path = length(move_path) /2)
 
 # Calculate across different experiments:

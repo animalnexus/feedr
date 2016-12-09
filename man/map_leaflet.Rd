@@ -4,31 +4,31 @@
 \alias{map_leaflet}
 \title{Map data using leaflet}
 \usage{
-map_leaflet(u = NULL, p = NULL, locs = NULL, u_scale = 1, p_scale = 1,
-  u_title = "Time", p_title = "Path use", u_pal = c("yellow", "red"),
-  p_pal = c("yellow", "red"), controls = TRUE, u.scale, p.scale, u.title,
+map_leaflet(p = NULL, m = NULL, locs = NULL, p_scale = 1, m_scale = 1,
+  p_title = "Time", m_title = "Path use", p_pal = c("yellow", "red"),
+  m_pal = c("yellow", "red"), controls = TRUE, u.scale, p.scale, u.title,
   p.title, u.pal, p.pal)
 }
 \arguments{
-\item{u}{Dataframe. Summarized 'use' data with columns \code{feeder_id} and
-\code{amount}. It can also contain \code{bird_id} for individual-based
+\item{p}{Dataframe. Summarized 'presence' data with columns \code{logger_id} and
+\code{amount}. It can also contain \code{animal_id} for individual-based
 data, and lat/lon instead of a locs argument.}
 
-\item{p}{Dataframe. Summarized 'path' data with columns \code{feeder_id},
-\code{move_path}, and \code{path_use}. It can also contain \code{bird_id}
+\item{m}{Dataframe. Summarized 'movement' data with columns \code{logger_id},
+\code{move_path}, and \code{path_use}. It can also contain \code{animal_id}
 for individual-based data, and lat/lon instead of a locs argument.}
 
-\item{locs}{Dataframe. Lat and lon for each feeder_id, required if lat and
-lon not in either u or p.}
+\item{locs}{Dataframe. Lat and lon for each logger_id, required if lat and
+lon not in either p or m.}
 
-\item{u_scale, p_scale}{Numerical. Scaling constants to increase (> 1) or
-decrease (< 1) the relative size of use (u) and path (p) data.}
+\item{p_scale, m_scale}{Numerical. Scaling constants to increase (> 1) or
+decrease (< 1) the relative size of presence (p) and movements (m) data.}
 
-\item{u_title, p_title}{Character. Titles for the legends of use (u) and
-path (p) data.}
+\item{p_title, m_title}{Character. Titles for the legends of presence (p) and
+movements (m) data.}
 
-\item{u_pal, p_pal}{Character vectors. Colours used to construct gradients for
-use (u) and path (p) data.}
+\item{p_pal, m_pal}{Character vectors. Colours used to construct gradients for
+presence (p) and path (m) data.}
 
 \item{controls}{Logical. Add controls to map (allows showing/hiding of
 different layers)}
@@ -36,44 +36,44 @@ different layers)}
 \item{u.scale, p.scale, u.title, p.title, u.pal, p.pal}{Depreciated.}
 }
 \value{
-An interactive leaflet map with layers for use, paths and feeder positions.
+An interactive leaflet map with layers for presence, paths and logger positions.
 }
 \description{
-Visualize feeder use and path data using leaflet for R. This produces
-an interactive html map. The user must summarize feeder use and path data in
+Visualize presence at and movements between loggers using leaflet for R. This produces
+an interactive html map. The user must summarize presence and movements in
 the manner that they wish to visualize it. This function can take invidiual
-bird data as well as grand summarise (see Details and Examples).
+data as well as grand summaries (see Details and Examples).
 }
 \examples{
 v <- visits(finches)
-f <- feeding(v, bw = 15)
+p <- presence(v, bw = 15)
 m <- move(v)
 
 # Summarise data for visualization (use totals):
 library(dplyr)
-f_all <- f \%>\%
-  group_by(feeder_id, lat, lon) \%>\%
-  summarise(amount = sum(feed_length) / bird_n[1])
+p_all <- p \%>\%
+  group_by(logger_id, lat, lon) \%>\%
+  summarise(amount = sum(length) / animal_n[1])
 
 m_all <- m \%>\%
-  group_by(feeder_id, move_path, lat, lon) \%>\%
-  summarise(path_use = length(move_path) / bird_n[1])
+  group_by(logger_id, move_path, lat, lon) \%>\%
+  summarise(path_use = length(move_path) / animal_n[1])
 
 # Look at total summary maps
-map_leaflet(u = f_all, p = m_all)
+map_leaflet(p = p_all, m = m_all)
 
 # Summarise data for visualization (use individuals):
-f_indiv <- f \%>\%
-  group_by(bird_id, feeder_id, lat, lon) \%>\%
-  summarise(amount = sum(feed_length))
+p_indiv <- p \%>\%
+  group_by(animal_id, logger_id, lat, lon) \%>\%
+  summarise(amount = sum(length))
 
 m_indiv <- m \%>\%
-  group_by(bird_id, feeder_id, move_path, lat, lon) \%>\%
+  group_by(animal_id, logger_id, move_path, lat, lon) \%>\%
   summarise(path_use = length(move_path))
 
 # Look at individual summary maps (note that Leaflet just stacks individuals
 # one on top of the other)
-map_leaflet(u = f_indiv, p = m_indiv)
+map_leaflet(p = p_indiv, m = m_indiv)
 
 }
 

@@ -2,6 +2,31 @@ body {
   padding-top: 70px;
 }
 
+code {
+  color: #337ab7;
+  background-color: #F5F5F5;
+}
+
+.help {
+  position: relative;
+  bottom: 5px;
+  font-size: 8pt;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #337ab7;
+  border-width: 0;
+  border-radius: 50%;
+  box-shadow: 0.25em 0.25em 0.25em #888888;
+  width: 1.75em;
+  height: 1.75em;
+  padding: 0;
+}
+
+.modal-body h4 {
+  font-weight: bold;
+}
+
+
 .nav-pills > li > a {
   padding: 5px;
 }
@@ -12,10 +37,39 @@ body {
   height: 40px;
 }
 
-.shiny-output-error-validation {
-  padding: 1em;
+.stop-button {
+  position: fixed;
+  top: 5px;
+  right: 5px;
+}
+
+.alert {
+  /*padding: 1em;
   font-weight: bold;
-  color: green;
+  color: green;*/
+  padding: 10px;
+  max-width: 350px;
+  max-height: 200px;
+  margin: auto;
+  text-align:center;
+  font-size: 100%;
+  border-style: solid;
+  border-radius: 5px;
+  border-color: #337ab7;
+  color: #337ab7;
+  box-shadow: 10px 10px 5px #888888;
+}
+
+.shiny-output-error-validation {
+  /*padding: 1em;
+  color: green;*/
+  padding: 10px;
+  width: auto;
+  height: auto;
+  margin: auto;
+  font-size: 120%;
+  color: #337ab7;
+  font-weight: bold;
 }
 
 .shiny-progress .progress-text {
@@ -27,23 +81,14 @@ body {
   color: #03F;
 }
 
-img {
-  border: 1;
-  max-width: 100%;
-}
-
 element.style {
   width: 33.33%;
-}
-
-.bird-img {
-  position:relative;
-  display: block;
 }
 
 .current {
   width: 325px;
   overflow: hidden;
+  position:relative;
 }
 
 .current img {
@@ -51,14 +96,19 @@ element.style {
     float: left;
 }
 
+img{
+  height: auto;
+  max-width: 100%;
+}
 
-
+/*https://css-tricks.com/text-blocks-over-image/*/
 .wiki-watermark {
   background: rgb(0, 0, 0); /* fallback color */
-    background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.7);
   position:absolute;
-  left:0px;
-  bottom:0px;
+  width: auto;
+  height: auto;
+  bottom:0;
   padding: 5px;
   color:white;
   font-weight:bold;
@@ -80,7 +130,7 @@ element.style {
   border-left-width: 3pt;
   margin: 5px;
   bottom: 1px;
-  left: 1px;
+  right: 1px;
   position: fixed;
 }
 
@@ -89,20 +139,7 @@ element.style {
   font-weight:bold;
   font-size: 85%;
   margin: 5px;
-  bottom: 1px;
+  bottom: 25px;
   right: 1px;
   position: fixed;
-}
-
-.popover {
-  max-width: 600px;
-  width:auto;
-}
-.popover-title {
-  font-size: 15px;
-  font-weight: bold;
-}
-
-.popover-content {
-  font-size: 12px;
 }

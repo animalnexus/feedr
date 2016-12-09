@@ -2,23 +2,28 @@
 % Please edit documentation in R/load.R
 \name{load_format}
 \alias{load_format}
-\title{Internal function: Format data}
+\title{Format data}
 \usage{
-load_format(r, tz, tz_disp = NULL, time_format = "ymd HMS")
+load_format(r, tz = Sys.timezone(), tz_disp = NULL,
+  time_format = "ymd HMS")
 }
 \arguments{
 \item{r}{Data frame. Data frame to format.}
 
 \item{tz}{Character. The time zone the date/times are in (should match one of
-the zones produced by \code{OlsonNames())}.}
+the zones produced by \code{OlsonNames())}. Defaults to user's system
+timezone.}
 
 \item{tz_disp}{Character. The time zone the date/times should be displayed in
 (if not the same as \code{tz}; should match one of the zones produced by
 \code{OlsonNames())}.}
 
-\item{time_format}{Character. The time format of the 'time' column. Defaults to "ymd HMS". Should be in formats usable by the \code{parse_date_time()} function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.).}
+\item{time_format}{Character. The time format of the 'time' column. Defaults
+to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
+function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
+etc.).}
 }
 \description{
-Formats manually loaded data. Not necessary if using any of the helper loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, \code{data_dl()}, or \code{load_web()}.
+Formats manually loaded data. Not necessary if using any of the helper loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, or \code{data_dl()}.
 }
 

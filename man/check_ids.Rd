@@ -2,31 +2,35 @@
 % Please edit documentation in R/housekeeping.R
 \name{check_ids}
 \alias{check_ids}
-\title{Check for and omit non-bird bird ids}
+\title{Check for and omit non-animal animal ids}
 \usage{
-check_ids(r, bird_ids, omit = c("wand", "error"))
+check_ids(r, ids, omit = c("wand", "error"), id_length = 10, bird_ids)
 }
 \arguments{
 \item{r}{Data frame. A data frame of read data, with at least column
-\code{bird_id}.}
+\code{animal_id}.}
 
-\item{bird_ids}{Character or Data frame. Either the name and location of a
-.csv file containing the bird id index or a data frame of the bird id
-index. In either case, the data must contain two columns: \code{bird_id}
+\item{ids}{Character or Data frame. Either the name and location of a
+.csv file containing the animal id index or a data frame of the animal id
+index. In either case, the data must contain two columns: \code{animal_id}
 and \code{species}.}
 
 \item{omit}{Character vector. All the values of \code{species} in the
-bird id index which you would like to omit from your data. Defaults to
+animal id index which you would like to omit from your data. Defaults to
 \code{c("wand", "error")}.}
+
+\item{id_length}{Numeric. How many characters are expected in each id? This
+will test to make sure all ids are the right length (i.e. make sure
+leading zeros haven't been omitted). NA skips this test.}
 }
 \value{
-A data frame without the specified bird ids. Messages are printed to
-  inform the user of matching or non-matching bird ids.
+A data frame without the specified animal ids. Messages are printed to
+  inform the user of matching or non-matching animal ids.
 }
 \description{
-This function pads all short ids with leading zeros, then compares the bird
+This function pads all short ids with leading zeros, then compares the animal
 ids in your data file to those in an index file. Any ids matched to a species
-with a value in the \code{omit_bird} argument will be omitted from the data
+with a value in the \code{omit_animal} argument will be omitted from the data
 set.
 }
 \details{
@@ -35,12 +39,10 @@ or which you know are wands.
 }
 \examples{
 \dontrun{
-r <- load.web("downloaded_file.csv")
-r <- check.ids(r, bird_ids = "bird_index.csv")
+r <- check_ids(finches, ids = "animal_index.csv")
 
-r <- load.web("downloaded_file.csv")
-b <- read.csv("bird_index.csv")
-r <- check.ids(r, bird_ids = b)
+index <- read.csv("animal_index.csv")
+r <- check_ids(finches, ids = index)
 }
 }
 

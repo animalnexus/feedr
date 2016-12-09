@@ -1,16 +1,23 @@
 # Launch current
 
-mod_current <- function() {
+# mod_current <- function() {
+#   if(file.exists("/usr/local/share/feedr/db_full.R")) {
+#     source("/usr/local/share/feedr/db_full.R")
+#   } else db <- NULL
+#
+#   app <- shiny::shinyApp(ui = shiny::fluidPage(mod_UI_map_current("standalone")),
+#                          server = function(input, output, session) {
+#                            shiny::callModule(mod_map_current, "standalone", db = db)
+#                          }
+#   )
+#   shiny::runApp(app, launch.browser = TRUE)
+# }
+
+ui_current <- function(){
   if(file.exists("/usr/local/share/feedr/db_full.R")) {
     source("/usr/local/share/feedr/db_full.R")
   } else db <- NULL
-
-  app <- shiny::shinyApp(ui = shiny::fluidPage(mod_UI_map_current("standalone")),
-                         server = function(input, output, session) {
-                           shiny::callModule(mod_map_current, "standalone", db = db)
-                         }
-  )
-  shiny::runApp(app, display.mode = "normal")
+  ui_app(name = "map_current", db = db)
 }
 
 
@@ -22,12 +29,11 @@ mod_UI_map_current <- function(id) {
   ns <- NS(id)
 
   tagList(
-    includeCSS(system.file("extra", "style.css", package = "feedr")),
     fluidRow(
       column(12,
              leafletOutput(ns("map_current"), height = 500),
              htmlOutput(ns("current_time")),
-             actionButton(ns("current_update"), "Update Now", style = "margin: 0 auto")#,
+             div(actionButton(ns("current_update"), "Update Now", style = "margin: 0 auto"), actionButton(ns("help_update"), "?", class = "help"))#,
              #htmlOutput(ns("summary_current")),
              #actionButton(ns("pause"), "Pause")
       )
@@ -42,6 +48,39 @@ mod_UI_map_current <- function(id) {
 mod_map_current <- function(input, output, session, db) {
 
   ns <- session$ns
+
+  sp_icons <- leaflet::awesomeIconList("MOCH" = leaflet::makeAwesomeIcon(icon = "star",
+                                                                         marker = "green",
+                                                                         iconColor = "white"),
+                                       "HOFI" = leaflet::makeAwesomeIcon(icon = "star",
+                                                                         marker = "red",
+                                                                         iconColor = "white"),
+                                       "DEJU" = leaflet::makeAwesomeIcon(icon = "star",
+                                                                         marker = "darkpurple",
+                                                                         iconColor = "white"))
+
+  get_icon <- function(x) {
+    cols <- c("red" = "#D43E2A",
+              "green" = "#6FAB25",
+              "darkpurple" = "#5A386A")
+
+    span(class="fa-stack fa-md",
+         div(icon("circle", class = "fa-stack-2x"), style = paste0("color:", cols[x$markerColor])),
+         icon(x$icon, class = "fa-stack-1x fa-inverse"))
+  }
+
+  observeEvent(input$help_update, {
+    showModal(modalDialog(size = "m",
+                          title = "Update Current Activity",
+                          easyClose = TRUE,
+                          tagList("This map reflects recent activity at RFID-enabled bird feeders by tagged birds on campus at Thompson Rivers University.",
+                                  tags$ul(style = "margin-top: 10px;",
+                                    tags$li("The map will automatically refresh every five minutes, or you can force an update by clicking on the 'Update Now' button."),
+                                    tags$li("Click on a 'pin' to get more information about the individual and the visit."),
+                                    tags$li("Pin colour reflects species:"),
+                                  lapply(1:length(sp_icons), function(x) tagList(get_icon(sp_icons[[x]]), " = ", names(sp_icons)[x]))))
+                          ))
+  })
 
   if(!is.null(db) && !curl::has_internet()) db <- NULL
 
@@ -58,16 +97,6 @@ mod_map_current <- function(input, output, session, db) {
     return(circle)
   }
 
-  sp_icons <- leaflet::awesomeIconList("MOCH" = leaflet::makeAwesomeIcon(icon = "star",
-                                                                                       marker = "green",
-                                                                                       iconColor = "white"),
-                                       "HOFI" = leaflet::makeAwesomeIcon(icon = "star",
-                                                                                marker = "red",
-                                                                                iconColor = "white"),
-                                       "DEJU" = leaflet::makeAwesomeIcon(icon = "star",
-                                                                                    marker = "darkpurple",
-                                                                                    iconColor = "white"))
-
   values <- reactiveValues(
     current_map = NULL,
     current_time = NULL)
@@ -79,7 +108,7 @@ mod_map_current <- function(input, output, session, db) {
   if(!is.null(db)){
     con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
     suppressWarnings({
-      feeders_all <- dbGetQuery(con,
+      loggers_all <- dbGetQuery(con,
                                 statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
                                                   "FROM feeders, fieldsites",
                                                   "WHERE (fieldsites.site_name = feeders.site_name)")) %>%
@@ -127,11 +156,11 @@ mod_map_current <- function(input, output, session, db) {
           data <- data %>%
             load_format(., tz = "UTC", tz_disp = "America/Vancouver") %>%
             visits(.) %>%
-            dplyr::group_by(bird_id, feeder_id, species, age, sex, lon, lat) %>%
+            dplyr::group_by(animal_id, logger_id, species, age, sex, lon, lat) %>%
             dplyr::summarize(most_recent = max(end),
-                             n = length(bird_id),
+                             n = length(animal_id),
                              time = round(sum(end - start)/60, 2)) %>%
-            dplyr::group_by(feeder_id) %>%
+            dplyr::group_by(logger_id) %>%
             dplyr::do(circle(point = unique(.[, c("lat", "lon")]), data = ., radius = 0.01))
         } else data <- NULL
       })
@@ -139,35 +168,23 @@ mod_map_current <- function(input, output, session, db) {
     data
   })
 
-  output$current_time <- renderText(paste0("Most recent activity: ", as.character(max(current()$most_recent))))
+  output$current_time <- renderText(paste0("Most recent activity: ", as.character(max(current()$most_recent)), " Pacific<br>",
+                                           "Most recent update: ", as.character(lubridate::with_tz(values$current_time, tz = "America/Vancouver")), " Pacific"))
 
   ## Map of current activity
   output$map_current <- renderLeaflet({
     req(current())
     cat("Initializing map of current activity (", as.character(Sys.time()), ") ...\n")
     isolate({
-      d <- feeders_all %>% dplyr::filter(site_name == "Kamloops, BC")
-      map <- leaflet(data = d) %>%
-        addTiles(group = "Open Street Map") %>%
-        addProviderTiles("Stamen.Toner", group = "Black and White") %>%
-        addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
-        addProviderTiles("Esri.WorldTopoMap", group = "Terrain") %>%
-        addCircleMarkers(~lon, ~lat,
-                         popup  = htmltools::htmlEscape(as.character(unlist(d$feeder_id))),
-                         group = "Loggers",
-                         weight = 1,
-                         opacity = 1,
-                         fillOpacity = 1,
-                         fillColor = "#337ab7",
-                         color = "black",
-                         radius = 7) %>%
+      d <- loggers_all %>% dplyr::filter(site_name == "Kamloops, BC")
+      map <- map_leaflet_base(locs = d) %>%
         leaflet::addScaleBar(position = "bottomright") %>%
         leaflet::addAwesomeMarkers(data = current(),
                                    icon = ~sp_icons[species],
                                    popup = ~paste0("<div class = \"current\">",
-                                                   feedr:::get_image(current(), bird_id, 100),
+                                                   get_image(current(), animal_id, "100px"),
                                                    "<strong>Species:</strong> ", species, "<br>",
-                                                   "<strong>Bird ID:</strong> ", bird_id, "<br>",
+                                                   "<strong>Animal ID:</strong> ", animal_id, "<br>",
                                                    "<strong>No. RFID reads:</strong> ", n, "<br>",
                                                    "<strong>Total time:</strong> ", time, "min <br>",
                                                    "<strong>Most recent visit:</strong> ", most_recent, "<br>",
@@ -192,10 +209,10 @@ mod_map_current <- function(input, output, session, db) {
         leaflet::addAwesomeMarkers(data = current(),
                                    icon = ~sp_icons[species],
                                    popup = ~paste0("<strong>Species:</strong> ", species, "<br>",
-                                                   "<strong>Bird ID:</strong> ", bird_id, "<br>",
+                                                   "<strong>Animal ID:</strong> ", animal_id, "<br>",
                                                    "<strong>No. RFID reads:</strong> ", n, "<br>",
                                                    "<strong>Total time:</strong> ", time, "min <br>",
-                                                   feedr:::get_image(current(), bird_id, 100)),
+                                                   get_image(current(), animal_id, 100)),
                                    lng = ~lon, lat = ~lat, group = "Activity")
 
     } else {
@@ -209,9 +226,9 @@ mod_map_current <- function(input, output, session, db) {
     req(current())
     paste0("<strong>Time:</strong> ", Sys.time(), "<br>",
            "<strong>Interval:</strong> 7 minutes", "<br>",
-           "<strong>No. birds:</strong> ", length(unique(current()$bird_id)), "<br>",
-           "<strong>No. feeders:</strong> ", length(unique(current()$feeder_id)), "<br>",
-           "<strong>Total feeding time:</strong> ", sum(current()$time), " minutes", "<br>"
+           "<strong>No. animals:</strong> ", length(unique(current()$animal_id)), "<br>",
+           "<strong>No. loggers:</strong> ", length(unique(current()$logger_id)), "<br>",
+           "<strong>Total time present:</strong> ", sum(current()$time), " minutes", "<br>"
     )
   })
 

@@ -4,27 +4,36 @@
 \alias{load_raw_all}
 \title{Load and combine raw data files}
 \usage{
-load_raw_all(r_dir, pattern = "DATA", tz = "America/Vancouver",
-  tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
-  extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1)
+load_raw_all(r_dir, r_list, pattern = "DATA", tz = Sys.timezone(),
+  tz_disp = NULL, details = 1, logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
+  time_format = "mdy HMS", extra_pattern = NULL, extra_name = NULL,
+  sep = "", skip = 0, feeder_pattern)
 }
 \arguments{
 \item{r_dir}{Character. The director that holds all your raw data files (can
-be in subdirectories)}
+be in subdirectories).}
+
+\item{r_list}{Character. A list of files to import.}
 
 \item{pattern}{Character. A regular expression pattern that matches the files
 you wish to include. Defaults to "DATA" to include only DATA files and not
 NOTE files.}
 
 \item{tz}{Character. The time zone the date/times are in (should match one of
-the zones produced by \code{OlsonNames())}.}
+the zones produced by \code{OlsonNames())}. Defaults to user's system
+timezone.}
 
 \item{tz_disp}{Character. The time zone the date/times should be displayed in
 (if not the same as \code{tz}; should match one of the zones produced by
 \code{OlsonNames())}.}
 
-\item{feeder_pattern}{Character. A regular expression matching the feeder id
+\item{logger_pattern}{Character. A regular expression matching the logger id
 in the file name.}
+
+\item{time_format}{Character. The time format of the 'time' column. Defaults
+to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
+function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
+etc.).}
 
 \item{extra_pattern}{Character vector. A vector of regular expressions
 matching any extra information in the file or directory names.}
@@ -36,11 +45,31 @@ order of \code{extra_pattern} for storing the results of the pattern.}
 \code{read.table()} call (see \code{sep =} under \code{?read.table} for
 more details).}
 
-\item{skip}{Character. An override for the skip in the \code{read.table()}
-call (see \code{skip =} under \code{?read.table} for more details).}
+\item{skip}{Character. Extra lines to skip in addition to the lines specified
+by details.}
+
+\item{feeder_pattern}{Deprecated. Use logger_pattern instead.}
+
+\item{details.}{Numeric. Where to find logger details, either 0 (file name),
+1 (first line) or 2 (first two lines). See 'details'.}
 }
 \description{
-This is a wrapper function which loads and combines all raw data files from a
-series of nested folders.
+This is a wrapper function which loads and combines raw data files. If
+\code{r_dir} is specified, these include all files in series of nested
+folders, if \code{r_list} is specified it includes only the list of files
+specified.
+}
+\details{
+Note that if both \code{r_dir} and \code{r_list} are specified, the directory
+overrides the file list.
+
+Logger details are the logger_id and the lat/lon for the logger. A value of 0
+reflects that the logger_id is in the file name, defined by the pattern 
+logger_pattern. A value of 1 reflects that the logger_id is in the first line
+of the file, also defined by the pattern logger_pattern. A value of 2 
+reflects that in addition to the logger_id being in the first line ofthe 
+file, the lat/lon information is on the second line, in the format of 
+"latitude, longitude" both in decimal format (spacing doesn't matter, but the
+comma does).
 }
 

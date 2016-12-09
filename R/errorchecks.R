@@ -1,5 +1,5 @@
 
-check_name <- function(d, n = c("bird_id", "feeder_id"), type = "visit") {
+check_name <- function(d, n = c("animal_id", "logger_id"), type = "visit") {
   if(!all(n %in% names(d))) stop(paste0("You should be using '", type, "' data. Required columns aren't present. Require: ", paste0("'", n, "'", collapse = ", ")), call. = FALSE)
 }
 
@@ -10,18 +10,18 @@ check_time <- function(d, n = c("start", "end"), internal = TRUE) {
 }
 
 check_indiv <- function(d) {
-  if(length(unique(d$bird_id)) > 1) stop("This function is only designed to be run on one individual at a time. Consider using the ddply() function from the plyr package, or the do() function from the dplyr package to apply this function to all birds.", call. = FALSE)
+  if(length(unique(d$animal_id)) > 1) stop("This function is only designed to be run on one individual at a time. Consider using the ddply() function from the plyr package, or the do() function from the dplyr package to apply this function to all animals.", call. = FALSE)
 }
 
 check_format <- function(d, map = FALSE, disp = FALSE) {
-  msg_f <- "Using '_' in feeder_id values conflicts with the mapping functions."
-  msg_b <- "Using '_' in bird_id values conflicts with the displacement/dominance functions."
+  msg_l <- "Using '_' in logger_id values conflicts with the mapping functions."
+  msg_a <- "Using '_' in animal_id values conflicts with the displacement/dominance functions."
 
-  if(!map) msg_f <- paste0(msg_f, " You should remove any '_'s if you plan to use these functions.")
-  if(!disp) msg_b <- paste0(msg_b, " You should remove any '_'s if you plan to use these functions.")
+  if(!map) msg_l <- paste0(msg_l, " You should remove any '_'s if you plan to use these functions.")
+  if(!disp) msg_a <- paste0(msg_a, " You should remove any '_'s if you plan to use these functions.")
 
-  if("feeder_id" %in% names(d)) if(any(stringr::str_count(d$feeder_id, "_") > 0)) message(msg_f)
-  if("bird_id" %in% names(d)) if(any(stringr::str_count(d$bird_id, "_") > 0)) message(msg_b)
+  if("logger_id" %in% names(d)) if(any(stringr::str_count(d$logger_id, "_") > 0)) message(msg_l)
+  if("animal_id" %in% names(d)) if(any(stringr::str_count(d$animal_id, "_") > 0)) message(msg_a)
 }
 
 

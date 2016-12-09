@@ -7,17 +7,17 @@
 \format{A data frame with 22095 rows and 6 variables:
 \describe{
   \item{experiment}{Which experiment (site) the data was collected at}
-  \item{feeder_id}{Unique id of feeder where read was made}
-  \item{bird_id}{Unique RFID tag attached to a chickadee}
+  \item{logger_id}{Unique id of logger where read was made}
+  \item{animal_id}{Unique RFID tag attached to a chickadee}
   \item{time}{Time of read}
-  \item{lat}{Latitude of feeder location}
-  \item{lon}{Longitude of feeder location}}}
+  \item{lat}{Latitude of logger location}
+  \item{lon}{Longitude of logger location}}}
 \usage{
 chickadees
 }
 \description{
-A dataset containing raw reads of black-capped chickadees visiting feeders in
-Prince George, BC, Canada
+A dataset containing raw reads of black-capped chickadees visiting
+RFID-enabled feeders (loggers) in Prince George, BC, Canada
 }
 \keyword{datasets}
 

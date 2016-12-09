@@ -1,10 +1,4 @@
-dep <- function(x){
-  if (exists(x)) {
-    warning("Argument ", x, " is deprecated; please use ", gsub("\\.", "_", x), " instead.",
-            call. = FALSE)
-  }
-}
-
+last <- function(x)  return(x[length(x)])
 
 #' Get timezone offset from UTC
 #'
@@ -24,7 +18,7 @@ tz_offset <- function(tz, dst = FALSE, tz_name = FALSE) {
 mp <- function(x) paste0(sort(unlist(strsplit(as.character(x), "_"))), collapse = "_")
 
 # Grab extra columns unique only
-keep_extra <- function(d, n, only = c("bird_id", "feeder_id", "date")){
+keep_extra <- function(d, n, only = c("animal_id", "logger_id", "date")){
 
   # Ungroup, if exists
   d <- dplyr::ungroup(d)
@@ -38,34 +32,51 @@ keep_extra <- function(d, n, only = c("bird_id", "feeder_id", "date")){
     d <- d[, names(d) != "loc",]
   }
 
-  extra <- names(d)[!(names(d) %in% c("bird_id", "feeder_id", "date"))]
-  bird_id <- feeder_id <- date <- all <- NULL
+  extra <- names(d)[!(names(d) %in% c("animal_id", "logger_id", "date"))]
+  animal_id <- logger_id <- date <- all <- NULL
 
-  if("bird_id" %in% only) bird_id <- extra[lapply(extra, FUN = function(x) nrow(unique(cbind(d$bird_id, d[, x])))) == length(unique(d$bird_id))]
-  if("feeder_id" %in% only) feeder_id <- extra[lapply(extra, FUN = function(x) nrow(unique(cbind(d$feeder_id, d[, x])))) == length(unique(d$feeder_id))]
+  if("animal_id" %in% only) animal_id <- extra[lapply(extra, FUN = function(x) nrow(unique(cbind(d$animal_id, d[, x])))) == length(unique(d$animal_id))]
+  if("logger_id" %in% only) logger_id <- extra[lapply(extra, FUN = function(x) nrow(unique(cbind(d$logger_id, d[, x])))) == length(unique(d$logger_id))]
   if("date" %in% only) date <- extra[lapply(extra, FUN = function(x) nrow(unique(cbind(d$date, d[, x])))) == length(unique(d$date))]
 
-  #if(all(c("feeder_id", "bird_id", "date") %in% only)) {
-    all <- intersect(intersect(bird_id, feeder_id), date)
-    bf <- setdiff(intersect(bird_id, feeder_id), all)
-    bd <- setdiff(intersect(bird_id, date), all)
-    fd <- setdiff(intersect(feeder_id, date), all)
-    feeder_id <- setdiff(feeder_id, all)
-    bird_id <- setdiff(setdiff(bird_id, all), bf)
+  #if(all(c("logger_id", "animal_id", "date") %in% only)) {
+    all <- intersect(intersect(animal_id, logger_id), date)
+    bf <- setdiff(intersect(animal_id, logger_id), all)
+    bd <- setdiff(intersect(animal_id, date), all)
+    fd <- setdiff(intersect(logger_id, date), all)
+    logger_id <- setdiff(logger_id, all)
+    animal_id <- setdiff(setdiff(animal_id, all), bf)
     date <- setdiff(setdiff(setdiff(date, all), bd), fd)
   #}
 
-  if(length(all) > 0) all <- unique(d[, c("bird_id", "feeder_id", "date", all)]) else all <- NULL
-  if(length(bird_id) > 0) bird_id <- unique(d[, c("bird_id", bird_id)]) else bird_id <- NULL
-  if(length(feeder_id) > 0) feeder_id <- unique(d[, c("feeder_id", feeder_id)]) else feeder_id <- NULL
+  if(length(all) > 0) all <- unique(d[, c("animal_id", "logger_id", "date", all)]) else all <- NULL
+  if(length(animal_id) > 0) animal_id <- unique(d[, c("animal_id", animal_id)]) else animal_id <- NULL
+  if(length(logger_id) > 0) logger_id <- unique(d[, c("logger_id", logger_id)]) else logger_id <- NULL
   if(length(date) > 0) date <- unique(d[, c("date", date)]) else date <- NULL
-  return(list(all = all, bird_id = bird_id, feeder_id = feeder_id, date = date))
+  return(list(all = all, animal_id = animal_id, logger_id = logger_id, date = date))
 }
 
 merge_extra <- function(d, extra, only = NULL) {
-  if(!is.null(extra$all)) d <- dplyr::left_join(d, extra$all, by = c("bird_id", "feeder_id", "date"))
-  if(!is.null(extra$bird_id)) d <- dplyr::left_join(d, extra$bird_id, by = "bird_id")
-  if(!is.null(extra$feeder_id)) d <- dplyr::left_join(d, extra$feeder_id, by = "feeder_id")
+  if(!is.null(extra$all)) d <- dplyr::left_join(d, extra$all, by = c("animal_id", "logger_id", "date"))
+  if(!is.null(extra$animal_id)) d <- dplyr::left_join(d, extra$animal_id, by = "animal_id")
+  if(!is.null(extra$logger_id)) d <- dplyr::left_join(d, extra$logger_id, by = "logger_id")
   if(!is.null(extra$date)) d <- dplyr::left_join(d, extra$date, by = "date")
   return(d)
+}
+
+round_6 <- function(time, by = "12") {
+  h <- lubridate::hour(time)
+  d <- lubridate::date(time)
+  tz <- lubridate::tz(time)
+ if(h >= 6){
+   time <- d + lubridate::hours(6)
+   if (by != 24 & h >= 18) {
+     time <- d + lubridate::hours(18)
+   }
+ } else if (h < 6) {
+   if(by == 12) time <- d - lubridate::days(1) + lubridate::hours(18)
+   if(by == 24) time <- d - lubridate::days(1) + lubridate::hours(6)
+ }
+  time <- lubridate::force_tz(as.POSIXct(time), tz = tz)
+  return(time)
 }

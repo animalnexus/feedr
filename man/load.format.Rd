@@ -2,11 +2,11 @@
 % Please edit documentation in R/load.R
 \name{load.format}
 \alias{load.format}
-\title{Depreciated: Internal function: Format data}
+\title{Deprecated: Internal function: Format data}
 \usage{
 load.format(r, tz, tz_disp = NULL)
 }
 \description{
-Depreciated use \code{\link{load_format}} instead.
+Deprecated use \code{\link{load_format}} instead.
 }
 
