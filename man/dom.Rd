@@ -19,19 +19,19 @@ losses) individuals must have (omitted otherwise).}
 \value{
 The best guess dominance hierarchies (there may be more than one).
 
-A list with the following named items: 
-\enumerate{ 
+A list with the following named items:
+\enumerate{
   \item \code{dominance}: A best guess at the dominance hierarchy (most to
 least dominant) (one vector per 'best guess')
 
   \item \code{reversals}: Which individuals show reversals? (i.e. A > B, B >
   C but C > A) (one vector per 'best guess')
-   
-  \item \code{interactions}: A matrix of dominance interactions. Displacers 
+
+  \item \code{interactions}: A matrix of dominance interactions. Displacers
   across the top, displacees down the side. Values are the numbers of wins
   (upper triangle) or losses (lower triangle) against the opposing
   individual. (one matrix per 'best guess')
-  
+
   }
 }
 \description{
