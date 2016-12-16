@@ -74,8 +74,8 @@ mod_UI_maps_tips <- function(id, specific) {
   ns <- NS(id)
   tagList(
     h3("Tips:"),
-    p("To prevent animations from lagging, you are limited in the resolution you can animate over. To animate at a smaller resolution, reduce the time range."),
-    p("The time depicted in the slider bar to the left indicates the middle of the time interval over which you are animated. For example, if you pick a resolution of 1 hr and the time shows 2016-01-07 09:30:00, the data has been summarized over 1 hour from 9am until 10am.")
+    p("To prevent animations from lagging, the resolution you can animate over is limited. To animate over a smaller resolution, reduce the time range."),
+    p("The time depicted in the slider bar to the left indicates the middle of the time interval over which you are animating. For example, if you pick a resolution of 1 hr and the time shows 2016-01-07 09:30:00, the data has been summarized over 1 hour from 9am until 10am.")
   )
 }
 
