@@ -310,7 +310,7 @@ move_single <- function(v1, move_dir, move_path, all = FALSE){
 #' the individual was making regular visits to the logger but not necessarily in
 #' range at all times, or to the exclusion of other individuals. Presence can be
 #' considered a less precise 'smoothing' of the data.
-#' 
+#'
 #' The start and end of a period of presence is determined by either switching
 #' loggers (when \code{bw = NULL}) or by both switching loggers and by a cutoff
 #' time of \code{bw} minutes.
@@ -573,7 +573,7 @@ disp <- function(v, bw = 5, pass = TRUE){
 }
 
 #' Displacements
-#' 
+#'
 #' Takes output from \code{disp()} and calculates dominance hierarchies. Should
 #' be considered experimental.
 #'
@@ -585,20 +585,20 @@ disp <- function(v, bw = 5, pass = TRUE){
 #'   losses) individuals must have (omitted otherwise).
 #'
 #' @return The best guess dominance hierarchies (there may be more than one).
-#' 
-#' A list with the following named items: 
-#' \enumerate{ 
+#'
+#' A list with the following named items:
+#' \enumerate{
 #'   \item \code{dominance}: A best guess at the dominance hierarchy (most to
 #' least dominant) (one vector per 'best guess')
 #'
 #'   \item \code{reversals}: Which individuals show reversals? (i.e. A > B, B >
 #'   C but C > A) (one vector per 'best guess')
-#'    
-#'   \item \code{interactions}: A matrix of dominance interactions. Displacers 
+#'
+#'   \item \code{interactions}: A matrix of dominance interactions. Displacers
 #'   across the top, displacees down the side. Values are the numbers of wins
 #'   (upper triangle) or losses (lower triangle) against the opposing
 #'   individual. (one matrix per 'best guess')
-#'   
+#'
 #'   }
 #'
 #' @examples
