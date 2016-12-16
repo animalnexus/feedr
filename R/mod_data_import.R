@@ -337,7 +337,11 @@ import_logger <- function(path, logger, input) {
 import_all <- function(path, input, nrows = -1) {
   req(!is.null(input$sep), !is.null(input$skip))
 
-  d <- try(dplyr::bind_rows(lapply(path, read.csv, sep = input$sep, skip = input$skip, nrows = nrows)) %>%
+  d <- try(dplyr::bind_rows(lapply(path, read.csv,
+                                   colClasses = "character",
+                                   sep = input$sep,
+                                   skip = input$skip,
+                                   nrows = nrows)) %>%
     load_format(tz = input$tz, time_format = input$time), silent = TRUE)
 
  return(d)
