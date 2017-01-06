@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Visualizing Data</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-1.1/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="custom.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">How to use feedr</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="divider"></li>
+<li>
+  <a href="load.html">Loading</a>
+</li>
+<li>
+  <a href="housekeeping.html">Housekeeping</a>
+</li>
+<li>
+  <a href="transformations.html">Transformations</a>
+</li>
+<li>
+  <a href="maps.html">Visualizations</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Visualizing Data</h1>
+
+</div>
+
+
+<p>Here we will go over visualizing your data with maps. <code>feedr</code> includes two wrapper functions that can be used to visualize your data on maps. These two functions, <code>map_leaflet</code> and <code>map_ggmap</code> are really just convenience functions to do a lot of the grunt work. If you want to achieve a more fine tuned map, I suggest you check out the packages <code>leaflet</code> and <code>ggmap</code>.</p>
+<p>These mapping functions take summarized feeding and movement data and turn it into circles and paths around/between feeders representing time spent at different feeders and the amount of movement between particular feeder paths.</p>
+<p>Because different projects may need different summaries (totals vs. means, corrected for number of individuals, uncorrected, etc.) we will first create the summary data and then pass this to the functions for plotting. This gives us more flexibility, but does mean that we have to do some work before we can visualize the data.</p>
+<div id="summarizing-data" class="section level2">
+<h2>Summarizing data</h2>
+<p>First we will calculate our movement and feeding data. Because we will summarize according to the number of individual chickadees <em>in each experiment</em> we will also calculate a new <code>bird_n</code>.</p>
+<pre class="r"><code>##############FIX
+library(plyr)
+
+v &lt;- visits(chickadees)
+v &lt;- ddply(v, &quot;experiment&quot;, transform, bird_n_exp = length(unique(bird_id)))
+head(v)</code></pre>
+<p>The <code>transform()</code> function adds a new column to the current data frame, as opposed to replacing the whole dataset (<code>summarize()</code>). <code>length()</code> calculates the total number of items, and <code>unique()</code> returns only unique values. Thus we have a new column <code>bird_n_exp</code> which contains the number of unique bird_ids for each value of <code>experiment</code>.</p>
+<p>Now calculate our movements and feeding times:</p>
+<pre class="r"><code>##FIXXXXXXXXX
+m &lt;- ddply(v, &quot;bird_id&quot;, move)
+f &lt;- ddply(v, &quot;bird_id&quot;, feeding)
+
+head(m)
+head(f)</code></pre>
+<p>There are many ways we can summarize the data:</p>
+<ul>
+<li>by population</li>
+<li>by individual</li>
+<li>totals (sums)</li>
+<li>means</li>
+<li>totals corrected for number of birds</li>
+</ul>
+<div id="by-population" class="section level3">
+<h3>By Population</h3>
+<p>Calculate total feeding time at each feeder, corrected for the number of birds total</p>
+<pre class="r"><code>##FIXXXXXXXXX
+f.all &lt;- ddply(f, &quot;feeder_id&quot;, summarise,
+              amount = sum(feed_length) / bird_n_exp[1])
+head(f.all)</code></pre>
+<p>We use <code>bird_n_exp[1]</code> because we want to divide the total sum by the number of birds in each experiment. However, as the value <code>bird-n_exp</code> is repeated, we only need the first one, hence the <code>[1]</code>.</p>
+<p>If we wanted to calculate mean feeding time, we would use <code>amount = mean(feed_length)</code><br />
+If we wanted to calculate total feeding time with no correction, we would use <code>amount = sum(feed_length)</code></p>
+<p><strong>Note:</strong> The new summary data set must have the column <code>amount</code>, regardless of how it is calculated. That name is what the mapping functions look for.</p>
+<p>Now let’s summarize the movement data for each movement path between feeders. We can summarize individually for each feeder, which will account for the double counting (one row for leaving the feeder and one row for arriving) as well as making sure we have <code>feeder_id</code> in the final data set.</p>
+<pre class="r"><code>##FIXXXXXXXXX
+m.all &lt;- ddply(m, c(&quot;feeder_id&quot;, &quot;move_path&quot;), summarise,
+               path_use = length(move_path) / bird_n_exp[1])
+m.all</code></pre>
+<p><strong>Note:</strong> The new summary data set must have the column <code>path_use</code>, regardless of how it is calculated. That name is what the mapping functions look for.</p>
+<p>Now we’ve summarized our data, all we need is a list of lat/lons for each <code>feeder_id</code>. Fortunately, we have that data stored in all the non-summarized data frames, so it’s merely a matter of cleaning it up. <code>unique()</code> will extract all non-duplicated rows of this subset of <code>f</code> including only the columns we’ve specified here:</p>
+<pre class="r"><code>##FIXXXXXXXXX
+l &lt;- unique(f[, c(&quot;feeder_id&quot;, &quot;lat&quot;, &quot;lon&quot;)])
+head(l)</code></pre>
+<p>In this example, we also have a feeder that was never used by chickadees, but we would still like to visualize it, so we will add it to the locations list:</p>
+<pre class="r"><code>##FIXXXXXXXXX
+l &lt;- rbind(l, data.frame(feeder_id = &quot;exp1-GR11&quot;, lat = 53.89304, lon = -122.81827))</code></pre>
+<p>Alternatively, we could have loaded in an external feeder index and used that.</p>
+</div>
+<div id="by-individual" class="section level3">
+<h3>By Individual</h3>
+<p>We can also summarize data by individual for plotting of individual maps.</p>
+<p>This is virtually identical to what we did above, except that we add one more variable to the grouping in our <code>ddply()</code> functions and we don’t correct for the number of birds:</p>
+<pre class="r"><code>##FIXXXXXXXXX
+f.indiv &lt;- ddply(f, c(&quot;experiment&quot;, &quot;feeder_id&quot;, &quot;bird_id&quot;), summarise,
+              amount = sum(feed_length))
+m.indiv &lt;- ddply(m, c(&quot;experiment&quot;, &quot;feeder_id&quot;, &quot;move_path&quot;, &quot;bird_id&quot;), summarise,
+               path_use = length(move_path) / 2)
+head(f.indiv)
+head(m.indiv)</code></pre>
+</div>
+<div id="recap" class="section level3">
+<h3>Recap:</h3>
+<p>To create maps you need the following:</p>
+<ul>
+<li>feeding summary with a columns: <code>feeder_id</code> and <code>amount</code></li>
+<li>movement summary with a columns: <code>feeder_id</code>, <code>move_path</code> and <code>path_use</code></li>
+<li>location summary with columns: <code>feeder_id</code>, <code>lat</code> and <code>lon</code>
+<ul>
+<li>(but the mapping functions will also accept <code>latitude</code>, <code>longitude</code> and <code>long</code>)</li>
+</ul></li>
+<li>If locations are included in feeding or movement datasets, you don’t need the extra location dataset.</li>
+</ul>
+<p>If you want to look at individual data, add <code>bird_id</code> to the grouping in the <code>ddply()</code> function, otherwise omit it.</p>
+</div>
+</div>
+<div id="mapping" class="section level2">
+<h2>Mapping</h2>
+<p><a id = "leaflet"></a></p>
+</div>
+<div id="map_leaflet" class="section level2">
+<h2><code>map_leaflet()</code></h2>
+<p>This function creates an interactive html map using leaflet for R (package <code>leaflet</code>).</p>
+<pre class="r"><code>##FIXXXXXXXXX
+map_leaflet(u = f.all, p = m.all, locs = l)</code></pre>
+<p>The map is interactive in that it can be zoomed, the tiles changed, and different elements added or removed. Feeders (black dots) can also be clicked on to reveal ids and circles and paths can clicked on to reveal their actual numbers.</p>
+<p>You can also adjust some of the cosmtic details:</p>
+<pre class="r"><code>##FIXXXXXXXXX
+map_leaflet(u = f.all, p = m.all, locs = l, 
+            u_scale = 5, p_scale = 5,
+            u_title = &quot;Feeding (min)&quot;, p_title = &quot;Paths&quot;,
+            u_pal = c(&quot;blue&quot;,&quot;white&quot;),
+            p_pal = c(&quot;black&quot;,&quot;red&quot;))</code></pre>
+<p>To plot by individual, simply use our individually summarized data sets:</p>
+<pre class="r"><code>### FIXXX
+map_leaflet(u = f.indiv, p = m.indiv, locs = l)</code></pre>
+<p>Note, however, that for leaflet maps, the individual lines are stacked in order of magnitude and visualizations like this may not be very useful for large numbers of individuals.</p>
+<p>To save this map, you can zoom and set it up as you like and use the “Export &gt; Save as image” button in RStudio.</p>
+<p>Alternatively, you can use the <code>map_ggmap()</code> function to visualize a static map.</p>
+<table>
+<tbody>
+<tr class="odd">
+<td align="left">Back to <a href="#top">top</a></td>
+</tr>
+</tbody>
+</table>
+<p><a id = "ggmap"></a></p>
+</div>
+<div id="map_ggmap" class="section level2">
+<h2><code>map_ggmap()</code></h2>
+<p>This creates static maps using the package <code>ggmap</code>. This map may take longer to create as it downloads background images from Google Maps (but you can also specify the source, see below).</p>
+<pre class="r"><code>##FIXXXXXXXXX
+map_ggmap(u = f.all, p = m.all, locs = l)</code></pre>
+<p>Getting the zoom level often requires some trial and error (default = 17). If you see a warning about rows with missing values omitted, this means that not all your data could fit on the map.</p>
+<pre class="r"><code>##FIXXXXXXXXX
+map_ggmap(u = f.all, p = m.all, locs = l, zoom = 16)</code></pre>
+<pre class="r"><code>##FIXXXXXXXXX
+map_ggmap(u = f.all, p = m.all, locs = l, 
+          zoom = 16, u_scale = 0.7)</code></pre>
+<p>Note that the lines between the two sites shows that some individual chickadees visited both sites</p>
+<pre class="r"><code>##FIXXXXXXXXX
+map_ggmap(u = f.all, p = m.all, locs = l, 
+          zoom = 16, u_scale = 0.7, maptype = &quot;terrain&quot;)</code></pre>
+<pre class="r"><code>##FIXXXXXXXXX
+map_ggmap(u = f.all, p = m.all, locs = l, 
+          zoom = 16, maptype = &quot;roadmap&quot;)</code></pre>
+<p>For individuals:</p>
+<pre class="r"><code>### FXIXXX
+map_ggmap(u = f.indiv, p = m.indiv, locs = l, 
+          zoom = 16, u_scale = 0.7)</code></pre>
+<p>Okay, let’s try with fewer birds</p>
+<pre class="r"><code>## Fix
+sub_birds &lt;- unique(f.indiv$bird_id) #Get first 5 bird_ids
+
+# Use only f.indiv/m.indiv where the bird_id is in these first 10.
+map_ggmap(u = f.indiv, p = m.indiv, locs = l, 
+          zoom = 16, u_scale = 0.7,
+          which = sub_birds[1:10])
+
+# Use only f.indiv/m.indiv where the bird_id is in these second 10.
+map_ggmap(u = f.indiv, p = m.indiv, locs = l, 
+          zoom = 16, u_scale = 0.7,
+          which = sub_birds[11:20])</code></pre>
+<p>Note that one individual (0620000006) was removed. This is because the individual had a feed_length of 0 and no movements. This situation will occur if an individual makes only one visit to a feeder (resulting in a visit length of 0, and thus a feeding length of 0).</p>
+<hr />
+<p>Back to <a href="#top">top</a><br />
+Go back to <a href="feedr.html">main document</a> | Go back to <a href="transformations.html">transformations</a></p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
