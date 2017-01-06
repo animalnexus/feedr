@@ -16,18 +16,19 @@ This is an overview of how to use functions in the `feedr` package to transform 
 This package contains functions to perform three broad services: 
 
 1. [__Loading/Importing Data__](#load)  
-    Raw data downloaded from the feeders or from the animal__nexus__ website 
+    Raw data directly from the loggers, already almagamated, or from the animal__nexus__ website 
 2. [__Housekeeping__](#hk)  
     Functions for checking and correcting errors before you transform the data
 3. [__Transformations__](#trans)  
-    When raw data is transformed into visit data, feeding data, etc. which are the output of the `visits()`, `feeding()`, etc. functions
+    Transforming raw data into visits, presence, activity, etc
 4. [__Visualizations__](#vis)  
-    Static or interactive maps produced by the mapping functions which visualize the movement and feeding patterns around your feeders.
+    Static or interactive maps produced by the mapping functions which visualize movements between and presence around the RFID loggers.
 
+There are also three 'user-interface' (UI) functions that can be used to simplify the use of these functions (see below).
 
-As such, several functions depend on the output of other functions.
+In the normal order of operarations, several functions depend on the output of other functions.
 
-For example, to get daily activity patterns, you could get your data from the web with `dl_data()`, turn this raw data to visits data with `visits()`, turn visits data to activity data with `activity()` and finally, turn activity data into daily activity patterns with `daily()`.
+For example, to get daily activity patterns, you could get your data from the animalnexus database with `dl_data()`, turn this raw data to visits data with `visits()`, turn visits data to activity data with `activity()` and finally, turn activity data into daily activity patterns with `daily()`.
 
 ```{r, echo = F, fig.align='center'}
 DiagrammeR::grViz("
@@ -50,18 +51,18 @@ visits[label = 'visits()']
 disp[label = 'disp()']
 dom[label = 'dom()']
 move[label = 'move()']
-feed[label = 'feeding()']
+presence[label = 'presence()']
 act[label = 'activity()']
 daily[label = 'daily()']
 
-visits-> {disp, move, feed}
-feed -> act
+visits-> {disp, move, presence}
+presence -> act
 disp -> dom
 act -> daily
 
 map[label = '{Visualizations | {map_ggmap() | map_leaflet()}}']
 
-{feed; move} -> map
+{presence; move} -> map
 
 #A -> e [ltail = cluster0, lhead = cluster1]
 #f -> 'visits()' [ltail = cluster1, lhead = cluster2]
@@ -84,9 +85,9 @@ head(chickadees)
 ### [Loading/Importing Data](load.html)
 <a id = "load"></a>
 
-- __load_raw():__ Load in a single file of raw feeder data
-- __load_raw_all():__ Load in and combine multiple files of raw feeder data
-- __load_web():__ Load in csv file previously downloaded
+- __ui_import():__ Launch an interactive user-interface to import/load local data files
+- __load_raw():__ Load in a single file of raw logger data
+- __load_raw_all():__ Load in and combine multiple files of raw logger data
 - __dl_data():__ Download and load data directly from the animal__nexus__ website
 
 ### [Housekeeping](housekeeping.html)
@@ -98,19 +99,21 @@ head(chickadees)
 ### [Transformations](transformations.html)
 <a id = "trans"></a>
 
-- __visits():__ Turn raw data into visits data
-- __move():__ Turn visits data into movements between feeders
-- __feeding():__ Turn visits data into feeding bouts
-- __disp():__ Turn visits data into displacements
-- __dom():__ Turn displacements into dominance matrices and hierarchies
-- __activity():__ Turn visits data into activity data
-- __daily():__ Turn activity data into daily activity patterns
+- __ui_trans():__ Launch an interactive user-interface to transform data
+- __visits():__ Transform raw data into visits data
+- __move():__ Transform visits data into movements between loggers
+- __presence():__ Transform visits data into presence around loggers
+- __disp():__ Transform visits data into displacements
+- __dom():__ Transform displacements into dominance matrices and hierarchies
+- __activity():__ Transform visits data into activity data
+- __daily():__ Transform activity data into daily activity patterns
 
 ## [Visualizations](maps.html)
 <a id = "vis"></a>
 
-- __map_ggmap():__ Visualize movements and/or feeding bouts with ggmap (static)
-- __map_leaflet():__ Visualize movements and/or feeding bouts with leaflet (interactive)
+- __ui_animate():__ Launch an interactive user-interface to create animations
+- __map_ggmap():__ Visualize movements and/or presence with ggmap (static)
+- __map_leaflet():__ Visualize movements and/or prsence with leaflet (interactive)
 
 -----------------------------------------
 Back to [top](#top)  
