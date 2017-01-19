@@ -232,4 +232,4 @@ Note that one individual (0620000006) was removed. This is because the individua
 
 --------------------------
 Back to [top](#top)  
-Go back to [main document](feedr.html) | Go back to [transformations](transformations.html)
+Go back to [home](index.html) | Go back to [transformations](transformations.html)
