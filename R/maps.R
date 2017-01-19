@@ -50,7 +50,7 @@ map_prep <- function(p = NULL, m = NULL, locs = NULL) {
 #'
 #' Designed for advanced use (see map_leaflet() for general mapping)
 map_leaflet_base <- function(locs, marker = "logger_id", controls = TRUE, minZoom = NULL, maxZoom = 18) {
-  l <- leaflet::leaflet(data = locs, 
+  l <- leaflet::leaflet(data = locs,
                         options = leaflet::leafletOptions(minZoom = minZoom, maxZoom = maxZoom)) %>%
     leaflet::addTiles(group = "Open Street Map") %>%
     leaflet::addProviderTiles("Stamen.Toner", group = "Black and White") %>%
@@ -128,7 +128,7 @@ path_layer <- function(map, m,
 
   # Define palette
   m_pal <- leaflet::colorNumeric(palette = grDevices::colorRampPalette(m_pal)(15), domain = m$path_use)
-  
+
   # Add movement path lines to map
   for(path in unique(m$move_path)) {
     map <- path_lines(map, data = m[m$move_path == path, ],
@@ -512,16 +512,18 @@ map_ggmap <- function(p = NULL, m = NULL, locs = NULL,
                            source = mapsource,
                            maptype = maptype)
   map <- ggmap::ggmap(visual,
-                       legend = "topleft",
-                       ylab = "Latitude",
-                       xlab = "Longitude") +
-          ggplot2::labs(x = "Longitude", y = "Latitude")
+                      legend = "topleft",
+                      ylab = "Latitude",
+                      xlab = "Longitude") +
+    ggplot2::labs(x = "Longitude", y = "Latitude")
 
   # If presence data specified
   if(!is.null(p)) {
     map <- map +
       ggplot2::geom_point(data = p, ggplot2::aes(x = lon, y = lat, fill = amount, size = amount2), shape = 21, alpha = 0.5) +
-      ggplot2::scale_fill_gradientn(name = p_title, colours = p_pal) +
+      ggplot2::scale_fill_gradientn(guide = guide_colourbar(title = p_title,
+                                                            reverse = TRUE),
+                                    colours = p_pal) +
       ggplot2::scale_size_area(guide = FALSE, max_size = 35 * p_scale)
   }
 
@@ -547,7 +549,9 @@ map_ggmap <- function(p = NULL, m = NULL, locs = NULL,
                                                  colour = path_use,
                                                  size = path_use2),
                           lineend = "round", alpha = 0.75) +
-      ggplot2::scale_colour_gradientn(name = m_title, colours = m_pal)
+      ggplot2::scale_colour_gradientn(guide = guide_colourbar(title = m_title,
+                                                              reverse = TRUE),
+                                      colours = m_pal)
   }
 
   # Add logger points
