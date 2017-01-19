@@ -4,8 +4,8 @@
 \alias{visits}
 \title{Visits}
 \usage{
-visits(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE,
-  allow.imp, na.rm)
+visits(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE,
+  pass = TRUE, allow.imp, na.rm)
 }
 \arguments{
 \item{r}{Dataframe. Contains raw reads from an RFID reader with colums
@@ -16,6 +16,9 @@ successive reads to be considered separate visits.}
 
 \item{allow_imp}{Logical. Whether impossible visits should be allowed (see
 details).}
+
+\item{bw_imp}{Numerical. The minimum number of seconds required to travel
+between loggers. If quicker, visits considered impossible.}
 
 \item{na_rm}{Logical. Whether NA values should be automatically omited.
 Otherwise an error is returned.}

@@ -21,6 +21,8 @@
 #'   successive reads to be considered separate visits.
 #' @param allow_imp Logical. Whether impossible visits should be allowed (see
 #'   details).
+#' @param bw_imp Numerical. The minimum number of seconds required to travel
+#'   between loggers. If quicker, visits considered impossible.
 #' @param na_rm Logical. Whether NA values should be automatically omited.
 #'   Otherwise an error is returned.
 #' @param pass Logical. Pass 'extra' columns through the function and append
@@ -47,7 +49,7 @@
 
 #' @import magrittr
 #' @export
-visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, allow.imp, na.rm){
+visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass = TRUE, allow.imp, na.rm){
   if (!missing(allow.imp)) {
     warning("Argument allow.imp is deprecated; please use allow_imp instead.",
             call. = FALSE)
@@ -92,17 +94,16 @@ visits <- function(r, bw = 3, allow_imp = FALSE, na_rm = FALSE, pass = TRUE, all
 
   # Check for impossible combos: where less than bw, still the same animal, but a different logger
   if(!allow_imp) {
-    impos <- which(rowSums(matrix(c(!diff_time, !diff_animal, diff_logger), ncol = 3)) > 2)
+    diff_imp <- difftime(r$time[-1], r$time[-nrow(r)], units = "sec") < bw_imp
+    impos <- which(rowSums(matrix(c(diff_imp, !diff_animal, diff_logger), ncol = 3)) == 3)
     impos <- r[unique(c(impos, impos + 1)), ]
     if(nrow(impos) > 0) {
       impos <- impos[order(impos$animal_id, impos$time), ]
-      end <- "hellow"
       rows <- nrow(impos)
       if(nrow(impos) > 5) {
         rows <- 5
-        end <- "\n..."
       }
-      stop("Impossible visits found, no specification for how to handle.\nTime between reads is less than 'bw' (", bw, "s) for a single individual, yet the\nreads occur at different loggers. You should fix, remove or\nallow (allow_imp = TRUE) these rows and try again.\n\n", paste0(capture.output(impos[1:rows, ]), collapse = "\n"))
+      stop("Impossible visits found, no specification for how to handle:\n\nIndividual(s) detected at 2+ loggers within ", bw_imp, "s.\nDecrease the `bw_imp` argument, remove these reads, or\nallow impossible visits (allow_imp = TRUE) and try again.\n\n", paste0(capture.output(impos[1:rows, ]), collapse = "\n"))
     }
   }
   # Start if
