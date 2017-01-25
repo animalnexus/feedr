@@ -9,7 +9,7 @@
 
 ```r
 install.packages("devtools")
-devtools::install_github("steffilazerte/feedr")
+devtools::install_github("animalnexus/feedr")
 ```
 
 ### Windows
@@ -24,7 +24,7 @@ This is a bug with the current version of `devtools` which results in some depen
 
 ```r
 install.packages(c("dplyr", "ggplot2", "htmlwidgets", "scales", "shiny", "stringr"))
-devtools::install_github("steffilazerte/feedr")
+devtools::install_github("animalnexus/feedr")
 ```
 
 ### Linux
