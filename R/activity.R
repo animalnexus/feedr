@@ -55,7 +55,7 @@ activity <- function(p, res = 15, by_logger = FALSE, missing = NULL, sun = TRUE,
             call. = FALSE)
     p <- f
   }
-  
+
   check_name(p, c("animal_id", "logger_id", "start", "end"), "presence")
   check_time(p, c("start", "end"))
 
@@ -121,6 +121,10 @@ activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = 
     message(paste0(p1$animal_id[1], ": Skipping. Individual has no data"))
     return(tibble::data_frame())
   } else {
+
+
+  # Grab the timezone
+  tz <- attr(p1$start, "tzone")
 
   start <- lubridate::floor_date(min(p1$start), "day")
   end <- lubridate::ceiling_date(max(p1$end), "day")
@@ -198,14 +202,14 @@ activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = 
     # Calculate sunrise/sunset times
     if(sun == TRUE) {
       if(!all(c("lat", "lon") %in% names(p1))) {
-        message(paste0(p1$animal_id, ": Skipping sunrise/sunset, no lat/lon information"))
+        message(paste0(p1$animal_id[1], ": Skipping sunrise/sunset, no lat/lon information"))
       } else {
 
         s <- expand.grid(logger_id = loggers$logger_id,
                          date = as.Date(seq(start, end, by = "1 day"))) %>%
           dplyr::left_join(unique(loggers[, c("logger_id", "lon", "lat")]), by = "logger_id")
 
-        s <- dplyr::bind_cols(s, sun(s[, c("lon", "lat")], s$date))
+        s <- dplyr::bind_cols(s, sun(s[, c("lon", "lat")], s$date, tz = tz))
 
         if(by_logger == TRUE) {
           a <- dplyr::left_join(a, s[, c("logger_id", "date", "rise", "set")],
@@ -280,6 +284,9 @@ daily_single <- function(a1, pass = TRUE){
 
   check_indiv(a1)
 
+  # Grab the timezone
+  tz <- attr(a1$time, "tzone")
+
   d <- a1 %>%
     dplyr::group_by(animal_id, logger_id, time_c) %>%
     dplyr::summarize(p_active = length(activity_c[activity_c == "active"]) / length(activity_c[activity_c != "unknown"]),
@@ -288,8 +295,8 @@ daily_single <- function(a1, pass = TRUE){
                      p_total = 1 - p_unknown)
 
 
-  d$time <- as.POSIXct(paste0(lubridate::origin, " ", d$time_c))
-  lubridate::tz(d$time) <- "UTM"
+  d$time <- as.POSIXct(paste0(lubridate::origin, " ", d$time_c), tz = tz)
+  #lubridate::tz(d$time) <- "UTM"
 
   # Get sun/rise set if exist, and average
   if(all(c("rise", "set") %in% names(a1))) {
@@ -314,10 +321,10 @@ daily_single <- function(a1, pass = TRUE){
 
 #' Get sunrise/sunset times
 #' @export
-sun <- function(loc, date) {
+sun <- function(loc, date, tz) {
   if(class(loc) == "numeric") loc <- matrix(loc, nrow = 1)
   if(class(loc) %in% c("data.frame", "matrix")) loc <- as.matrix(loc)
-  date <- as.POSIXct(as.character(date))
+  date <- as.POSIXct(as.character(date), tz = tz)
   s <- data.frame(rise = maptools::sunriset(loc, date, direction = "sunrise", POSIXct.out = TRUE)$time,
                   set = maptools::sunriset(loc, date, direction = "sunset", POSIXct.out = TRUE)$time)
 
