@@ -70,7 +70,7 @@ head(finches_lg)
 
 The `visits()` function turns this raw data into something more practical:
 
-```{r}
+```{r visits}
 v <- visits(finches_lg, bw = 5)
 head(v)
 ```
@@ -198,7 +198,7 @@ This function is designed to turn 'Visit' data into 'Movement' data.
 
 **Movements** are defined as trips between loggers (i.e. a event when a visit from one `animal_id` occurs at a different logger from the previous visit by that particular `animal_id`).
 
-```{r}
+```{r move}
 v <- visits(finches_lg, bw = 5)
 m <- move(v)
 head(m)
@@ -333,7 +333,7 @@ This function is designed to turn 'Visit' data into 'Presence' data.
 
 **Presence** reflects blocks of time in which an animal visited a given logger regularly. Essentially, presence is defined as a series of visits, and can overlap with presence of other animals (this differs from [visits](#visits), as normally one individual's visits cannot overlap with another). Presence near a logger ends when the individual moves to another logger or when a particular amount of time has passed without a visit (the time between visits, `bw`, 15 min by default).
 
-```{r}
+```{r presence}
 v <- visits(finches_lg, bw = 5)
 p <- presence(v)
 head(p)
@@ -429,7 +429,7 @@ In theory, we assume this is due to the arrival of a more dominant animal. Displ
 > __Disclaimer!__  
 > It is important to ground-truth this assumption because, depending on species, displacements may not necessarily represent dominance. For example, in the case of black-capped chickadees, if the dominant male is using the logger, subsequent users of the logger may actually arrive and depart in descending order of rank. In this case, apparent 'displacements' are not displacements at all.
 
-```{r}
+```{r disp}
 v <- visits(finches_lg, bw = 5)
 d <- disp(v)
 names(d)
@@ -477,18 +477,18 @@ The `interactions` item is a data frame summarizing each potential interaction e
 
 ### No events
 
-If there are no displacement events in your data set, the function will stop. In this case, the data set is so small, there are no displacement events:
+If there are no displacement events in your data set, the function will give you a message and will return an empty list. In this case, the data set is so small, there are no displacement events:
 
-```{r, error = TRUE}
+```{r}
 v <- visits(finches, bw = 5)
-d <- disp(v)
+disp(v)
 ```
 
 ### Specifying `bw`
 
 The `disp()` function also contains a `bw` argument. In this case it reflects the maximum interval between the first animal leaving and the second animal arriving for an interaction to be considered a displacement:
 
-```{r, error = TRUE}
+```{r}
 v <- visits(finches_lg, bw = 5)
 head(disp(v)$summaries)
 head(disp(v, bw = 10)$summaries)
@@ -501,6 +501,9 @@ However, an interval of 15s is pretty long and probably doesn't constitute a rea
 Is one logger more contentious than others?
 
 ```{r}
+v <- visits(finches_lg, bw = 5)
+d <- disp(v)
+
 disp_summary <- d$displacements %>%
   group_by(logger_id, role) %>%
   count() %>%
@@ -539,8 +542,9 @@ d$summaries
 ggplot(data = d$summaries, aes(x = animal_id, y = p_win)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #rotate and shift id labels
   geom_bar(stat = "identity") +
- # ylim(c(0, 1)) +
+  ylim(c(0, 1)) +
   labs(x = "Animal Id", y = "Proportion of 'wins'")
+
 ```
 
 --------------------
@@ -552,117 +556,86 @@ Back to [top](#top)
 ## `dom()`
 This function is designed to turn 'Displacement' data into a 'Dominance matrix'.
 
-A **Dominance matrix** is a matrix ranking individuals by wins and losses against other individuals. This matrix can be used to determine the final dominance hierarchy of a flock.
+A **Dominance matrix** is a matrix ranking individuals by wins and losses against other individuals. This matrix can be used to determine the final dominance hierarchy of a group of animals.
 
 This function produces a dominance matrix which represents a 'best guess', as opposed to a perfect final product. The function attempts to find the best ordering, with the fewest reversals. A reversal is when an individual loses or wins more against one particular individual than expected given the general pattern of dominance wins/losses (i.e., a generally dominant individual that that has many losses against a generally subdomiant individual)
 
-This matrix should not be considered a final product, but a starting point for manual manipulation.
+This matrix should not be considered a final product, but a starting point for manual manipulation, particularly if the function returns more than one 'best guess' matrix.
 
-```{r}
-library(dplyr)
-
-dm <- finches_lg %>%
-  visits(bw = 5) %>%
-  disp() %>%
-  dom()
-```
-
-Note that this format is identical to:
-
-```{r, eval = FALSE}
-v <- visits(finches_lg, bw = 5)
-d <- disp(v)
-dm <- disp(d)
-```
-
-The pipe (`%>%`) takes the output of one line and passes it to the next (but does not create the intermediary objects).
-
-```{r}
-names(dm)
-```
-
-
-### Data returned
-The first thing this function returns is some information on what happened when the dominance matrix was created:
-
-```
-animal_ids with fewer than 3 interactions have been omitted: 041868E9A8, 041869123C, 062000043E, 0620000513, 0620000514, 0620000520
-```
-
-This message is informing the user that several individuals have been omitted from the analysis because they contained fewer than 3 interactions each. This cutoff value can be customized (see `omit_cutoff` below).
-
-```
-Tried 1 times. Found 1 'best' matrix(ces), with 0 reversal(s) per matrix
-```
-
-The next message informs the user about the number of potential dominance matrices and the number of reversals per matrix. It is possible that several different dominance rankings can be obtained that are equally likely. In this case, `dom()` will return them all (`n 'best' matrix(ces)`). Furthermore, there may be one or more reversals per matrix.
-
-
-Beyond these messages, the `dom()` function returns a list with three different types of information: `dominance`, `reversals`, and `matrices`.
-
-```{r}
-dm$dominance
-```
-
-The `dominance` item is a vector contain the dominance hierarchy for all animals listed from most to least dominant
-
-```{r}
-dm$reversals
-```
-
-### `tries`
-
-### `omit_cutoff`
-
-If the function finds more than one 'best guess' they will all be returned. 
-In addition to the 'best guess' dominance matrices (`dm$matrices`), the function returns `dm$dominance` and `dm$reversals`
-
-Let's work with a slightly larger data set but concentrate on one logger only:
-```{r}
-r <- dl_data(start = "2016-03-07", end = "2016-03-31")
-r <- droplevels(r[r$logger_id == 2300, ])
-```
-
-The `r[r$logger_id == 2300, ]` results in a subset of the data frame `r` which only includes rows which have a `logger_id` equivalent to '2300'. The `droplevels()` function then drops all levels that don't appear in the data set (i.e. even though we've omitted certain individuals, the column `animal_id` keeps track of all _possible_ individuals). This is not important for the `disp()` function, but functions that work on individual data, such as `move()` and `presence()` rely on levels to keep track of ids. Using `droplevels()` when you want to completely omit individuals from analysis is therefore a good idea in general.
-
-```{r}
-v <- visits(r)
-d <- disp(v)
-dm <- dom(d$interactions)
-names(dm)
-```
-
-The main part of this output are the matrices:
-
-```{r}
-dm$matrices
-```
-
-Here we have two, because both are equally possible. This is a situation in which a user will have to continue on by hand to end up with the best matrix.
-
-Most dominant individuals are those to the left or the top.
-
-These matrices are created by 
+These matrices are created by :
 
  - Ranking individuals based on their overall win rate
  - Attempting to fix 'reversals' by switching individuals around, and testing whether this reduced the total number of reversals or not.
  - After so many rounds of trying to reduce reversals, the script returns the best matrix
 
-**Dominance Rankings** (`dm$dominance`) are the relative dominance rankings according to each final matrix (ranked from Dominant to Sub-dominant). 
+```{r dom}
+v <- visits(finches_lg, bw = 5)
+d <- disp(v)
+dm <- dom(d)
+
+names(dm)
+```
+
+
+### Data returned
+The `dom()` function returns a list with three different types of information: `dominance`, `reversals`, and `matrices`.
+
+However, the first thing this function returns is some information on what happened when the dominance matrix was created:
+
+```{r, include = FALSE}
+msg <- testthat::capture_messages(finches_lg %>%
+  visits(bw = 5) %>%
+  disp() %>%
+  dom())
+```
+
+```{r, echo = FALSE}
+message(msg[1])
+```
+
+This message informs the user that several individuals have been omitted from the analysis because they contained fewer than 3 interactions each. This cutoff value can be customized (see `omit_cutoff` below).
+
+```{r, echo = FALSE}
+message(msg[2])
+```
+
+The next message informs the user about the number iterations the function went through and the number of potential dominance matrices and reversals per matrix. It is possible that several different dominance rankings can be obtained that are equally likely. In this case, `dom()` will return them all (`n 'best' matrix(ces)`). Matrices are considered 'better' if they have fewer reversals. Furthermore, there may be one or more reversals per matrix.
 
 ```{r}
 dm$dominance
 ```
 
-Essentially, if the matrix is perfect, this is the dominance hierarchy you have in your flock. However, if you need to tweak your matrix, you'll come up with a different dominance hierarchy.
+The `dominance` item is a vector containing the dominance hierarchy for each matrix listing all animals from most to least dominant (according to that matrix). Essentially, if the matrix is perfect, this is the dominance hierarchy you have. However, if you need to tweak your matrix, you'll come up with a different dominance hierarchy.
 
-You can see that this matches the `animal_id` order in the matrices.
 
-The final thing to consider are any remaining reversals.
+```{r, message = FALSE}
+v_c <- visits(chickadees, bw = 5)
+d_c <- disp(v_c)
+dm_c <- dom(d_c)
 
-**Reversals** are a table identifying remaining reversals: Pairs of individuals which could be switched either way in the hierarchy.
+head(dm_c$reversals[[1]])
+```
+
+Our original analysis doesn't have any reversals, meaning that the matrix of interactions reflects a linear hierarchy (or individudals are tied). However, a look at dominance in our chickadee data set shows many reversals. The `reversals` item is a list containing a data frame for each matrix showing which individuals experienced reversals with whom: Pairs of individuals which could be switched either way in the hierarchy.
+
+
 ```{r}
-dm$reversals
+dm$matrices[[1]]
+```
+
+The `matrix` item is a list containing each dominance matrix showing all interactions. The `displacers` are along the rows, and `displacees` along the columns. For example, `0620000500` displaced `06200004F8` 37 times, whereas `06200004F8` only displaced `0620000500` 15 times. `0620000500` displaced `0620000477` 5 times, but was only displaced in turn once.
+
+### `tries`
+
+The `tries` parameter reflect the maximum number of iterations the `dom()` function should try before returning the matrix. It defaults to 50.
+
+
+### `omit_cutoff`
+Sometimes individuals simply don't participate in enough dominance interactions for their ranking to be assessed. 
+This parameter allows you to set how many interactions an individual must have to be included in the dominance matrix. It defaults to a minimum of 3 but can be increased for a more robust matrix.
+
+```{r}
+dom(d, omit_cutoff = 10)
 ```
 
 --------------------
@@ -671,84 +644,96 @@ Back to [top](#top)
 
 <a id = "activity"></a>
 
-## `activity()` [UNDERDEVELOPMENT]
+## `activity()`
 This function scores individuals as either active or inactive based on their presence data. While simply looking at the presence bouts is a good proxy for active/inactive, scoring intervals as active/inactive allows for easier plotting as well as for averaging over days to create daily activity patterns (see [`daily()` function](#dailyactivity)).
 
-
-First, let's restrict our analysis a bit:
-```{r, eval = FALSE}
-## FIXIx
-library(plyr)
-r <- chickadees[chickadees$experiment == "exp1",]
-v <- visits(r)
-f <- ddply(v, c("animal_id"), presence)
-```
-
-The default function calculates activity for each animal, independent of which loggers they are visiting, and with a resolution of 15min.
-
-```{r, eval = FALSE}
-## FIXIx
-a <- ddply(f, c("animal_id"), activity)
-```
-
-Note that in addition to an activity data frame, this function also returns information regarding the process.
-
-In this case, several individuals were skipped because they had data for less than 24 hrs. If you wish to include these individuals regardless, you can force their inclusion with:
-
-```{r, eval = FALSE}
-## FIXIx
-a <- ddply(f, c("animal_id"), activity, keep_all = TRUE)
-```
-
-Note that now we are warned about:
-- activity being low ("Active less than 5%...") 
-- obs which are shorter than the resolution 'res'
-- several individual with presence bouts all 0min (this happens when each presence bout is the result of a single visit)
-
-These messages are presented to help you understand the quality of your activity data.
-
-For example, if the length of most observations (presence bouts) are less than the resolution, there's a good chance that many observations are being missed when scoring activity. We can fix this by adjusting the resolution. In general, a small resolution is always better. Note, however, that the smaller the resolution, the more computationally challenging.
-
-Let's use a resolution of 1 minute:
-
-```{r, eval = FALSE}
-## FIXIx
-a <- ddply(f, c("animal_id"), activity, keep_all = TRUE, res = 1)
-```
-
-The number of messages has definitely done down but we still have quite a few. Most of these messages are warnings about the lack of data, so let's go back to omitting individuals with low data:
-
-```{r, eval = FALSE}
-## FIXIx
-a <- ddply(f, c("animal_id"), activity, res = 1)
-```
-
-We still have one animal (0700EE0E42) with a warning about a low resolution, but this is most likely due to the fact that there are very short presence bouts (Median obs is 0 min).
-
-Several individuals are active for less than 5% of the total time, but this isn't necessarily a problem.
-
-Next let's take a look at our data:
-
-```{r, eval = FALSE}
-## FIXIx
+```{r activity}
+v <- visits(finches_lg, bw = 5)
+p <- presence(v)
+a <- activity(p, res = 5)
 head(a)
-summary(a)
 ```
 
-Our extra data (experiment, lat, lon) is all there, but many of the lat/lons are "NA" now. This is because the default for the activity() function is to calculate activity independent of logger. However if an individual has visited only one logger, all the extra data associated with that logger will be preserved.
+### Data returned
 
-Let's plot one day for one individual:
-```{r, fig.width = 6, eval = FALSE}
-#FIX
+Several messages along with a dataset containing:
+
+- `animal_id` id of the animal in question
+- `date` the date of the event
+- `time` the time block of the event
+- `activity` a numeric activity score: 0 (inactive), 1 (active)
+- `activity_c` a categorical activity score: inactive, active
+- `logger_id` the logger where the activity occurred. If summarizing across loggers, this will be `NA`.
+- `rise` the time of sunrise (median time if calculated across all loggers), only calculated if `sun = TRUE` 
+- `set` the time of sunset (median time if calculated across all loggers), only calculated if `sun = TRUE` 
+
+`animal_n`, `logger_n`, `species`, `sex` are extra columns passed through (see [visits data](#visitsdata) for more information).
+
+The messages reflect information regarding the quality of the activity data:
+
+- activity being low ("Active less than 5%...") 
+- skipped individuals ("Skipping. Individual has less than 24hrs data) (see `keep_all` below)
+- obs which are shorter than the resolution 'res' (X% of obs are shorter than 'res') (see `res` below)
+
+
+### `res` 
+The default function calculates activity for each animal at a resolution of 15min. Meaning that every 15min an individual is scored as active or inactive. However, if individuals make short and infrequency visits to a logger, periods of activity may be missed if the active bouts are smaller than the resolution. Resolution can be adjusted through the `res` argument (note the change in time, and the change in messages).
+
+```{r, message = FALSE}
+head(activity(p, res = 1))
+```
+
+### `by_logger`
+By default, the `activity()` function sums all activity across loggers. However, if you wish to calculate separate activity patterns for different loggers, you can set `by_logger = TRUE`. Note the `logger_id` and that there are now 4 observations per time block for each individual:
+
+```{r, message = FALSE}
+head(activity(p, by_logger = TRUE))
+```
+
+### `sun`
+By default sunrise and sunset times are calculated if the data contains latitude and longitude information. You can turn this off with `sun = FALSE`.
+
+### `keep_all`
+By default, the `activity()` function skips individuals with less than 24hrs of data, you can force it to retain all individuals by specifying `keep_all = TRUE`.
+
+### `missing`
+Currently this functionality is not implemented. However, eventually we plan to allow users to specify times of known missing data, so that activity can be specified as 'active', 'inactive', or 'unknown'.
+
+
+### Summarizing activity
+
+Activity patterns can be plotted in ggplot2. Let's look at a specific time period:
+
+```{r}
+library(dplyr)
 library(ggplot2)
+library(lubridate)
 
-i <- a[a$animal_id == "0620000525" & a$date == as.POSIXct("2015-12-06"),]
+sept <- a %>%
+  filter(date >= as.Date("2015-09-01"),
+         date < as.Date("2015-10-01"),
+         animal_id == "06200004F8") %>%
+  mutate(week = week(date))
 
-ggplot(data = i, aes(x = time, ymin = 0, ymax = activity)) +
+ggplot(data = sept, aes(x = time, ymin = 0, ymax = activity)) +
+  facet_wrap(~ week, scales = "free_x", ncol = 1) +
   geom_ribbon()
 ```
 
 There's a clear daily pattern, but it's a bit hard to tell without sunrise and sunset:
+
+```{r}
+sun <- sept %>%
+  select(set, rise) %>%
+  distinct() %>%
+  mutate(set = lag(set)) # Get the next day's set
+
+ggplot(data = sept) +
+  facet_wrap(~ week, scales = "free_x", ncol = 1) +
+  #geom_rect(data = sun, aes(xmin = set, xmax = rise), ymin = -Inf, ymax = +Inf, fill = "grey") +
+  geom_rect(data = sun, aes(xmax = set, xmin = rise), ymin = -Inf, ymax = +Inf, fill = "grey")+
+  geom_area(aes(x = time, y = activity))
+```
 
 --------------------
 Back to [top](#top) 
@@ -756,7 +741,34 @@ Back to [top](#top)
 
 <a id = "dailyactivity"></a>
 
-## `daily()` [UNDERDEVELOPMENT]
+## `daily()`
+
+`daily()` converts activity patterns created by the [`activity()` function](#activity) to averaged daily activity patterns.
+
+```{r daily, message = FALSE}
+v <- visits(finches_lg, bw = 5)
+p <- presence(v)
+a <- activity(p, res = 5)
+da <- daily(a)
+```
+
+## Data returned
+
+## Summarizing daily activity
+
+```{r}
+sun <- da %>%
+  select(rise, set) %>%
+  distinct()
+
+ggplot(data = da) +
+  geom_rect(aes(xmax = rise), xmin = -Inf, ymin = -Inf, ymax = +Inf, alpha = 0.1) +
+  geom_rect(aes(xmin = set), xmax = +Inf, ymin = -Inf, ymax = +Inf) +
+  geom_area(data = da, aes(x = time, y = p_active)) +
+  facet_wrap(~ animal_id) +
+  scale_x_datetime(date_labels = "%H:%M:%S", date_breaks = "6 hours")
+```
+
 
 
 

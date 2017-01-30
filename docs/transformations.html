@@ -19,6 +19,9 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-1.1/highlight.js"></script>
@@ -166,6 +169,107 @@ $(document).ready(function () {
 
 
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
 
 
 <div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
@@ -232,8 +336,8 @@ $(document).ready(function () {
 <li><a href="#multi">Working with multiple groups</a> - Applying transformations to different data groups simultaneously</li>
 </ol>
 <p>Or click on the function name below to skip directly to the function tutorial:</p>
-<p><div id="htmlwidget-61240bc6f04c97d52ebe" style="width:500px;height:480px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-61240bc6f04c97d52ebe">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nvisits[label = \"visits()\", URL = \"#visits\", tooltip = \"Individual logger visits\"]\ndisp[label = \"disp()\", URL = \"#displacements\", tooltip = \"Displacements from the logger by another animal\"]\ndom[label = \"dom()\", URL = \"#dominance\", tooltip = \"Dominance indicated by displacements\"]\nmove[label = \"move()\", URL = \"#movements\", tooltip = \"Movements between loggers\"]\npresence[label = \"presence()\", URL = \"#presence\", tooltip = \"presence bouts at loggers\"]\nact[label = \"activity()\", URL = \"#acitivty\", tooltip = \"Activity scored (active/inactive)\"]\ndaily[label = \"daily()\", URL = \"#dailyactivity\", tooltip = \"Daily activity patterns\"]\n\nvisits-> {disp, move, presence}\npresence -> act\ndisp -> dom\nact -> daily\n\nmap1[label = \"map_ggmap()\", URL = \"#mapggmap\", tooltip = \"Visualize with a static map\"]\nmap2[label = \"map_leaflet()\", URL = \"#mapleaflet\", tooltip = \"Visualize with an interactive map\"]\n\n{presence; move} -> {map1; map2}\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script> <a id = "visits"></a></p>
+<p><div id="htmlwidget-a6933d819d17a547485a" style="width:500px;height:480px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a6933d819d17a547485a">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nvisits[label = \"visits()\", URL = \"#visits\", tooltip = \"Individual logger visits\"]\ndisp[label = \"disp()\", URL = \"#displacements\", tooltip = \"Displacements from the logger by another animal\"]\ndom[label = \"dom()\", URL = \"#dominance\", tooltip = \"Dominance indicated by displacements\"]\nmove[label = \"move()\", URL = \"#movements\", tooltip = \"Movements between loggers\"]\npresence[label = \"presence()\", URL = \"#presence\", tooltip = \"presence bouts at loggers\"]\nact[label = \"activity()\", URL = \"#acitivty\", tooltip = \"Activity scored (active/inactive)\"]\ndaily[label = \"daily()\", URL = \"#dailyactivity\", tooltip = \"Daily activity patterns\"]\n\nvisits-> {disp, move, presence}\npresence -> act\ndisp -> dom\nact -> daily\n\nmap1[label = \"map_ggmap()\", URL = \"#mapggmap\", tooltip = \"Visualize with a static map\"]\nmap2[label = \"map_leaflet()\", URL = \"#mapleaflet\", tooltip = \"Visualize with an interactive map\"]\n\n{presence; move} -> {map1; map2}\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script> <a id = "visits"></a></p>
 </div>
 <div id="visits" class="section level2">
 <h2><code>visits()</code></h2>
@@ -354,10 +458,11 @@ $(document).ready(function () {
 <pre class="r"><code>v &lt;- visits(finches_lg, allow_imp = TRUE, na_rm = TRUE)</code></pre>
 <p>You can define the minimum number of seconds needed to travel between loggers to specify which visits should be considered impossible. For example, if we say that it must take animals at least 3 minutes to travel between loggers, any visit made to a different logger within 3 minutes would be defined as ‘impossible’:</p>
 <pre class="r"><code>visits(finches_lg, bw_imp = 180)</code></pre>
-<pre><code>## Error in visits(finches_lg, bw_imp = 180): Impossible visits found, no specification for how to handle.
-## Time between reads is less than &#39;bw&#39; (3s) for a single individual, yet the
-## reads occur at different loggers. You should fix, remove or
-## allow (allow_imp = TRUE) these rows and try again.
+<pre><code>## Error in visits(finches_lg, bw_imp = 180): Impossible visits found, no specification for how to handle:
+## 
+## Individual(s) detected at 2+ loggers within 180s.
+## Decrease the `bw_imp` argument, remove these reads, or
+## allow impossible visits (allow_imp = TRUE) and try again.
 ## 
 ##        animal_id                time logger_id     species sex       lon
 ## 9239  0620000477 2015-09-28 07:07:19      2700 House Finch   F -120.3632
@@ -440,7 +545,7 @@ ggplot(data = visit_summary, aes(x = animal_id, y = mean_visit_length)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #rotate and shift id labels
   geom_bar(stat = &quot;identity&quot;) + # Create bars
   labs(x = &quot;Animal ID&quot;, y = &quot;Average visit length (s)&quot;) # Make labels pretty</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-11-1.png" width="576" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-10-1.png" width="576" /></p>
 <table>
 <tbody>
 <tr class="odd">
@@ -563,7 +668,7 @@ move_summary</code></pre>
 ## 6        NA     4</code></pre>
 <pre class="r"><code>ggplot(data = move_summary, aes(x = move_path, y = n)) +
   geom_bar(stat = &quot;identity&quot;)</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-18-1.png" width="576" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-16-1.png" width="576" /></p>
 <p>Are certain directions on particular paths used more often? (i.e. do birds go back and forth or do they circle around?)</p>
 <pre class="r"><code>move_summary &lt;- m %&gt;%
   group_by(logger_id, move_path, move_dir) %&gt;%
@@ -582,7 +687,7 @@ head(move_summary)</code></pre>
 ## 6      2200 2100_2200 2200_2100     6</code></pre>
 <pre class="r"><code>ggplot(data = move_summary, aes(x = move_path, y = n, fill = move_dir)) +
   geom_bar(stat = &quot;identity&quot;, position = &quot;dodge&quot;, colour = &quot;black&quot;)</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-20-1.png" width="576" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-18-1.png" width="576" /></p>
 <p>Is there a relationship between use of a path and the average ‘strength’?</p>
 <pre class="r"><code>move_summary &lt;- m %&gt;%
   group_by(logger_id, move_path) %&gt;%
@@ -610,7 +715,7 @@ move_summary</code></pre>
   stat_smooth(method = &quot;lm&quot;) # add a regression line w/ standard error</code></pre>
 <pre><code>## Warning: Removed 1 rows containing non-finite values (stat_smooth).</code></pre>
 <pre><code>## Warning: Removed 1 rows containing missing values (geom_point).</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-22-1.png" width="768" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-20-1.png" width="768" /></p>
 <p>Do some animals move more than others?</p>
 <pre class="r"><code>move_summary &lt;- m %&gt;%
   group_by(animal_id) %&gt;%
@@ -634,7 +739,7 @@ move_summary</code></pre>
 <pre class="r"><code>ggplot(data = move_summary, aes(x = animal_id, y = n)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #rotate and shift id labels
   geom_bar(stat = &quot;identity&quot;) </code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-24-1.png" width="576" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-22-1.png" width="576" /></p>
 <table>
 <tbody>
 <tr class="odd">
@@ -753,7 +858,7 @@ presence_summary</code></pre>
 <p>Is there a relationship between the number and length of presence bouts?</p>
 <pre class="r"><code>ggplot(data = presence_summary, aes(x = n, y = mean_length)) +
   geom_point()</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-30-1.png" width="768" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-27-1.png" width="768" /></p>
 <p>Do animals spend more time around certain loggers?</p>
 <pre class="r"><code>presence_summary &lt;- p %&gt;%
   group_by(logger_id) %&gt;%
@@ -774,7 +879,7 @@ presence_summary</code></pre>
   geom_errorbar(aes(ymin = mean_length - se_length, 
                     ymax = mean_length + se_length), width = 0.25)</code></pre>
 <pre><code>## Warning: Removed 1 rows containing missing values (geom_errorbar).</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-31-1.png" width="768" /> Note that there is only one bout of presence aroundlogger 2400, hence the lack of errorbars. ——————– Back to <a href="#top">top</a> ——————–</p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-28-1.png" width="768" /> Note that there is only one bout of presence aroundlogger 2400, hence the lack of errorbars. ——————– Back to <a href="#top">top</a> ——————–</p>
 <p><a id = "displacements"></a></p>
 </div>
 </div>
@@ -852,10 +957,18 @@ names(d)</code></pre>
 </div>
 <div id="no-events" class="section level3">
 <h3>No events</h3>
-<p>If there are no displacement events in your data set, the function will stop. In this case, the data set is so small, there are no displacement events:</p>
+<p>If there are no displacement events in your data set, the function will give you a message and will return an empty list. In this case, the data set is so small, there are no displacement events:</p>
 <pre class="r"><code>v &lt;- visits(finches, bw = 5)
-d &lt;- disp(v)</code></pre>
-<pre><code>## Error in disp(v): There are no displacement events with a bw = 5, stopping now</code></pre>
+disp(v)</code></pre>
+<pre><code>## There are no displacement events with a bw = 5</code></pre>
+<pre><code>## $displacements
+## data frame with 0 columns and 0 rows
+## 
+## $summaries
+## data frame with 0 columns and 0 rows
+## 
+## $interactions
+## data frame with 0 columns and 0 rows</code></pre>
 </div>
 <div id="specifying-bw-2" class="section level3">
 <h3>Specifying <code>bw</code></h3>
@@ -896,14 +1009,17 @@ head(disp(v)$summaries)</code></pre>
 <div id="summarizing-displacements" class="section level3">
 <h3>Summarizing displacements</h3>
 <p>Is one logger more contentious than others?</p>
-<pre class="r"><code>disp_summary &lt;- d$displacements %&gt;%
+<pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
+d &lt;- disp(v)
+
+disp_summary &lt;- d$displacements %&gt;%
   group_by(logger_id, role) %&gt;%
   count() %&gt;%
   filter(role == &quot;displacer&quot;)
 
 ggplot(data = disp_summary, aes(x = logger_id, y = n)) +
   geom_bar(stat = &quot;identity&quot;)</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-38-1.png" width="768" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-34-1.png" width="768" /></p>
 <p>What if we control for overall logger use?</p>
 <pre class="r"><code>disp_summary &lt;- d$displacements %&gt;%
   group_by(logger_id, role) %&gt;%
@@ -930,7 +1046,7 @@ full_summary</code></pre>
 ## 4      2400      &lt;NA&gt;     0    2.033333   0.000000</code></pre>
 <pre class="r"><code>ggplot(data = full_summary, aes(x = logger_id, y = n)) +
   geom_bar(stat = &quot;identity&quot;)</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-39-1.png" width="768" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-35-1.png" width="768" /></p>
 <pre class="r"><code>d$summaries</code></pre>
 <pre><code>## # A tibble: 11 × 4
 ##     animal_id displacee displacer     p_win
@@ -949,10 +1065,10 @@ full_summary</code></pre>
 <pre class="r"><code>ggplot(data = d$summaries, aes(x = animal_id, y = p_win)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #rotate and shift id labels
   geom_bar(stat = &quot;identity&quot;) +
- # ylim(c(0, 1)) +
+  ylim(c(0, 1)) +
   labs(x = &quot;Animal Id&quot;, y = &quot;Proportion of &#39;wins&#39;&quot;)</code></pre>
 <pre><code>## Warning: Removed 6 rows containing missing values (position_stack).</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-40-1.png" width="768" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-36-1.png" width="768" /></p>
 <table>
 <tbody>
 <tr class="odd">
@@ -966,97 +1082,80 @@ full_summary</code></pre>
 <div id="dom" class="section level2">
 <h2><code>dom()</code></h2>
 <p>This function is designed to turn ‘Displacement’ data into a ‘Dominance matrix’.</p>
-<p>A <strong>Dominance matrix</strong> is a matrix ranking individuals by wins and losses against other individuals. This matrix can be used to determine the final dominance hierarchy of a flock.</p>
+<p>A <strong>Dominance matrix</strong> is a matrix ranking individuals by wins and losses against other individuals. This matrix can be used to determine the final dominance hierarchy of a group of animals.</p>
 <p>This function produces a dominance matrix which represents a ‘best guess’, as opposed to a perfect final product. The function attempts to find the best ordering, with the fewest reversals. A reversal is when an individual loses or wins more against one particular individual than expected given the general pattern of dominance wins/losses (i.e., a generally dominant individual that that has many losses against a generally subdomiant individual)</p>
-<p>This matrix should not be considered a final product, but a starting point for manual manipulation.</p>
-<pre class="r"><code>library(dplyr)
-
-dm &lt;- finches_lg %&gt;%
-  visits(bw = 5) %&gt;%
-  disp() %&gt;%
-  dom()</code></pre>
-<pre><code>## animal_ids with fewer than 3 interactions have been omitted: 041868E9A8, 041869123C, 062000043E, 0620000513, 0620000514, 0620000520</code></pre>
-<pre><code>## Tried 1 times. Found 1 &#39;best&#39; matrix(ces), with 0 reversal(s) per matrix</code></pre>
-<pre class="r"><code>names(dm)</code></pre>
-<pre><code>## [1] &quot;dominance&quot; &quot;reversals&quot; &quot;matrices&quot;</code></pre>
-<p>Note that this format is identical to:</p>
-<pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
-d &lt;- disp(v)
-dm &lt;- disp(d)</code></pre>
-<p>The pipe (<code>%&gt;%</code>) takes the output of one line and passes it to the next (but does not create the intermediary objects).</p>
-<div id="data-returned-4" class="section level3">
-<h3>Data returned</h3>
-<p>The first thing this function returns is some information on what happened when the dominance matrix was created</p>
-<pre class="r"><code># animal_ids with fewer than 3 interactions have been omitted: 041868E9A8, 041869123C, 062000043E, 0620000513, 0620000514, 0620000520</code></pre>
-<pre><code>Tried 1 times. Found 1 &#39;best&#39; matrix(ces), with 0 reversal(s) per matrix</code></pre>
-<p>This function returns a list with three different types of information: <code>dominance</code>, <code>reversals</code>, and <code>matrices</code>.</p>
-<pre class="r"><code>head(d$displacements)</code></pre>
-<pre><code>## # A tibble: 6 × 12
-##    animal_id       date                left             arrived logger_id
-##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;fctr&gt;
-## 1 06200004F8 2015-09-12 2015-09-12 15:51:41 2015-09-12 15:51:44      2100
-## 2 0620000500 2015-09-12 2015-09-12 15:51:41 2015-09-12 15:51:44      2100
-## 3 06200004F8 2015-09-13 2015-09-13 15:17:59 2015-09-13 15:18:02      2100
-## 4 0620000500 2015-09-13 2015-09-13 15:17:59 2015-09-13 15:18:02      2100
-## 5 06200004F8 2015-09-14 2015-09-14 13:48:02 2015-09-14 13:48:06      2100
-## 6 0620000500 2015-09-14 2015-09-14 13:48:02 2015-09-14 13:48:06      2100
-## # ... with 7 more variables: role &lt;chr&gt;, animal_n &lt;int&gt;, logger_n &lt;int&gt;,
-## #   species &lt;chr&gt;, sex &lt;chr&gt;, lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
-<p>The <code>displacements</code> item is a data frame containing information on each displacement event</p>
-<ul>
-<li><code>animal_id</code> id of an animal involved in a displacement event</li>
-<li><code>date</code> the date of the start of the event</li>
-<li><code>left</code> the time the ‘displacee’ left the logger</li>
-<li><code>arrrived</code> the time the ‘displacer’ arrived at the logger</li>
-<li><code>logger_id</code> the logger involved in the event</li>
-<li><code>role</code> the role in the event of the current animal (‘displacee’ or ‘displacer’)</li>
-</ul>
-<p><code>animal_n</code>, <code>logger_n</code>, <code>species</code>, <code>sex</code>, <code>lon</code>, and <code>lat</code> are extra columns passed through (see <a href="#visitsdata">visits data</a> for more information).</p>
-</div>
-<div id="tries" class="section level3">
-<h3><code>tries</code></h3>
-</div>
-<div id="omit_cutoff" class="section level3">
-<h3><code>omit_cutoff</code></h3>
-<p>If the function finds more than one ‘best guess’ they will all be returned. In addition to the ‘best guess’ dominance matrices (<code>dm$matrices</code>), the function returns <code>dm$dominance</code> and <code>dm$reversals</code></p>
-<p>Let’s work with a slightly larger data set but concentrate on one logger only:</p>
-<pre class="r"><code>r &lt;- dl_data(start = &quot;2016-03-07&quot;, end = &quot;2016-03-31&quot;)</code></pre>
-<pre><code>## Renaming &#39;bird_id&#39; to &#39;animal_id&#39;. Use of &#39;bird_id&#39; is now deprecated.</code></pre>
-<pre><code>## Renaming &#39;feeder_id&#39; to &#39;logger_id&#39;. Use of &#39;feeder_id&#39; is now deprecated.</code></pre>
-<pre class="r"><code>r &lt;- droplevels(r[r$logger_id == 2300, ])</code></pre>
-<p>The <code>r[r$logger_id == 2300, ]</code> results in a subset of the data frame <code>r</code> which only includes rows which have a <code>logger_id</code> equivalent to ‘2300’. The <code>droplevels()</code> function then drops all levels that don’t appear in the data set (i.e. even though we’ve omitted certain individuals, the column <code>animal_id</code> keeps track of all <em>possible</em> individuals). This is not important for the <code>disp()</code> function, but functions that work on individual data, such as <code>move()</code> and <code>presence()</code> rely on levels to keep track of ids. Using <code>droplevels()</code> when you want to completely omit individuals from analysis is therefore a good idea in general.</p>
-<pre class="r"><code>v &lt;- visits(r)
-d &lt;- disp(v)
-dm &lt;- dom(d$interactions)</code></pre>
-<pre><code>## animal_ids with fewer than 3 interactions have been omitted: 062000043E, 0620000520, 0620000400, 041868FF93, 06200003AA, 06200003BB, 06200004F8</code></pre>
-<pre><code>## Tried 1 times. Found 1 &#39;best&#39; matrix(ces), with 0 reversal(s) per matrix</code></pre>
-<pre class="r"><code>names(dm)</code></pre>
-<pre><code>## [1] &quot;dominance&quot; &quot;reversals&quot; &quot;matrices&quot;</code></pre>
-<p>The main part of this output are the matrices:</p>
-<pre class="r"><code>dm$matrices</code></pre>
-<pre><code>## [[1]]
-##            0620000514 0620000513 041868BED6
-## 0620000514         NA          4          5
-## 0620000513          1         NA          1
-## 041868BED6          1          1         NA</code></pre>
-<p>Here we have two, because both are equally possible. This is a situation in which a user will have to continue on by hand to end up with the best matrix.</p>
-<p>Most dominant individuals are those to the left or the top.</p>
-<p>These matrices are created by</p>
+<p>This matrix should not be considered a final product, but a starting point for manual manipulation, particularly if the function returns more than one ‘best guess’ matrix.</p>
+<p>These matrices are created by :</p>
 <ul>
 <li>Ranking individuals based on their overall win rate</li>
 <li>Attempting to fix ‘reversals’ by switching individuals around, and testing whether this reduced the total number of reversals or not.</li>
 <li>After so many rounds of trying to reduce reversals, the script returns the best matrix</li>
 </ul>
-<p><strong>Dominance Rankings</strong> (<code>dm$dominance</code>) are the relative dominance rankings according to each final matrix (ranked from Dominant to Sub-dominant).</p>
+<pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
+d &lt;- disp(v)
+dm &lt;- dom(d)</code></pre>
+<pre><code>## animal_ids with fewer than 3 interactions have been omitted: 041868E9A8, 041869123C, 062000043E, 0620000513, 0620000514, 0620000520</code></pre>
+<pre><code>## Tried 1 times. Found 1 &#39;best&#39; matrix(ces), each with 0 reversal(s)</code></pre>
+<pre class="r"><code>names(dm)</code></pre>
+<pre><code>## [1] &quot;dominance&quot; &quot;reversals&quot; &quot;matrices&quot;</code></pre>
+<div id="data-returned-4" class="section level3">
+<h3>Data returned</h3>
+<p>The <code>dom()</code> function returns a list with three different types of information: <code>dominance</code>, <code>reversals</code>, and <code>matrices</code>.</p>
+<p>However, the first thing this function returns is some information on what happened when the dominance matrix was created:</p>
+<pre><code>## animal_ids with fewer than 3 interactions have been omitted: 041868E9A8, 041869123C, 062000043E, 0620000513, 0620000514, 0620000520</code></pre>
+<p>This message informs the user that several individuals have been omitted from the analysis because they contained fewer than 3 interactions each. This cutoff value can be customized (see <code>omit_cutoff</code> below).</p>
+<pre><code>## Tried 1 times. Found 1 &#39;best&#39; matrix(ces), each with 0 reversal(s)</code></pre>
+<p>The next message informs the user about the number iterations the function went through and the number of potential dominance matrices and reversals per matrix. It is possible that several different dominance rankings can be obtained that are equally likely. In this case, <code>dom()</code> will return them all (<code>n 'best' matrix(ces)</code>). Matrices are considered ‘better’ if they have fewer reversals. Furthermore, there may be one or more reversals per matrix.</p>
 <pre class="r"><code>dm$dominance</code></pre>
 <pre><code>## [[1]]
-## [1] &quot;0620000514&quot; &quot;0620000513&quot; &quot;041868BED6&quot;</code></pre>
-<p>Essentially, if the matrix is perfect, this is the dominance hierarchy you have in your flock. However, if you need to tweak your matrix, you’ll come up with a different dominance hierarchy.</p>
-<p>You can see that this matches the <code>animal_id</code> order in the matrices.</p>
-<p>The final thing to consider are any remaining reversals.</p>
-<p><strong>Reversals</strong> are a table identifying remaining reversals: Pairs of individuals which could be switched either way in the hierarchy.</p>
-<pre class="r"><code>dm$reversals</code></pre>
-<pre><code>## list()</code></pre>
+## [1] &quot;0620000500&quot; &quot;06200004F8&quot; &quot;06200003AA&quot; &quot;0620000400&quot; &quot;0620000477&quot;</code></pre>
+<p>The <code>dominance</code> item is a vector containing the dominance hierarchy for each matrix listing all animals from most to least dominant (according to that matrix). Essentially, if the matrix is perfect, this is the dominance hierarchy you have. However, if you need to tweak your matrix, you’ll come up with a different dominance hierarchy.</p>
+<pre class="r"><code>v_c &lt;- visits(chickadees, bw = 5)
+d_c &lt;- disp(v_c)
+dm_c &lt;- dom(d_c)
+
+head(dm_c$reversals[[1]])</code></pre>
+<pre><code>##   animal_id1 animal_id2
+## 1 0700EE0E42 0700EE022B
+## 2 0700EE0E42 062000014F
+## 3 062000038D 062000014F
+## 4 0620000418 062000038F
+## 5 0700EE022B 06200004BE
+## 6 062000038D 06200003C3</code></pre>
+<p>Our original analysis doesn’t have any reversals, meaning that the matrix of interactions reflects a linear hierarchy (or individudals are tied). However, a look at dominance in our chickadee data set shows many reversals. The <code>reversals</code> item is a list containing a data frame for each matrix showing which individuals experienced reversals with whom: Pairs of individuals which could be switched either way in the hierarchy.</p>
+<pre class="r"><code>dm$matrices[[1]]</code></pre>
+<pre><code>##            0620000500 06200004F8 06200003AA 0620000400 0620000477
+## 0620000500         NA         37          1          1          5
+## 06200004F8         15         NA          5          1          3
+## 06200003AA          1          2         NA          0          0
+## 0620000400          0          0          0         NA          1
+## 0620000477          1          0          0          1         NA</code></pre>
+<p>The <code>matrix</code> item is a list containing each dominance matrix showing all interactions. The <code>displacers</code> are along the rows, and <code>displacees</code> along the columns. For example, <code>0620000500</code> displaced <code>06200004F8</code> 37 times, whereas <code>06200004F8</code> only displaced <code>0620000500</code> 15 times. <code>0620000500</code> displaced <code>0620000477</code> 5 times, but was only displaced in turn once.</p>
+</div>
+<div id="tries" class="section level3">
+<h3><code>tries</code></h3>
+<p>The <code>tries</code> parameter reflect the maximum number of iterations the <code>dom()</code> function should try before returning the matrix. It defaults to 50.</p>
+</div>
+<div id="omit_cutoff" class="section level3">
+<h3><code>omit_cutoff</code></h3>
+<p>Sometimes individuals simply don’t participate in enough dominance interactions for their ranking to be assessed. This parameter allows you to set how many interactions an individual must have to be included in the dominance matrix. It defaults to a minimum of 3 but can be increased for a more robust matrix.</p>
+<pre class="r"><code>dom(d, omit_cutoff = 10)</code></pre>
+<pre><code>## animal_ids with fewer than 10 interactions have been omitted: 06200003AA, 0620000400, 041868E9A8, 041869123C, 062000043E, 0620000513, 0620000514, 0620000520</code></pre>
+<pre><code>## Tried 1 times. Found 1 &#39;best&#39; matrix(ces), each with 0 reversal(s)</code></pre>
+<pre><code>## $dominance
+## $dominance[[1]]
+## [1] &quot;0620000500&quot; &quot;06200004F8&quot; &quot;0620000477&quot;
+## 
+## 
+## $reversals
+## list()
+## 
+## $matrices
+## $matrices[[1]]
+##            0620000500 06200004F8 0620000477
+## 0620000500         NA         37          5
+## 06200004F8         15         NA          3
+## 0620000477          1          0         NA</code></pre>
 <table>
 <tbody>
 <tr class="odd">
@@ -1067,47 +1166,139 @@ dm &lt;- dom(d$interactions)</code></pre>
 <p><a id = "activity"></a></p>
 </div>
 </div>
-<div id="activity-underdevelopment" class="section level2">
-<h2><code>activity()</code> [UNDERDEVELOPMENT]</h2>
+<div id="activity" class="section level2">
+<h2><code>activity()</code></h2>
 <p>This function scores individuals as either active or inactive based on their presence data. While simply looking at the presence bouts is a good proxy for active/inactive, scoring intervals as active/inactive allows for easier plotting as well as for averaging over days to create daily activity patterns (see <a href="#dailyactivity"><code>daily()</code> function</a>).</p>
-<p>First, let’s restrict our analysis a bit:</p>
-<pre class="r"><code>## FIXIx
-library(plyr)
-r &lt;- chickadees[chickadees$experiment == &quot;exp1&quot;,]
-v &lt;- visits(r)
-f &lt;- ddply(v, c(&quot;animal_id&quot;), presence)</code></pre>
-<p>The default function calculates activity for each animal, independent of which loggers they are visiting, and with a resolution of 15min.</p>
-<pre class="r"><code>## FIXIx
-a &lt;- ddply(f, c(&quot;animal_id&quot;), activity)</code></pre>
-<p>Note that in addition to an activity data frame, this function also returns information regarding the process.</p>
-<p>In this case, several individuals were skipped because they had data for less than 24 hrs. If you wish to include these individuals regardless, you can force their inclusion with:</p>
-<pre class="r"><code>## FIXIx
-a &lt;- ddply(f, c(&quot;animal_id&quot;), activity, keep_all = TRUE)</code></pre>
-<p>Note that now we are warned about: - activity being low (“Active less than 5%…”) - obs which are shorter than the resolution ‘res’ - several individual with presence bouts all 0min (this happens when each presence bout is the result of a single visit)</p>
-<p>These messages are presented to help you understand the quality of your activity data.</p>
-<p>For example, if the length of most observations (presence bouts) are less than the resolution, there’s a good chance that many observations are being missed when scoring activity. We can fix this by adjusting the resolution. In general, a small resolution is always better. Note, however, that the smaller the resolution, the more computationally challenging.</p>
-<p>Let’s use a resolution of 1 minute:</p>
-<pre class="r"><code>## FIXIx
-a &lt;- ddply(f, c(&quot;animal_id&quot;), activity, keep_all = TRUE, res = 1)</code></pre>
-<p>The number of messages has definitely done down but we still have quite a few. Most of these messages are warnings about the lack of data, so let’s go back to omitting individuals with low data:</p>
-<pre class="r"><code>## FIXIx
-a &lt;- ddply(f, c(&quot;animal_id&quot;), activity, res = 1)</code></pre>
-<p>We still have one animal (0700EE0E42) with a warning about a low resolution, but this is most likely due to the fact that there are very short presence bouts (Median obs is 0 min).</p>
-<p>Several individuals are active for less than 5% of the total time, but this isn’t necessarily a problem.</p>
-<p>Next let’s take a look at our data:</p>
-<pre class="r"><code>## FIXIx
-head(a)
-summary(a)</code></pre>
-<p>Our extra data (experiment, lat, lon) is all there, but many of the lat/lons are “NA” now. This is because the default for the activity() function is to calculate activity independent of logger. However if an individual has visited only one logger, all the extra data associated with that logger will be preserved.</p>
-<p>Let’s plot one day for one individual:</p>
-<pre class="r"><code>#FIX
+<pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
+p &lt;- presence(v)
+a &lt;- activity(p, res = 5)</code></pre>
+<pre><code>## 041868E9A8: Active less than 5% of the total time period...</code></pre>
+<pre><code>## 041869123C: Skipping. Individual has less than 24hrs of data</code></pre>
+<pre><code>## 06200003AA: Active less than 5% of the total time period...</code></pre>
+<pre><code>## 06200003AA: 69.7% of obs are shorter than &#39;res&#39; (5 min). Median obs is 3.26 min.</code></pre>
+<pre><code>## 0620000400: Active less than 5% of the total time period...</code></pre>
+<pre><code>## 0620000400: 62.5% of obs are shorter than &#39;res&#39; (5 min). Median obs is 1.14 min.</code></pre>
+<pre><code>## 062000043E: Skipping. Individual has less than 24hrs of data</code></pre>
+<pre><code>## 0620000477: Active less than 5% of the total time period...</code></pre>
+<pre><code>## 06200004F8: Active less than 5% of the total time period...</code></pre>
+<pre><code>## 06200004F8: 52.96% of obs are shorter than &#39;res&#39; (5 min). Median obs is 4.57 min.</code></pre>
+<pre><code>## 0620000500: Active less than 5% of the total time period...</code></pre>
+<pre><code>## 0620000500: 67.33% of obs are shorter than &#39;res&#39; (5 min). Median obs is 3.46 min.</code></pre>
+<pre><code>## 0620000513: Skipping. Individual has less than 24hrs of data</code></pre>
+<pre><code>## 0620000514: Active less than 5% of the total time period...</code></pre>
+<pre><code>## 0620000514: 75% of obs are shorter than &#39;res&#39; (5 min). Median obs is 1.59 min.</code></pre>
+<pre><code>## 0620000520: Active less than 5% of the total time period...</code></pre>
+<pre class="r"><code>head(a)</code></pre>
+<pre><code>## # A tibble: 6 × 12
+##    animal_id       date                time activity activity_c logger_id
+##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;    &lt;dbl&gt;     &lt;fctr&gt;    &lt;fctr&gt;
+## 1 041868E9A8 2015-10-01 2015-10-01 00:00:00        0   inactive        NA
+## 2 041868E9A8 2015-10-01 2015-10-01 00:05:00        0   inactive        NA
+## 3 041868E9A8 2015-10-01 2015-10-01 00:10:00        0   inactive        NA
+## 4 041868E9A8 2015-10-01 2015-10-01 00:15:00        0   inactive        NA
+## 5 041868E9A8 2015-10-01 2015-10-01 00:20:00        0   inactive        NA
+## 6 041868E9A8 2015-10-01 2015-10-01 00:25:00        0   inactive        NA
+## # ... with 6 more variables: rise &lt;dttm&gt;, set &lt;dttm&gt;, animal_n &lt;int&gt;,
+## #   logger_n &lt;int&gt;, species &lt;chr&gt;, sex &lt;chr&gt;</code></pre>
+<div id="data-returned-5" class="section level3">
+<h3>Data returned</h3>
+<p>Several messages along with a dataset containing:</p>
+<ul>
+<li><code>animal_id</code> id of the animal in question</li>
+<li><code>date</code> the date of the event</li>
+<li><code>time</code> the time block of the event</li>
+<li><code>activity</code> a numeric activity score: 0 (inactive), 1 (active)</li>
+<li><code>activity_c</code> a categorical activity score: inactive, active</li>
+<li><code>logger_id</code> the logger where the activity occurred. If summarizing across loggers, this will be <code>NA</code>.</li>
+<li><code>rise</code> the time of sunrise (median time if calculated across all loggers), only calculated if <code>sun = TRUE</code></li>
+<li><code>set</code> the time of sunset (median time if calculated across all loggers), only calculated if <code>sun = TRUE</code></li>
+</ul>
+<p><code>animal_n</code>, <code>logger_n</code>, <code>species</code>, <code>sex</code> are extra columns passed through (see <a href="#visitsdata">visits data</a> for more information).</p>
+<p>The messages reflect information regarding the quality of the activity data:</p>
+<ul>
+<li>activity being low (“Active less than 5%…”)</li>
+<li>skipped individuals (“Skipping. Individual has less than 24hrs data) (see <code>keep_all</code> below)</li>
+<li>obs which are shorter than the resolution ‘res’ (X% of obs are shorter than ‘res’) (see <code>res</code> below)</li>
+</ul>
+</div>
+<div id="res" class="section level3">
+<h3><code>res</code></h3>
+<p>The default function calculates activity for each animal at a resolution of 15min. Meaning that every 15min an individual is scored as active or inactive. However, if individuals make short and infrequency visits to a logger, periods of activity may be missed if the active bouts are smaller than the resolution. Resolution can be adjusted through the <code>res</code> argument (note the change in time, and the change in messages).</p>
+<pre class="r"><code>head(activity(p, res = 1))</code></pre>
+<pre><code>## # A tibble: 6 × 12
+##    animal_id       date                time activity activity_c logger_id
+##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;    &lt;dbl&gt;     &lt;fctr&gt;    &lt;fctr&gt;
+## 1 041868E9A8 2015-10-01 2015-10-01 00:00:00        0   inactive        NA
+## 2 041868E9A8 2015-10-01 2015-10-01 00:01:00        0   inactive        NA
+## 3 041868E9A8 2015-10-01 2015-10-01 00:02:00        0   inactive        NA
+## 4 041868E9A8 2015-10-01 2015-10-01 00:03:00        0   inactive        NA
+## 5 041868E9A8 2015-10-01 2015-10-01 00:04:00        0   inactive        NA
+## 6 041868E9A8 2015-10-01 2015-10-01 00:05:00        0   inactive        NA
+## # ... with 6 more variables: rise &lt;dttm&gt;, set &lt;dttm&gt;, animal_n &lt;int&gt;,
+## #   logger_n &lt;int&gt;, species &lt;chr&gt;, sex &lt;chr&gt;</code></pre>
+</div>
+<div id="by_logger" class="section level3">
+<h3><code>by_logger</code></h3>
+<p>By default, the <code>activity()</code> function sums all activity across loggers. However, if you wish to calculate separate activity patterns for different loggers, you can set <code>by_logger = TRUE</code>. Note the <code>logger_id</code> and that there are now 4 observations per time block for each individual:</p>
+<pre class="r"><code>head(activity(p, by_logger = TRUE))</code></pre>
+<pre><code>## # A tibble: 6 × 14
+##    animal_id       date                time activity activity_c logger_id
+##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;    &lt;dbl&gt;     &lt;fctr&gt;    &lt;fctr&gt;
+## 1 041868E9A8 2015-10-01 2015-10-01 00:00:00        0   inactive      2100
+## 2 041868E9A8 2015-10-01 2015-10-01 00:00:00        0   inactive      2200
+## 3 041868E9A8 2015-10-01 2015-10-01 00:00:00        0   inactive      2400
+## 4 041868E9A8 2015-10-01 2015-10-01 00:00:00        0   inactive      2700
+## 5 041868E9A8 2015-10-01 2015-10-01 00:15:00        0   inactive      2100
+## 6 041868E9A8 2015-10-01 2015-10-01 00:15:00        0   inactive      2200
+## # ... with 8 more variables: rise &lt;dttm&gt;, set &lt;dttm&gt;, animal_n &lt;int&gt;,
+## #   logger_n &lt;int&gt;, species &lt;chr&gt;, sex &lt;chr&gt;, lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
+</div>
+<div id="sun" class="section level3">
+<h3><code>sun</code></h3>
+<p>By default sunrise and sunset times are calculated if the data contains latitude and longitude information. You can turn this off with <code>sun = FALSE</code>.</p>
+</div>
+<div id="keep_all" class="section level3">
+<h3><code>keep_all</code></h3>
+<p>By default, the <code>activity()</code> function skips individuals with less than 24hrs of data, you can force it to retain all individuals by specifying <code>keep_all = TRUE</code>.</p>
+</div>
+<div id="missing" class="section level3">
+<h3><code>missing</code></h3>
+<p>Currently this functionality is not implemented. However, eventually we plan to allow users to specify times of known missing data, so that activity can be specified as ‘active’, ‘inactive’, or ‘unknown’.</p>
+</div>
+<div id="summarizing-activity" class="section level3">
+<h3>Summarizing activity</h3>
+<p>Activity patterns can be plotted in ggplot2. Let’s look at a specific time period:</p>
+<pre class="r"><code>library(dplyr)
 library(ggplot2)
+library(lubridate)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;lubridate&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:base&#39;:
+## 
+##     date</code></pre>
+<pre class="r"><code>sept &lt;- a %&gt;%
+  filter(date &gt;= as.Date(&quot;2015-09-01&quot;),
+         date &lt; as.Date(&quot;2015-10-01&quot;),
+         animal_id == &quot;06200004F8&quot;) %&gt;%
+  mutate(week = week(date))
 
-i &lt;- a[a$animal_id == &quot;0620000525&quot; &amp; a$date == as.POSIXct(&quot;2015-12-06&quot;),]
-
-ggplot(data = i, aes(x = time, ymin = 0, ymax = activity)) +
+ggplot(data = sept, aes(x = time, ymin = 0, ymax = activity)) +
+  facet_wrap(~ week, scales = &quot;free_x&quot;, ncol = 1) +
   geom_ribbon()</code></pre>
+<p><img src="transformations_files/figure-html/unnamed-chunk-46-1.png" width="768" /></p>
 <p>There’s a clear daily pattern, but it’s a bit hard to tell without sunrise and sunset:</p>
+<pre class="r"><code>sun &lt;- sept %&gt;%
+  select(set, rise) %&gt;%
+  distinct() %&gt;%
+  mutate(set = lag(set)) # Get the next day&#39;s set
+
+ggplot(data = sept) +
+  facet_wrap(~ week, scales = &quot;free_x&quot;, ncol = 1) +
+  #geom_rect(data = sun, aes(xmin = set, xmax = rise), ymin = -Inf, ymax = +Inf, fill = &quot;grey&quot;) +
+  geom_rect(data = sun, aes(xmax = set, xmin = rise), ymin = -Inf, ymax = +Inf, fill = &quot;grey&quot;)+
+  geom_area(aes(x = time, y = activity))</code></pre>
+<pre><code>## Warning: Removed 3 rows containing missing values (geom_rect).</code></pre>
+<p><img src="transformations_files/figure-html/unnamed-chunk-47-1.png" width="768" /></p>
 <table>
 <tbody>
 <tr class="odd">
@@ -1117,8 +1308,31 @@ ggplot(data = i, aes(x = time, ymin = 0, ymax = activity)) +
 </table>
 <p><a id = "dailyactivity"></a></p>
 </div>
-<div id="daily-underdevelopment" class="section level2">
-<h2><code>daily()</code> [UNDERDEVELOPMENT]</h2>
+</div>
+<div id="daily" class="section level2">
+<h2><code>daily()</code></h2>
+<p><code>daily()</code> converts activity patterns created by the <a href="#activity"><code>activity()</code> function</a> to averaged daily activity patterns.</p>
+<pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
+p &lt;- presence(v)
+a &lt;- activity(p, res = 5)
+da &lt;- daily(a)</code></pre>
+</div>
+<div id="data-returned-6" class="section level2">
+<h2>Data returned</h2>
+</div>
+<div id="summarizing-daily-activity" class="section level2">
+<h2>Summarizing daily activity</h2>
+<pre class="r"><code>sun &lt;- da %&gt;%
+  select(rise, set) %&gt;%
+  distinct()
+
+ggplot(data = da) +
+  geom_rect(aes(xmax = rise), xmin = -Inf, ymin = -Inf, ymax = +Inf, alpha = 0.1) +
+  geom_rect(aes(xmin = set), xmax = +Inf, ymin = -Inf, ymax = +Inf) +
+  geom_area(data = da, aes(x = time, y = p_active)) +
+  facet_wrap(~ animal_id) +
+  scale_x_datetime(date_labels = &quot;%H:%M:%S&quot;, date_breaks = &quot;6 hours&quot;)</code></pre>
+<p><img src="transformations_files/figure-html/unnamed-chunk-48-1.png" width="768" /></p>
 <hr />
 <p>Back to <a href="#top">top</a><br />
 Go back to <a href="index.html">home</a> | Go back to <a href="housekeeping.html">housekeeping</a> | Continue with <a href="maps.html">visualizations</a></p>
@@ -1126,6 +1340,8 @@ Go back to <a href="index.html">home</a> | Go back to <a href="housekeeping.html
 
 
 
+</div>
+</div>
 
 </div>
 

@@ -19,6 +19,9 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-1.1/highlight.js"></script>
@@ -166,6 +169,107 @@ $(document).ready(function () {
 
 
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
 
 
 <div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
@@ -235,8 +339,8 @@ Static or interactive maps produced by the mapping functions which visualize mov
 <p>There are also three ‘user-interface’ (UI) functions that can be used to simplify the use of these functions (see below).</p>
 <p>In the normal order of operarations, several functions depend on the output of other functions.</p>
 <p>For example, to get daily activity patterns, you could get your data from the animalnexus database with <code>dl_data()</code>, turn this raw data to visits data with <code>visits()</code>, turn visits data to activity data with <code>activity()</code> and finally, turn activity data into daily activity patterns with <code>daily()</code>.</p>
-<div id="htmlwidget-1e647824c0dd0108d39b" style="width:500px;height:480px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1e647824c0dd0108d39b">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nload[label = \"{Loading/Importing Data | {load_raw_all() | load_web() | dl_data()}}\"]\n\nhk[label = \"{Housekeeping (Optional) | {check_ids() | check_problems()}}\", width = 3]\n\nload -> hk\nhk -> visits\nload -> visits\n\nvisits[label = \"visits()\"]\ndisp[label = \"disp()\"]\ndom[label = \"dom()\"]\nmove[label = \"move()\"]\npresence[label = \"presence()\"]\nact[label = \"activity()\"]\ndaily[label = \"daily()\"]\n\nvisits-> {disp, move, presence}\npresence -> act\ndisp -> dom\nact -> daily\n\nmap[label = \"{Visualizations | {map_ggmap() | map_leaflet()}}\"]\n\n{presence; move} -> map\n\n#A -> e [ltail = cluster0, lhead = cluster1]\n#f -> \"visits()\" [ltail = cluster1, lhead = cluster2]\n#\"move()\" -> \"map_leaflet()\" [ltail = cluster2, lhead = cluster3]\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-7faac791cec3c5cb9376" style="width:500px;height:480px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-7faac791cec3c5cb9376">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nload[label = \"{Loading/Importing Data | {load_raw_all() | load_web() | dl_data()}}\"]\n\nhk[label = \"{Housekeeping (Optional) | {check_ids() | check_problems()}}\", width = 3]\n\nload -> hk\nhk -> visits\nload -> visits\n\nvisits[label = \"visits()\"]\ndisp[label = \"disp()\"]\ndom[label = \"dom()\"]\nmove[label = \"move()\"]\npresence[label = \"presence()\"]\nact[label = \"activity()\"]\ndaily[label = \"daily()\"]\n\nvisits-> {disp, move, presence}\npresence -> act\ndisp -> dom\nact -> daily\n\nmap[label = \"{Visualizations | {map_ggmap() | map_leaflet()}}\"]\n\n{presence; move} -> map\n\n#A -> e [ltail = cluster0, lhead = cluster1]\n#f -> \"visits()\" [ltail = cluster1, lhead = cluster2]\n#\"move()\" -> \"map_leaflet()\" [ltail = cluster2, lhead = cluster3]\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="tutorial-data" class="section level2">
 <h2>Tutorial Data</h2>
@@ -322,6 +426,8 @@ Continue with <a href="load.html">loading/importing data</a></p>
 
 
 
+</div>
+</div>
 
 </div>
 

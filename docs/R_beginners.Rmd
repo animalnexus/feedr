@@ -1,0 +1,7 @@
+head()
+subsetting
+tail
+library
+data.frames vs. tibbles
+factors
+levels

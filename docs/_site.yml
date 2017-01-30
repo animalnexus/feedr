@@ -22,4 +22,8 @@ output:
     theme: readable
     highlight: textmate
     css: custom.css
+    toc: true
+    toc_depth: 4
+    toc_float:
+      collapsed: false
 
