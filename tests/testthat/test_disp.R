@@ -6,7 +6,7 @@ context("Transformations to displacements")
 test_that("disp() returns appropriate, non-empty dataframe", {
 
   ## Errors
-  expect_error(d <- visits(finches) %>% disp(.))
+  expect_message(d <- visits(finches) %>% disp(.))
   expect_silent(d <- visits(finches) %>% disp(., bw = 300))
 
   ## Format
