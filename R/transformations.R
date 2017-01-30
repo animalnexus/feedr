@@ -530,47 +530,50 @@ disp <- function(v, bw = 5, pass = TRUE){
   d <- rbind(v[c(diff_animal & diff_time & diff_logger, FALSE), c("animal_id", "logger_id", "date", "start", "end")],
              v[c(FALSE, diff_animal & diff_time & diff_logger), c("animal_id", "logger_id", "date", "start", "end")])
 
-  if(nrow(d) == 0) stop(paste0("There are no displacement events with a bw = ", bw, ", stopping now"))
+  if(nrow(d) > 0) {
+    d <- d[order(d$start), ]
+    d$role <- c("displacee", "displacer")
+    d <- d[order(d$role, d$start), ]
 
-  d <- d[order(d$start), ]
-  d$role <- c("displacee", "displacer")
-  d <- d[order(d$role, d$start), ]
+    d$left <- rep(v$end[c(diff_animal & diff_time & diff_logger, FALSE)], 2)
+    d$arrived <- rep(v$start[c(FALSE, diff_animal & diff_time & diff_logger)], 2)
 
-  d$left <- rep(v$end[c(diff_animal & diff_time & diff_logger, FALSE)], 2)
-  d$arrived <- rep(v$start[c(FALSE, diff_animal & diff_time & diff_logger)], 2)
+    d <- dplyr::select(d, animal_id, date, left, arrived, logger_id, role) %>%
+      dplyr::arrange(left, logger_id, role)
 
-  d <- dplyr::select(d, animal_id, date, left, arrived, logger_id, role) %>%
-    dplyr::arrange(left, logger_id, role)
+    if(pass == TRUE) d <- merge_extra(d, extra)
 
-  if(pass == TRUE) d <- merge_extra(d, extra)
+    ## Summarize totals
+    s <- d %>%
+      dplyr::group_by(role, animal_id) %>%
+      dplyr::summarize(n = length(animal_id)) %>%
+      tidyr::complete(animal_id, role, fill = list("n" = 0)) %>%
+      tidyr::spread(role, n) %>%
+      dplyr::mutate(p_win = displacer / (displacee + displacer)) %>%
+      dplyr::arrange(desc(p_win))
 
-  ## Summarize totals
-  s <- d %>%
-    dplyr::group_by(role, animal_id) %>%
-    dplyr::summarize(n = length(animal_id)) %>%
-    tidyr::complete(animal_id, role, fill = list("n" = 0)) %>%
-    tidyr::spread(role, n) %>%
-    dplyr::mutate(p_win = displacer / (displacee + displacer)) %>%
-    dplyr::arrange(desc(p_win))
+    ## Summarize interactions
+    t <- d %>%
+      dplyr::select(left, animal_id, role) %>%
+      tidyr::spread(role, animal_id) %>%
+      dplyr::group_by(displacer, displacee) %>%
+      dplyr::summarize(n = length(displacee)) %>%
+      dplyr::ungroup()
 
-  ## Summarize interactions
-  t <- d %>%
-    dplyr::select(left, animal_id, role) %>%
-    tidyr::spread(role, animal_id) %>%
-    dplyr::group_by(displacer, displacee) %>%
-    dplyr::summarize(n = length(displacee)) %>%
-    dplyr::ungroup()
+    t$displacee <- factor(t$displacee, levels = animal_id)
+    t$displacer <- factor(t$displacer, levels = animal_id)
 
-  t$displacee <- factor(t$displacee, levels = animal_id)
-  t$displacer <- factor(t$displacer, levels = animal_id)
+    t <- t %>%
+      tidyr::complete(displacer, displacee, fill = list("n" = 0)) %>%
+      dplyr::filter(displacee != displacer)
 
-  t <- t %>%
-    tidyr::complete(displacer, displacee, fill = list("n" = 0)) %>%
-    dplyr::filter(displacee != displacer)
+    t <- t[order(match(t$displacer, s$animal_id)),]  ##Sort according to the p_win value from s
 
-  t <- t[order(match(t$displacer, s$animal_id)),]  ##Sort according to the p_win value from s
-
-  return(list("displacements" = d, "summaries" = s, "interactions" = t))
+    return(list("displacements" = d, "summaries" = s, "interactions" = t))
+  } else {
+    message("There are no displacement events with a bw = ", bw)
+    return(list("displacements" = data.frame(), "summaries" = data.frame(), "interactions" = data.frame()))
+  }
 }
 
 #' Displacements
