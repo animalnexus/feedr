@@ -595,8 +595,8 @@ disp <- function(v, bw = 5, pass = TRUE){
 #'   \item \code{dominance}: A best guess at the dominance hierarchy (most to
 #' least dominant) (one vector per 'best guess')
 #'
-#'   \item \code{reversals}: Which individuals show reversals? (i.e. A > B, B >
-#'   C but C > A) (one vector per 'best guess')
+#'   \item \code{reversals}: Which individuals show reversals (and with whom)? (i.e. A > B, B >
+#'   C but C > A) (one data frame per 'best guess')
 #'
 #'   \item \code{interactions}: A matrix of dominance interactions. Displacers
 #'   across the top, displacees down the side. Values are the numbers of wins
@@ -657,7 +657,8 @@ dom <- function(d, tries = 50, omit_cutoff = 3){
                         by = c("displacer" = "displacee")) %>%
     dplyr::mutate(win = replace(win, is.na(win), 0),
                   loss = replace(loss, is.na(loss), 0),
-                  p_win = win / (win + loss)) %>%
+                  n = win + loss,
+                  p_win = win / n) %>%
     dplyr::arrange(desc(p_win))
 
   # Check sample sizes and warn if low
@@ -669,14 +670,12 @@ dom <- function(d, tries = 50, omit_cutoff = 3){
     if(length(omit) > 0) message("animal_ids with fewer than ", omit_cutoff, " interactions have been omitted: ", paste0(omit, collapse = ", "))
   }
 
-  if(nrow(o[(o$win + o$loss) <= 2, ]) / nrow(o) > 0.5) message("More than 50% of your interactions (", round(nrow(d[d$n == 0, ]) / nrow(d)*100), "%) have 2 or fewer observations, this matrix may be founded on too little data.")
-
   o <- list(as.character(unique(o$displacer)))
 
   ## Setup the matrix
-  d <- tidyr::spread(d, displacee, n)
-  d <- as.matrix(d[, -grep("^displacer$", names(d))])
-  rownames(d) <- colnames(d)
+  dm <- tidyr::spread(d, displacee, n)
+  dm <- as.matrix(dm[, -grep("^displacer$", names(dm))])
+  rownames(dm) <- colnames(dm)
 
   ## Setup Loop
   try <- 0
@@ -687,15 +686,16 @@ dom <- function(d, tries = 50, omit_cutoff = 3){
 
   while(done == FALSE & try < tries){
 
+    ## For each alternative dominance ranking (o_l)
     for(i in 1:length(o_l)){
       new_o <- o_l[[i]]
-      temp <- d
+      temp <- dm
 
       ## Sort matrix by dominance hierarchy (new_o)
-      temp <- temp[order(match(rownames(temp),new_o)),order(match(colnames(temp),new_o))]
+      temp <- temp[order(match(rownames(temp), new_o)), order(match(colnames(temp), new_o))]
 
       ## CHECK (TODO set to stop script if this doesn't work)
-      all(diag(temp)==0)
+      all(is.na(diag(temp)))
       all(dimnames(temp)[[1]] == dimnames(temp)[[2]])
 
       ## Get upper and lower to compare
@@ -706,7 +706,7 @@ dom <- function(d, tries = 50, omit_cutoff = 3){
 
       ## Get reversals
       if(length(which(upper < lower, arr.ind = TRUE)) > 0){
-        rev[[length(rev)+1]] <- which(upper < lower, arr.ind = TRUE)
+        rev[[length(rev) + 1]] <- which(upper < lower, arr.ind = TRUE)
       }
     }
 
@@ -726,7 +726,7 @@ dom <- function(d, tries = 50, omit_cutoff = 3){
         for(i in 1:nrow(rev[[j]])){
           a <- rev[[j]][i,2]  ## Which individuals to move up
           b <- rev[[j]][i,1]  ## Where to move it
-          o_l[[length(o_l)+1]] <- c(new_o[1:(b-1)], new_o[a], new_o[-c(1:(b-1), a)])
+          o_l[[length(o_l) + 1]] <- c(new_o[1:(b - 1)], new_o[a], new_o[-c(1:(b - 1), a)])
         }
       }
     } else {
@@ -741,14 +741,14 @@ dom <- function(d, tries = 50, omit_cutoff = 3){
       rev <- list()
     }
   }
-  #print(paste0("Started with: ",paste0(unlist(o), collapse = ", ")))
-  message(paste0("Tried ",try," times. Found ",length(o_l), " 'best' matrix(ces), with ",if(length(rev) > 0) nrow(rev[[1]]) else 0," reversal(s) per matrix"))
+
+  message(paste0("Tried ",try," times. Found ",length(o_l), " 'best' matrix(ces), each with ",if(length(rev) > 0) nrow(rev[[1]]) else 0," reversal(s)"))
 
   m <- list()
   r <- list()
   for(i in 1:length(o_l)) {
-    m[[length(m) + 1]] <- d[order(match(rownames(d), o_l[[i]])), order(match(colnames(d), o_l[[i]]))]
-    if(length(rev) >0 && length(rev[[i]]) > 0) r[[length(r)+1]] <- c(rownames(m[[i]])[rev[[i]][1]], colnames(m[[i]])[rev[[i]][2]])
+    m[[length(m) + 1]] <- dm[order(match(rownames(dm), o_l[[i]])), order(match(colnames(dm), o_l[[i]]))]
+    if(length(rev) > 0 && length(rev[[i]]) > 0) r[[length(r)+1]] <- data.frame(animal_id1 = o_l[[i]][rev[[i]][, 1]], animal_id2 = o_l[[i]][rev[[i]][, 2]])
   }
 
   return(list(dominance = o_l, reversals = r, matrices = m))

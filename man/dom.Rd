@@ -24,8 +24,8 @@ A list with the following named items:
   \item \code{dominance}: A best guess at the dominance hierarchy (most to
 least dominant) (one vector per 'best guess')
 
-  \item \code{reversals}: Which individuals show reversals? (i.e. A > B, B >
-  C but C > A) (one vector per 'best guess')
+  \item \code{reversals}: Which individuals show reversals (and with whom)? (i.e. A > B, B >
+  C but C > A) (one data frame per 'best guess')
 
   \item \code{interactions}: A matrix of dominance interactions. Displacers
   across the top, displacees down the side. Values are the numbers of wins
