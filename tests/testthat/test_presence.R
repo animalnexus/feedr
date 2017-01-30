@@ -41,6 +41,6 @@ test_that("presence() handles multiple animals", {
 
 test_that("presence() pass", {
   expect_length(presence(visits(finches), pass = FALSE), 6)
-  expect_length(presence(visits(finches), pass = TRUE), 11)
+  expect_length(presence(visits(finches), pass = TRUE), 12)
 })
 

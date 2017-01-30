@@ -51,5 +51,5 @@ test_that("visits() na_rm", {
 
 test_that("visits() pass", {
   expect_length(visits(finches, pass = FALSE), 7)
-  expect_length(visits(finches, pass = TRUE), 10)
+  expect_length(visits(finches, pass = TRUE), 11)
 })
