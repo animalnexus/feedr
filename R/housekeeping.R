@@ -21,7 +21,7 @@
 #' @param id_length Numeric. How many characters are expected in each id? This
 #'   will test to make sure all ids are the right length (i.e. make sure
 #'   leading zeros haven't been omitted). NA skips this test.
-#'   
+#'
 #' @return A data frame without the specified animal ids. Messages are printed to
 #'   inform the user of matching or non-matching animal ids.
 #'
@@ -41,7 +41,7 @@ check_ids <- function(r, ids, omit = c("wand", "error"), id_length = 10, bird_id
             call. = FALSE)
     ids <- bird_ids
   }
-  
+
   if(is.null(ids) || (length(ids) > 1 & !is.data.frame(ids))) stop("ids should either be the name of a comma separated file (csv) OR should be a data frame. In either case, the data should contain headers 'animal_id' and 'species'")
 
   if(!is.data.frame(ids)) ids <- read.csv(ids)
@@ -104,6 +104,11 @@ check.ids <- function(r, animal_ids, omit_animal = c("wand", "error")){
 #' @export
 check_problems <- function(r, problems){
   if(length(problems) > 1 & !is.data.frame(problems)) stop("Problems should either be the name of a comma separated file (csv) OR should be a data frame. In either case, the data should contain headers 'original_id' and 'corrected_id'")
+
+  # Confirm that expected columns and formats are present
+  check_name(r, n = c("animal_id", "logger_id", "time"), "raw RFID")
+  check_time(r, n = "time", internal = FALSE)
+  check_format(r)
 
   # Get factor categories for animal_id
   animals <- levels(r$animal_id)
