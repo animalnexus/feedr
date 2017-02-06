@@ -2,6 +2,7 @@
 % Please edit documentation in R/feedr.R
 \name{animalnexus}
 \alias{animalnexus}
+\alias{animalnexus-site}
 \title{Launch local animalnexus}
 \usage{
 animalnexus()

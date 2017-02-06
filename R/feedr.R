@@ -6,7 +6,7 @@
 #' @references animalnexus \url{http://animalnexus.ca}.
 #' @docType package
 #' @name feedr-package
-#' @aliases feedr feedr-package animalnexus animalnexus-package
+#' @aliases feedr feedr-package animalnexus-package
 NULL
 
 
@@ -20,6 +20,7 @@ NULL
 #' animalnexus()
 #' }
 #'
+#' @aliases animalnexus animalnexus-site
 #' @export
 animalnexus <- function() {
   appDir <- system.file("shiny-examples", "animalnexus", package = "feedr")

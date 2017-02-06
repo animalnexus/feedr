@@ -2,7 +2,6 @@
 % Please edit documentation in R/feedr.R
 \docType{package}
 \name{feedr-package}
-\alias{animalnexus}
 \alias{animalnexus-package}
 \alias{feedr}
 \alias{feedr-package}
