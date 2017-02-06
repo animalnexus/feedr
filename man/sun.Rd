@@ -4,7 +4,7 @@
 \alias{sun}
 \title{Get sunrise/sunset times}
 \usage{
-sun(loc, date)
+sun(loc, date, tz)
 }
 \description{
 Get sunrise/sunset times
