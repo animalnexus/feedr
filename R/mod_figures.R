@@ -16,7 +16,6 @@ figures <- function(r) {
 ## Get figures
 #' @import shiny
 #' @import magrittr
-#' @export
 mod_UI_figures <- function(id) {
   ns <- NS(id)
 
@@ -45,7 +44,6 @@ mod_UI_figures <- function(id) {
 #' @import shiny
 #' @import magrittr
 #' @import ggplot2
-#' @export
 mod_figures <- function(input, output, session, r, v, p, m) {
 
   ns <- session$ns

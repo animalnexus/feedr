@@ -29,7 +29,6 @@ ui_animate <-  function(v, verbose = FALSE) {
 ## Animated map - UI
 #' @import shiny
 #' @import magrittr
-#' @export
 mod_UI_map_animate <- function(id) {
   # Create a namespace function using the provided id
   ns <- NS(id)

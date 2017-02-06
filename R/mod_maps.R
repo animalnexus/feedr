@@ -99,7 +99,6 @@ mod_UI_maps_controls <- function(id) {
 
 # Module server function
 #' @import shiny
-#' @export
 mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
 
   ns <- session$ns
@@ -305,7 +304,6 @@ mod_UI_maps_time <- function(id, type = "the RFID logger") {
 
 # Module server function
 #' @import shiny
-#' @export
 mod_maps_time <- function(input, output, session, controls, events, verbose = FALSE) {
 
   ns <- session$ns
@@ -391,7 +389,6 @@ mod_UI_maps_sunrise <- function(id) {
 
 # Module server function
 #' @import shiny
-#' @export
 mod_maps_sunrise <- function(input, output, session, instant, controls, verbose = FALSE) {
 
   ns <- session$ns
@@ -432,7 +429,6 @@ mod_UI_maps_leaflet <- function(id) {
 
 # Map_leaflet Server
 #' @import shiny
-#' @export
 mod_maps_leaflet <- function(input, output, session, data, data_total, summary, palette = NULL, verbose = FALSE) {
 
   ns <- session$ns
@@ -581,7 +577,6 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
 
 # Map_data Server
 #' @import shiny
-#' @export
 mod_maps_data <- function(input, output, session, controls, instant, data, verbose = FALSE) {
   data_instant <- reactive({
     req(instant(), controls$interval(), data())
