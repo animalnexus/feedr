@@ -2,13 +2,21 @@
 
 
 
-#' Import files
+#' User-interface for importing files
 #'
-#' An interactive shiny app for loading simple data.
+#' Launches an interactive shiny app for importing data interactively. Also available online at <http://animalnexus.ca> or
+#' by launching the local animalnexus app through \code{animalnexus()}.
+#'
+#' @return An imported data frame formatted and ready to be transformed.
+#'
+#' @examples
+#' \dontrun{
+#'   my_data <- ui_import()
+#' }
 #'
 #' @export
 
-ui_import <- function(r) {
+ui_import <- function() {
   ui_app(name = "data_import")
 }
 
