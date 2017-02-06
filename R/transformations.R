@@ -103,7 +103,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
       if(nrow(impos) > 5) {
         rows <- 5
       }
-      stop("Impossible visits found, no specification for how to handle:\n\nIndividual(s) detected at 2+ loggers within ", bw_imp, "s.\nDecrease the `bw_imp` argument, remove these reads, or\nallow impossible visits (allow_imp = TRUE) and try again.\n\n", paste0(capture.output(impos[1:rows, ]), collapse = "\n"))
+      stop("Impossible visits found, no specification for how to handle:\n\nIndividual(s) detected at 2+ loggers within ", bw_imp, "s.\nDecrease the `bw_imp` argument, remove these reads, or\nallow impossible visits (allow_imp = TRUE) and try again.\n\n", paste0(utils::capture.output(impos[1:rows, ]), collapse = "\n"))
     }
   }
   # Start if

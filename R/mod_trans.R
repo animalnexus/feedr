@@ -161,7 +161,7 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
       output[[paste0("data_dl_", x$n)]] <- downloadHandler(
         filename = paste0(x$f_name, "_", Sys.Date(), '.csv'),
         content = function(file) {
-          write.csv(req(trans[[x$n]]), file, row.names = FALSE)
+          utils::write.csv(req(trans[[x$n]]), file, row.names = FALSE)
         })
     })
   })
@@ -177,11 +177,11 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
 
       fs <- paste0(types$f_name, "_", Sys.Date(), ".csv")
       for(d in 1:nrow(types)){
-        write.csv(trans[[types$n[d]]], file = fs[d], row.names = FALSE)
+        utils::write.csv(trans[[types$n[d]]], file = fs[d], row.names = FALSE)
       }
       cat(fs)
 
-      zip(zipfile = file, files = fs)
+      utils::zip(zipfile = file, files = fs)
     },
     contentType = "application/zip"
   )

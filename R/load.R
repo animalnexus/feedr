@@ -64,32 +64,32 @@
 #'
 #' }
 #' @export
-load_raw <- function(r_file, 
-                     tz = Sys.timezone(), 
+load_raw <- function(r_file,
+                     tz = Sys.timezone(),
                      tz_disp = NULL,
-                     details = 1, 
+                     details = 1,
                      logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
-                     time_format = "mdy HMS", 
-                     extra_pattern = NULL, 
+                     time_format = "mdy HMS",
+                     extra_pattern = NULL,
                      extra_name = NULL,
-                     sep = "", 
+                     sep = "",
                      skip = 0,
                      feeder_pattern) {
-  
+
   if (!missing(feeder_pattern)) {
     warning("Argument feeder_pattern is deprecated; please use logger_pattern instead.",
             call. = FALSE)
     logger_pattern <- feeder_pattern
   }
-  
+
 
   if(length(r_file) > 1) stop("r_file can only be length 1, the file name.")
   if(!is.character(r_file)) stop("r_file must be character")
   if(!(details %in% 0:2)) stop("'details' must be one of 0, 1, or 2.")
-  
+
   skip <- details + skip
-  
-  r <- tryCatch(read.table(r_file,
+
+  r <- tryCatch(utils::read.table(r_file,
                            col.names = c("animal_id","date","time"),
                            colClasses = "character",
                            skip = skip,
@@ -99,8 +99,8 @@ load_raw <- function(r_file,
                     c$message <- paste0(c$message, "\n\nA line did not have the three columns required. Did you specify appropriate 'details' and 'skip' values?")}
                   stop(c)
                 })
-  
-  
+
+
     if(nrow(r) > 0){
       # Trim leading or trailing whitespace
       r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
@@ -397,23 +397,8 @@ dl_data <- function(start = NULL,
 
   if(nchar(g) < 200) stop("There are no online data matching these parameters. Try different sites or a different date range.")
 
-  r <- load_format(read.csv(text = g, strip.white = TRUE, colClasses = "character"), tz = tz, tz_disp = tz_disp)
+  r <- load_format(utils::read.csv(text = g, strip.white = TRUE, colClasses = "character"), tz = tz, tz_disp = tz_disp)
   return(r)
-}
-
-#' Deprecated: Download data from original BirdMoves website.
-#'
-#' Deprecated use \code{\link{dl_data}} instead.
-#'
-#' @export
-get.data <- function(start = NULL,
-                     end = NULL,
-                     url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
-                     feeder_details = c("loc"),
-                     bird_details = c("species"),
-                     tz_disp = "America/Vancouver",
-                     sites = "Kamloops") {
-  .Deprecated("dl_data")
 }
 
 #' Format data

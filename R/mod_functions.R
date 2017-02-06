@@ -115,9 +115,9 @@ values_list <- function(i = NULL, counts){
 get_image <- function(database, which, size = 300, imgs = NULL, imgs_wiki = NULL){
 
   if(!("species" %in% names(database))) database$species <- "XXXX"
-  
-  if(is.null(imgs)) imgs <- read.csv(system.file("extdata", "shiny-data", "img_index.csv", package = "feedr"), colClasses = "character")
-  if(is.null(imgs_wiki)) imgs_wiki <- read.csv(system.file("extdata", "shiny-data", "wiki_index.csv", package = "feedr"), colClasses = "character")
+
+  if(is.null(imgs)) imgs <- utils::read.csv(system.file("extdata", "shiny-data", "img_index.csv", package = "feedr"), colClasses = "character")
+  if(is.null(imgs_wiki)) imgs_wiki <- utils::read.csv(system.file("extdata", "shiny-data", "wiki_index.csv", package = "feedr"), colClasses = "character")
 
   ## Get the animal_id (which is either ID or index in data base)
   if(is.null(which) | is.null(database)) {  # No ID

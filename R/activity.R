@@ -65,7 +65,7 @@ activity <- function(p, res = 15, by_logger = FALSE, missing = NULL, sun = TRUE,
     #   if(!is.character(missing) | length(missing) != 1) {
     #     stop("'missing' must be data frame or string with location of a csv file.")
     #   } else {
-    #     missing <- read.csv(missing)
+    #     missing <- utils::read.csv(missing)
     #   }
     # }
 

@@ -206,7 +206,7 @@ presence_layer <- function(map, p,
   p <- p[order(p$amount, decreasing = TRUE),]
 
   # Define palette
-  p_pal <- colorNumeric(palette = colorRampPalette(p_pal)(15), domain = p$amount)
+  p_pal <- colorNumeric(palette = grDevices::colorRampPalette(p_pal)(15), domain = p$amount)
 
   # Add presence at loggers data to map
   map <- presence_markers(map, p, p_scale, p_pal, p_title) %>%

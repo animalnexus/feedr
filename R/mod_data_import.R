@@ -319,7 +319,7 @@ import_logger <- function(path, logger, input) {
 
   if(input$details == "file1") {
     validate(need(logger, "Expected file 'logger_index' not in files. Re-select files or choose a different location for logger details."))
-    ld <- read.csv(logger)
+    ld <- utils::read.csv(logger)
     if("feeder_id" %in% names(ld)) ld <- dplyr::rename(ld, logger_id = feeder_id)
     validate(need("logger_id" %in% names(ld), "'logger_index' does not contain column logger_id (also accepts feeder_id"))
     suppressWarnings(d <- dplyr::left_join(d, ld, by = "logger_id"))
@@ -330,7 +330,7 @@ import_logger <- function(path, logger, input) {
 import_all <- function(path, input, nrows = -1) {
   req(!is.null(input$sep), !is.null(input$skip))
 
-  d <- try(dplyr::bind_rows(lapply(path, read.csv,
+  d <- try(dplyr::bind_rows(lapply(path, utils::read.csv,
                                    colClasses = "character",
                                    sep = input$sep,
                                    skip = input$skip,

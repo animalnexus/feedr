@@ -44,7 +44,7 @@ check_ids <- function(r, ids, omit = c("wand", "error"), id_length = 10, bird_id
 
   if(is.null(ids) || (length(ids) > 1 & !is.data.frame(ids))) stop("ids should either be the name of a comma separated file (csv) OR should be a data frame. In either case, the data should contain headers 'animal_id' and 'species'")
 
-  if(!is.data.frame(ids)) ids <- read.csv(ids)
+  if(!is.data.frame(ids)) ids <- utils::read.csv(ids)
 
   # Check for other id problems
   if(!is.na(id_length)){
@@ -64,7 +64,7 @@ check_ids <- function(r, ids, omit = c("wand", "error"), id_length = 10, bird_id
   if(length(unseen) > 0) message(paste("Some ids present in your animal_id index, are not in your data:", paste0(unseen, collapse = ", "))) else message("All ids in your animal_id index are also in your data")
 
   # Which ids in the data set match the "omit" section?
-  if(!is.data.frame(ids)) ids <- read.csv(ids)
+  if(!is.data.frame(ids)) ids <- utils::read.csv(ids)
   ob <- unique(ids[ids$species %in% omit, "animal_id"]) # Which to omit in general
   ob2 <- unique(r$animal_id[r$animal_id %in% ob]) # Which to omit in this case
   if(length(ob2) > 0) message(paste("The following animal ids have been omitted:",paste0(ob2, collapse = ", "))) else message("No ids have been omitted")
@@ -115,7 +115,7 @@ check_problems <- function(r, problems){
   r$animal_id <- as.character(r$animal_id)
 
   # If problems is a file, load it
-  if(!is.data.frame(problems)) problems <- read.csv(problems)
+  if(!is.data.frame(problems)) problems <- utils::read.csv(problems)
 
   if(!all(names(problems) %in% c("original_id", "corrected_id"))) stop("Problems should contain headers 'original_id' and 'corrected_id'")
   if(nrow(problems) < 1) stop("Problems data frame has no rows")

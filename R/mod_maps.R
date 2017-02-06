@@ -331,7 +331,7 @@ mod_maps_time <- function(input, output, session, controls, events, verbose = FA
     req(input$instant)
     isolate({
       if(verbose) cat("Instant\n")
-      lubridate::with_tz(round(input$instant, unit = "sec") - controls$instant_range(), isolate(controls$tz()))
+      lubridate::with_tz(round.POSIXt(input$instant, units = "secs") - controls$instant_range(), isolate(controls$tz()))
     })
   })
 
@@ -468,7 +468,7 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
         vals <- x
         #if(max(vals) == 1) vals <- 1:5
         if(length(vals) == 1) vals <- sort(vals * c(0.5, 1, 1.5))
-        if(is.null(palette)) palette <- colorRampPalette(c("yellow","orange", "red"))
+        if(is.null(palette)) palette <- grDevices::colorRampPalette(c("yellow","orange", "red"))
         leaflet::colorNumeric(palette = palette(15), domain = vals)
       }
     })
