@@ -154,7 +154,7 @@ mod_map_current <- function(input, output, session, db) {
 
         if(nrow(data) > 0) {
           data <- data %>%
-            load_format(., tz = "UTC", tz_disp = "America/Vancouver") %>%
+            load_format(., tz_disp = "America/Vancouver") %>%
             visits(.) %>%
             dplyr::group_by(animal_id, logger_id, species, age, sex, lon, lat) %>%
             dplyr::summarize(most_recent = max(end),
@@ -168,8 +168,8 @@ mod_map_current <- function(input, output, session, db) {
     data
   })
 
-  output$current_time <- renderText(paste0("Most recent activity: ", as.character(max(current()$most_recent)), " Pacific<br>",
-                                           "Most recent update: ", as.character(lubridate::with_tz(values$current_time, tz = "America/Vancouver")), " Pacific"))
+  output$current_time <- renderText(paste0("Most recent activity: ", max(current()$most_recent), " Pacific <br>",
+                                           "Most recent update: ", lubridate::with_tz(values$current_time, tz = "America/Vancouver"), " Pacific"))
 
   ## Map of current activity
   output$map_current <- renderLeaflet({
