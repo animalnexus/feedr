@@ -6,6 +6,14 @@
 \usage{
 tz_offset(tz, dst = FALSE, tz_name = FALSE)
 }
+\arguments{
+\item{tz}{Character. Timezone to calculate offset from}
+
+\item{dst}{Character. Whether or not to consider day-light-savings}
+
+\item{tz_name}{Logical. Whether or not to return name of the timezone or
+just the offset in hours.}
+}
 \description{
 Get timezone offset from UTC
 }

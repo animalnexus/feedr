@@ -21,6 +21,7 @@
 #' @param id_length Numeric. How many characters are expected in each id? This
 #'   will test to make sure all ids are the right length (i.e. make sure
 #'   leading zeros haven't been omitted). NA skips this test.
+#' @param bird_ids Deprecated.
 #'
 #' @return A data frame without the specified animal ids. Messages are printed to
 #'   inform the user of matching or non-matching animal ids.

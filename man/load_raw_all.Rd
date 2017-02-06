@@ -27,6 +27,9 @@ timezone.}
 (if not the same as \code{tz}; should match one of the zones produced by
 \code{OlsonNames())}.}
 
+\item{details}{Numeric. Where to find logger details, either 0 (file name),
+1 (first line) or 2 (first two lines). See 'details'.}
+
 \item{logger_pattern}{Character. A regular expression matching the logger id
 in the file name.}
 
@@ -49,9 +52,6 @@ more details).}
 by details.}
 
 \item{feeder_pattern}{Deprecated. Use logger_pattern instead.}
-
-\item{details.}{Numeric. Where to find logger details, either 0 (file name),
-1 (first line) or 2 (first two lines). See 'details'.}
 }
 \description{
 This is a wrapper function which loads and combines raw data files. If
@@ -64,11 +64,11 @@ Note that if both \code{r_dir} and \code{r_list} are specified, the directory
 overrides the file list.
 
 Logger details are the logger_id and the lat/lon for the logger. A value of 0
-reflects that the logger_id is in the file name, defined by the pattern 
+reflects that the logger_id is in the file name, defined by the pattern
 logger_pattern. A value of 1 reflects that the logger_id is in the first line
-of the file, also defined by the pattern logger_pattern. A value of 2 
-reflects that in addition to the logger_id being in the first line ofthe 
-file, the lat/lon information is on the second line, in the format of 
+of the file, also defined by the pattern logger_pattern. A value of 2
+reflects that in addition to the logger_id being in the first line ofthe
+file, the lat/lon information is on the second line, in the format of
 "latitude, longitude" both in decimal format (spacing doesn't matter, but the
 comma does).
 }

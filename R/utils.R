@@ -2,6 +2,11 @@ last <- function(x)  return(x[length(x)])
 
 #' Get timezone offset from UTC
 #'
+#' @param tz Character. Timezone to calculate offset from
+#' @param dst Character. Whether or not to consider day-light-savings
+#' @param tz_name Logical. Whether or not to return name of the timezone or
+#'   just the offset in hours.
+#'
 #' @export
 tz_offset <- function(tz, dst = FALSE, tz_name = FALSE) {
   if(!dst) t <- as.numeric(difftime(as.POSIXct("2016-01-01 00:00:00", tz = "UTC"),

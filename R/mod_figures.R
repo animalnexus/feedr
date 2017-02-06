@@ -1,5 +1,7 @@
 #' Create figures
 #'
+#' @param r Raw data
+#'
 #' @export
 figures <- function(r) {
 

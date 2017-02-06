@@ -4,13 +4,13 @@
 #' merely a wrapper function that does many things that you can do yourself.
 #' It's utility depends on how standardized your data is, and whether you have
 #' extra details you need to address.
-#' 
+#'
 #' Logger details are the logger_id and the lat/lon for the logger. A value of 0
-#' reflects that the logger_id is in the file name, defined by the pattern 
+#' reflects that the logger_id is in the file name, defined by the pattern
 #' logger_pattern. A value of 1 reflects that the logger_id is in the first line
-#' of the file, also defined by the pattern logger_pattern. A value of 2 
-#' reflects that in addition to the logger_id being in the first line ofthe 
-#' file, the lat/lon information is on the second line, in the format of 
+#' of the file, also defined by the pattern logger_pattern. A value of 2
+#' reflects that in addition to the logger_id being in the first line ofthe
+#' file, the lat/lon information is on the second line, in the format of
 #' "latitude, longitude" both in decimal format (spacing doesn't matter, but the
 #' comma does).
 #'
@@ -21,9 +21,9 @@
 #' @param tz_disp Character. The time zone the date/times should be displayed in
 #'   (if not the same as \code{tz}; should match one of the zones produced by
 #'   \code{OlsonNames())}.
-#' @param details. Numeric. Where to find logger details, either 0 (file name),
+#' @param details Numeric. Where to find logger details, either 0 (file name),
 #'   1 (first line) or 2 (first two lines). See 'details'.
-#' @param logger_pattern Character. A regular expression matching the logger_id 
+#' @param logger_pattern Character. A regular expression matching the logger_id
 #'   in the file name or from the first line of the file. An NA value matches file name
 #'   (extension omitted) or first line of the file. See \code{details}
 #'   parameter.
@@ -113,10 +113,10 @@ load_raw <- function(r_file,
         if(is.na(logger_pattern)) r$logger_id <- readLines(r_file, n = 1)
         if(!is.na(logger_pattern)) r$logger_id <- stringr::str_extract(readLines(r_file, n = 1), logger_pattern)
       }
-      
+
       # Get lat, lon
       if(details == 2) {
-        locs <- readLines(r_file, n = 2)[2] %>% 
+        locs <- readLines(r_file, n = 2)[2] %>%
           strsplit(split = ",") %>%
           unlist() %>%
           trimws()
@@ -188,7 +188,7 @@ load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pa
 #' @param tz_disp Character. The time zone the date/times should be displayed in
 #'   (if not the same as \code{tz}; should match one of the zones produced by
 #'   \code{OlsonNames())}.
-#' @param details. Numeric. Where to find logger details, either 0 (file name),
+#' @param details Numeric. Where to find logger details, either 0 (file name),
 #'   1 (first line) or 2 (first two lines). See 'details'.
 #' @param logger_pattern Character. A regular expression matching the logger id
 #'   in the file name.
@@ -215,19 +215,19 @@ load_raw_all <- function(r_dir,
                          tz_disp = NULL,
                          details = 1,
                          logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
-                         time_format = "mdy HMS", 
+                         time_format = "mdy HMS",
                          extra_pattern = NULL,
                          extra_name = NULL,
                          sep = "",
-                         skip = 0, 
+                         skip = 0,
                          feeder_pattern) {
-  
+
   if (!missing(feeder_pattern)) {
     warning("Argument feeder_pattern is deprecated; please use logger_pattern instead.",
             call. = FALSE)
     logger_pattern <- feeder_pattern
   }
-  
+
   if(!missing(r_dir)) {
     # Get file locations (match pattern and get all subfiles)
     r_list <- list.files(r_dir, pattern = pattern, recursive = TRUE, full.names = TRUE)
@@ -349,13 +349,13 @@ dl_data <- function(start = NULL,
             call. = FALSE)
     logger_details <- feeder_details
   }
-  
+
   if (!missing(bird_details)) {
     warning("Argument bird_details is deprecated; please use animal_details instead.",
             call. = FALSE)
     animal_details <- bird_details
   }
-  
+
   # Get data from website in GMT, if tz not in selection, then convert later
   if(!(tz_disp %in% c("America/Vancouver", "GMT"))) {
     tz <- "GMT"
@@ -439,8 +439,8 @@ load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, time_format = "y
   }
   if(any(names(r) == "animal_id")) r$animal_id <- as.factor(r$animal_id)
   if(any(names(r) == "logger_id")) r$logger_id <- as.factor(r$logger_id)
-  
-  
+
+
   # If locs already present, convert to numeric
   if(all(c("lat", "lon") %in% names(r))) {
     r$lon <- as.numeric(as.character(r$lon))

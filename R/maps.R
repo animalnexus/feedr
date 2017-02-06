@@ -46,9 +46,9 @@ map_prep <- function(p = NULL, m = NULL, locs = NULL) {
   return(list('p' = p, 'm' = m, 'locs' = locs))
 }
 
-#' Base map for leaflet
-#'
-#' Designed for advanced use (see map_leaflet() for general mapping)
+# Base map for leaflet
+#
+# Designed for advanced use (see map_leaflet() for general mapping)
 map_leaflet_base <- function(locs, marker = "logger_id", controls = TRUE, minZoom = NULL, maxZoom = 18) {
   l <- leaflet::leaflet(data = locs,
                         options = leaflet::leafletOptions(minZoom = minZoom, maxZoom = maxZoom)) %>%
@@ -94,10 +94,10 @@ path_lines <- function(map, data, m_scale, m_pal, m_title, val_min, val_max, lay
                         layerId = layerId)
 }
 
-#' Add movement layer to leaflet map
-#'
-#' Designed for advanced use (see map_leaflet() for general mapping)
-#'
+# Add movement layer to leaflet map
+#
+# Designed for advanced use (see map_leaflet() for general mapping)
+#
 #' @import magrittr
 path_layer <- function(map, m,
                        m_scale = 1, m_title = "Path use",
@@ -173,10 +173,10 @@ presence_markers <- function(map, data, p_scale, p_pal, p_title, val_min = NULL,
                    layerId = layerId)
 }
 
-#' Add presence layer to leaflet map
-#'
-#' Designed for advanced use (see map_leaflet() for general mapping)
-#'
+# Add presence layer to leaflet map
+#
+# Designed for advanced use (see map_leaflet() for general mapping)
+#
 #' @import leaflet
 presence_layer <- function(map, p,
                       p_scale = 1, p_title = "Presence", p_pal = c("yellow","red"),

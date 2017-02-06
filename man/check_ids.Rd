@@ -22,6 +22,8 @@ animal id index which you would like to omit from your data. Defaults to
 \item{id_length}{Numeric. How many characters are expected in each id? This
 will test to make sure all ids are the right length (i.e. make sure
 leading zeros haven't been omitted). NA skips this test.}
+
+\item{bird_ids}{Deprecated.}
 }
 \value{
 A data frame without the specified animal ids. Messages are printed to

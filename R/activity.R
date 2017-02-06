@@ -320,6 +320,14 @@ daily_single <- function(a1, pass = TRUE){
 }
 
 #' Get sunrise/sunset times
+#'
+#' Calculate times of sunrise and sunset depending on the location and the date.
+#'
+#' @param loc Vector/Data frame. Longitude and Latitude coordinates for location
+#'   of sun rise/set
+#' @param date Vector. Date(s) to cacluate sun rise/set for.
+#' @param tz Timezone of the dates.
+#'
 #' @export
 sun <- function(loc, date, tz) {
   if(class(loc) == "numeric") loc <- matrix(loc, nrow = 1)

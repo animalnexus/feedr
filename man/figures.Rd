@@ -6,6 +6,9 @@
 \usage{
 figures(r)
 }
+\arguments{
+\item{r}{Raw data}
+}
 \description{
 Create figures
 }

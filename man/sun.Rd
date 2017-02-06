@@ -6,7 +6,15 @@
 \usage{
 sun(loc, date, tz)
 }
+\arguments{
+\item{loc}{Vector/Data frame. Longitude and Latitude coordinates for location
+of sun rise/set}
+
+\item{date}{Vector. Date(s) to cacluate sun rise/set for.}
+
+\item{tz}{Timezone of the dates.}
+}
 \description{
-Get sunrise/sunset times
+Calculate times of sunrise and sunset depending on the location and the date.
 }
 
