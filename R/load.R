@@ -148,31 +148,22 @@ load_raw <- function(r_file,
     } else message("Empty file skipped: ", r_file)
 }
 
-#'  Deprecated: Load raw read data
-#'
-#'  Deprecated, see \code{\link{load_raw}}.
-#'
-#' @export
-load.raw <- function(r_file, tz = "America/Vancouver", tz_disp = NULL, feeder_pattern = "[GPR]{2,3}[0-9]{1,2}", extra_pattern = NULL, extra_name = NULL, sep = "", skip = 1){
-  .Deprecated("load_raw")
-}
-
 #' Load and combine raw data files
 #'
 #' This is a wrapper function which loads and combines raw data files. If
 #' \code{r_dir} is specified, these include all files in series of nested
 #' folders, if \code{r_list} is specified it includes only the list of files
 #' specified.
-#' 
+#'
 #' Note that if both \code{r_dir} and \code{r_list} are specified, the directory
 #' overrides the file list.
-#' 
+#'
 #' Logger details are the logger_id and the lat/lon for the logger. A value of 0
-#' reflects that the logger_id is in the file name, defined by the pattern 
+#' reflects that the logger_id is in the file name, defined by the pattern
 #' logger_pattern. A value of 1 reflects that the logger_id is in the first line
-#' of the file, also defined by the pattern logger_pattern. A value of 2 
-#' reflects that in addition to the logger_id being in the first line ofthe 
-#' file, the lat/lon information is on the second line, in the format of 
+#' of the file, also defined by the pattern logger_pattern. A value of 2
+#' reflects that in addition to the logger_id being in the first line ofthe
+#' file, the lat/lon information is on the second line, in the format of
 #' "latitude, longitude" both in decimal format (spacing doesn't matter, but the
 #' comma does).
 #'
@@ -246,23 +237,6 @@ load_raw_all <- function(r_dir,
                                sep = sep, skip = skip))
   r <- load_format(r, tz = tz, tz_disp = tz_disp)
   return(r)
-}
-
-#' Deprecated: Load and combine raw data files
-#'
-#' Deprecated, see \code{\link{load_raw_all}}.
-#'
-#' @export
-load.raw.all <- function(r_dir,
-                         pattern = "DATA",
-                         tz = "America/Vancouver",
-                         tz_disp = NULL,
-                         feeder_pattern = "[GPR]{2,3}[0-9]{1,2}",
-                         extra_pattern = NULL,
-                         extra_name = NULL,
-                         sep = "",
-                         skip = 1) {
- .Deprecated("load_raw_all")
 }
 
 #' Download data from original animalnexus database
@@ -460,13 +434,4 @@ load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, time_format = "y
   r <- r[, c(cols, names(r)[!(names(r) %in% cols)])]
 
   return(r)
-}
-
-#' Deprecated: Internal function: Format data
-#'
-#' Deprecated use \code{\link{load_format}} instead.
-#'
-#' @export
-load.format <- function(r, tz, tz_disp = NULL) {
- .Deprecated("load_format")
 }
