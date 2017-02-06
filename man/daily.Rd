@@ -18,8 +18,8 @@ columns reflecting the proportions of time blocks scored as active, inactive,
 unknonw, or total.
 }
 \details{
-Output timezone and dates are irrelevant, as the data is tied to times, not
-dates. Therefore timezone is UTC and the dates are on 1970-01-01. When
+Output dates are irrelevant, as the data is tied to times, not
+dates. Therefore the dates are all assigned to 1970-01-01. When
 plotting, omit the date part of the label to accurately portray time only.
 
 Resolution of the data is automatically detected as the same as that

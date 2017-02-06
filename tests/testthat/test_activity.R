@@ -76,7 +76,7 @@ test_that("daily() by_logger == FALSE", {
 
   expect_equal(d$animal_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
   expect_equal(d$logger_id[1], factor(NA, levels = c("2100", "2200", "2400", "2700")))
-  expect_equal(d$time[1], as.POSIXct("1970-01-01", tz = "UTM"))
+  expect_equal(d$time[1], as.POSIXct("1970-01-01", tz = "America/Vancouver"))
   expect_equal(nrow(d), 192)
 
   a <- activity(p, by_logger = TRUE)
@@ -84,6 +84,6 @@ test_that("daily() by_logger == FALSE", {
 
   expect_equal(d$animal_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
   expect_equal(d$logger_id[1], factor(2100, levels = c("2100", "2200", "2400", "2700")))
-  expect_equal(d$time[1], as.POSIXct("1970-01-01", tz = "UTM"))
+  expect_equal(d$time[1], as.POSIXct("1970-01-01", tz = "America/Vancouver"))
   expect_equal(nrow(d), 768)
 })
