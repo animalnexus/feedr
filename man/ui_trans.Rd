@@ -2,9 +2,12 @@
 % Please edit documentation in R/mod_trans.R
 \name{ui_trans}
 \alias{ui_trans}
-\title{Transform data}
+\title{User-interface for transforming data}
 \usage{
 ui_trans(r)
+}
+\arguments{
+\item{r}{Data frame. Raw RFID data to transform}
 }
 \description{
 An interactive shiny app for transforming data
