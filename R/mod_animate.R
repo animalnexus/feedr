@@ -36,16 +36,16 @@ mod_UI_map_animate <- function(id) {
 
   tagList(
     column(4,
-           feedr:::mod_UI_maps_instructions(ns("details")),
-           feedr:::mod_UI_maps_advanced(ns("adv")),
-           feedr:::mod_UI_maps_controls(ns("setup")),
+           mod_UI_maps_instructions(ns("details")),
+           mod_UI_maps_advanced(ns("adv")),
+           mod_UI_maps_controls(ns("setup")),
 
-           feedr:::mod_UI_maps_sunrise(ns("map")),
-           feedr:::mod_UI_maps_tips(ns("tips"))
+           mod_UI_maps_sunrise(ns("map")),
+           mod_UI_maps_tips(ns("tips"))
     ),
     column(8,
-           feedr:::mod_UI_maps_leaflet(ns("map")),
-           feedr:::mod_UI_maps_time(ns("setup_time"), type = "Presence/Movement events")
+           mod_UI_maps_leaflet(ns("map")),
+           mod_UI_maps_time(ns("setup_time"), type = "Presence/Movement events")
     )
   )
 }
@@ -54,7 +54,6 @@ mod_UI_map_animate <- function(id) {
 #' @import shiny
 #' @import magrittr
 #' @import leaflet
-#' @export
 mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
 
   ns <- session$ns
