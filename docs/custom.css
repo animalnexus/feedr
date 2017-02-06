@@ -11,3 +11,11 @@
     background-repeat: repeat-x;
   }
 }
+
+pre {
+  font-size: 13px;
+}
+
+.section h3 {
+  margin-top: 10px;
+}

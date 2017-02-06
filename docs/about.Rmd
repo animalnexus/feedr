@@ -1,0 +1,21 @@
+---
+title: "About"
+---
+
+```{r setup, include = F}
+source("setup.R")
+```
+
+## `feedr`
+
+The `feedr` package for R is a collection of functions and shiny apps designed to help with loading, checking, transforming and visualizing RFID data, or other data types collected from static stations.
+
+This package includes a companion website, <http://animalnexus.ca>, designed to provide a simple user-interface to access package functions and the animalnexus data base without having to use R.
+
+The `feedr` package can be found on [github](https://github.com/animalnexus/feedr) along with basic installation instructions.
+
+See the "Help" tab at <http://animalnexus.ca> for more information about us and the animalnexus project.
+
+-----------------------------------------
+Back to [top](#top)  
+Start at the beginning [Home](index.html)

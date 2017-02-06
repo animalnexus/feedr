@@ -10,13 +10,13 @@ source("setup.R")
 rmarkdown::render_site("./docs/") -->
 
 
-This is an overview of how to use functions in the `feedr` package to transform and visual your RFID data.
+This is an overview of how to use functions in the `feedr` package to transform and visual your RFID data. Note that while we've tried to explain the code in detail, if you are new to R, you may benefit from an introduction to coding in R before tackling your data with the `feedr` package
 
 ## Order of operations
 This package contains functions to perform three broad services: 
 
 1. [__Loading/Importing Data__](#load)  
-    Raw data directly from the loggers, already almagamated, or from the animal__nexus__ website 
+    Raw data directly from the loggers, already amalgamated, or from the animal__nexus__ website 
 2. [__Housekeeping__](#hk)  
     Functions for checking and correcting errors before you transform the data
 3. [__Transformations__](#trans)  
@@ -26,7 +26,7 @@ This package contains functions to perform three broad services:
 
 There are also three 'user-interface' (UI) functions that can be used to simplify the use of these functions (see below).
 
-In the normal order of operarations, several functions depend on the output of other functions.
+In the normal order of operations, several functions depend on the output of other functions.
 
 For example, to get daily activity patterns, you could get your data from the animalnexus database with `dl_data()`, turn this raw data to visits data with `visits()`, turn visits data to activity data with `activity()` and finally, turn activity data into daily activity patterns with `daily()`.
 
@@ -73,7 +73,7 @@ map[label = '{Visualizations | {map_ggmap() | map_leaflet()}}']
 ```
 
 ## Tutorial Data
-Two data frames, `finches` and `chickadees` are included in this package for the purpose of demonstration.
+Two data frames, `finches` and `chickadees` are included in the `feedr` package for the purpose of demonstration.
 
 ```{r}
 head(finches)
@@ -113,7 +113,7 @@ head(chickadees)
 
 - __ui_animate():__ Launch an interactive user-interface to create animations
 - __map_ggmap():__ Visualize movements and/or presence with ggmap (static)
-- __map_leaflet():__ Visualize movements and/or prsence with leaflet (interactive)
+- __map_leaflet():__ Visualize movements and/or presence with leaflet (interactive)
 
 -----------------------------------------
 Back to [top](#top)  

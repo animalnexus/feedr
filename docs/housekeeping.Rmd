@@ -13,7 +13,7 @@ This is a quick tutorial covering a couple functions you can use to clean and fi
 
 These functions can be skipped, or used one after the other. It's up to you. Basically, they are wrapper functions for cleaning your data while maintaining appropriate categorical (factor) levels.
 
-This tutorial assumes that you already know how to [load/import](load.html) your data. We will be using the feedr package example dataset: finches.
+This tutorial assumes that you already know how to [load/import](load.html) your data. We will be using the `feedr` package example data set: finches.
 
 ```{r}
 head(finches)
@@ -24,7 +24,7 @@ head(finches)
 ## `check_ids()`
 This function can be used to remove any `animal_ids` that are present, but which you know aren't really animals. For example, if you use a 'wand' to test the deployment of your loggers, this is an `animal_id` that you should remove prior to analysis. Further, occasionally there are `animal_ids` that are error codes (e.g. 0000000000), you may wish to determine why these are present (you probably should!), but once again, for analysis they should be removed.
 
-This function works by comparing the list of `animal_ids` in the data to an external, `animal_id` dataset. The dataset is expected to have at least two columns: `animal_id` and `species`. The `species` column should either contain species identity (e.g. House Finch or HOFI) or the error code (e.g. wand, or error).
+This function works by comparing the list of `animal_ids` in the data to an external, `animal_id` data set. The data set is expected to have at least two columns: `animal_id` and `species`. The `species` column should either contain species identity (e.g. House Finch or HOFI) or the error code (e.g. wand, or error).
 
 In addition to removing error or wand ids, this function will also report which `animal_id`s are in your data sets, but not in your `animal_id` index, and which are in your `animal_id` index, but not in your data sets. This will help you determine whether you are detecting RFID tags that are not in your master index (weird!) and whether some RFID tags have never been recorded by a logger.
 
@@ -51,7 +51,7 @@ r_clean <- check_ids(finches, ids = "./Data/animal_index.csv")
 ```
 
 ### With error/wand ids
-Let's see how it works if you did have a 'wand' or 'error' code in your index file that matched a `animal_id` in your dataset.
+Let's see how it works if you did have a 'wand' or 'error' code in your index file that matched a `animal_id` in your data set.
 
 ```{r echo = 4}
 animal_index$species <- as.character(animal_index$species)
@@ -64,11 +64,11 @@ animal_index
 r_clean <- check_ids(finches, ids = animal_index)
 ```
 
-Here we omited two `animal_id`s, one associated with a wand (0620000514) and one with an error (041868D861).  
+Here we omitted two `animal_id`s, one associated with a wand (0620000514) and one with an error (041868D861).  
 
 Note that nothing else changed.
 
-### `animal_id`s present in dataset but not in the index
+### `animal_id`s present in data set but not in the index
 
 ```{r echo = 2}
 animal_index <- animal_index[-5, ]
@@ -107,7 +107,7 @@ r_clean$animal_id[1:5]
 Note that the `animal_id`s have been modified, but also that the factor levels have been updated to match.
 
 
-Now that your data has been cleaned of eronious or problematic data, it is ready to be [transformed](transformations.html).
+Now that your data has been cleaned of erroneous or problematic data, it is ready to be [transformed](transformations.html).
 
 --------------------------
 Back to [top](#top)  

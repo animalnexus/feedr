@@ -179,7 +179,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2,h3,h4",
+      selectors: "h1,h2",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
@@ -336,14 +336,14 @@ div.tocify {
 <li><a href="#multi">Working with multiple groups</a> - Applying transformations to different data groups simultaneously</li>
 </ol>
 <p>Or click on the function name below to skip directly to the function tutorial:</p>
-<p><div id="htmlwidget-a6933d819d17a547485a" style="width:500px;height:480px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-a6933d819d17a547485a">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nvisits[label = \"visits()\", URL = \"#visits\", tooltip = \"Individual logger visits\"]\ndisp[label = \"disp()\", URL = \"#displacements\", tooltip = \"Displacements from the logger by another animal\"]\ndom[label = \"dom()\", URL = \"#dominance\", tooltip = \"Dominance indicated by displacements\"]\nmove[label = \"move()\", URL = \"#movements\", tooltip = \"Movements between loggers\"]\npresence[label = \"presence()\", URL = \"#presence\", tooltip = \"presence bouts at loggers\"]\nact[label = \"activity()\", URL = \"#acitivty\", tooltip = \"Activity scored (active/inactive)\"]\ndaily[label = \"daily()\", URL = \"#dailyactivity\", tooltip = \"Daily activity patterns\"]\n\nvisits-> {disp, move, presence}\npresence -> act\ndisp -> dom\nact -> daily\n\nmap1[label = \"map_ggmap()\", URL = \"#mapggmap\", tooltip = \"Visualize with a static map\"]\nmap2[label = \"map_leaflet()\", URL = \"#mapleaflet\", tooltip = \"Visualize with an interactive map\"]\n\n{presence; move} -> {map1; map2}\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script> <a id = "visits"></a></p>
+<p><div id="htmlwidget-9de25f21d793c2250ac8" style="width:500px;height:480px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-9de25f21d793c2250ac8">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nvisits[label = \"visits()\", URL = \"#visits\", tooltip = \"Individual logger visits\"]\ndisp[label = \"disp()\", URL = \"#displacements\", tooltip = \"Displacements from the logger by another animal\"]\ndom[label = \"dom()\", URL = \"#dominance\", tooltip = \"Dominance indicated by displacements\"]\nmove[label = \"move()\", URL = \"#movements\", tooltip = \"Movements between loggers\"]\npresence[label = \"presence()\", URL = \"#presence\", tooltip = \"presence bouts at loggers\"]\nact[label = \"activity()\", URL = \"#acitivty\", tooltip = \"Activity scored (active/inactive)\"]\ndaily[label = \"daily()\", URL = \"#dailyactivity\", tooltip = \"Daily activity patterns\"]\n\nvisits-> {disp, move, presence}\npresence -> act\ndisp -> dom\nact -> daily\n\nmap1[label = \"map_ggmap()\", URL = \"#mapggmap\", tooltip = \"Visualize with a static map\"]\nmap2[label = \"map_leaflet()\", URL = \"#mapleaflet\", tooltip = \"Visualize with an interactive map\"]\n\n{presence; move} -> {map1; map2}\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script> <a id = "visits"></a></p>
 </div>
 <div id="visits" class="section level2">
 <h2><code>visits()</code></h2>
 <p>This function is designed to turn ‘raw’ data into ‘visits’ data.</p>
 <p>This is always the first function you should use. Raw read data contains an individual line of data for each read event made by the RFID logger.</p>
-<p>For example, if the logger was set to record ids every ~3 seconds, an individual sitting on the logger for 13 seconds would look something like this:</p>
+<p>For example, if the logger was set to record ids every ~2 seconds, an individual sitting on the logger for 8 seconds followed by a 12 second gap before returning would look something like this:</p>
 <pre class="r"><code>head(finches_lg)</code></pre>
 <pre><code>##    animal_id                time logger_id     species sex       lon
 ## 1 041868E9A8 2015-10-01 17:38:52      2100 House Finch   F -120.3624
@@ -360,10 +360,8 @@ div.tocify {
 ## 5 50.66896
 ## 6 50.66896</code></pre>
 <p>The <code>visits()</code> function turns this raw data into something more practical:</p>
-<pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)</code></pre>
-<pre><code>## Warning in mutate_impl(.data, dots): &#39;.Random.seed&#39; is not an integer
-## vector but of type &#39;NULL&#39;, so ignored</code></pre>
-<pre class="r"><code>head(v)</code></pre>
+<pre class="r"><code>v &lt;- visits(finches_lg)
+head(v)</code></pre>
 <pre><code>## # A tibble: 6 × 11
 ##    animal_id       date               start                 end logger_id
 ##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;fctr&gt;
@@ -373,9 +371,16 @@ div.tocify {
 ## 4 041868E9A8 2015-10-02 2015-10-01 17:45:00 2015-10-01 17:45:56      2700
 ## 5 041868E9A8 2015-10-02 2015-10-01 17:46:31 2015-10-01 17:46:31      2700
 ## 6 041868E9A8 2015-10-02 2015-10-01 17:51:03 2015-10-01 17:51:16      2700
-## # ... with 6 more variables: animal_n &lt;int&gt;, logger_n &lt;int&gt;,
-## #   species &lt;chr&gt;, sex &lt;chr&gt;, lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
-<p>Note that the new data frame sorts the data differently from our raw data frame. We can look directly compare our raw data to our visit data for a particular individual by pulling out it’s <code>animal_id</code>:</p>
+##   animal_n logger_n     species   sex       lon      lat
+##      &lt;int&gt;    &lt;int&gt;       &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1       11        4 House Finch     F -120.3624 50.66896
+## 2       11        4 House Finch     F -120.3624 50.66896
+## 3       11        4 House Finch     F -120.3624 50.66896
+## 4       11        4 House Finch     F -120.3632 50.66909
+## 5       11        4 House Finch     F -120.3632 50.66909
+## 6       11        4 House Finch     F -120.3632 50.66909</code></pre>
+<p>We can see that the first series of raw reads have been combined into one visit, starting at 2015-10-01 17:38:52 and ending at 2015-10-01 17:39:00.</p>
+<p>We can also look directly at visit data for a particular individual by pulling out it’s <code>animal_id</code>:</p>
 <pre class="r"><code>head(finches_lg[finches_lg$animal_id == &quot;06200004F8&quot;, ])</code></pre>
 <pre><code>##        animal_id                time logger_id     species sex       lon
 ## 10482 06200004F8 2015-09-11 16:59:06      2100 House Finch   F -120.3624
@@ -395,16 +400,21 @@ div.tocify {
 <pre><code>## # A tibble: 6 × 11
 ##    animal_id       date               start                 end logger_id
 ##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;fctr&gt;
-## 1 06200004F8 2015-09-11 2015-09-11 16:59:06 2015-09-11 17:00:32      2100
-## 2 06200004F8 2015-09-12 2015-09-11 17:01:19 2015-09-11 17:06:59      2100
-## 3 06200004F8 2015-09-12 2015-09-12 11:53:13 2015-09-12 11:58:50      2100
-## 4 06200004F8 2015-09-12 2015-09-12 13:17:03 2015-09-12 13:22:36      2100
-## 5 06200004F8 2015-09-12 2015-09-12 15:51:14 2015-09-12 15:51:41      2100
-## 6 06200004F8 2015-09-12 2015-09-12 15:58:13 2015-09-12 16:03:35      2100
-## # ... with 6 more variables: animal_n &lt;int&gt;, logger_n &lt;int&gt;,
-## #   species &lt;chr&gt;, sex &lt;chr&gt;, lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
-<p>You can also use <code>filter(v, animal_id == &quot;06200004F8&quot;)</code> from the <code>dplyr</code> package or <code>subset(v, animal_id == &quot;06200004F8&quot;)</code> which is built into R base.</p>
-<p>Now we can see that the first series of raw reads have been combined into one visit, starting at 2015-09-11 16:59:06 and ending at 2015-09-11 17:00:32.</p>
+## 1 06200004F8 2015-09-11 2015-09-11 16:59:06 2015-09-11 17:00:12      2100
+## 2 06200004F8 2015-09-12 2015-09-11 17:00:17 2015-09-11 17:00:32      2100
+## 3 06200004F8 2015-09-12 2015-09-11 17:01:19 2015-09-11 17:03:29      2100
+## 4 06200004F8 2015-09-12 2015-09-11 17:03:33 2015-09-11 17:06:59      2100
+## 5 06200004F8 2015-09-12 2015-09-12 11:53:13 2015-09-12 11:55:13      2100
+## 6 06200004F8 2015-09-12 2015-09-12 11:55:17 2015-09-12 11:55:40      2100
+##   animal_n logger_n     species   sex       lon      lat
+##      &lt;int&gt;    &lt;int&gt;       &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1       11        4 House Finch     F -120.3624 50.66896
+## 2       11        4 House Finch     F -120.3624 50.66896
+## 3       11        4 House Finch     F -120.3624 50.66896
+## 4       11        4 House Finch     F -120.3624 50.66896
+## 5       11        4 House Finch     F -120.3624 50.66896
+## 6       11        4 House Finch     F -120.3624 50.66896</code></pre>
+<p>Alternatively, you can use <code>filter(v, animal_id == &quot;06200004F8&quot;)</code> from the <code>dplyr</code> package or <code>subset(v, animal_id == &quot;06200004F8&quot;)</code> which is built into R base.</p>
 <p>Visits are defined by:</p>
 <ul>
 <li>How much time has passed between reads (<code>bw</code>)</li>
@@ -429,9 +439,9 @@ div.tocify {
 <pre><code>## [1] 11</code></pre>
 <pre class="r"><code>length(unique(v$logger_id))</code></pre>
 <pre><code>## [1] 4</code></pre>
-<p><code>species</code>, <code>sex</code>, <code>lon</code> and <code>lat</code> are all columns originally in the <code>finches_lg</code> dataset, they were automatically passed through the <code>visits()</code> function. Columns of extra data that are associated with either a <code>date</code>, an <code>animal_id</code>, or a <code>logger_id</code> will always be passed through unless <code>pass = FALSE</code>:</p>
-<pre class="r"><code>visits(finches_lg, bw = 5, pass = FALSE)</code></pre>
-<pre><code>## # A tibble: 3,022 × 7
+<p><code>species</code>, <code>sex</code>, <code>lon</code> and <code>lat</code> are all columns originally in the <code>finches_lg</code> data set, they were automatically passed through the <code>visits()</code> function. Columns of extra data that are associated with either a <code>date</code>, an <code>animal_id</code>, or a <code>logger_id</code> will always be passed through unless <code>pass = FALSE</code>:</p>
+<pre class="r"><code>visits(finches_lg, pass = FALSE)</code></pre>
+<pre><code>## # A tibble: 3,429 × 7
 ##     animal_id       date               start                 end logger_id
 ##        &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;fctr&gt;
 ## 1  041868E9A8 2015-10-02 2015-10-01 17:38:52 2015-10-01 17:39:00      2100
@@ -444,17 +454,55 @@ div.tocify {
 ## 8  041868E9A8 2015-10-02 2015-10-01 17:52:51 2015-10-01 17:53:07      2700
 ## 9  041868E9A8 2015-10-02 2015-10-01 17:53:41 2015-10-01 17:54:57      2700
 ## 10 041868E9A8 2015-10-02 2015-10-01 17:56:42 2015-10-01 17:56:42      2700
-## # ... with 3,012 more rows, and 2 more variables: animal_n &lt;int&gt;,
-## #   logger_n &lt;int&gt;</code></pre>
+##    animal_n logger_n
+##       &lt;int&gt;    &lt;int&gt;
+## 1        11        4
+## 2        11        4
+## 3        11        4
+## 4        11        4
+## 5        11        4
+## 6        11        4
+## 7        11        4
+## 8        11        4
+## 9        11        4
+## 10       11        4
+## # ... with 3,419 more rows</code></pre>
 </div>
-<div id="specifying-bw" class="section level3">
-<h3>Specifying <code>bw</code></h3>
-<p>Depending on the interval between reads in your RFID logger, you may have to adjust the value of <code>bw</code> which specifies how many seconds between reads separates two visits. The default is 3 seconds, but, as in our example here, that is too low for our data (which is why we specified <code>bw = 5</code>).</p>
+<div id="bw" class="section level3">
+<h3><code>bw</code></h3>
+<p>Depending on the interval between reads in your RFID logger, you may have to adjust the value of <code>bw</code> which specifies how many seconds between reads separates two visits. The default is 3 seconds, but if your loggers scan at a slower interval, you will need to adjust the <code>bw</code> argument:</p>
+<pre class="r"><code>visits(finches_lg, bw = 15)</code></pre>
+<pre><code>## # A tibble: 2,465 × 11
+##     animal_id       date               start                 end logger_id
+##        &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;fctr&gt;
+## 1  041868E9A8 2015-10-02 2015-10-01 17:38:52 2015-10-01 17:39:12      2100
+## 2  041868E9A8 2015-10-02 2015-10-01 17:40:53 2015-10-01 17:40:53      2100
+## 3  041868E9A8 2015-10-02 2015-10-01 17:45:00 2015-10-01 17:45:56      2700
+## 4  041868E9A8 2015-10-02 2015-10-01 17:46:31 2015-10-01 17:46:31      2700
+## 5  041868E9A8 2015-10-02 2015-10-01 17:51:03 2015-10-01 17:51:16      2700
+## 6  041868E9A8 2015-10-02 2015-10-01 17:51:42 2015-10-01 17:51:58      2700
+## 7  041868E9A8 2015-10-02 2015-10-01 17:52:51 2015-10-01 17:53:07      2700
+## 8  041868E9A8 2015-10-02 2015-10-01 17:53:41 2015-10-01 17:54:57      2700
+## 9  041868E9A8 2015-10-02 2015-10-01 17:56:42 2015-10-01 17:56:42      2700
+## 10 041868E9A8 2015-10-02 2015-10-02 10:57:00 2015-10-02 10:57:14      2200
+##    animal_n logger_n     species   sex       lon      lat
+##       &lt;int&gt;    &lt;int&gt;       &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1        11        4 House Finch     F -120.3624 50.66896
+## 2        11        4 House Finch     F -120.3624 50.66896
+## 3        11        4 House Finch     F -120.3632 50.66909
+## 4        11        4 House Finch     F -120.3632 50.66909
+## 5        11        4 House Finch     F -120.3632 50.66909
+## 6        11        4 House Finch     F -120.3632 50.66909
+## 7        11        4 House Finch     F -120.3632 50.66909
+## 8        11        4 House Finch     F -120.3632 50.66909
+## 9        11        4 House Finch     F -120.3632 50.66909
+## 10       11        4 House Finch     F -120.3612 50.66778
+## # ... with 2,455 more rows</code></pre>
 </div>
-<div id="impossible-and-missing-visits-bw_imp-allow_imp-and-na_rm" class="section level3">
-<h3>Impossible and missing visits (<code>bw_imp</code>, <code>allow_imp</code>, and <code>na_rm</code>)</h3>
-<p>You should also be aware of ‘impossible visits’. This may occur if the internal clocks on your RFIDs are not in sync, or if your loggers are very close to each other. An impossible visit is when an individual animal is detected at two different loggers within 2 seconds (the default) of each other. Unless your loggers are REALLY close to each other, this is highly unlikely.</p>
-<p>Because both missing values (NAs) and impossible visits likely indicate a greater, underlying problem, you have to specifically tell the function to ignore them (or omit them, in the case of NAs).</p>
+<div id="impossiblemissing-visits" class="section level3">
+<h3>Impossible/missing visits</h3>
+<p>You should also be aware of ‘impossible visits’. These may occur if the internal clocks on your RFIDs are not in sync, or if your loggers are very close to each other. An impossible visit is when an individual animal is detected at two different loggers within 2 seconds (the default) of each other. Unless your loggers are REALLY close to each other, this is highly unlikely.</p>
+<p>Because both missing values (NAs) and impossible visits likely indicate a greater underlying problem, you have to specifically tell the function to ignore them (or omit them, in the case of NAs).</p>
 <pre class="r"><code>v &lt;- visits(finches_lg, allow_imp = TRUE, na_rm = TRUE)</code></pre>
 <p>You can define the minimum number of seconds needed to travel between loggers to specify which visits should be considered impossible. For example, if we say that it must take animals at least 3 minutes to travel between loggers, any visit made to a different logger within 3 minutes would be defined as ‘impossible’:</p>
 <pre class="r"><code>visits(finches_lg, bw_imp = 180)</code></pre>
@@ -477,21 +525,13 @@ div.tocify {
 ## 13756 50.66909 2015-09-17
 ## 13779 50.66909 2015-09-17</code></pre>
 </div>
-<div id="summarizing-visits" class="section level3">
-<h3>Summarizing visits</h3>
+<div id="summarizing" class="section level3">
+<h3>Summarizing</h3>
 <p>Visit data is the starting block of all other transformations, but you can also summarize and analyze visit data in itself.</p>
 <p>For example, if we want to create daily summaries of the number of visits made and loggers used per <code>animal_id</code>, we could use the <code>dplyr</code> package (part of the <a href="http://tidyverse.org/"><code>tidyverse</code> family of packages</a>).</p>
 <p>Currently we have data on the total number of loggers in the data set, but what if we wanted to know how many loggers each individual used?</p>
-<pre class="r"><code>library(dplyr)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;dplyr&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:stats&#39;:
-## 
-##     filter, lag</code></pre>
-<pre><code>## The following objects are masked from &#39;package:base&#39;:
-## 
-##     intersect, setdiff, setequal, union</code></pre>
-<pre class="r"><code>visit_summary &lt;- v %&gt;%
+<pre class="r"><code>library(dplyr)
+visit_summary &lt;- v %&gt;%
   group_by(animal_id) %&gt;%
   summarize(n_visits = length(start),
             n_loggers = length(unique(logger_id)),
@@ -501,20 +541,20 @@ visit_summary</code></pre>
 <pre><code>## # A tibble: 11 × 5
 ##     animal_id n_visits n_loggers n_days mean_visit_length
 ##        &lt;fctr&gt;    &lt;int&gt;     &lt;int&gt;  &lt;int&gt;             &lt;dbl&gt;
-## 1  041868E9A8      165         3      7         11.660606
-## 2  041869123C       28         1      2          5.035714
-## 3  06200003AA      309         2     21         23.317152
-## 4  0620000400       25         2      5         15.600000
+## 1  041868E9A8      185         3      7          9.864865
+## 2  041869123C       34         1      2          3.264706
+## 3  06200003AA      346         2     21         20.329480
+## 4  0620000400       32         2      5         11.187500
 ## 5  062000043E        1         1      1          2.000000
-## 6  0620000477      174         2     10         65.511494
-## 7  06200004F8     1265         4     42         34.184190
-## 8  0620000500      903         3     36         18.794020
-## 9  0620000513        3         1      1         89.000000
-## 10 0620000514      138         3     17         16.528986
-## 11 0620000520       11         1      2         17.545455</code></pre>
+## 6  0620000477      189         2     10         59.968254
+## 7  06200004F8     1419         4     42         30.014799
+## 8  0620000500     1056         3     36         15.424242
+## 9  0620000513        5         1      1         51.800000
+## 10 0620000514      146         3     17         15.369863
+## 11 0620000520       16         1      2         10.625000</code></pre>
 <p><strong>A Side Note</strong><br />
 This bit of code uses a slightly advanced technique called ‘pipes’: <code>%&gt;%</code> These allow you to pass the output from one line directly down to the next line where it becomes the first (and hidden) argument. In this case, the first line specifies our visits data frame <code>v</code>, this then becomes the input for <code>group_by()</code>. The output of <code>group_by()</code> then becomes the input for <code>summarize()</code>. This makes your coding more efficient but may take a bit of getting used to.</p>
-<p>You can find an indepth look at <code>dplyr</code>, pipes and related packages here: <a href="http://r4ds.had.co.nz/transform.html" class="uri">http://r4ds.had.co.nz/transform.html</a></p>
+<p>You can find an in-depth look at <code>dplyr</code>, pipes and related packages here: <a href="http://r4ds.had.co.nz/transform.html" class="uri">http://r4ds.had.co.nz/transform.html</a></p>
 <p>For reference, you can achieve the same effect without pipes:</p>
 <pre class="r"><code>library(dplyr)
 visit_summary &lt;- group_by(v, animal_id)
@@ -527,25 +567,25 @@ visit_summary</code></pre>
 <pre><code>## # A tibble: 11 × 5
 ##     animal_id n_visits n_loggers n_days mean_visit_length
 ##        &lt;fctr&gt;    &lt;int&gt;     &lt;int&gt;  &lt;int&gt;             &lt;dbl&gt;
-## 1  041868E9A8      165         3      7         11.660606
-## 2  041869123C       28         1      2          5.035714
-## 3  06200003AA      309         2     21         23.317152
-## 4  0620000400       25         2      5         15.600000
+## 1  041868E9A8      185         3      7          9.864865
+## 2  041869123C       34         1      2          3.264706
+## 3  06200003AA      346         2     21         20.329480
+## 4  0620000400       32         2      5         11.187500
 ## 5  062000043E        1         1      1          2.000000
-## 6  0620000477      174         2     10         65.511494
-## 7  06200004F8     1265         4     42         34.184190
-## 8  0620000500      903         3     36         18.794020
-## 9  0620000513        3         1      1         89.000000
-## 10 0620000514      138         3     17         16.528986
-## 11 0620000520       11         1      2         17.545455</code></pre>
+## 6  0620000477      189         2     10         59.968254
+## 7  06200004F8     1419         4     42         30.014799
+## 8  0620000500     1056         3     36         15.424242
+## 9  0620000513        5         1      1         51.800000
+## 10 0620000514      146         3     17         15.369863
+## 11 0620000520       16         1      2         10.625000</code></pre>
 <p>The result is a data frame with one row for each <code>animal_id</code>, giving us information on how many loggers that animal has used, how many visits they have made, over how many days, and what the average visit length was.</p>
 <p>If we wanted to plot this data, the package <code>ggplot2</code> is a great option:</p>
 <pre class="r"><code>library(ggplot2)
 ggplot(data = visit_summary, aes(x = animal_id, y = mean_visit_length)) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #rotate and shift id labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #rotate/shift id labels
   geom_bar(stat = &quot;identity&quot;) + # Create bars
   labs(x = &quot;Animal ID&quot;, y = &quot;Average visit length (s)&quot;) # Make labels pretty</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-10-1.png" width="576" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-11-1.png" width="576" /></p>
 <table>
 <tbody>
 <tr class="odd">
@@ -572,9 +612,22 @@ head(m)</code></pre>
 ## 4 041868E9A8 2015-10-02 2015-10-02 10:57:00      2200   arrived       2
 ## 5 041868E9A8 2015-10-06 2015-10-06 14:24:50      2200      left       3
 ## 6 041868E9A8 2015-10-06 2015-10-06 16:05:40      2700   arrived       3
-## # ... with 9 more variables: move_dir &lt;fctr&gt;, move_path &lt;fctr&gt;,
-## #   strength &lt;dbl&gt;, animal_n &lt;int&gt;, logger_n &lt;int&gt;, species &lt;chr&gt;,
-## #   sex &lt;chr&gt;, lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
+##    move_dir move_path    strength animal_n logger_n     species   sex
+##      &lt;fctr&gt;    &lt;fctr&gt;       &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt;       &lt;chr&gt; &lt;chr&gt;
+## 1 2100_2700 2100_2700 14.57489879       11        4 House Finch     F
+## 2 2100_2700 2100_2700 14.57489879       11        4 House Finch     F
+## 3 2700_2200 2200_2700  0.05880623       11        4 House Finch     F
+## 4 2700_2200 2200_2700  0.05880623       11        4 House Finch     F
+## 5 2200_2700 2200_2700  0.59504132       11        4 House Finch     F
+## 6 2200_2700 2200_2700  0.59504132       11        4 House Finch     F
+##         lon      lat
+##       &lt;dbl&gt;    &lt;dbl&gt;
+## 1 -120.3624 50.66896
+## 2 -120.3632 50.66909
+## 3 -120.3632 50.66909
+## 4 -120.3612 50.66778
+## 5 -120.3612 50.66778
+## 6 -120.3632 50.66909</code></pre>
 <div id="data-returned-1" class="section level3">
 <h3>Data returned</h3>
 <p>This function returns a lot of information for each movement event. Note, in particular, that each movement event results in two rows of data: leaving and arriving</p>
@@ -591,8 +644,8 @@ head(m)</code></pre>
 </ul>
 <p><code>animal_n</code>, <code>logger_n</code>, <code>species</code>, <code>sex</code>, <code>lon</code>, and <code>lat</code> are extra columns passed through (see <a href="#visitsdata">visits data</a> for more information).</p>
 </div>
-<div id="including-all-individuals-all-true" class="section level3">
-<h3>Including all individuals (<code>all = TRUE</code>)</h3>
+<div id="include-all" class="section level3">
+<h3>Include all</h3>
 <p>In this case, four <code>animal_id</code> have been omitted because they never moved between loggers. While the id is retained in the <em>levels</em> of the factor, <code>animal_id</code>, it is not present in the data frame:</p>
 <pre class="r"><code>unique(m$animal_id)         # The animal_ids currently in the movement data</code></pre>
 <pre><code>## [1] 041868E9A8 06200003AA 0620000400 0620000477 06200004F8 0620000500
@@ -622,11 +675,15 @@ unique(m$animal_id)         # The animal_ids currently in the movement data</cod
 ## 2 062000043E   &lt;NA&gt;   &lt;NA&gt;        NA      &lt;NA&gt;      NA       NA        NA
 ## 3 0620000513   &lt;NA&gt;   &lt;NA&gt;        NA      &lt;NA&gt;      NA       NA        NA
 ## 4 0620000520   &lt;NA&gt;   &lt;NA&gt;        NA      &lt;NA&gt;      NA       NA        NA
-## # ... with 7 more variables: strength &lt;dbl&gt;, animal_n &lt;int&gt;,
-## #   logger_n &lt;int&gt;, species &lt;chr&gt;, sex &lt;chr&gt;, lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
+##   strength animal_n logger_n species   sex   lon   lat
+##      &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt;   &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1       NA       NA       NA    &lt;NA&gt;     M    NA    NA
+## 2       NA       NA       NA    &lt;NA&gt;     M    NA    NA
+## 3       NA       NA       NA    &lt;NA&gt;     F    NA    NA
+## 4       NA       NA       NA    &lt;NA&gt;     M    NA    NA</code></pre>
 </div>
-<div id="summarizing-movements" class="section level3">
-<h3>Summarizing movements</h3>
+<div id="summarizing-1" class="section level3">
+<h3>Summarizing</h3>
 <p>Once again we can summarize movement data using the <code>dplyr</code> package.</p>
 <p>Are certain paths used more often?</p>
 <pre class="r"><code>move_summary &lt;- m %&gt;%
@@ -650,7 +707,7 @@ move_summary</code></pre>
 ## 10 2400_2700      2700     1
 ## 11        NA        NA     4</code></pre>
 <p>The NAs reflect the four individuals that did not move.</p>
-<p>Note that because there are two rows per movement event (leaving and arriving), we group by logger_id to summarize individually by logger (resulting in duplicate <code>n</code>s per <code>move_path</code>. This will acount for the 2 rows and keep logger ids in the final data frame (required for mapping later on).</p>
+<p>Note that because there are two rows per movement event (leaving and arriving), we group by logger_id to summarize individually by logger (resulting in duplicate <code>n</code>s per <code>move_path</code>. This will account for the 2 rows and keep logger ids in the final data frame (required for mapping later on).</p>
 <p>However, if you only wanted <code>move_path</code> and <code>n</code>, you could simply omit <code>logger_id</code> and remove duplicates:</p>
 <pre class="r"><code>move_summary %&gt;% 
   select(-logger_id) %&gt;%
@@ -668,7 +725,7 @@ move_summary</code></pre>
 ## 6        NA     4</code></pre>
 <pre class="r"><code>ggplot(data = move_summary, aes(x = move_path, y = n)) +
   geom_bar(stat = &quot;identity&quot;)</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-16-1.png" width="576" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-17-1.png" width="576" /></p>
 <p>Are certain directions on particular paths used more often? (i.e. do birds go back and forth or do they circle around?)</p>
 <pre class="r"><code>move_summary &lt;- m %&gt;%
   group_by(logger_id, move_path, move_dir) %&gt;%
@@ -687,7 +744,7 @@ head(move_summary)</code></pre>
 ## 6      2200 2100_2200 2200_2100     6</code></pre>
 <pre class="r"><code>ggplot(data = move_summary, aes(x = move_path, y = n, fill = move_dir)) +
   geom_bar(stat = &quot;identity&quot;, position = &quot;dodge&quot;, colour = &quot;black&quot;)</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-18-1.png" width="576" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-19-1.png" width="576" /></p>
 <p>Is there a relationship between use of a path and the average ‘strength’?</p>
 <pre class="r"><code>move_summary &lt;- m %&gt;%
   group_by(logger_id, move_path) %&gt;%
@@ -715,7 +772,7 @@ move_summary</code></pre>
   stat_smooth(method = &quot;lm&quot;) # add a regression line w/ standard error</code></pre>
 <pre><code>## Warning: Removed 1 rows containing non-finite values (stat_smooth).</code></pre>
 <pre><code>## Warning: Removed 1 rows containing missing values (geom_point).</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-20-1.png" width="768" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-21-1.png" width="768" /></p>
 <p>Do some animals move more than others?</p>
 <pre class="r"><code>move_summary &lt;- m %&gt;%
   group_by(animal_id) %&gt;%
@@ -739,7 +796,7 @@ move_summary</code></pre>
 <pre class="r"><code>ggplot(data = move_summary, aes(x = animal_id, y = n)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #rotate and shift id labels
   geom_bar(stat = &quot;identity&quot;) </code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-22-1.png" width="576" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-23-1.png" width="576" /></p>
 <table>
 <tbody>
 <tr class="odd">
@@ -766,8 +823,14 @@ head(p)</code></pre>
 ## 4 041868E9A8 2015-10-02      2200 2015-10-02 12:45:37 2015-10-02 13:06:27
 ## 5 041868E9A8 2015-10-02      2200 2015-10-02 14:22:58 2015-10-02 14:27:30
 ## 6 041868E9A8 2015-10-02      2200 2015-10-02 15:33:42 2015-10-02 15:37:25
-## # ... with 7 more variables: length &lt;dbl&gt;, animal_n &lt;int&gt;, logger_n &lt;int&gt;,
-## #   species &lt;chr&gt;, sex &lt;chr&gt;, lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
+##      length animal_n logger_n     species   sex       lon      lat
+##       &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt;       &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1  2.016667       11        4 House Finch     F -120.3624 50.66896
+## 2 11.700000       11        4 House Finch     F -120.3632 50.66909
+## 3 14.716667       11        4 House Finch     F -120.3612 50.66778
+## 4 20.833333       11        4 House Finch     F -120.3612 50.66778
+## 5  4.533333       11        4 House Finch     F -120.3612 50.66778
+## 6  3.716667       11        4 House Finch     F -120.3612 50.66778</code></pre>
 <div id="data-returned-2" class="section level3">
 <h3>Data returned</h3>
 <ul>
@@ -780,8 +843,8 @@ head(p)</code></pre>
 </ul>
 <p><code>animal_n</code>, <code>logger_n</code>, <code>species</code>, <code>sex</code>, <code>lon</code>, and <code>lat</code> are extra columns passed through (see <a href="#visitsdata">visits data</a> for more information).</p>
 </div>
-<div id="specifying-bw-1" class="section level3">
-<h3>Specifying <code>bw</code></h3>
+<div id="bw-1" class="section level3">
+<h3><code>bw</code></h3>
 <p>The user of the function may define what the minimum amount of time between visits should be. Ground truthing could help establish the amount of time an individual spends near a logger without making a logger visit and could be used to determine this cutoff time.</p>
 <p>Note that the units for <code>bw</code> when defining <a href="#visits">visits</a> is in seconds, while the units for <code>bw</code> when defining presence is in minutes. This reflects the different scales of the two functions.</p>
 <pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
@@ -796,8 +859,14 @@ head(p)</code></pre>
 ## 4 041868E9A8 2015-10-02      2200 2015-10-02 12:45:37 2015-10-02 13:06:27
 ## 5 041868E9A8 2015-10-02      2200 2015-10-02 14:22:58 2015-10-02 14:27:30
 ## 6 041868E9A8 2015-10-02      2200 2015-10-02 15:33:42 2015-10-02 15:37:25
-## # ... with 7 more variables: length &lt;dbl&gt;, animal_n &lt;int&gt;, logger_n &lt;int&gt;,
-## #   species &lt;chr&gt;, sex &lt;chr&gt;, lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
+##      length animal_n logger_n     species   sex       lon      lat
+##       &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt;       &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1  2.016667       11        4 House Finch     F -120.3624 50.66896
+## 2 11.700000       11        4 House Finch     F -120.3632 50.66909
+## 3 14.716667       11        4 House Finch     F -120.3612 50.66778
+## 4 20.833333       11        4 House Finch     F -120.3612 50.66778
+## 5  4.533333       11        4 House Finch     F -120.3612 50.66778
+## 6  3.716667       11        4 House Finch     F -120.3612 50.66778</code></pre>
 <pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
 p &lt;- presence(v, bw = 90)  # Within 1.5 h
 head(p)</code></pre>
@@ -810,8 +879,14 @@ head(p)</code></pre>
 ## 4 041868E9A8 2015-10-02      2200 2015-10-02 12:45:37 2015-10-02 15:37:25
 ## 5 041868E9A8 2015-10-03      2200 2015-10-02 17:44:14 2015-10-02 17:50:15
 ## 6 041868E9A8 2015-10-03      2200 2015-10-03 10:25:06 2015-10-03 10:26:04
-## # ... with 7 more variables: length &lt;dbl&gt;, animal_n &lt;int&gt;, logger_n &lt;int&gt;,
-## #   species &lt;chr&gt;, sex &lt;chr&gt;, lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
+##        length animal_n logger_n     species   sex       lon      lat
+##         &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt;       &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1   2.0166667       11        4 House Finch     F -120.3624 50.66896
+## 2  11.7000000       11        4 House Finch     F -120.3632 50.66909
+## 3  14.7166667       11        4 House Finch     F -120.3612 50.66778
+## 4 171.8000000       11        4 House Finch     F -120.3612 50.66778
+## 5   6.0166667       11        4 House Finch     F -120.3612 50.66778
+## 6   0.9666667       11        4 House Finch     F -120.3612 50.66778</code></pre>
 <p>The <code>bw</code> parameter can also be omitted entirely:</p>
 <pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
 p &lt;- presence(v, bw = NULL)
@@ -825,12 +900,18 @@ head(p)</code></pre>
 ## 4 041868E9A8 2015-10-06      2700 2015-10-06 16:05:40 2015-10-06 16:08:29
 ## 5 041868E9A8 2015-10-06      2200 2015-10-06 16:14:47 2015-10-09 14:11:08
 ## 6 041869123C 2015-10-15      2200 2015-10-15 10:16:52 2015-10-16 09:27:48
-## # ... with 7 more variables: length &lt;dbl&gt;, animal_n &lt;int&gt;, logger_n &lt;int&gt;,
-## #   species &lt;chr&gt;, sex &lt;chr&gt;, lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
+##        length animal_n logger_n     species   sex       lon      lat
+##         &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt;       &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1    2.016667       11        4 House Finch     F -120.3624 50.66896
+## 2   11.700000       11        4 House Finch     F -120.3632 50.66909
+## 3 5967.833333       11        4 House Finch     F -120.3612 50.66778
+## 4    2.816667       11        4 House Finch     F -120.3632 50.66909
+## 5 4196.350000       11        4 House Finch     F -120.3612 50.66778
+## 6 1390.933333       11        4 House Finch     M -120.3612 50.66778</code></pre>
 <p>When <code>bw = NULL</code> only a move to a different logger will initiate a new presence bout. Therefore this identifies how much time passes before a new logger is visited. The end time reflects the time of the final visit to that logger before moving to a new logger, but if an individual were to visit logger A all day on day 1 and disappear on day 2 and then make one visit to logger A on day 3 before moving immediately to logger B, that first bout of ‘presence’ would be considered two days long, whereas in reality, the individual did not make any visits on one of those days.</p>
 </div>
-<div id="summarizing-presence" class="section level3">
-<h3>Summarizing presence</h3>
+<div id="summarizing-2" class="section level3">
+<h3>Summarizing</h3>
 <p>What’s the average time present for each individual?</p>
 <pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
 p &lt;- presence(v)
@@ -858,7 +939,7 @@ presence_summary</code></pre>
 <p>Is there a relationship between the number and length of presence bouts?</p>
 <pre class="r"><code>ggplot(data = presence_summary, aes(x = n, y = mean_length)) +
   geom_point()</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-27-1.png" width="768" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-28-1.png" width="768" /></p>
 <p>Do animals spend more time around certain loggers?</p>
 <pre class="r"><code>presence_summary &lt;- p %&gt;%
   group_by(logger_id) %&gt;%
@@ -879,7 +960,15 @@ presence_summary</code></pre>
   geom_errorbar(aes(ymin = mean_length - se_length, 
                     ymax = mean_length + se_length), width = 0.25)</code></pre>
 <pre><code>## Warning: Removed 1 rows containing missing values (geom_errorbar).</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-28-1.png" width="768" /> Note that there is only one bout of presence aroundlogger 2400, hence the lack of errorbars. ——————– Back to <a href="#top">top</a> ——————–</p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-29-1.png" width="768" /></p>
+<p>Note that there is only one bout of presence around logger 2400, hence the lack of errorbars.</p>
+<table>
+<tbody>
+<tr class="odd">
+<td align="left">Back to <a href="#top">top</a></td>
+</tr>
+</tbody>
+</table>
 <p><a id = "displacements"></a></p>
 </div>
 </div>
@@ -909,8 +998,14 @@ names(d)</code></pre>
 ## 4 0620000500 2015-09-13 2015-09-13 15:17:59 2015-09-13 15:18:02      2100
 ## 5 06200004F8 2015-09-14 2015-09-14 13:48:02 2015-09-14 13:48:06      2100
 ## 6 0620000500 2015-09-14 2015-09-14 13:48:02 2015-09-14 13:48:06      2100
-## # ... with 7 more variables: role &lt;chr&gt;, animal_n &lt;int&gt;, logger_n &lt;int&gt;,
-## #   species &lt;chr&gt;, sex &lt;chr&gt;, lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
+##        role animal_n logger_n     species   sex       lon      lat
+##       &lt;chr&gt;    &lt;int&gt;    &lt;int&gt;       &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 displacee       11        4 House Finch     F -120.3624 50.66896
+## 2 displacer       11        4 House Finch     F -120.3624 50.66896
+## 3 displacee       11        4 House Finch     F -120.3624 50.66896
+## 4 displacer       11        4 House Finch     F -120.3624 50.66896
+## 5 displacee       11        4 House Finch     F -120.3624 50.66896
+## 6 displacer       11        4 House Finch     F -120.3624 50.66896</code></pre>
 <p>The <code>displacements</code> item is a data frame containing information on each displacement event</p>
 <ul>
 <li><code>animal_id</code> id of an animal involved in a displacement event</li>
@@ -970,8 +1065,8 @@ disp(v)</code></pre>
 ## $interactions
 ## data frame with 0 columns and 0 rows</code></pre>
 </div>
-<div id="specifying-bw-2" class="section level3">
-<h3>Specifying <code>bw</code></h3>
+<div id="bw-2" class="section level3">
+<h3><code>bw</code></h3>
 <p>The <code>disp()</code> function also contains a <code>bw</code> argument. In this case it reflects the maximum interval between the first animal leaving and the second animal arriving for an interaction to be considered a displacement:</p>
 <pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
 head(disp(v)$summaries)</code></pre>
@@ -1006,8 +1101,8 @@ head(disp(v)$summaries)</code></pre>
 ## 6 0620000477        12         3 0.2000000</code></pre>
 <p>However, an interval of 15s is pretty long and probably doesn’t constitute a real displacement event.</p>
 </div>
-<div id="summarizing-displacements" class="section level3">
-<h3>Summarizing displacements</h3>
+<div id="summarizing-3" class="section level3">
+<h3>Summarizing</h3>
 <p>Is one logger more contentious than others?</p>
 <pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
 d &lt;- disp(v)
@@ -1019,7 +1114,7 @@ disp_summary &lt;- d$displacements %&gt;%
 
 ggplot(data = disp_summary, aes(x = logger_id, y = n)) +
   geom_bar(stat = &quot;identity&quot;)</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-34-1.png" width="768" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-35-1.png" width="768" /></p>
 <p>What if we control for overall logger use?</p>
 <pre class="r"><code>disp_summary &lt;- d$displacements %&gt;%
   group_by(logger_id, role) %&gt;%
@@ -1046,7 +1141,7 @@ full_summary</code></pre>
 ## 4      2400      &lt;NA&gt;     0    2.033333   0.000000</code></pre>
 <pre class="r"><code>ggplot(data = full_summary, aes(x = logger_id, y = n)) +
   geom_bar(stat = &quot;identity&quot;)</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-35-1.png" width="768" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-36-1.png" width="768" /></p>
 <pre class="r"><code>d$summaries</code></pre>
 <pre><code>## # A tibble: 11 × 4
 ##     animal_id displacee displacer     p_win
@@ -1068,7 +1163,7 @@ full_summary</code></pre>
   ylim(c(0, 1)) +
   labs(x = &quot;Animal Id&quot;, y = &quot;Proportion of &#39;wins&#39;&quot;)</code></pre>
 <pre><code>## Warning: Removed 6 rows containing missing values (position_stack).</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-36-1.png" width="768" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-37-1.png" width="768" /></p>
 <table>
 <tbody>
 <tr class="odd">
@@ -1122,7 +1217,7 @@ head(dm_c$reversals[[1]])</code></pre>
 ## 4 0620000418 062000038F
 ## 5 0700EE022B 06200004BE
 ## 6 062000038D 06200003C3</code></pre>
-<p>Our original analysis doesn’t have any reversals, meaning that the matrix of interactions reflects a linear hierarchy (or individudals are tied). However, a look at dominance in our chickadee data set shows many reversals. The <code>reversals</code> item is a list containing a data frame for each matrix showing which individuals experienced reversals with whom: Pairs of individuals which could be switched either way in the hierarchy.</p>
+<p>Our original analysis doesn’t have any reversals, meaning that the matrix of interactions reflects a linear hierarchy (or individuals are tied). However, a look at dominance in our chickadee data set shows many reversals. The <code>reversals</code> item is a list containing a data frame for each matrix showing which individuals experienced reversals with whom: Pairs of individuals which could be switched either way in the hierarchy.</p>
 <pre class="r"><code>dm$matrices[[1]]</code></pre>
 <pre><code>##            0620000500 06200004F8 06200003AA 0620000400 0620000477
 ## 0620000500         NA         37          1          1          5
@@ -1198,11 +1293,25 @@ a &lt;- activity(p, res = 5)</code></pre>
 ## 4 041868E9A8 2015-10-01 2015-10-01 00:15:00        0   inactive        NA
 ## 5 041868E9A8 2015-10-01 2015-10-01 00:20:00        0   inactive        NA
 ## 6 041868E9A8 2015-10-01 2015-10-01 00:25:00        0   inactive        NA
-## # ... with 6 more variables: rise &lt;dttm&gt;, set &lt;dttm&gt;, animal_n &lt;int&gt;,
-## #   logger_n &lt;int&gt;, species &lt;chr&gt;, sex &lt;chr&gt;</code></pre>
+##                  rise                 set animal_n logger_n     species
+##                &lt;dttm&gt;              &lt;dttm&gt;    &lt;int&gt;    &lt;int&gt;       &lt;chr&gt;
+## 1 2015-10-01 07:01:35 2015-10-01 18:39:43       11        4 House Finch
+## 2 2015-10-01 07:01:35 2015-10-01 18:39:43       11        4 House Finch
+## 3 2015-10-01 07:01:35 2015-10-01 18:39:43       11        4 House Finch
+## 4 2015-10-01 07:01:35 2015-10-01 18:39:43       11        4 House Finch
+## 5 2015-10-01 07:01:35 2015-10-01 18:39:43       11        4 House Finch
+## 6 2015-10-01 07:01:35 2015-10-01 18:39:43       11        4 House Finch
+##     sex
+##   &lt;chr&gt;
+## 1     F
+## 2     F
+## 3     F
+## 4     F
+## 5     F
+## 6     F</code></pre>
 <div id="data-returned-5" class="section level3">
 <h3>Data returned</h3>
-<p>Several messages along with a dataset containing:</p>
+<p>Several messages along with a data set containing:</p>
 <ul>
 <li><code>animal_id</code> id of the animal in question</li>
 <li><code>date</code> the date of the event</li>
@@ -1234,8 +1343,22 @@ a &lt;- activity(p, res = 5)</code></pre>
 ## 4 041868E9A8 2015-10-01 2015-10-01 00:03:00        0   inactive        NA
 ## 5 041868E9A8 2015-10-01 2015-10-01 00:04:00        0   inactive        NA
 ## 6 041868E9A8 2015-10-01 2015-10-01 00:05:00        0   inactive        NA
-## # ... with 6 more variables: rise &lt;dttm&gt;, set &lt;dttm&gt;, animal_n &lt;int&gt;,
-## #   logger_n &lt;int&gt;, species &lt;chr&gt;, sex &lt;chr&gt;</code></pre>
+##                  rise                 set animal_n logger_n     species
+##                &lt;dttm&gt;              &lt;dttm&gt;    &lt;int&gt;    &lt;int&gt;       &lt;chr&gt;
+## 1 2015-10-01 07:01:35 2015-10-01 18:39:43       11        4 House Finch
+## 2 2015-10-01 07:01:35 2015-10-01 18:39:43       11        4 House Finch
+## 3 2015-10-01 07:01:35 2015-10-01 18:39:43       11        4 House Finch
+## 4 2015-10-01 07:01:35 2015-10-01 18:39:43       11        4 House Finch
+## 5 2015-10-01 07:01:35 2015-10-01 18:39:43       11        4 House Finch
+## 6 2015-10-01 07:01:35 2015-10-01 18:39:43       11        4 House Finch
+##     sex
+##   &lt;chr&gt;
+## 1     F
+## 2     F
+## 3     F
+## 4     F
+## 5     F
+## 6     F</code></pre>
 </div>
 <div id="by_logger" class="section level3">
 <h3><code>by_logger</code></h3>
@@ -1250,8 +1373,22 @@ a &lt;- activity(p, res = 5)</code></pre>
 ## 4 041868E9A8 2015-10-01 2015-10-01 00:00:00        0   inactive      2700
 ## 5 041868E9A8 2015-10-01 2015-10-01 00:15:00        0   inactive      2100
 ## 6 041868E9A8 2015-10-01 2015-10-01 00:15:00        0   inactive      2200
-## # ... with 8 more variables: rise &lt;dttm&gt;, set &lt;dttm&gt;, animal_n &lt;int&gt;,
-## #   logger_n &lt;int&gt;, species &lt;chr&gt;, sex &lt;chr&gt;, lon &lt;dbl&gt;, lat &lt;dbl&gt;</code></pre>
+##                  rise                 set animal_n logger_n species   sex
+##                &lt;dttm&gt;              &lt;dttm&gt;    &lt;int&gt;    &lt;int&gt;   &lt;chr&gt; &lt;chr&gt;
+## 1 2015-10-01 07:01:35 2015-10-01 18:39:43       NA       NA    &lt;NA&gt;     F
+## 2 2015-10-01 07:01:35 2015-10-01 18:39:43       NA       NA    &lt;NA&gt;     F
+## 3 2015-10-01 07:01:35 2015-10-01 18:39:43       NA       NA    &lt;NA&gt;     F
+## 4 2015-10-01 07:01:35 2015-10-01 18:39:43       NA       NA    &lt;NA&gt;     F
+## 5 2015-10-01 07:01:35 2015-10-01 18:39:43       NA       NA    &lt;NA&gt;     F
+## 6 2015-10-01 07:01:35 2015-10-01 18:39:43       NA       NA    &lt;NA&gt;     F
+##         lon      lat
+##       &lt;dbl&gt;    &lt;dbl&gt;
+## 1 -120.3624 50.66896
+## 2 -120.3612 50.66778
+## 3 -120.3635 50.66938
+## 4 -120.3632 50.66909
+## 5 -120.3624 50.66896
+## 6 -120.3612 50.66778</code></pre>
 </div>
 <div id="sun" class="section level3">
 <h3><code>sun</code></h3>
@@ -1265,40 +1402,33 @@ a &lt;- activity(p, res = 5)</code></pre>
 <h3><code>missing</code></h3>
 <p>Currently this functionality is not implemented. However, eventually we plan to allow users to specify times of known missing data, so that activity can be specified as ‘active’, ‘inactive’, or ‘unknown’.</p>
 </div>
-<div id="summarizing-activity" class="section level3">
-<h3>Summarizing activity</h3>
+<div id="summarizing-4" class="section level3">
+<h3>Summarizing</h3>
 <p>Activity patterns can be plotted in ggplot2. Let’s look at a specific time period:</p>
 <pre class="r"><code>library(dplyr)
 library(ggplot2)
-library(lubridate)</code></pre>
-<pre><code>## 
-## Attaching package: &#39;lubridate&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:base&#39;:
-## 
-##     date</code></pre>
-<pre class="r"><code>sept &lt;- a %&gt;%
-  filter(date &gt;= as.Date(&quot;2015-09-01&quot;),
-         date &lt; as.Date(&quot;2015-10-01&quot;),
-         animal_id == &quot;06200004F8&quot;) %&gt;%
-  mutate(week = week(date))
+library(lubridate)
 
-ggplot(data = sept, aes(x = time, ymin = 0, ymax = activity)) +
-  facet_wrap(~ week, scales = &quot;free_x&quot;, ncol = 1) +
-  geom_ribbon()</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-46-1.png" width="768" /></p>
-<p>There’s a clear daily pattern, but it’s a bit hard to tell without sunrise and sunset:</p>
-<pre class="r"><code>sun &lt;- sept %&gt;%
-  select(set, rise) %&gt;%
-  distinct() %&gt;%
-  mutate(set = lag(set)) # Get the next day&#39;s set
+# Filter by date and animal ID, create a &quot;day&quot; column
+sept &lt;- a %&gt;%
+  filter(date &gt;= as.Date(&quot;2015-09-21&quot;),
+         date &lt; as.Date(&quot;2015-09-28&quot;),
+         animal_id == &quot;06200004F8&quot;)
 
-ggplot(data = sept) +
-  facet_wrap(~ week, scales = &quot;free_x&quot;, ncol = 1) +
-  #geom_rect(data = sun, aes(xmin = set, xmax = rise), ymin = -Inf, ymax = +Inf, fill = &quot;grey&quot;) +
-  geom_rect(data = sun, aes(xmax = set, xmin = rise), ymin = -Inf, ymax = +Inf, fill = &quot;grey&quot;)+
-  geom_area(aes(x = time, y = activity))</code></pre>
-<pre><code>## Warning: Removed 3 rows containing missing values (geom_rect).</code></pre>
+# Use facet_wrap to look at individual days, use drop = TRUE to omit days without activity
+ggplot(data = sept, aes(x = time, y = activity)) +
+  facet_wrap(~ date, scales = &quot;free_x&quot;, ncol = 1, drop = TRUE) +
+  geom_area()</code></pre>
 <p><img src="transformations_files/figure-html/unnamed-chunk-47-1.png" width="768" /></p>
+<p>There’s a clear daily pattern, but it’s a bit hard to tell without sunrise and sunset:</p>
+<pre class="r"><code>sun &lt;- unique(select(sept, rise, set, date))
+
+ggplot(data = sept, aes(x = time, y = activity)) +
+  facet_wrap(~ date, scales = &quot;free_x&quot;, ncol = 1, drop = TRUE) +
+  geom_rect(mapping = aes(xmax = rise), xmin = -Inf, ymin = -Inf, ymax = +Inf, fill = &quot;grey&quot;) +
+  geom_rect(mapping = aes(xmin = set), xmax = +Inf, ymin = -Inf, ymax = +Inf, fill = &quot;grey&quot;) +
+  geom_area()</code></pre>
+<p><img src="transformations_files/figure-html/unnamed-chunk-48-1.png" width="768" /></p>
 <table>
 <tbody>
 <tr class="odd">
@@ -1316,26 +1446,48 @@ ggplot(data = sept) +
 p &lt;- presence(v)
 a &lt;- activity(p, res = 5)
 da &lt;- daily(a)</code></pre>
+<div id="data-returned-6" class="section level3">
+<h3>Data returned</h3>
+<p>A data set containing:</p>
+<ul>
+<li><code>animal_id</code> id of the animal in question</li>
+<li><code>time</code> the time block of the event (note the odd date)</li>
+<li><code>time_c</code> the time block of the event (categorical)</li>
+<li><code>p_active</code> the proportion of times this block was scored as active</li>
+<li><code>p_inactive</code> the proportion of times this block was scored as inactive</li>
+<li><code>p_unknown</code> the proportion of times this block was scored as unknown</li>
+<li><code>p_total</code> the proportion of times this block was scored as anything but unknown (i.e., 1 - <code>p_unknown</code>)</li>
+<li><code>logger_id</code> the logger where the activity occurred. If summarizing across loggers, this will be <code>NA</code>.</li>
+<li><code>rise</code> the time of sunrise (median time if calculated across all loggers), only calculated if <code>sun = TRUE</code></li>
+<li><code>set</code> the time of sunset (median time if calculated across all loggers), only calculated if <code>sun = TRUE</code></li>
+</ul>
+<p><code>animal_n</code>, <code>logger_n</code>, <code>species</code>, <code>sex</code> are extra columns passed through (see <a href="#visitsdata">visits data</a> for more information).</p>
+<p>If missing data are indicated in <code>activity()</code>, then the proportion of unknown blocks will be greater than 0 (Note that this is not currently available).</p>
 </div>
-<div id="data-returned-6" class="section level2">
-<h2>Data returned</h2>
-</div>
-<div id="summarizing-daily-activity" class="section level2">
-<h2>Summarizing daily activity</h2>
-<pre class="r"><code>sun &lt;- da %&gt;%
-  select(rise, set) %&gt;%
-  distinct()
-
-ggplot(data = da) +
-  geom_rect(aes(xmax = rise), xmin = -Inf, ymin = -Inf, ymax = +Inf, alpha = 0.1) +
-  geom_rect(aes(xmin = set), xmax = +Inf, ymin = -Inf, ymax = +Inf) +
-  geom_area(data = da, aes(x = time, y = p_active)) +
+<div id="summarizing-5" class="section level3">
+<h3>Summarizing</h3>
+<p>Daily activity patterns can be plotted by hiding the date portion of the time stamp.</p>
+<pre class="r"><code>ggplot(data = da, aes(x = time, y = p_active)) +
+  geom_rect(aes(xmax = rise), xmin = -Inf, ymin = -Inf, ymax = +Inf, fill = &quot;grey&quot;) +
+  geom_rect(aes(xmin = set), xmax = +Inf, ymin = -Inf, ymax = +Inf, fill = &quot;grey&quot;) +
+  geom_area() +
   facet_wrap(~ animal_id) +
   scale_x_datetime(date_labels = &quot;%H:%M:%S&quot;, date_breaks = &quot;6 hours&quot;)</code></pre>
-<p><img src="transformations_files/figure-html/unnamed-chunk-48-1.png" width="768" /></p>
+<p><img src="transformations_files/figure-html/unnamed-chunk-49-1.png" width="768" /></p>
+<p>Note also that this script repeats the drawing of the sunrise/sunset rectangles, making it difficult to use alpha values. To avoid this, create a reduced data frame with only sunrise/sunset data:</p>
+<pre class="r"><code>sun &lt;- unique(da[, c(&quot;rise&quot;, &quot;set&quot;, &quot;animal_id&quot;)])
+
+ggplot(data = da) +
+  geom_rect(data = sun, aes(xmax = rise), xmin = -Inf, ymin = -Inf, ymax = +Inf, fill = &quot;black&quot;, alpha = 0.1) +
+  geom_rect(data = sun, aes(xmin = set), xmax = +Inf, ymin = -Inf, ymax = +Inf, fill = &quot;black&quot;, alpha = 0.1) +
+  geom_area(aes(x = time, y = p_active)) +
+  facet_wrap(~ animal_id) +
+  scale_x_datetime(date_labels = &quot;%H:%M:%S&quot;, date_breaks = &quot;6 hours&quot;)</code></pre>
+<p><img src="transformations_files/figure-html/unnamed-chunk-50-1.png" width="768" /></p>
 <hr />
 <p>Back to <a href="#top">top</a><br />
 Go back to <a href="index.html">home</a> | Go back to <a href="housekeeping.html">housekeeping</a> | Continue with <a href="maps.html">visualizations</a></p>
+</div>
 </div>
 
 

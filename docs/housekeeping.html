@@ -175,7 +175,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2,h3,h4",
+      selectors: "h1,h2",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
@@ -322,7 +322,7 @@ div.tocify {
 <li><a href="#checkproblems"><code>check_problems()</code></a></li>
 </ul>
 <p>These functions can be skipped, or used one after the other. It’s up to you. Basically, they are wrapper functions for cleaning your data while maintaining appropriate categorical (factor) levels.</p>
-<p>This tutorial assumes that you already know how to <a href="load.html">load/import</a> your data. We will be using the feedr package example dataset: finches.</p>
+<p>This tutorial assumes that you already know how to <a href="load.html">load/import</a> your data. We will be using the <code>feedr</code> package example data set: finches.</p>
 <pre class="r"><code>head(finches)</code></pre>
 <pre><code>##    animal_id                time logger_id     species sex       lon
 ## 1 0620000514 2016-01-28 12:34:25      2200 House Finch   F -120.3612
@@ -342,7 +342,7 @@ div.tocify {
 <div id="check_ids" class="section level2">
 <h2><code>check_ids()</code></h2>
 <p>This function can be used to remove any <code>animal_ids</code> that are present, but which you know aren’t really animals. For example, if you use a ‘wand’ to test the deployment of your loggers, this is an <code>animal_id</code> that you should remove prior to analysis. Further, occasionally there are <code>animal_ids</code> that are error codes (e.g. 0000000000), you may wish to determine why these are present (you probably should!), but once again, for analysis they should be removed.</p>
-<p>This function works by comparing the list of <code>animal_ids</code> in the data to an external, <code>animal_id</code> dataset. The dataset is expected to have at least two columns: <code>animal_id</code> and <code>species</code>. The <code>species</code> column should either contain species identity (e.g. House Finch or HOFI) or the error code (e.g. wand, or error).</p>
+<p>This function works by comparing the list of <code>animal_ids</code> in the data to an external, <code>animal_id</code> data set. The data set is expected to have at least two columns: <code>animal_id</code> and <code>species</code>. The <code>species</code> column should either contain species identity (e.g. House Finch or HOFI) or the error code (e.g. wand, or error).</p>
 <p>In addition to removing error or wand ids, this function will also report which <code>animal_id</code>s are in your data sets, but not in your <code>animal_id</code> index, and which are in your <code>animal_id</code> index, but not in your data sets. This will help you determine whether you are detecting RFID tags that are not in your master index (weird!) and whether some RFID tags have never been recorded by a logger.</p>
 <div id="with-no-errorwand-ids" class="section level3">
 <h3>With no error/wand ids</h3>
@@ -369,7 +369,7 @@ animal_index</code></pre>
 </div>
 <div id="with-errorwand-ids" class="section level3">
 <h3>With error/wand ids</h3>
-<p>Let’s see how it works if you did have a ‘wand’ or ‘error’ code in your index file that matched a <code>animal_id</code> in your dataset.</p>
+<p>Let’s see how it works if you did have a ‘wand’ or ‘error’ code in your index file that matched a <code>animal_id</code> in your data set.</p>
 <pre class="r"><code>animal_index</code></pre>
 <pre><code>##    animal_id     species
 ## 1 0620000514        wand
@@ -381,11 +381,11 @@ animal_index</code></pre>
 <pre><code>## All ids in your data are also in your animal_id index</code></pre>
 <pre><code>## All ids in your animal_id index are also in your data</code></pre>
 <pre><code>## The following animal ids have been omitted: 0620000514, 041868D861</code></pre>
-<p>Here we omited two <code>animal_id</code>s, one associated with a wand (0620000514) and one with an error (041868D861).</p>
+<p>Here we omitted two <code>animal_id</code>s, one associated with a wand (0620000514) and one with an error (041868D861).</p>
 <p>Note that nothing else changed.</p>
 </div>
-<div id="animal_ids-present-in-dataset-but-not-in-the-index" class="section level3">
-<h3><code>animal_id</code>s present in dataset but not in the index</h3>
+<div id="animal_ids-present-in-data-set-but-not-in-the-index" class="section level3">
+<h3><code>animal_id</code>s present in data set but not in the index</h3>
 <pre class="r"><code>animal_index</code></pre>
 <pre><code>##    animal_id     species
 ## 1 0620000514        wand
@@ -421,7 +421,7 @@ problems</code></pre>
 <pre><code>## [1] 0620000514 0620000514 041868D861 041B6BEF6B 041B6BEF6B
 ## Levels: 041868D861 062000043E 0620000514 041B6BEF6B 041B999F6B</code></pre>
 <p>Note that the <code>animal_id</code>s have been modified, but also that the factor levels have been updated to match.</p>
-<p>Now that your data has been cleaned of eronious or problematic data, it is ready to be <a href="transformations.html">transformed</a>.</p>
+<p>Now that your data has been cleaned of erroneous or problematic data, it is ready to be <a href="transformations.html">transformed</a>.</p>
 <hr />
 <p>Back to <a href="#top">top</a><br />
 Go back to <a href="index.html">home</a> | Go back to <a href="load.html">loading/importing data</a> | Continue with <a href="transformations.html">transformations</a></p>

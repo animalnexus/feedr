@@ -179,7 +179,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2,h3,h4",
+      selectors: "h1,h2",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
@@ -322,13 +322,13 @@ div.tocify {
 
 <!-- Render entire site:
 rmarkdown::render_site("./docs/") -->
-<p>This is an overview of how to use functions in the <code>feedr</code> package to transform and visual your RFID data.</p>
+<p>This is an overview of how to use functions in the <code>feedr</code> package to transform and visual your RFID data. Note that while we’ve tried to explain the code in detail, if you are new to R, you may benefit from an introduction to coding in R before tackling your data with the <code>feedr</code> package</p>
 <div id="order-of-operations" class="section level2">
 <h2>Order of operations</h2>
 <p>This package contains functions to perform three broad services:</p>
 <ol style="list-style-type: decimal">
 <li><a href="#load"><strong>Loading/Importing Data</strong></a><br />
-Raw data directly from the loggers, already almagamated, or from the animal__nexus__ website</li>
+Raw data directly from the loggers, already amalgamated, or from the animal__nexus__ website</li>
 <li><a href="#hk"><strong>Housekeeping</strong></a><br />
 Functions for checking and correcting errors before you transform the data</li>
 <li><a href="#trans"><strong>Transformations</strong></a><br />
@@ -337,14 +337,14 @@ Transforming raw data into visits, presence, activity, etc</li>
 Static or interactive maps produced by the mapping functions which visualize movements between and presence around the RFID loggers.</li>
 </ol>
 <p>There are also three ‘user-interface’ (UI) functions that can be used to simplify the use of these functions (see below).</p>
-<p>In the normal order of operarations, several functions depend on the output of other functions.</p>
+<p>In the normal order of operations, several functions depend on the output of other functions.</p>
 <p>For example, to get daily activity patterns, you could get your data from the animalnexus database with <code>dl_data()</code>, turn this raw data to visits data with <code>visits()</code>, turn visits data to activity data with <code>activity()</code> and finally, turn activity data into daily activity patterns with <code>daily()</code>.</p>
-<div id="htmlwidget-7faac791cec3c5cb9376" style="width:500px;height:480px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-7faac791cec3c5cb9376">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nload[label = \"{Loading/Importing Data | {load_raw_all() | load_web() | dl_data()}}\"]\n\nhk[label = \"{Housekeeping (Optional) | {check_ids() | check_problems()}}\", width = 3]\n\nload -> hk\nhk -> visits\nload -> visits\n\nvisits[label = \"visits()\"]\ndisp[label = \"disp()\"]\ndom[label = \"dom()\"]\nmove[label = \"move()\"]\npresence[label = \"presence()\"]\nact[label = \"activity()\"]\ndaily[label = \"daily()\"]\n\nvisits-> {disp, move, presence}\npresence -> act\ndisp -> dom\nact -> daily\n\nmap[label = \"{Visualizations | {map_ggmap() | map_leaflet()}}\"]\n\n{presence; move} -> map\n\n#A -> e [ltail = cluster0, lhead = cluster1]\n#f -> \"visits()\" [ltail = cluster1, lhead = cluster2]\n#\"move()\" -> \"map_leaflet()\" [ltail = cluster2, lhead = cluster3]\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-b3f14ac10ba485d24bdd" style="width:500px;height:480px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b3f14ac10ba485d24bdd">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nload[label = \"{Loading/Importing Data | {load_raw_all() | load_web() | dl_data()}}\"]\n\nhk[label = \"{Housekeeping (Optional) | {check_ids() | check_problems()}}\", width = 3]\n\nload -> hk\nhk -> visits\nload -> visits\n\nvisits[label = \"visits()\"]\ndisp[label = \"disp()\"]\ndom[label = \"dom()\"]\nmove[label = \"move()\"]\npresence[label = \"presence()\"]\nact[label = \"activity()\"]\ndaily[label = \"daily()\"]\n\nvisits-> {disp, move, presence}\npresence -> act\ndisp -> dom\nact -> daily\n\nmap[label = \"{Visualizations | {map_ggmap() | map_leaflet()}}\"]\n\n{presence; move} -> map\n\n#A -> e [ltail = cluster0, lhead = cluster1]\n#f -> \"visits()\" [ltail = cluster1, lhead = cluster2]\n#\"move()\" -> \"map_leaflet()\" [ltail = cluster2, lhead = cluster3]\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="tutorial-data" class="section level2">
 <h2>Tutorial Data</h2>
-<p>Two data frames, <code>finches</code> and <code>chickadees</code> are included in this package for the purpose of demonstration.</p>
+<p>Two data frames, <code>finches</code> and <code>chickadees</code> are included in the <code>feedr</code> package for the purpose of demonstration.</p>
 <pre class="r"><code>head(finches)</code></pre>
 <pre><code>##    animal_id                time logger_id     species sex       lon
 ## 1 0620000514 2016-01-28 12:34:25      2200 House Finch   F -120.3612
@@ -417,7 +417,7 @@ Static or interactive maps produced by the mapping functions which visualize mov
 <ul>
 <li><strong>ui_animate():</strong> Launch an interactive user-interface to create animations</li>
 <li><strong>map_ggmap():</strong> Visualize movements and/or presence with ggmap (static)</li>
-<li><strong>map_leaflet():</strong> Visualize movements and/or prsence with leaflet (interactive)</li>
+<li><strong>map_leaflet():</strong> Visualize movements and/or presence with leaflet (interactive)</li>
 </ul>
 <hr />
 <p>Back to <a href="#top">top</a><br />

@@ -14,6 +14,7 @@ devtools::install_github("animalnexus/feedr")
 
 ### Windows
 If you run R on Windows you may run into an error along the lines of:
+
 ```
 Error in loadNamespace(j <- i[[1L]], c(lib.loc, .libPaths()), version Check = vI[[j]]) :
   there is no package called 'Rcpp'
@@ -34,9 +35,11 @@ Libraries for `devtools`: `sudo apt install libcurl4-openssl-dev libssh2-1-dev l
 
 Libraries for `feedr`: `sudo apt install libpq-dev libxml2-dev`
 
-## Demos
+## Usage
+We have an extensive tutorial hosted on our github pages: <https://animalnexus.github.io/feedr/>
 
-And there is one demo for using `map_leaflet()` which you can run as follows:
+## Demos
+There is a demo for using `map_leaflet()` which you can run as follows:
 
 ```r
 demo("demo-leaflet", package = "feedr")

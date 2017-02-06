@@ -62,7 +62,7 @@ This function is designed to turn 'raw' data into 'visits' data.
 
 This is always the first function you should use. Raw read data contains an individual line of data for each read event made by the RFID logger.
 
-For example, if the logger was set to record ids every ~3 seconds, an individual sitting on the logger for 13 seconds would look something like this:
+For example, if the logger was set to record ids every ~2 seconds, an individual sitting on the logger for 8 seconds followed by a 12 second gap before returning would look something like this:
 
 ```{r}
 head(finches_lg)
@@ -71,20 +71,20 @@ head(finches_lg)
 The `visits()` function turns this raw data into something more practical:
 
 ```{r visits}
-v <- visits(finches_lg, bw = 5)
+v <- visits(finches_lg)
 head(v)
 ```
 
-Note that the new data frame sorts the data differently from our raw data frame. We can look directly compare our raw data to our visit data for a particular individual by pulling out it's `animal_id`:
+We can see that the first series of raw reads have been combined into one visit, starting at 2015-10-01 17:38:52 and ending at 2015-10-01 17:39:00.
+
+We can also look directly at visit data for a particular individual by pulling out it's `animal_id`:
 
 ```{r}
 head(finches_lg[finches_lg$animal_id == "06200004F8", ])
 head(v[v$animal_id == "06200004F8", ])
 ```
 
-You can also use `filter(v, animal_id == "06200004F8")` from the `dplyr` package or `subset(v, animal_id == "06200004F8")` which is built into R base.
-
-Now we can see that the first series of raw reads have been combined into one visit, starting at 2015-09-11 16:59:06 and ending at 2015-09-11 17:00:32.
+Alternatively, you can use `filter(v, animal_id == "06200004F8")` from the `dplyr` package or `subset(v, animal_id == "06200004F8")` which is built into R base.
 
 Visits are defined by:
 
@@ -113,19 +113,24 @@ length(unique(v$animal_id))
 length(unique(v$logger_id))
 ```
 
-`species`, `sex`, `lon` and `lat` are all columns originally in the `finches_lg` dataset, they were automatically passed through the `visits()` function. Columns of extra data that are associated with either a `date`, an `animal_id`, or a `logger_id` will always be passed through unless `pass = FALSE`:
+`species`, `sex`, `lon` and `lat` are all columns originally in the `finches_lg` data set, they were automatically passed through the `visits()` function. Columns of extra data that are associated with either a `date`, an `animal_id`, or a `logger_id` will always be passed through unless `pass = FALSE`:
 
 ```{r}
-visits(finches_lg, bw = 5, pass = FALSE)
+visits(finches_lg, pass = FALSE)
 ```
 
-### Specifying `bw`
-Depending on the interval between reads in your RFID logger, you may have to adjust the value of `bw` which specifies how many seconds between reads separates two visits. The default is 3 seconds, but, as in our example here, that is too low for our data (which is why we specified `bw = 5`).
+### `bw`
+Depending on the interval between reads in your RFID logger, you may have to adjust the value of `bw` which specifies how many seconds between reads separates two visits. The default is 3 seconds, but if your loggers scan at a slower interval, you will need to adjust the `bw` argument:
 
-### Impossible and missing visits (`bw_imp`, `allow_imp`, and `na_rm`)
-You should also be aware of 'impossible visits'. This may occur if the internal clocks on your RFIDs are not in sync, or if your loggers are very close to each other. An impossible visit is when an individual animal is detected at two different loggers within 2 seconds (the default) of each other. Unless your loggers are REALLY close to each other, this is highly unlikely.
+```{r}
+visits(finches_lg, bw = 15)
+```
 
-Because both missing values (NAs) and impossible visits likely indicate a greater, underlying problem, you have to specifically tell the function to ignore them (or omit them, in the case of NAs).
+
+### Impossible/missing visits
+You should also be aware of 'impossible visits'. These may occur if the internal clocks on your RFIDs are not in sync, or if your loggers are very close to each other. An impossible visit is when an individual animal is detected at two different loggers within 2 seconds (the default) of each other. Unless your loggers are REALLY close to each other, this is highly unlikely.
+
+Because both missing values (NAs) and impossible visits likely indicate a greater underlying problem, you have to specifically tell the function to ignore them (or omit them, in the case of NAs).
 
 ```{r eval = FALSE}
 v <- visits(finches_lg, allow_imp = TRUE, na_rm = TRUE)
@@ -137,7 +142,7 @@ You can define the minimum number of seconds needed to travel between loggers to
 visits(finches_lg, bw_imp = 180)
 ```
 
-### Summarizing visits
+### Summarizing
 Visit data is the starting block of all other transformations, but you can also summarize and analyze visit data in itself.
 
 For example, if we want to create daily summaries of the number of visits made and loggers used per `animal_id`, we could use the `dplyr` package (part of the [`tidyverse` family of packages](http://tidyverse.org/)).
@@ -158,7 +163,7 @@ visit_summary
 __A Side Note__  
 This bit of code uses a slightly advanced technique called 'pipes': `%>%` These allow you to pass the output from one line directly down to the next line where it becomes the first (and hidden) argument. In this case, the first line specifies our visits data frame `v`, this then becomes the input for `group_by()`. The output of `group_by()` then becomes the input for `summarize()`. This makes your coding more efficient but may take a bit of getting used to.
 
-You can find an indepth look at `dplyr`, pipes and related packages here: <http://r4ds.had.co.nz/transform.html>
+You can find an in-depth look at `dplyr`, pipes and related packages here: <http://r4ds.had.co.nz/transform.html>
 
 For reference, you can achieve the same effect without pipes:
 
@@ -180,7 +185,7 @@ If we wanted to plot this data, the package `ggplot2` is a great option:
 ```{r, fig.width = 6, fig.height = 3}
 library(ggplot2)
 ggplot(data = visit_summary, aes(x = animal_id, y = mean_visit_length)) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #rotate and shift id labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #rotate/shift id labels
   geom_bar(stat = "identity") + # Create bars
   labs(x = "Animal ID", y = "Average visit length (s)") # Make labels pretty
 
@@ -221,7 +226,7 @@ This function returns a lot of information for each movement event. Note, in par
 `animal_n`, `logger_n`, `species`, `sex`, `lon`, and `lat` are extra columns passed through (see [visits data](#visitsdata) for more information).
 
 
-### Including all individuals (`all = TRUE`)
+### Include all
 
 In this case, four `animal_id` have been omitted because they never moved between loggers. While the id is retained in the _levels_ of the factor, `animal_id`, it is not present in the data frame:
 
@@ -247,7 +252,7 @@ Here we've told R that an additional parameter for `move()` is `all = TRUE`. ani
 m[is.na(m$direction), ]
 ```
 
-### Summarizing movements
+### Summarizing
 
 Once again we can summarize movement data using the `dplyr` package.
 
@@ -260,7 +265,7 @@ move_summary
 ```
 The NAs reflect the four individuals that did not move. 
 
-Note that because there are two rows per movement event (leaving and arriving), we group by logger_id to summarize individually by logger (resulting in duplicate `n`s per `move_path`. This will acount for the 2 rows and keep logger ids in the final data frame (required for mapping later on).
+Note that because there are two rows per movement event (leaving and arriving), we group by logger_id to summarize individually by logger (resulting in duplicate `n`s per `move_path`. This will account for the 2 rows and keep logger ids in the final data frame (required for mapping later on).
 
 However, if you only wanted `move_path` and `n`, you could simply omit `logger_id` and remove duplicates:
 ```{r}
@@ -350,7 +355,7 @@ head(p)
 `animal_n`, `logger_n`, `species`, `sex`, `lon`, and `lat` are extra columns passed through (see [visits data](#visitsdata) for more information).
 
 
-### Specifying `bw`
+### `bw`
 The user of the function may define what the minimum amount of time between visits should be. Ground truthing could help establish the amount of time an individual spends near a logger without making a logger visit and could be used to determine this cutoff time. 
 
 Note that the units for `bw` when defining [visits](#visits) is in seconds, while the units for `bw` when defining presence is in minutes. This reflects the different scales of the two functions.
@@ -376,7 +381,7 @@ head(p)
 
 When `bw = NULL` only a move to a different logger will initiate a new presence bout. Therefore this identifies how much time passes before a new logger is visited. The end time reflects the time of the final visit to that logger before moving to a new logger, but if an individual were to visit logger A all day on day 1 and disappear on day 2 and then make one visit to logger A on day 3 before moving immediately to logger B, that first bout of 'presence' would be considered two days long, whereas in reality, the individual did not make any visits on one of those days.
 
-### Summarizing presence
+### Summarizing
 
 What's the average time present for each individual?
 ```{r}
@@ -412,7 +417,9 @@ ggplot(data = presence_summary, aes(x = logger_id, y = mean_length, fill = logge
   geom_errorbar(aes(ymin = mean_length - se_length, 
                     ymax = mean_length + se_length), width = 0.25)
 ```
-Note that there is only one bout of presence aroundlogger 2400, hence the lack of errorbars.
+
+Note that there is only one bout of presence around logger 2400, hence the lack of errorbars.
+
 --------------------
 Back to [top](#top) 
 --------------------
@@ -484,7 +491,7 @@ v <- visits(finches, bw = 5)
 disp(v)
 ```
 
-### Specifying `bw`
+### `bw`
 
 The `disp()` function also contains a `bw` argument. In this case it reflects the maximum interval between the first animal leaving and the second animal arriving for an interaction to be considered a displacement:
 
@@ -496,7 +503,7 @@ head(disp(v, bw = 15)$summaries)
 ```
 However, an interval of 15s is pretty long and probably doesn't constitute a real displacement event.
 
-### Summarizing displacements
+### Summarizing
 
 Is one logger more contentious than others?
 
@@ -616,7 +623,7 @@ dm_c <- dom(d_c)
 head(dm_c$reversals[[1]])
 ```
 
-Our original analysis doesn't have any reversals, meaning that the matrix of interactions reflects a linear hierarchy (or individudals are tied). However, a look at dominance in our chickadee data set shows many reversals. The `reversals` item is a list containing a data frame for each matrix showing which individuals experienced reversals with whom: Pairs of individuals which could be switched either way in the hierarchy.
+Our original analysis doesn't have any reversals, meaning that the matrix of interactions reflects a linear hierarchy (or individuals are tied). However, a look at dominance in our chickadee data set shows many reversals. The `reversals` item is a list containing a data frame for each matrix showing which individuals experienced reversals with whom: Pairs of individuals which could be switched either way in the hierarchy.
 
 
 ```{r}
@@ -656,7 +663,7 @@ head(a)
 
 ### Data returned
 
-Several messages along with a dataset containing:
+Several messages along with a data set containing:
 
 - `animal_id` id of the animal in question
 - `date` the date of the event
@@ -700,39 +707,37 @@ By default, the `activity()` function skips individuals with less than 24hrs of 
 Currently this functionality is not implemented. However, eventually we plan to allow users to specify times of known missing data, so that activity can be specified as 'active', 'inactive', or 'unknown'.
 
 
-### Summarizing activity
+### Summarizing
 
 Activity patterns can be plotted in ggplot2. Let's look at a specific time period:
 
-```{r}
+```{r, fig.height = 10}
 library(dplyr)
 library(ggplot2)
 library(lubridate)
 
+# Filter by date and animal ID, create a "day" column
 sept <- a %>%
-  filter(date >= as.Date("2015-09-01"),
-         date < as.Date("2015-10-01"),
-         animal_id == "06200004F8") %>%
-  mutate(week = week(date))
+  filter(date >= as.Date("2015-09-21"),
+         date < as.Date("2015-09-28"),
+         animal_id == "06200004F8")
 
-ggplot(data = sept, aes(x = time, ymin = 0, ymax = activity)) +
-  facet_wrap(~ week, scales = "free_x", ncol = 1) +
-  geom_ribbon()
+# Use facet_wrap to look at individual days, use drop = TRUE to omit days without activity
+ggplot(data = sept, aes(x = time, y = activity)) +
+  facet_wrap(~ date, scales = "free_x", ncol = 1, drop = TRUE) +
+  geom_area()
 ```
 
 There's a clear daily pattern, but it's a bit hard to tell without sunrise and sunset:
 
-```{r}
-sun <- sept %>%
-  select(set, rise) %>%
-  distinct() %>%
-  mutate(set = lag(set)) # Get the next day's set
+```{r, fig.height = 10}
+sun <- unique(select(sept, rise, set, date))
 
-ggplot(data = sept) +
-  facet_wrap(~ week, scales = "free_x", ncol = 1) +
-  #geom_rect(data = sun, aes(xmin = set, xmax = rise), ymin = -Inf, ymax = +Inf, fill = "grey") +
-  geom_rect(data = sun, aes(xmax = set, xmin = rise), ymin = -Inf, ymax = +Inf, fill = "grey")+
-  geom_area(aes(x = time, y = activity))
+ggplot(data = sept, aes(x = time, y = activity)) +
+  facet_wrap(~ date, scales = "free_x", ncol = 1, drop = TRUE) +
+  geom_rect(mapping = aes(xmax = rise), xmin = -Inf, ymin = -Inf, ymax = +Inf, fill = "grey") +
+  geom_rect(mapping = aes(xmin = set), xmax = +Inf, ymin = -Inf, ymax = +Inf, fill = "grey") +
+  geom_area()
 ```
 
 --------------------
@@ -752,24 +757,48 @@ a <- activity(p, res = 5)
 da <- daily(a)
 ```
 
-## Data returned
+### Data returned
+A data set containing:
 
-## Summarizing daily activity
+- `animal_id` id of the animal in question
+- `time` the time block of the event (note the odd date)
+- `time_c` the time block of the event (categorical)
+- `p_active` the proportion of times this block was scored as active
+- `p_inactive` the proportion of times this block was scored as inactive
+- `p_unknown` the proportion of times this block was scored as unknown
+- `p_total` the proportion of times this block was scored as anything but unknown (i.e., 1 - `p_unknown`)
+- `logger_id` the logger where the activity occurred. If summarizing across loggers, this will be `NA`.
+- `rise` the time of sunrise (median time if calculated across all loggers), only calculated if `sun = TRUE` 
+- `set` the time of sunset (median time if calculated across all loggers), only calculated if `sun = TRUE` 
+
+`animal_n`, `logger_n`, `species`, `sex` are extra columns passed through (see [visits data](#visitsdata) for more information).
+
+If missing data are indicated in `activity()`, then the proportion of unknown blocks will be greater than 0 (Note that this is not currently available).
+
+### Summarizing
+Daily activity patterns can be plotted by hiding the date portion of the time stamp.
 
 ```{r}
-sun <- da %>%
-  select(rise, set) %>%
-  distinct()
-
-ggplot(data = da) +
-  geom_rect(aes(xmax = rise), xmin = -Inf, ymin = -Inf, ymax = +Inf, alpha = 0.1) +
-  geom_rect(aes(xmin = set), xmax = +Inf, ymin = -Inf, ymax = +Inf) +
-  geom_area(data = da, aes(x = time, y = p_active)) +
+ggplot(data = da, aes(x = time, y = p_active)) +
+  geom_rect(aes(xmax = rise), xmin = -Inf, ymin = -Inf, ymax = +Inf, fill = "grey") +
+  geom_rect(aes(xmin = set), xmax = +Inf, ymin = -Inf, ymax = +Inf, fill = "grey") +
+  geom_area() +
   facet_wrap(~ animal_id) +
   scale_x_datetime(date_labels = "%H:%M:%S", date_breaks = "6 hours")
 ```
 
+Note also that this script repeats the drawing of the sunrise/sunset rectangles, making it difficult to use alpha values. To avoid this, create a reduced data frame with only sunrise/sunset data:
 
+```{r}
+sun <- unique(da[, c("rise", "set", "animal_id")])
+
+ggplot(data = da) +
+  geom_rect(data = sun, aes(xmax = rise), xmin = -Inf, ymin = -Inf, ymax = +Inf, fill = "black", alpha = 0.1) +
+  geom_rect(data = sun, aes(xmin = set), xmax = +Inf, ymin = -Inf, ymax = +Inf, fill = "black", alpha = 0.1) +
+  geom_area(aes(x = time, y = p_active)) +
+  facet_wrap(~ animal_id) +
+  scale_x_datetime(date_labels = "%H:%M:%S", date_breaks = "6 hours")
+```
 
 
 

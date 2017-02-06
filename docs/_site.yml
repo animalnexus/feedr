@@ -23,7 +23,7 @@ output:
     highlight: textmate
     css: custom.css
     toc: true
-    toc_depth: 4
+    toc_depth: 2
     toc_float:
       collapsed: false
 

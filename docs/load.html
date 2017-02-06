@@ -175,7 +175,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2,h3,h4",
+      selectors: "h1,h2",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
@@ -371,7 +371,7 @@ head(r1)</code></pre>
 <p><a id="loaddetails"></a></p>
 <div id="details" class="section level3">
 <h3>Details</h3>
-<p>Alternatively, you can deterime where <code>load_raw()</code> gets extra details from by specifying the <code>details</code> argument (defaults to <code>details = 1</code>).</p>
+<p>Alternatively, you can determine where <code>load_raw()</code> gets extra details from by specifying the <code>details</code> argument (defaults to <code>details = 1</code>).</p>
 <p>For example:</p>
 <div id="details-0" class="section level4">
 <h4>1. <code>details = 0</code></h4>
@@ -531,8 +531,8 @@ head(r)</code></pre>
 </div>
 <div id="dl_data" class="section level2">
 <h2><code>dl_data()</code></h2>
-<p>This is likely the easiest way to get data (provided the data you’re interested in is hosted in the animal__nexus__ database). This function requests data from animal__nexus__ and formats it for use with the feedr transformation functions.</p>
-<p>If you don’t specify anything, all data will be downloaded for the default site (Kamloops) and the default extra columns (loc and species) with the default timezone (America/Vancouver). See ?dl_data for more details.</p>
+<p>This is likely the easiest way to get data (provided the data you’re interested in is hosted in the animal__nexus__ database). This function requests data from animal__nexus__ and formats it for use with the <code>feedr</code> transformation functions.</p>
+<p>If you don’t specify anything, all data will be downloaded for the default site (Kamloops) and the default extra columns (loc and species) with the default timezone (America/Vancouver). See <code>?dl_data</code> for more details.</p>
 <pre><code>##    animal_id                time logger_id species       lon      lat
 ## 1 062000031A 2015-09-02 08:25:58      2100    MOCH -120.3624 50.66896
 ## 2 062000031A 2015-09-02 08:26:01      2100    MOCH -120.3624 50.66896
@@ -588,6 +588,11 @@ head(r)</code></pre>
 ## 4 -120.3624 50.66896
 ## 5 -120.3624 50.66896
 ## 6 -120.3624 50.66896</code></pre>
+</div>
+<div id="ui_import" class="section level2">
+<h2><code>ui_import()</code></h2>
+<p><strong><code>ui_import()</code></strong> is a helper function that launches a stand-alone shiny app to give you a user-interface for importing data.</p>
+<pre class="r"><code>my_imported_data &lt;- ui_import()</code></pre>
 <hr />
 <p>Back to <a href="#top">top</a><br />
 Go back to <a href="index.html">home</a> | Continue with <a href="housekeeping.html">housekeeping</a></p>
