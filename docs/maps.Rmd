@@ -86,40 +86,6 @@ To create maps you need the following:
 
 If you want to look at individual data, add `animal_id` to the groupings.
 
-### Advanced example:
-
-Sometimes you may want to perform the same summary multiple times, perhaps for different sites, time periods, or experiments. You could repeat yourself, but the easiest thing to do is to use the `dplyr` `do()` function.
-
-This function allows you to apply functions to groups in your data frame. Use "." to define where the passed on data should go (in our case, this refers to the grouped data frame):
-
-```{r}
-library(dplyr)
-
-v_exp <- chickadees %>%
-  group_by(experiment) %>%
-  do(visits(.))
-
-# Note that the data set retains it's grouping so we do not have to 
-# specify the grouping again until we change it:
-p_exp <- v_exp %>%
-  do(presence(.)) 
-
-m_exp <- v_exp %>%
-  do(move(.))
-
-p_avg <- p_exp %>%
-  group_by(experiment, logger_id) %>%
-  summarize(amount = sum(length)/animal_n[1])  #This is using the animal_n specific to the experiment
-
-m_avg <- m_exp %>%
-  group_by(experiment, animal_id, move_path, logger_id, lat, lon) %>%
-  summarize(path_use = length(move_path))
-
-summary(p_avg)
-summary(m_avg)
-```
-
-
 
 ## Mapping
 

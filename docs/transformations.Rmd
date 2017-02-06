@@ -21,7 +21,7 @@ In all cases you'll want to use the `visits()` function first, but after that it
 5. [`dom()`](#dominance) - Dominance matrices
 6. [`activity()`](#activity) - Activity patterns
 7. [`daily()`](#dailyactivity) - Daily activity patterns
-8. [Working with multiple groups](#multi) - Applying transformations to different data groups simultaneously
+8. [Working with multiple groups](#multiple-groups) - Applying transformations to different data groups simultaneously
 
 Or click on the function name below to skip directly to the function tutorial:
 
@@ -799,6 +799,44 @@ ggplot(data = da) +
   facet_wrap(~ animal_id) +
   scale_x_datetime(date_labels = "%H:%M:%S", date_breaks = "6 hours")
 ```
+
+## Multiple groups
+
+Sometimes you may want to perform the same data transformations multiple times, perhaps for different sites, time periods, or experiments. You could repeat yourself, but the easiest thing to do is to use the `do()` function from the `dplyr` package.
+
+This function allows you to apply functions to groups in your data frame. Use "." to define where the passed on data should go (in our case, this refers to the grouped data frame):
+
+In this example we have two experiments, so we want to calculate things separately:
+
+```{r}
+library(dplyr)
+
+v_exp <- chickadees %>%
+  group_by(experiment) %>%
+  do(visits(.))
+
+# Note that the data set retains it's grouping so we do not have to 
+# specify the grouping again until we change it:
+p_exp <- v_exp %>%
+  do(presence(.)) 
+
+m_exp <- v_exp %>%
+  do(move(.))
+
+# Summarizing
+p_avg <- p_exp %>%
+  group_by(experiment, logger_id) %>%
+  summarize(amount = sum(length)/animal_n[1])  #This is using the animal_n specific to the experiment
+
+m_avg <- m_exp %>%
+  group_by(experiment, animal_id, move_path, logger_id, lat, lon) %>%
+  summarize(path_use = length(move_path))
+
+summary(p_avg)
+summary(m_avg)
+```
+
+These data are now ready for analysis and visualizations, note that they can be applied as is to visualizing functions in the next section.
 
 
 

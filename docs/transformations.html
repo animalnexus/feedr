@@ -333,11 +333,11 @@ div.tocify {
 <li><a href="#dominance"><code>dom()</code></a> - Dominance matrices</li>
 <li><a href="#activity"><code>activity()</code></a> - Activity patterns</li>
 <li><a href="#dailyactivity"><code>daily()</code></a> - Daily activity patterns</li>
-<li><a href="#multi">Working with multiple groups</a> - Applying transformations to different data groups simultaneously</li>
+<li><a href="#multiple-groups">Working with multiple groups</a> - Applying transformations to different data groups simultaneously</li>
 </ol>
 <p>Or click on the function name below to skip directly to the function tutorial:</p>
-<p><div id="htmlwidget-9de25f21d793c2250ac8" style="width:500px;height:480px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-9de25f21d793c2250ac8">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nvisits[label = \"visits()\", URL = \"#visits\", tooltip = \"Individual logger visits\"]\ndisp[label = \"disp()\", URL = \"#displacements\", tooltip = \"Displacements from the logger by another animal\"]\ndom[label = \"dom()\", URL = \"#dominance\", tooltip = \"Dominance indicated by displacements\"]\nmove[label = \"move()\", URL = \"#movements\", tooltip = \"Movements between loggers\"]\npresence[label = \"presence()\", URL = \"#presence\", tooltip = \"presence bouts at loggers\"]\nact[label = \"activity()\", URL = \"#acitivty\", tooltip = \"Activity scored (active/inactive)\"]\ndaily[label = \"daily()\", URL = \"#dailyactivity\", tooltip = \"Daily activity patterns\"]\n\nvisits-> {disp, move, presence}\npresence -> act\ndisp -> dom\nact -> daily\n\nmap1[label = \"map_ggmap()\", URL = \"#mapggmap\", tooltip = \"Visualize with a static map\"]\nmap2[label = \"map_leaflet()\", URL = \"#mapleaflet\", tooltip = \"Visualize with an interactive map\"]\n\n{presence; move} -> {map1; map2}\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script> <a id = "visits"></a></p>
+<p><div id="htmlwidget-acb304bd77fa71a5b49f" style="width:500px;height:480px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-acb304bd77fa71a5b49f">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nvisits[label = \"visits()\", URL = \"#visits\", tooltip = \"Individual logger visits\"]\ndisp[label = \"disp()\", URL = \"#displacements\", tooltip = \"Displacements from the logger by another animal\"]\ndom[label = \"dom()\", URL = \"#dominance\", tooltip = \"Dominance indicated by displacements\"]\nmove[label = \"move()\", URL = \"#movements\", tooltip = \"Movements between loggers\"]\npresence[label = \"presence()\", URL = \"#presence\", tooltip = \"presence bouts at loggers\"]\nact[label = \"activity()\", URL = \"#acitivty\", tooltip = \"Activity scored (active/inactive)\"]\ndaily[label = \"daily()\", URL = \"#dailyactivity\", tooltip = \"Daily activity patterns\"]\n\nvisits-> {disp, move, presence}\npresence -> act\ndisp -> dom\nact -> daily\n\nmap1[label = \"map_ggmap()\", URL = \"#mapggmap\", tooltip = \"Visualize with a static map\"]\nmap2[label = \"map_leaflet()\", URL = \"#mapleaflet\", tooltip = \"Visualize with an interactive map\"]\n\n{presence; move} -> {map1; map2}\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script> <a id = "visits"></a></p>
 </div>
 <div id="visits" class="section level2">
 <h2><code>visits()</code></h2>
@@ -1484,10 +1484,73 @@ ggplot(data = da) +
   facet_wrap(~ animal_id) +
   scale_x_datetime(date_labels = &quot;%H:%M:%S&quot;, date_breaks = &quot;6 hours&quot;)</code></pre>
 <p><img src="transformations_files/figure-html/unnamed-chunk-50-1.png" width="768" /></p>
+</div>
+</div>
+<div id="multiple-groups" class="section level2">
+<h2>Multiple groups</h2>
+<p>Sometimes you may want to perform the same data transformations multiple times, perhaps for different sites, time periods, or experiments. You could repeat yourself, but the easiest thing to do is to use the <code>do()</code> function from the <code>dplyr</code> package.</p>
+<p>This function allows you to apply functions to groups in your data frame. Use “.” to define where the passed on data should go (in our case, this refers to the grouped data frame):</p>
+<p>In this example we have two experiments, so we want to calculate things separately:</p>
+<pre class="r"><code>library(dplyr)
+
+v_exp &lt;- chickadees %&gt;%
+  group_by(experiment) %&gt;%
+  do(visits(.))</code></pre>
+<pre><code>## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character
+
+## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character</code></pre>
+<pre class="r"><code># Note that the data set retains it&#39;s grouping so we do not have to 
+# specify the grouping again until we change it:
+p_exp &lt;- v_exp %&gt;%
+  do(presence(.)) </code></pre>
+<pre><code>## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character
+
+## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character</code></pre>
+<pre class="r"><code>m_exp &lt;- v_exp %&gt;%
+  do(move(.))</code></pre>
+<pre><code>## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character
+
+## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character
+
+## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character
+
+## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character</code></pre>
+<pre class="r"><code># Summarizing
+p_avg &lt;- p_exp %&gt;%
+  group_by(experiment, logger_id) %&gt;%
+  summarize(amount = sum(length)/animal_n[1])  #This is using the animal_n specific to the experiment
+
+m_avg &lt;- m_exp %&gt;%
+  group_by(experiment, animal_id, move_path, logger_id, lat, lon) %&gt;%
+  summarize(path_use = length(move_path))
+
+summary(p_avg)</code></pre>
+<pre><code>##   experiment         logger_id             amount     
+##  Length:8           Length:8           Min.   :105.9  
+##  Class :character   Class :character   1st Qu.:153.8  
+##  Mode  :character   Mode  :character   Median :238.3  
+##                                        Mean   :224.2  
+##                                        3rd Qu.:303.2  
+##                                        Max.   :320.9</code></pre>
+<pre class="r"><code>summary(m_avg)</code></pre>
+<pre><code>##   experiment         animal_id          move_path        
+##  Length:216         Length:216         Length:216        
+##  Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character  
+##                                                          
+##                                                          
+##                                                          
+##   logger_id              lat             lon            path_use    
+##  Length:216         Min.   :53.89   Min.   :-122.8   Min.   :  1.0  
+##  Class :character   1st Qu.:53.89   1st Qu.:-122.8   1st Qu.:  2.0  
+##  Mode  :character   Median :53.89   Median :-122.8   Median :  4.0  
+##                     Mean   :53.89   Mean   :-122.8   Mean   : 11.5  
+##                     3rd Qu.:53.89   3rd Qu.:-122.8   3rd Qu.: 10.0  
+##                     Max.   :53.89   Max.   :-122.8   Max.   :100.0</code></pre>
+<p>These data are now ready for analysis and visualizations, note that they can be applied as is to visualizing functions in the next section.</p>
 <hr />
 <p>Back to <a href="#top">top</a><br />
 Go back to <a href="index.html">home</a> | Go back to <a href="housekeeping.html">housekeeping</a> | Continue with <a href="maps.html">visualizations</a></p>
-</div>
 </div>
 
 
