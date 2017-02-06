@@ -4,9 +4,9 @@
 #' RFID loggers over time. Also available online at <http://animalnexus.ca> or
 #' by launching the local animalnexus app through \code{animalnexus()}.
 #'
-#' @param v Data frame. Data frame. Visits data frame created with the
+#' @param v Data frame. Visits data frame created with the
 #'   \code{visits()} function.
-#' @param verbose Logical. Print to console log events.
+#' @param verbose Logical. Print log events to console.
 #'
 #' @examples
 #'
@@ -15,31 +15,13 @@
 #' }
 #'
 #' @export
-# ui_animate <- function(v, verbose = FALSE) {
-# 
-#   # Check for correct formatting
-#   check_name(v, c("animal_id", "logger_id", "start", "end"))
-#   check_time(v)
-#   check_format(v)
-# 
-#   app <- shiny::shinyApp(ui = shiny::fluidPage(shinyjs::useShinyjs(),
-#                                                includeCSS(system.file("extra", "style.css", package = "feedr")),
-#                                                mod_UI_stop("stp"),
-#                                                mod_UI_map_animate("standalone")),
-#                          server = function(input, output, session) {
-#                            shiny::callModule(mod_map_animate, "standalone", visits = reactive({v}), verbose = verbose)
-#                            shiny::callModule(mod_stop, "stp")
-#                          }
-#   )
-#   shiny::runApp(app, launch.browser = TRUE)
-# }
 
 ui_animate <-  function(v, verbose = FALSE) {
   # Check for correct formatting
   check_name(v, c("animal_id", "logger_id", "start", "end"))
   check_time(v)
   check_format(v)
-  
+
   ui_app(name = "map_animate", visits = reactive({v}), verbose = verbose)
 }
 
@@ -79,7 +61,7 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
 
   ## Instructions
   callModule(mod_maps_instructions, "details")
-  
+
   ## Controls
   controls <- callModule(mod_maps_controls, "setup", times = t_id, verbose = verbose)
   summary <- callModule(mod_maps_advanced, "adv", samples = samples, verbose = verbose)
@@ -106,17 +88,17 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
 
   ## Data
   # Fix time zone to local non-DST
-  
+
   v <- reactive({
     req(visits())
     data_tz(visits())
   })
-  
+
   m <- reactive({
     req(v())
     move(v())
   })
-  
+
   p <- reactive({
     req(v())
     p <- presence(v())
