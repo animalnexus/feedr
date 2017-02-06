@@ -524,7 +524,7 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
       if(nrow(data()) > 0){
         leaflet::leafletProxy(ns("map")) %>%
           leaflet::clearGroup(group = "Visits") %>%
-          presence_markers(p = data(), p_scale = 1,
+          presence_markers(data = data(), p_scale = 1,
                            p_pal = pal()$visits, p_title = "Visits",
                            val_min = min(lim()$visits), val_max = max(lim()$visits))
       } else {
