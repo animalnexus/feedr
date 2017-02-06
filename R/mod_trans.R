@@ -1,12 +1,21 @@
 #' User-interface for transforming data
 #'
-#' An interactive shiny app for transforming data
+#' An interactive shiny app for transforming data. Also available online at <http://animalnexus.ca> or
+#' by launching the local animalnexus app through \code{animalnexus()}.
 #'
 #' See indivdial data transformations for more details: \code{visits()}, \code{presence()}, \code{move()}, \code{disp()}, \code{dom()}, \code{activity()}, and \code{daily()}.
 #'
 #' @param r Data frame. Raw RFID data to transform
 #'
+#' @return Returns nothing. Data can be saved to disk from the user-interface, but transformation are not returned to the current R session.
+#'
+#' @examples
+#' \dontrun{
+#'   ui_trans(r = my_data)
+#' }
+#'
 #' @export
+
 ui_trans <- function(r) {
   if(missing(r)) stop("ui_trans() requires raw data to transform")
   ui_app(name = "trans", r = reactive({r}), launch.browser = TRUE)

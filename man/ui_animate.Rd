@@ -7,10 +7,10 @@
 ui_animate(v, verbose = FALSE)
 }
 \arguments{
-\item{v}{Data frame. Data frame. Visits data frame created with the
+\item{v}{Data frame. Visits data frame created with the
 \code{visits()} function.}
 
-\item{verbose}{Logical. Print to console log events.}
+\item{verbose}{Logical. Print log events to console.}
 }
 \description{
 Interactive shiny app to select and animate presence at and movements between

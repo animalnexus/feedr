@@ -9,10 +9,20 @@ ui_trans(r)
 \arguments{
 \item{r}{Data frame. Raw RFID data to transform}
 }
+\value{
+Returns nothing. Data can be saved to disk from the user-interface, but transformation are not returned to the current R session.
+}
 \description{
-An interactive shiny app for transforming data
+An interactive shiny app for transforming data. Also available online at <http://animalnexus.ca> or
+by launching the local animalnexus app through \code{animalnexus()}.
 }
 \details{
 See indivdial data transformations for more details: \code{visits()}, \code{presence()}, \code{move()}, \code{disp()}, \code{dom()}, \code{activity()}, and \code{daily()}.
+}
+\examples{
+\dontrun{
+  ui_trans(r = my_data)
+}
+
 }
 

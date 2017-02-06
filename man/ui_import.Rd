@@ -2,11 +2,21 @@
 % Please edit documentation in R/mod_data_import.R
 \name{ui_import}
 \alias{ui_import}
-\title{Import files}
+\title{User-interface for importing files}
 \usage{
-ui_import(r)
+ui_import()
+}
+\value{
+An imported data frame formatted and ready to be transformed.
 }
 \description{
-An interactive shiny app for loading simple data.
+Launches an interactive shiny app for importing data interactively. Also available online at <http://animalnexus.ca> or
+by launching the local animalnexus app through \code{animalnexus()}.
+}
+\examples{
+\dontrun{
+  my_data <- ui_import()
+}
+
 }
 
