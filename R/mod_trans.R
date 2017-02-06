@@ -1,27 +1,14 @@
-
-# Launch current
-
-# ui_trans <- function(r) {
-#   app <- shiny::shinyApp(ui = shiny::fluidPage(shinyjs::useShinyjs(),
-#                                                includeCSS(system.file("extra", "style.css", package = "feedr")),
-#                                                mod_UI_trans("standalone"),
-#                                                mod_UI_stop("stp")),
-#                          server = function(input, output, session) {
-#                            shiny::callModule(mod_trans, "standalone", r = reactive({r}))
-#                            shiny::callModule(mod_stop, "stp")
-#                          }
-#   )
-#   shiny::runApp(app, launch.browser = TRUE)
-# }
-
-#' Transform data
+#' User-interface for transforming data
 #'
 #' An interactive shiny app for transforming data
 #'
 #' See indivdial data transformations for more details: \code{visits()}, \code{presence()}, \code{move()}, \code{disp()}, \code{dom()}, \code{activity()}, and \code{daily()}.
 #'
+#' @param r Data frame. Raw RFID data to transform
+#'
 #' @export
 ui_trans <- function(r) {
+  if(missing(r)) stop("ui_trans() requires raw data to transform")
   ui_app(name = "trans", r = reactive({r}), launch.browser = TRUE)
 }
 
