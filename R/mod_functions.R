@@ -1,8 +1,8 @@
 #' @import shiny
 ui_app <- function(name, ..., launch.browser = getOption("shiny.launch.browser", interactive())) {
-  
+
   addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
-  
+
   app <- shiny::shinyApp(ui = shiny::fluidPage(includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
                                                shinyjs::useShinyjs(),
                                                get(paste0("mod_UI_", name))("standalone"),
@@ -138,7 +138,7 @@ get_image <- function(database, which, size = 300, imgs = NULL, imgs_wiki = NULL
     animal <- dplyr::left_join(animal, imgs[, c("animal_id", "img", "citation", "author")], by = "animal_id")
     })
   }
-  
+
   animal$species <- as.character(animal$species)
 
   ## Get img of species from wikimedia if we don't have it
