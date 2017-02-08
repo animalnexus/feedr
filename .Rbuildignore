@@ -1,11 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^test_maps.R$
 ^data-raw$
-^benchmarking.R$
-^ideas$
-^db_full.R$
 ^docs$
 ^\.travis\.yml$
 ^appveyor\.yml$
-^Extra$

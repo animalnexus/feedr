@@ -1,0 +1,5 @@
+inst/doc
+.Rproj.user
+.Rhistory
+docs/*_cache/
+data-raw/Pictures/
