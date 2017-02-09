@@ -1,10 +1,13 @@
+# This function is exported (i.e. copied) from the shiny package (v.1.0.0). It
+# is only exported in order to call a modified function that allows radiobutton
+# selections to be create with html IDs.
 radioButtons2 <- function(inputId, label, choices, selected = NULL,
                          inline = FALSE, width = NULL) {
 
   # resolve names
   choices <- shiny:::choicesWithNames(choices)
 
-  selected <- shiny:::restoreInput(id = inputId, default = selected)
+  selected <- shiny::restoreInput(id = inputId, default = selected)
 
   # default value if it's not specified
   selected <- if (is.null(selected)) choices[[1]] else {
@@ -12,19 +15,25 @@ radioButtons2 <- function(inputId, label, choices, selected = NULL,
   }
   if (length(selected) > 1) stop("The 'selected' argument must be of length 1")
 
-  options <- feedr:::generateOptions(inputId, choices, selected, inline, type = 'radio')
+  options <- generateOptions(inputId, choices, selected, inline, type = 'radio')
 
   divClass <- "form-group shiny-input-radiogroup shiny-input-container"
-  if (inline) divClass <- paste(divClass, "shiny-input-container-inline")
+  if (inline)
+    divClass <- paste(divClass, "shiny-input-container-inline")
 
   tags$div(id = inputId,
-           style = if (!is.null(width)) paste0("width: ", shiny:::validateCssUnit(width), ";"),
+           style = if (!is.null(width)) paste0("width: ", shiny::validateCssUnit(width), ";"),
            class = divClass,
            shiny:::controlLabel(inputId, label),
            options
   )
 }
 
+# This is copied from R package shiny (v.1.0.0). it only differs in that the
+# inputTag created includes an id value.
+#
+# generate options for radio buttons and checkbox groups (type = 'checkbox' or
+# 'radio')
 generateOptions <- function(inputId, choices, selected, inline, type = 'checkbox') {
   # generate a list of <input type=? [checked] />
   options <- mapply(choices, names(choices),
@@ -51,13 +60,15 @@ generateOptions <- function(inputId, choices, selected, inline, type = 'checkbox
   shiny::div(class = "shiny-options-group", options)
 }
 
+#This function is exported (i.e. copied) from the shiny package (v.1.0.0).
 updateRadioButtons2 <- function(session, inputId, label = NULL, choices = NULL,
                                selected = NULL, inline = FALSE) {
   # you must select at least one radio button
   if (is.null(selected) && !is.null(choices)) selected <- choices[[1]]
-  feedr:::updateInputOptions(session, inputId, label, choices, selected, inline, type = 'radio')
+  updateInputOptions(session, inputId, label, choices, selected, inline, type = 'radio')
 }
 
+#This function is exported (i.e. copied) from the shiny package (v.1.0.0).
 updateInputOptions <- function(session, inputId, label = NULL, choices = NULL,
                                selected = NULL, inline = FALSE,
                                type = 'checkbox') {
@@ -68,7 +79,7 @@ updateInputOptions <- function(session, inputId, label = NULL, choices = NULL,
 
   options <- if (!is.null(choices)) {
     format(shiny::tagList(
-      feedr:::generateOptions(session$ns(inputId), choices, selected, inline, type = type)
+      generateOptions(session$ns(inputId), choices, selected, inline, type = type)
     ))
   }
 
