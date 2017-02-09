@@ -112,7 +112,7 @@ mod_map_current <- function(input, output, session, db) {
                                 statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
                                                   "FROM feeders, fieldsites",
                                                   "WHERE (fieldsites.site_name = feeders.site_name)")) %>%
-        load_format(tz = "") %>%
+        load_format(tz = "America/Vancouver") %>%
         dplyr::mutate(site_name = factor(site_name))
     })
     dbDisconnect(con)
