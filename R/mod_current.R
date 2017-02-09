@@ -154,7 +154,7 @@ mod_map_current <- function(input, output, session, db) {
 
         if(nrow(data) > 0) {
           data <- data %>%
-            load_format(., tz_disp = "America/Vancouver") %>%
+            load_format(., tz = "America/Vancouver", tz_disp = "America/Vancouver") %>%
             visits(.) %>%
             dplyr::group_by(animal_id, logger_id, species, age, sex, lon, lat) %>%
             dplyr::summarize(most_recent = max(end),
