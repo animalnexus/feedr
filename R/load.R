@@ -16,11 +16,11 @@
 #'
 #' @param r_file Character. The location of a single file to load.
 #' @param tz Character. The time zone the date/times are in (should match one of
-#'   the zones produced by \code{OlsonNames())}. Defaults to user's system
-#'   timezone.
+#'   the zones produced by \code{OlsonNames())}. Attempts to use user's system
+#'   timezone, if none supplied. Defaults to UTC if all else fails.
 #' @param tz_disp Character. The time zone the date/times should be displayed in
 #'   (if not the same as \code{tz}; should match one of the zones produced by
-#'   \code{OlsonNames())}.
+#'   \code{OlsonNames())}. Defaults to tz if none supplied.
 #' @param details Numeric. Where to find logger details, either 0 (file name),
 #'   1 (first line) or 2 (first two lines). See 'details'.
 #' @param logger_pattern Character. A regular expression matching the logger_id
@@ -76,24 +76,29 @@ load_raw <- function(r_file,
                      skip = 0,
                      feeder_pattern) {
 
+  # Error Checks
+  if(length(r_file) > 1) stop("r_file can only be length 1, the file name.")
+  if(!is.character(r_file)) stop("r_file must be character")
+  if(!(details %in% 0:2)) stop("'details' must be one of 0, 1, or 2.")
+
+  # Check depreciated arguments
   if (!missing(feeder_pattern)) {
     warning("Argument feeder_pattern is deprecated; please use logger_pattern instead.",
             call. = FALSE)
     logger_pattern <- feeder_pattern
   }
 
-
-  if(length(r_file) > 1) stop("r_file can only be length 1, the file name.")
-  if(!is.character(r_file)) stop("r_file must be character")
-  if(!(details %in% 0:2)) stop("'details' must be one of 0, 1, or 2.")
+  # Timezone checks
+  tz <- check_tz(tz)
+  if(is.null(tz_disp)) tz_disp <- tz else tz_disp <- check_tz(tz_disp)
 
   skip <- details + skip
 
   r <- tryCatch(utils::read.table(r_file,
-                           col.names = c("animal_id","date","time"),
-                           colClasses = "character",
-                           skip = skip,
-                           sep = sep),
+                                  col.names = c("animal_id","date","time"),
+                                  colClasses = "character",
+                                  skip = skip,
+                                  sep = sep),
                 error = function(c) {
                   if(grepl("did not have 3 elements", c$message)) {
                     c$message <- paste0(c$message, "\n\nA line did not have the three columns required. Did you specify appropriate 'details' and 'skip' values?")}
@@ -131,7 +136,7 @@ load_raw <- function(r_file,
 
       # Convert times
       r$time <- lubridate::parse_date_time(paste(r$date, r$time), orders = time_format, tz = tz)
-      if(!is.null(tz_disp)) r$time <- lubridate::with_tz(r$time, tz_disp)
+      if(tz_disp != tz) r$time <- lubridate::with_tz(r$time, tz_disp)
 
       # Reorder columns
       cols <- names(r)[names(r) %in% c("animal_id", "time", "logger_id", "lat", "lon")]
@@ -174,8 +179,8 @@ load_raw <- function(r_file,
 #'   you wish to include. Defaults to "DATA" to include only DATA files and not
 #'   NOTE files.
 #' @param tz Character. The time zone the date/times are in (should match one of
-#'   the zones produced by \code{OlsonNames())}. Defaults to user's system
-#'   timezone.
+#'   the zones produced by \code{OlsonNames())}. Attempts to use user's system
+#'   timezone, if none supplied. Defaults to UTC if all else fails.
 #' @param tz_disp Character. The time zone the date/times should be displayed in
 #'   (if not the same as \code{tz}; should match one of the zones produced by
 #'   \code{OlsonNames())}.
@@ -330,6 +335,9 @@ dl_data <- function(start = NULL,
     animal_details <- bird_details
   }
 
+  # Timezone checks
+  tz_disp <- check_tz(tz_disp)
+
   # Get data from website in GMT, if tz not in selection, then convert later
   if(!(tz_disp %in% c("America/Vancouver", "GMT"))) {
     tz <- "GMT"
@@ -381,8 +389,8 @@ dl_data <- function(start = NULL,
 #'
 #' @param r Data frame. Data frame to format.
 #' @param tz Character. The time zone the date/times are in (should match one of
-#'   the zones produced by \code{OlsonNames())}. Defaults to user's system
-#'   timezone.
+#'   the zones produced by \code{OlsonNames())}. Attempts to use user's system
+#'   timezone, if none supplied. Defaults to UTC if all else fails.
 #' @param tz_disp Character. The time zone the date/times should be displayed in
 #'   (if not the same as \code{tz}; should match one of the zones produced by
 #'   \code{OlsonNames())}.
@@ -394,13 +402,17 @@ dl_data <- function(start = NULL,
 #' @export
 load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, time_format = "ymd HMS"){
 
+  # Checks
+  tz <- check_tz(tz)
+  if(is.null(tz_disp)) tz_disp <- tz else tz_disp <- check_tz(tz_disp)
+
   # Trim leading or trailing whitespace
   r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
 
   # Extract Proper Date and Times
   if("timezone" %in% names(r)) names(r)[names(r) == "timezone"] <- "time"
   if("time" %in% names(r)) r$time <- lubridate::parse_date_time(r$time, orders = time_format, tz = tz, truncated = 1)
-  if(!is.null(tz_disp)) r$time <- lubridate::with_tz(r$time, tz_disp)
+  if(tz != tz_disp) r$time <- lubridate::with_tz(r$time, tz_disp)
 
   # Make sure all factors are factors:
   if(any(names(r) == "bird_id")) {

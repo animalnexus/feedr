@@ -11,8 +11,8 @@ load_format(r, tz = Sys.timezone(), tz_disp = NULL,
 \item{r}{Data frame. Data frame to format.}
 
 \item{tz}{Character. The time zone the date/times are in (should match one of
-the zones produced by \code{OlsonNames())}. Defaults to user's system
-timezone.}
+the zones produced by \code{OlsonNames())}. Attempts to use user's system
+timezone, if none supplied. Defaults to UTC if all else fails.}
 
 \item{tz_disp}{Character. The time zone the date/times should be displayed in
 (if not the same as \code{tz}; should match one of the zones produced by

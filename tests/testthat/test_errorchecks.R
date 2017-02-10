@@ -18,6 +18,29 @@ test_that("check_time returns error if col not time", {
   expect_error(check_time(d, c("start", "end"), internal = FALSE), "Consider as.POSIXct()")
 })
 
+# check_tz()
+test_that("check_tz returns UTC if problems", {
+  tz1 <- "America/Vancouver"
+  tz2 <- "UTC"
+  tz3 <- c("America/Halifax", "UTC")
+  tz4 <- NULL
+  tz5 <- NA
+  tz6 <- ""
+
+  expect_silent(check_tz("America/Vancouver"))
+  expect_equal(check_tz("America/Vancouver"), "America/Vancouver")
+
+  expect_silent(check_tz("UTC"))
+  expect_equal(check_tz("UTC"), "UTC")
+
+  expect_message(expect_equal(check_tz("AMerica/Vancouver"), "America/Vancouver"), "not in OlsonNames\\(\\), assuming")
+  expect_message(expect_equal(check_tz("Amer"), "UTC"), "not in OlsonNames\\(\\), defaulting to UTC")
+
+  expect_message(expect_equal(check_tz(NULL), "UTC"), "Cannot set timezone, defaulting to UTC")
+  expect_message(expect_equal(check_tz(NA), "UTC"), "Cannot set timezone, defaulting to UTC")
+  expect_message(expect_equal(check_tz(""), "UTC"), "Cannot set timezone, defaulting to UTC")
+})
+
 # check_indiv()
 test_that("check_indiv returns error if more than one animal_id", {
   d <- data.frame(animal_id = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514"),

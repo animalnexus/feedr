@@ -9,6 +9,28 @@ check_time <- function(d, n = c("start", "end"), internal = TRUE) {
   }
 }
 
+# Check timezone
+check_tz <- function(tz) {
+  if(length(tz) > 1) {
+    message("Cannot supply more than one timezone, using the first")
+    tz <- tz[1]
+  }
+  if(is.null(tz) || is.na(tz) || tz == "") {
+    message("Cannot set timezone, defaulting to UTC")
+    tz <- "UTC"
+  } else if (!(tz %in% OlsonNames())) {
+    if(tolower(tz) %in% tolower(OlsonNames())) {
+      t <- OlsonNames()[tolower(OlsonNames()) %in% tolower(tz)]
+      message("Timezone ", tz, " not in OlsonNames(), assuming ", t)
+      tz <- t
+    } else {
+      message("Timezone: ", tz, " not in OlsonNames(), defaulting to UTC")
+      tz <- "UTC"
+    }
+  }
+  return(tz)
+}
+
 check_indiv <- function(d) {
   if(length(unique(d$animal_id)) > 1) stop("This function is only designed to be run on one individual at a time. Consider using the ddply() function from the plyr package, or the do() function from the dplyr package to apply this function to all animals.", call. = FALSE)
 }
