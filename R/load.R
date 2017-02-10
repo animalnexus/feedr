@@ -413,6 +413,7 @@ load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, time_format = "y
   if("timezone" %in% names(r)) names(r)[names(r) == "timezone"] <- "time"
   if("time" %in% names(r)) r$time <- lubridate::parse_date_time(r$time, orders = time_format, tz = tz, truncated = 1)
   if(tz != tz_disp) r$time <- lubridate::with_tz(r$time, tz_disp)
+  if("date" %in% names(r)) r$date <- as.Date(r$date)
 
   # Make sure all factors are factors:
   if(any(names(r) == "bird_id")) {
