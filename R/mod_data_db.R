@@ -152,7 +152,7 @@ mod_data_db <- function(input, output, session, db) {
       loggers_all <- dbGetQuery(con, statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
                                                        "FROM feeders, fieldsites",
                                                        "WHERE (fieldsites.site_name = feeders.site_name)")) %>%
-        load_format(tz = "") %>%
+        load_format() %>%
         dplyr::mutate(site_name = factor(site_name))
 
       setProgress(value = 0.30, detail = "Getting site data..")
@@ -169,7 +169,7 @@ mod_data_db <- function(input, output, session, db) {
 
       animals_all <- dbGetQuery(con, statement = paste("SELECT bird_id, species, site_name, age, sex, tagged_on FROM birds",
                                                       "WHERE birds.species NOT IN ('XXXX')")) %>%
-        load_format(tz = "") %>%
+        load_format() %>%
         dplyr::mutate(species = factor(species),
                       site_name = factor(site_name),
                       animal_id = factor(animal_id))
@@ -183,15 +183,13 @@ mod_data_db <- function(input, output, session, db) {
                                               "FROM raw.visits ",
                                               "GROUP BY DATE(raw.visits.time), raw.visits.feeder_id, raw.visits.bird_id"#,
                            )) %>%
-        load_format(tz = "UTC") %>%
+        load_format() %>%
         dplyr::inner_join(animals_all[, c("site_name", "species", "animal_id")], by = "animal_id") %>%
-        dplyr::mutate(date = as.Date(date),
-               count = as.numeric(count),
-               species = factor(species, levels = sort(unique(animals_all$species))),
-               site_name = factor(site_name, levels = sort(sites_all$site_name)),
-               animal_id = factor(animal_id, levels = sort(unique(animals_all$animal_id))),
-               logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id))))
-
+        dplyr::mutate(count = as.numeric(count),
+                      species = factor(species, levels = sort(unique(animals_all$species))),
+                      site_name = factor(site_name, levels = sort(sites_all$site_name)),
+                      animal_id = factor(animal_id, levels = sort(unique(animals_all$animal_id))),
+                      logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id))))
       dbDisconnect(con)
     })
 
@@ -337,9 +335,7 @@ mod_data_db <- function(input, output, session, db) {
     browser()
   })
 
-  ####################
-  ## Reset all with reset button
-  ####################
+  # Reset all with reset button ---------------------------------------------
   observeEvent(input$data_reset, {
     req(startup(input), !is.null(db))
     cat("Reset data selection...\n")
@@ -349,9 +345,11 @@ mod_data_db <- function(input, output, session, db) {
   })
 
 
-  ####################
-  ## Reset values with site selection
-  ####################
+
+
+
+
+  # Reset values with site selection ---------------------------------------------
   observeEvent(input$data_site_name, {
     req(counts_site())
 
@@ -359,9 +357,8 @@ mod_data_db <- function(input, output, session, db) {
     values$keep <- counts_site()
   }, priority = 100)
 
-  ####################
-  ## Format buttons
-  ####################
+
+  # Format buttons  ---------------------------------------------
 
   ## Get data when Selection made
   observe({
@@ -383,9 +380,7 @@ mod_data_db <- function(input, output, session, db) {
     }
   }, priority = 25)
 
-  ####################
-  ## Output UIs
-  ####################
+  # Output UIs ---------------------------------------------
 
   ## UI Site_name
   output$UI_data_site_name <- renderUI({
