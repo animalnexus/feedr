@@ -1,4 +1,11 @@
 
+ui_db <- function(){
+  if(file.exists("/usr/local/share/feedr/db_full.R")) {
+    source("/usr/local/share/feedr/db_full.R")
+  } else db <- NULL
+  ui_app(name = "data_db", db = db)
+}
+
 
 
 # Database data selector - UI
