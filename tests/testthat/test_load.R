@@ -1,5 +1,29 @@
 library(feedr)
+library(magrittr)
 context("Loading files")
+
+# load_format()
+test_that("load_format() loads and formats data correctly", {
+  f <- system.file("extdata", "chickadees.csv", package = "feedr") %>%
+    read.csv()
+
+  current_tz <- feedr:::check_tz(Sys.timezone())
+
+  expect_is(r <- load_format(f), "data.frame")
+  expect_match(names(r)[1:3], "^animal_id$|^time$|^logger_id$|^date$")
+  expect_is(r$animal_id, "factor")
+  expect_is(r$logger_id, "factor")
+  expect_is(r$time, "POSIXct")
+  expect_is(r$date, "Date")
+
+  expect_equal(r$animal_id[1], chickadees$animal_id[1])
+  expect_equal(r$logger_id[1], chickadees$logger_id[1])
+  expect_equal(r$time[1], as.POSIXct("2016-01-11 10:48:49", tz = current_tz))
+  expect_equal(r$date[1], as.Date("2016-01-11"))
+
+  expect_equal(load_format(f, tz = "America/Vancouver")$time[1], as.POSIXct("2016-01-11 10:48:49", tz = "America/Vancouver"))
+  expect_equal(load_format(f, tz = "America/Vancouver", tz_disp = "America/Toronto")$time[1], as.POSIXct("2016-01-11 13:48:49", tz = "America/Toronto"))
+})
 
 # load_raw() - logger_id from file name
 test_that("load_raw loads and formats data correctly - logger id from file name", {
