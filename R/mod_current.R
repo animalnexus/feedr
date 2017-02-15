@@ -112,7 +112,7 @@ mod_map_current <- function(input, output, session, db) {
                                 statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
                                                   "FROM feeders, fieldsites",
                                                   "WHERE (fieldsites.site_name = feeders.site_name)")) %>%
-        load_format(tz = "America/Vancouver") %>%
+        load_format() %>%
         dplyr::mutate(site_name = factor(site_name))
     })
     dbDisconnect(con)
@@ -154,7 +154,8 @@ mod_map_current <- function(input, output, session, db) {
 
         if(nrow(data) > 0) {
           data <- data %>%
-            load_format(., tz = "America/Vancouver") %>%
+            dplyr::mutate(time = lubridate::with_tz(time, tz = "UTC")) %>%
+            load_format(., tz = "UTC", tz_disp = "America/Vancouver") %>%
             visits(.) %>%
             dplyr::group_by(animal_id, logger_id, species, age, sex, lon, lat) %>%
             dplyr::summarize(most_recent = max(end),
