@@ -1,9 +1,9 @@
 
-ui_db <- function(){
+ui_db <- function(verbose = FALSE){
   if(file.exists("/usr/local/share/feedr/db_full.R")) {
     source("/usr/local/share/feedr/db_full.R")
   } else db <- NULL
-  ui_app(name = "data_db", db = db)
+  ui_app(name = "data_db", db = db, verbose = verbose)
 }
 
 
@@ -76,10 +76,11 @@ mod_UI_data_db <- function(id) {
 #' @import lubridate
 #' @import RPostgreSQL
 #' @import DBI
-mod_data_db <- function(input, output, session, db) {
+mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   ns <- session$ns
 
+  # Help ----------------------------------------------------
   observeEvent(input$help_data, {
     showModal(modalDialog(size = "m",
                           title = "Data selection",
@@ -143,6 +144,8 @@ mod_data_db <- function(input, output, session, db) {
 
 
 
+  # Database ----------------------------------------------------
+
   if(!is.null(db) && !curl::has_internet()) db <- NULL
 
   ## Get data base details
@@ -150,11 +153,11 @@ mod_data_db <- function(input, output, session, db) {
 
     withProgress(message = "Loading...", detail = "Connecting to server...", value = 0, {
     suppressWarnings({
-      cat("Connecting to server...\n")
+      if(verbose) cat("Connecting to server...\n")
       con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
 
       setProgress(value = 0.15, detail = "Getting logger data..")
-      cat("Getting logger data...\n")
+      if(verbose) cat("Getting logger data...\n")
       #   incProgress(1/5)
       loggers_all <- dbGetQuery(con, statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
                                                        "FROM feeders, fieldsites",
@@ -163,7 +166,7 @@ mod_data_db <- function(input, output, session, db) {
         dplyr::mutate(site_name = factor(site_name))
 
       setProgress(value = 0.30, detail = "Getting site data..")
-      cat("Getting site data...\n")
+      if(verbose) cat("Getting site data...\n")
       #    incProgress(2/5)
       sites_all <- loggers_all %>%
         dplyr::group_by(site_name) %>%
@@ -171,7 +174,7 @@ mod_data_db <- function(input, output, session, db) {
         dplyr::mutate(site_name = factor(site_name))
 
       setProgress(value = 0.45, detail = "Getting animal data..")
-      cat("Getting animal data...\n")
+      if(verbose) cat("Getting animal data...\n")
       #  incProgress(3/5)
 
       animals_all <- dbGetQuery(con, statement = paste("SELECT bird_id, species, site_name, age, sex, tagged_on FROM birds",
@@ -182,7 +185,7 @@ mod_data_db <- function(input, output, session, db) {
                       animal_id = factor(animal_id))
 
       setProgress(value = 0.60, detail = "Getting sample information..")
-      cat("Getting sample information...\n")
+      if(verbose) cat("Getting sample information...\n")
       #    incProgress(4/5)
       counts <- dbGetQuery(con,
                            statement = paste0("SELECT raw.visits.bird_id, raw.visits.feeder_id, DATE(raw.visits.time), ",
@@ -203,7 +206,7 @@ mod_data_db <- function(input, output, session, db) {
 
     #  incProgress(5/5)
     setProgress(value = 0.75, detail = "Summarizing samples..")
-    cat("Summarizing samples...\n")
+    if(verbose) cat("Summarizing samples...\n")
     counts_sum <- dplyr::bind_rows(
       get_counts(counts, summarize_by = "site_name"),
       get_counts(counts, summarize_by = "species"),
@@ -214,6 +217,8 @@ mod_data_db <- function(input, output, session, db) {
     })
   }
 
+  # Values ----------------------------------------------------
+
   values <- reactiveValues(
     pre_data = NULL,
     data_map = NULL,          # Stores values which displayed on map
@@ -222,7 +227,8 @@ mod_data_db <- function(input, output, session, db) {
     input_previous = NULL)   # Stores previous selection options (for comparison)
 
 
-  ## UPDATE SELECTION
+  # Update selection ----------------------------------------------------
+
   # Fires when selection complete
   observe({
     ## Invalidate only on the following inputs
@@ -267,7 +273,7 @@ mod_data_db <- function(input, output, session, db) {
                                      selected = selected(cnts, "species"))
           }
 
-          ## Uncheck id boxes if counts == 0 (But only if still checked)
+          ## Uncheck animal id boxes if counts == 0 (But only if still checked)
           cnts <- get_counts(c = values$keep, summarize_by = "animal_id")
           if(any(cnts$choices[cnts$sum == 0] %in% input$data_animal_id)){
             freezeReactiveValue(input, "data_animal_id")
@@ -275,7 +281,7 @@ mod_data_db <- function(input, output, session, db) {
                                      selected = selected(cnts, "animal_id"))
           }
 
-          ## Uncheck id boxes if counts == 0 (But only if still checked)
+          ## Uncheck logger id boxes if counts == 0 (But only if still checked)
           cnts <- get_counts(c = values$keep, summarize_by = "logger_id")
           if(any(cnts$choices[cnts$sum == 0] %in% input$data_logger_id)){
             freezeReactiveValue(input, "data_logger_id")
@@ -306,6 +312,8 @@ mod_data_db <- function(input, output, session, db) {
     })
   }, priority = 100)
 
+  # Counts and info ----------------------------------------------------
+
   ## Subset of counts reflecting site
   counts_site <- reactive({
     req(input$data_site_name)
@@ -315,7 +323,7 @@ mod_data_db <- function(input, output, session, db) {
   ## Subset of counts reflecting species totals
   counts_species <- reactive({
     req(input$data_species, counts_site())
-    cat("Calculating counts_species()...\n")
+    if(verbose) cat("Calculating counts_species()...\n")
     #if(is.null(values$input)) species <- unique(values$keep$species) else
     species <- input$data_species
     droplevels(counts_site()[counts_site()$species %in% species, ])
@@ -343,21 +351,18 @@ mod_data_db <- function(input, output, session, db) {
     browser()
   })
 
-  # Reset all with reset button ---------------------------------------------
+  # Resets ----------------------------------------------------
+
+  # Reset all with reset button
   observeEvent(input$data_reset, {
     req(startup(input), !is.null(db))
-    cat("Reset data selection...\n")
+    if(verbose) cat("Reset data selection...\n")
     values$input <- values$input_previous <- values$keep <- NULL
     updateSelectInput(session, "data_site_name",
                       selected = c("Choose site" = ""))
   })
 
-
-
-
-
-
-  # Reset values with site selection ---------------------------------------------
+  # Reset values with site selection
   observeEvent(input$data_site_name, {
     req(counts_site())
 
@@ -366,7 +371,7 @@ mod_data_db <- function(input, output, session, db) {
   }, priority = 100)
 
 
-  # Format buttons  ---------------------------------------------
+  # Buttons  ---------------------------------------------
 
   ## Get data when Selection made
   observe({
@@ -453,21 +458,19 @@ mod_data_db <- function(input, output, session, db) {
   outputOptions(output, 'UI_data_animal_id', suspendWhenHidden = FALSE)
   outputOptions(output, 'UI_data_logger_id', suspendWhenHidden = FALSE)
 
-  ####################
-  ## Get DATA
-  ####################
+
+  ## Get data ---------------------------------------------
 
   ## Download Selected Data
   observeEvent(input$data_get, {
     req(values$keep, !is.null(db))
-    cat("Downloading selected data...\n")
+    if(verbose) cat("Downloading selected data...\n")
 
     con <- dbConnect(dbDriver("PostgreSQL"),host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
 
     d <- values$keep
 
-
-    dates <- c(min(d$date), max(d$date))
+    dates <- c(min(d$date), max(d$date) + lubridate::days(1))
     if(dates[2] > dates[1]) {
       dates <- paste0("AND raw.visits.time >= '", dates[1], "' AND raw.visits.time <= '", dates[2], "'")
     } else {
@@ -487,7 +490,7 @@ mod_data_db <- function(input, output, session, db) {
     dbDisconnect(con)
 
     if(nrow(data) > 0) {
-      cat("Formatting selected data...")
+      if(verbose) cat("Formatting selected data...")
       data <- data %>%
         load_format(., tz = "") %>%
         dplyr::mutate(animal_id = factor(animal_id, levels = sort(unique(animals_all$animal_id))),
@@ -518,7 +521,7 @@ mod_data_db <- function(input, output, session, db) {
   output$map_data <- renderLeaflet({
     validate(need(!is.null(db), message = "No Database access. To work with local data, use the 'Import' tab. To work with the Database check out animalnexus.ca"))
     req(!is.null(db))
-    cat("Initializing data map...\n")
+    if(verbose) cat("Initializing data map...\n")
 
     #Get counts summed across all dates
     suppressWarnings(
@@ -549,7 +552,7 @@ mod_data_db <- function(input, output, session, db) {
   ## Reset map on Reset Button
   observeEvent(input$data_reset, {
     req(!is.null(db))
-    cat("Reset map\n")
+    if(verbose) cat("Reset map\n")
     leafletProxy(ns("map_data")) %>%
       clearGroup(group = "Points") %>%
       clearGroup(group = "Sites") %>%
@@ -572,7 +575,7 @@ mod_data_db <- function(input, output, session, db) {
   # Update map logger sites automatically on site selection
   observeEvent(input$data_site_name, {
     req(!is.null(db), input$data_site_name != "")
-    cat("Updating markers...\n")
+    if(verbose) cat("Updating markers...\n")
     f <- loggers_all[loggers_all$site_name == input$data_site_name, ]
     if(nrow(f) > 0) {
       if(unique(f$site_name) == "Kamloops, BC") zoom <- 17
@@ -596,7 +599,7 @@ mod_data_db <- function(input, output, session, db) {
       values$data_map <- values$keep  ## Keep track of current map values
       c <- values$keep
 
-      cat("Refreshing Map...\n")
+      if(verbose) cat("Refreshing Map...\n")
       if(nrow(c) > 0) {
         #Get counts summed across all dates
         if(length(unique(c$site_name)) > 1) {
@@ -625,11 +628,13 @@ mod_data_db <- function(input, output, session, db) {
   }, priority = 50)
 
 
+  ## Time plot ----------------------------------------------------
+
   ## GGPLOT: Plot of counts overtime
   plot_data_ggplot <- reactive({
     #req(startup(input), !is.null(db), input$data_animal_id, input$data_logger_id)
 
-    cat("Refreshing Time Plot...\n")
+    if(verbose) cat("Refreshing Time Plot...\n")
 
     i <- values$input
 
