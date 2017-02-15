@@ -73,7 +73,7 @@ mod_data_import <- function(input, output, session, type = NULL) {
                          pre_data = NULL,
                          quality = FALSE)
 
-  ## UIs
+  ## UIs ----------------------------------------------------------------------------
   output$UI_time <- renderUI({
     if(input$format == "all") s <- "ymd HMS" else s <- "mdy HMS"
     selectInput(ns('time'), "Date/Time format",
@@ -119,6 +119,7 @@ mod_data_import <- function(input, output, session, type = NULL) {
     numericInput(ns('skip'), "Skip", min = 0, max = 39, value = 0, width = "100px")
     })
 
+  # Preview File -----------------------------------------------------
   output$preview_file <- renderText({
     validate(need(path(), "No data"))
     d <- readLines(path()[1], n =  10)
@@ -126,7 +127,7 @@ mod_data_import <- function(input, output, session, type = NULL) {
   })
 
 
-  ## File details
+  ## File details ----------------------------------------------------
   path <- reactive({
     input$file1$datapath[!grepl("logger_index", input$file1$name)]
   })
@@ -135,7 +136,7 @@ mod_data_import <- function(input, output, session, type = NULL) {
     input$file1$datapath[grepl("logger_index", input$file1$name)]
   })
 
-  ## Preview Data
+  ## Preview Data ----------------------------------------------------
   preview_data <- reactive({
     req(input$file1, input$format, input$tz, path())
     vars$get_data <- FALSE
@@ -166,6 +167,7 @@ mod_data_import <- function(input, output, session, type = NULL) {
 
   }, server = FALSE)
 
+  ## Buttons and Reset ----------------------------------------------------
   ## Toggle get data button
   observe({
     req(input$file1)
@@ -178,22 +180,27 @@ mod_data_import <- function(input, output, session, type = NULL) {
     vars$pre_data <- NULL
   })
 
+
+  ## Get Data ----------------------------------------------------
+
+  ##Import data
   observeEvent(input$get_data, {
     req(preview_data(), vars$get_data)
 
-    ## Import data
     withProgress({
       if(input$format == "logger") vars$pre_data <- import_logger(path(), logger(), input)
       if(input$format == "all") vars$pre_data <- import_all(path(), input)
     }, message = "Importing...")
   })
 
+  ## Check Data
   output$validations <- renderText({
     req(vars$pre_data)
     check_data(vars$pre_data)
     vars$quality <- TRUE
   })
 
+  ## Export data if clears checks
   observeEvent(vars$quality, {
     req(vars$quality == TRUE, vars$pre_data)
     if(ns("") == "standalone-") {
@@ -205,7 +212,7 @@ mod_data_import <- function(input, output, session, type = NULL) {
     vars$pre_data <- NULL
   })
 
-  ## Help dialogues
+  ## Help dialogues ----------------------------------------------------
   observeEvent(input$help_file, {
     showModal(modalDialog(size = "l",
       title = "File setup",
@@ -292,10 +299,7 @@ GR13, 53.88689,	-122.8208", style = "width:80%; margin: auto;"),
     ))
   })
 
-  observeEvent(input$pause, {
-    browser()
-  })
-
+  # Return ----------------------------------------------------
   return(c(r = reactive({vars$data}),
            time = reactive({if(is.null(vars$data)) NULL else Sys.time()}),
            name = reactive({input$file1$name})))
