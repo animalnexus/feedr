@@ -141,7 +141,7 @@ mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
   output$UI_interval <- renderUI({
     req(t())
     if(verbose) cat("  UI - Interval\n")
-    isolate(radioButtons2(ns("interval"), "Resolution", choices = data_limits()$i, selected = interval_selection(c(min(t()$times), max(t()$times))), inline = TRUE))
+    isolate(radioButtons(ns("interval"), "Resolution", choices = data_limits()$i, selected = interval_selection(c(min(t()$times), max(t()$times))), inline = TRUE))
   })
 
   interval <- reactive({
@@ -156,11 +156,12 @@ mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
     i <- data_limits()
 
     ## Toggle radio buttons
-    lapply(1:(length(i$i)-1), function(a) shinyjs::toggleState(id = paste0("interval_", i$i[a]), condition = data_range() < i$n[a+1]))
+    #lapply(1:(length(i$i)-1), function(a) shinyjs::toggleState(id = paste0("interval_", i$i[a]), condition = data_range() < i$n[a+1]))
+    lapply(1:(length(i$i)-1), function(a) shinyjs::toggleState(selector = paste0("input[type='radio'][value='", i$i[a], "']"), condition = data_range() < i$n[a+1]))
 
     ## Adjust selection
     s <- interval_selection(data_range(), i)
-    if(s > as.numeric(input$interval)) updateRadioButtons2(session, "interval", selected = s)
+    if(s > as.numeric(input$interval)) updateRadioButtons(session, "interval", selected = s)
 
   })
 
@@ -234,7 +235,7 @@ mod_UI_maps_advanced <- function(id) {
       radioButtons(ns("type"), label = "Summary over time",
                    choices = c("Cumulative" = "cumulative", "Instant" = "instant"), inline = TRUE),
       uiOutput(ns("UI_animal_id")),
-      radioButtons2(ns("summary"),
+      radioButtons(ns("summary"),
                     label = "Summary type",
                     choices = c("Total sum" = "sum", "Average sum per individual" = "sum_indiv"))
   )
@@ -258,9 +259,8 @@ mod_maps_advanced <- function(input, output, session, samples, verbose = FALSE) 
 
   ## Toggle summary buttons
   observeEvent(input$animal_id, {
-    shinyjs::toggleState(id = "summary_sum_indiv", condition = input$animal_id == "all")
-    #shinyjs::toggleState(id = "summary_total_indiv", condition = input$subset == "all")
-    if(input$animal_id != "all" && input$summary != "sum") updateRadioButtons2(session, "summary", selected = "sum")
+    shinyjs::toggleState(selector = "input[type = 'radio'][value = 'sum_indiv']", condition = input$animal_id == "all")
+    if(input$animal_id != "all" && input$summary != "sum") updateRadioButtons(session, "summary", selected = "sum")
   })
 
   return(c(type = reactive({input$type}),
