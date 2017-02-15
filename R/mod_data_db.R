@@ -215,6 +215,7 @@ mod_data_db <- function(input, output, session, db) {
   }
 
   values <- reactiveValues(
+    pre_data = NULL,
     data_map = NULL,          # Stores values which displayed on map
     keep = NULL,              # Stores data selected for download
     input = NULL,           # Stores selection options
@@ -457,7 +458,7 @@ mod_data_db <- function(input, output, session, db) {
   ####################
 
   ## Download Selected Data
-  r <- eventReactive(input$data_get, {
+  observeEvent(input$data_get, {
     req(values$keep, !is.null(db))
     cat("Downloading selected data...\n")
 
@@ -495,8 +496,23 @@ mod_data_db <- function(input, output, session, db) {
         dplyr::left_join(loggers_all, by = c("logger_id", "site_name"))
     } else data <- NULL
 
-    return(data)
+    values$pre_data <- data
   })
+
+  # Where to send data ---------------------------------------
+  observeEvent(values$pre_data, {
+    req(values$pre_data)
+    if(ns("") == "standalone-") {
+      message("Data successfully downloaded")
+      stopApp(returnValue = dplyr::select(values$pre_data, -dataaccess))
+    } else {
+      values$data = values$pre_data
+    }
+    values$pre_data <- NULL
+  })
+
+
+  ## Map ----------------------------------------------------
 
   ## Render Map
   output$map_data <- renderLeaflet({
@@ -661,7 +677,8 @@ mod_data_db <- function(input, output, session, db) {
     "Drag and select a date range to further refine the data selection"
   })
 
-  return(c(r = r,
-           time = reactive({if(is.null(r())) NULL else Sys.time()}),
-           name = reactive({r()$site_name[1]})))
+  # Return ----------------------------------------------------
+  return(c(r = reactive({values$data}),
+           time = reactive({if(is.null(values$data)) NULL else Sys.time()}),
+           name = reactive({values$data$site_name[1]})))
 }
