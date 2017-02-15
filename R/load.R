@@ -320,7 +320,7 @@ dl_data <- function(start = NULL,
                     url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
                     logger_details = c("loc"),
                     animal_details = c("species"),
-                    tz_disp = "America/Vancouver",
+                    tz_disp = "Etc/GMT+8",
                     feeder_details, bird_details) {
 
   if (!missing(feeder_details)) {
@@ -338,10 +338,8 @@ dl_data <- function(start = NULL,
   # Timezone checks
   tz_disp <- check_tz(tz_disp)
 
-  # Get data from website in GMT, if tz not in selection, then convert later
-  if(!(tz_disp %in% c("America/Vancouver", "GMT"))) {
-    tz <- "GMT"
-  } else tz <- tz_disp
+  # Get data from website in GMT
+  tz <- "GMT"
 
   # Stop if time is not in the correct format
 
@@ -372,14 +370,16 @@ dl_data <- function(start = NULL,
                         tz = tz,
                         qstart = t_start,
                         qend = t_end,
-                        qstarttz = tz,
-                        qendtz = tz))
+                        qstarttz = tz_disp,
+                        qendtz = tz_disp))
 
   g <- RCurl::getForm(url, .params = params)
 
   if(nchar(g) < 200) stop("There are no online data matching these parameters. Try different sites or a different date range.")
 
-  r <- load_format(utils::read.csv(text = g, strip.white = TRUE, colClasses = "character"), tz = tz, tz_disp = tz_disp)
+  r <- load_format(utils::read.csv(text = g, strip.white = TRUE, colClasses = "character"),
+                   tz = tz,
+                   tz_disp = tz_disp)
   return(r)
 }
 
