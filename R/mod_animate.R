@@ -58,35 +58,36 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
 
   ns <- session$ns
 
-  ## Instructions
+  # Instructions-------------------------------
   callModule(mod_maps_instructions, "details")
 
-  ## Controls
+  # Controls ----------------------------------
   controls <- callModule(mod_maps_controls, "setup", times = t_id, verbose = verbose)
   summary <- callModule(mod_maps_advanced, "adv", samples = samples, verbose = verbose)
   instant <- callModule(mod_maps_time, "setup_time", controls = controls, events = events, verbose = verbose)
 
-  ## Maps
+  # Maps---------------------------------------
   callModule(mod_maps_sunrise, "map", instant = instant, controls = controls, verbose = verbose)
   callModule(mod_maps_leaflet, "map",
              summary = summary$summary,
-             data = data,
+             data_instant = data_instant,
              data_total = data_total, verbose = verbose)
 
-  data <- reactive({
+
+  # Data---------------------------------------
+  # Fix time zone to local non-DST
+
+  data_instant <- reactive({
     req(p_instant())
     if(nrow(m_avg()) == 0) d <- list(presence = p_instant()) else d <- list(presence = p_instant(), movements = m_instant())
     return(d)
-    })
+  })
 
   data_total <- reactive({
     req(p_data())
     if(nrow(m_avg()) == 0) d <- list(presence = p_data()) else d <- list(presence = p_data(), movements = m_data())
     return(d)
-    })
-
-  ## Data
-  # Fix time zone to local non-DST
+  })
 
   v <- reactive({
     req(visits())
@@ -106,7 +107,7 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
     return(p)
   })
 
-  ## Summarize movements and presence
+  # Summarize movements and presence -------------------------------------------
   samples <- reactive({
     req(p(), m())
     p() %>%
@@ -119,7 +120,7 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
       dplyr::mutate(move = replace(move, is.na(move), 0))
   })
 
-  ## Subselections - Get animal ID
+  # Subselections - Get animal ID -------------------------------------------------
   p_id <- reactive({
     req(p(), summary$animal_id())
     validate(need(sum(names(p()) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
@@ -152,7 +153,8 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
     return(m_id)
   })
 
-  ## Get ranges (don't depend on p_id/m_id, as those are updated, breaks() will be updated, so best to THEN activate
+  # Get data ranges -------------------------------------------------------------------------
+  # Don't react to p_id/m_id, as p_id/m_id are updated, breaks() will be updated, so best to just respond to breaks
   p_avg <- reactive({
     req(controls$breaks(), summary$summary())
     #req(summary$animal_id() %in% unique(p$animal_id))
@@ -218,7 +220,7 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
     })
   })
 
-  ## Get multiple data sets corresponding to all instants
+  # Get multiple data sets corresponding to all instants ---------------------------
   p_data <- reactive({
     req(p_avg(), summary$type()) #cumulative vs. instant
     if(verbose) cat("Presence data\n")
@@ -242,7 +244,7 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
     return(m_data)
   })
 
-  ## Get data corresponding to specific instant
+  # Get data corresponding to specific instant --------------------------------------
   p_instant <- reactive({
     req(p_data(), instant())
     isolate({
@@ -263,16 +265,17 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
     })
   })
 
-  ## Total time range
+  # Total time range ----------------------------------------------------------------------
   t_id <- reactive({
     req(m_id(), p_id())
     if(verbose) cat("Times ID\n")
     sort(lubridate::with_tz(c(p_id()$start, p_id()$end), tz = lubridate::tz(p_id()$start)))
   })
 
-  ## Summary for time figure
+  # Summary for time figure ---------------------------------------------------------------
   events <- reactive({
     req(p_avg(), m_avg(), any(nrow(m_avg()) > 0, nrow(p_avg()) > 0))
+    req(controls$instant_range())
 
     if(verbose) cat("Events\n")
 
