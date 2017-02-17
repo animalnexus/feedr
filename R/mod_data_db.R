@@ -305,7 +305,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
       values$input <- selection()
 
       if(!is.logical(all.equal(values$input, values$input_previous))) {
-        cat("Updating values$input...\n")
+        if(verbose) cat("Updating values$input...\n")
         values$keep <- get_counts(counts_site(), filter = selection())
 
         ## Added to current selection:
