@@ -69,14 +69,14 @@ selected <- function(s, var){
 # i = anything else means dealing with selection values
 values_list <- function(i = NULL, counts){
   if(any(class(i) == "reactivevalues")){
-    if(!is.null(i$plot_data_brush)) {
-      dates <- c(as.Date(i$plot_data_brush$xmin, lubridate::origin),
-                 as.Date(i$plot_data_brush$xmax, lubridate::origin))
-      if(dates[1] < min(counts$date)) dates[1] <- min(counts$date)
-      if(dates[2] > max(counts$date)) dates[2] <- max(counts$date)
-    } else {
+    # if(!is.null(i$plot_data_brush)) {
+    #   dates <- c(as.Date(i$plot_data_brush$xmin, lubridate::origin),
+    #              as.Date(i$plot_data_brush$xmax, lubridate::origin))
+    #   if(dates[1] < min(counts$date)) dates[1] <- min(counts$date)
+    #   if(dates[2] > max(counts$date)) dates[2] <- max(counts$date)
+    # } else {
       dates <- i$data_date
-    }
+    #}
     d <- list(
       'species' = i$data_species,
       'date' = dates,

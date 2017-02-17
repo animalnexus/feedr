@@ -110,17 +110,22 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
                                   tags$ul(
                                     tags$li("First select a site by which to filter the data."),
                                     tags$li("You may only select data from one site at a time.")),
-                                  h4("Species"),
-                                  tags$ul(
-                                    tags$li("Select which species to include/exclude"),
-                                    tags$li("The selection will update depending on your other selections (i.e. if you select a date range with no visits by a particular species, that species will be deselected"),
-                                    tags$li("Numbers in brackets reflect the total number of RFID reads per species.")),
                                   h4("Dates"),
                                   tags$ul(
-                                    tags$li("Select date range with slider bar, OR"),
-                                    tags$li("by clicking and dragging over the time plot"),
+                                    tags$li("Next, select date range with slider bar, OR"),
+                                    tags$li("By clicking and dragging over the time plot"),
                                     tags$ul(tags$li("The time plot actively updates to show the current data selection (dark colours are selected, pale are not)"))),
-                                  strong("Note:"), "Order of selection matters. To select all of a particular species within a particular time range, first select the species, then the time range. Adding in a species later will broaden the time range to include that species."
+                                  h4("Species"),
+                                  tags$ul(
+                                    tags$li("Refine your selection by choosing which species to include/exclude"),
+                                    tags$li("The selection will update depending on your other selections (i.e. if you select a date range with no visits by a particular species, that species will be deselected"),
+                                    tags$li("Numbers in brackets reflect the total number of RFID reads per species.")),
+                                  h4("Advanced Options"),
+                                  tags$ul(
+                                    tags$li("Further refine your selection by choosing which animal_ids or logger_ids to include/exclude"),
+                                    tags$li("The selection of available ids will update depending on your other selections (i.e. if you deselect a species, all animal_ids associated with that species will disappear"),
+                                    tags$li("Numbers in brackets reflect the total number of RFID reads per id.")),
+                                  strong("Note:"), "If you find you have 0 observations selected, try broadening your time range."
                           )
               ))
   })
@@ -250,22 +255,56 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   # Update selection ----------------------------------------------------
 
-  # Fires when selection complete
-  observe({
-    ## Invalidate only on the following inputs
+  # Update date selection based on plot brush
+  observeEvent(input$plot_data_brush, {
+    req(input$plot_data_brush)
+    cnts <- get_counts(c = counts_site(), summarize_by = "date") %>%
+      dplyr::mutate(choices = as.Date(choices))
+    dates <- c(as.Date(input$plot_data_brush$xmin, lubridate::origin),
+               as.Date(input$plot_data_brush$xmax, lubridate::origin))
+    if(dates[1] < min(cnts$choices)) dates[1] <- min(cnts$choices)
+    if(dates[2] > max(cnts$choices)) dates[2] <- max(cnts$choices)
+    updateDateRangeInput(session, "data_date",
+                         start = dates[1],
+                         end = dates[2])
+  })
+
+  # Update all selections based on date
+  observeEvent(input$data_date, {
+    sel <- counts_site() %>%
+      dplyr::filter(date %within% interval(as.Date(input$data_date[1]), as.Date(input$data_date[2]))) %>%
+      dplyr::count(species, animal_id, logger_id)
+    updateCheckboxGroupInput(session, "data_species",
+                             selected = unique(sel$species))
+    updateCheckboxGroupInput(session, "data_animal_id",
+                             selected = unique(sel$animal_id))
+    updateCheckboxGroupInput(session, "data_logger_id",
+                             selected = unique(sel$logger_id))
+  })
+
+  # Input variables
+  sel <- reactive({
+    req(startup(input), !is.null(db))
     input$data_species
-    input$data_date
-    input$plot_data_brush
     input$data_animal_id
     input$data_logger_id
+    values_list(input, counts)
+  })
 
+
+  selection <- debounce(sel, 700, priority = 1000)
+
+  # Fires when selection complete
+  observeEvent(selection(), {
     isolate({
       req(startup(input), !is.null(db))
+
       values$input_previous <- values$input  ## Save old inputs
-      values$input <- values_list(input, counts)     ## Get new inputs
+      values$input <- selection()
 
       if(!is.logical(all.equal(values$input, values$input_previous))) {
-        values$keep <- get_counts(counts_site(), filter = values_list(input, counts))
+        cat("Updating values$input...\n")
+        values$keep <- get_counts(counts_site(), filter = selection())
 
         ## Added to current selection:
         added <- list(
@@ -275,16 +314,15 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
         added <- added[sapply(added, length) > 0]
 
         ## Force added back in:
-        if(length(added) > 0) values$keep <- unique(rbind(values$keep, get_counts(counts_site(), filter = added)))
+        if(length(added) > 0) {
+          dates <- values$input$date
+          cnts <- get_counts(counts_site(), filter = added) %>%
+            dplyr::filter(date >= dates[1],
+                          date <= dates[2])
+          values$keep <- unique(rbind(values$keep, cnts))
+        }
 
         if(nrow(values$keep) > 0) {
-          ## Update time (but only if needs to be updated)
-          if(any(is.na(input$data_date)) || (min(values$keep$date) != input$data_date[1] | max(values$keep$date) != input$data_date[2])){
-            freezeReactiveValue(input, "data_date")
-            updateDateRangeInput(session, "data_date",
-                                 start = min(values$keep$date),
-                                 end = max(values$keep$date))
-          }
 
           ## Uncheck species boxes if counts == 0 (But only if still checked)
           cnts <- get_counts(c = values$keep, summarize_by = "species")
@@ -433,10 +471,9 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
                        selected = selected(cnts, "species"))
   })
 
-  ## UI Date range
+  ## UI Date range - initialization
   output$UI_data_date <- renderUI({
     req(input$data_site_name)
-    #if(is.null(input$data_date) | nrow(values$keep) == 0) c <- counts_site() else c <- values$keep
     c <- counts_site()
     cnts <- get_counts(c = c, summarize_by = "date")
     dateRangeInput(ns("data_date"), "Dates to include:",
@@ -513,7 +550,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
       if(verbose) cat("Formatting selected data...")
       tz_disp <- tz_offset(ifelse(d$site_name[1] == "Kamloops, BC", "America/Vancouver", "America/Costa Rica"), tz_name = TRUE)
       data <- data %>%
-        mutate(time = lubridate::with_tz(time, "UTC")) %>% # Because otherwise has system timezone
+        dplyr::mutate(time = lubridate::with_tz(time, "UTC")) %>% # Because otherwise has system timezone
         load_format(tz = "UTC", tz_disp = tz_disp) %>%
         dplyr::mutate(animal_id = factor(animal_id, levels = sort(unique(animals_all$animal_id))),
                logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id)))) %>%
@@ -653,50 +690,62 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   ## Time plot ----------------------------------------------------
 
-  ## GGPLOT: Plot of counts overtime
+  ## Plot of counts overtime
   plot_data_ggplot <- reactive({
-    #req(startup(input), !is.null(db), input$data_animal_id, input$data_logger_id)
+    req(startup(input), !is.null(db))
 
     if(verbose) cat("Refreshing Time Plot...\n")
 
-    i <- values$input
+    values$input
 
+    # At startup, use site values, elsewise use values$input
     isolate({
-      req(startup(input), !is.null(db), values$input)
-      total <- counts_site() %>%
-        dplyr::mutate(selected = factor("unselected", levels = c("unselected", "selected")),
-                      selected = replace(selected,
-                                         species %in% i$species &
-                                           date %within% interval(as.Date(i$date[1]), as.Date(i$date[2])) &
-                                           animal_id %in% i$animal_id &
-                                           logger_id %in% i$logger_id,
-                                         "selected")) %>%
+      if(is.null(values$input)) {
+        date <- c(min(counts_site()$date), max(counts_site()$date))
+        total <- counts_site() %>%
+          dplyr::mutate(selected = factor("selected", levels = c("unselected", "selected")))
+      } else {
+        i <- values$input
+        date <- c(min(i$date), max(i$date))
+        total <- counts_site() %>%
+          dplyr::mutate(selected = factor("unselected", levels = c("unselected", "selected")),
+                        selected = replace(selected,
+                                           species %in% i$species &
+                                             date %within% interval(as.Date(i$date[1]), as.Date(i$date[2])) &
+                                             animal_id %in% i$animal_id &
+                                             logger_id %in% i$logger_id,
+                                           "selected"))
+      }
+
+      total <- total %>%
         dplyr::group_by(species, date, selected) %>%
         dplyr::summarize(count = sum(count))
 
       if(nrow(total) > 0) {
         g <- ggplot2::ggplot(data = total, ggplot2::aes(x = date, y = count, fill = species, alpha = selected)) +
-          ggplot2::geom_bar(stat = "identity") +
-          ggplot2::scale_alpha_manual(values = c(0.4, 1), drop = FALSE, guide = FALSE)
-      }# else {
-      #  g <- ggplot(data = data.frame(date = values$input$date, count = 0), aes(x = date, y = count)) +
-      #    geom_blank() +
-      #    scale_y_continuous(limits = c(0, 1))
-      #}
-
+          ggplot2::annotate(geom = "ribbon",
+                            ymin = -Inf, ymax = +Inf,
+                            x = seq(date[1], date[2], by = "1 day"),
+                            fill = "grey", alpha = 0.4) +
+          ggplot2::geom_bar(stat = "identity")
+      } else {
+        g <- ggplot2::ggplot()
+      }
       g <- g +
         ggplot2::theme_bw() +
         ggplot2::theme(legend.position = "top") +
+        ggplot2::scale_y_continuous(expand = c(0,0)) +
+        ggplot2::scale_x_date(expand = c(0,0), date_labels = "%Y %b %d") +
+        ggplot2::scale_alpha_manual(values = c(0.4, 1), drop = FALSE, guide = FALSE) +
         ggplot2::labs(x = "Date", y = "No. RFID Reads")
     })
     g
   })
 
-  ## For data selection
+  ## Output plot
   output$plot_data_ggplot <- renderPlot({
     freezeReactiveValue(input, "plot_data_brush")
-    plot_data_ggplot() +
-      ggplot2::scale_x_date(date_labels = "%Y %b %d")
+    plot_data_ggplot()
   }, height = 200)
 
   ## For time plot tooltip
