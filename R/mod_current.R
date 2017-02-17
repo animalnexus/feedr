@@ -32,8 +32,30 @@ mod_UI_map_current <- function(id) {
 #' @import RPostgreSQL
 mod_map_current <- function(input, output, session, db) {
 
+  # Setup -------------------------------------------------------------------
   ns <- session$ns
 
+  values <- reactiveValues(
+    current_map = NULL,
+    current_time = NULL)
+
+  # Database ----------------------------------------------------------------
+  if(!is.null(db) && !curl::has_internet()) db <- NULL
+
+  if(!is.null(db)){
+    con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
+    suppressWarnings({
+      loggers_all <- dbGetQuery(con,
+                                statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
+                                                  "FROM feeders, fieldsites",
+                                                  "WHERE (fieldsites.site_name = feeders.site_name)")) %>%
+        load_format() %>%
+        dplyr::mutate(site_name = factor(site_name))
+    })
+    dbDisconnect(con)
+  }
+
+  # Icons -------------------------------------------------------------------
   sp_icons <- leaflet::awesomeIconList("MOCH" = leaflet::makeAwesomeIcon(icon = "star",
                                                                          marker = "green",
                                                                          iconColor = "white"),
@@ -54,6 +76,7 @@ mod_map_current <- function(input, output, session, db) {
          icon(x$icon, class = "fa-stack-1x fa-inverse"))
   }
 
+  # Help -------------------------------------------------------------------
   observeEvent(input$help_update, {
     showModal(modalDialog(size = "m",
                           title = "Update Current Activity",
@@ -67,11 +90,10 @@ mod_map_current <- function(input, output, session, db) {
                           ))
   })
 
-  if(!is.null(db) && !curl::has_internet()) db <- NULL
-
+  # Circle function ---------------------------------------------------------
   circle <- function(point, data, radius = 0.5){
     n <- seq(0, by = 360/nrow(data), length.out = nrow(data))
-    temp <- data.frame(do.call("rbind", lapply(n, FUN = function(x) {
+    temp <- data.frame(do.call("rbind", lapply(n, function(x) {
       maptools::gcDestination(lon = point$lon,
                               lat = point$lat,
                               bearing = x,
@@ -82,33 +104,11 @@ mod_map_current <- function(input, output, session, db) {
     return(circle)
   }
 
-  values <- reactiveValues(
-    current_map = NULL,
-    current_time = NULL)
-
-  observeEvent(input$pause, {
-    browser()
-  })
-
-  if(!is.null(db)){
-    con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
-    suppressWarnings({
-      loggers_all <- dbGetQuery(con,
-                                statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
-                                                  "FROM feeders, fieldsites",
-                                                  "WHERE (fieldsites.site_name = feeders.site_name)")) %>%
-        load_format() %>%
-        dplyr::mutate(site_name = factor(site_name))
-    })
-    dbDisconnect(con)
-  }
-
-  ## Get current Activity
+  # Current activity ----------------------------------------------------
   current <- reactive({
     validate(need(!is.null(db), message = "No Database access. To see Current Activity, check out animalnexus.ca"))
-    #req(!is.null(db))
 
-    invalidateLater(5 * 60 * 1000)
+    invalidateLater(5 * 60 * 1000) # Update again after 5min
     input$current_update
 
     isolate({
@@ -154,10 +154,14 @@ mod_map_current <- function(input, output, session, db) {
     data
   })
 
+  # Status output ------------------------------------
   output$current_time <- renderText(paste0("Most recent activity: ", max(current()$most_recent), " Pacific <br>",
                                            "Most recent update: ", lubridate::with_tz(values$current_time, tz = "America/Vancouver"), " Pacific"))
 
-  ## Map of current activity
+
+  # Map ------------------------------------------------
+
+  # Map of current activity
   output$map_current <- renderLeaflet({
     req(current())
     cat("Initializing map of current activity (", as.character(Sys.time()), ") ...\n")
@@ -171,7 +175,7 @@ mod_map_current <- function(input, output, session, db) {
                                                    get_image(current(), animal_id, "100px"),
                                                    "<strong>Species:</strong> ", species, "<br>",
                                                    "<strong>Animal ID:</strong> ", animal_id, "<br>",
-                                                   "<strong>No. RFID reads:</strong> ", n, "<br>",
+                                                   "<strong>No. visits:</strong> ", n, "<br>",
                                                    "<strong>Total time:</strong> ", time, "min <br>",
                                                    "<strong>Most recent visit:</strong> ", most_recent, "<br>",
                                                    "</div>"),
@@ -196,7 +200,7 @@ mod_map_current <- function(input, output, session, db) {
                                    icon = ~sp_icons[species],
                                    popup = ~paste0("<strong>Species:</strong> ", species, "<br>",
                                                    "<strong>Animal ID:</strong> ", animal_id, "<br>",
-                                                   "<strong>No. RFID reads:</strong> ", n, "<br>",
+                                                   "<strong>No. visits:</strong> ", n, "<br>",
                                                    "<strong>Total time:</strong> ", time, "min <br>",
                                                    get_image(current(), animal_id, 100)),
                                    lng = ~lon, lat = ~lat, group = "Activity")
@@ -206,16 +210,4 @@ mod_map_current <- function(input, output, session, db) {
         leaflet::clearGroup(group = "Activity")
     }
   })
-
-
-  output$summary_current <- renderText({
-    req(current())
-    paste0("<strong>Time:</strong> ", Sys.time(), "<br>",
-           "<strong>Interval:</strong> 7 minutes", "<br>",
-           "<strong>No. animals:</strong> ", length(unique(current()$animal_id)), "<br>",
-           "<strong>No. loggers:</strong> ", length(unique(current()$logger_id)), "<br>",
-           "<strong>Total time present:</strong> ", sum(current()$time), " minutes", "<br>"
-    )
-  })
-
 }
