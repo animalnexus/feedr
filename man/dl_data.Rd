@@ -7,7 +7,7 @@
 dl_data(start = NULL, end = NULL,
   url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
   logger_details = c("loc"), animal_details = c("species"),
-  tz_disp = "America/Vancouver", feeder_details, bird_details)
+  tz_disp = "Etc/GMT+8", feeder_details, bird_details)
 }
 \arguments{
 \item{start}{Character. This is the start date (with or without time) for the
