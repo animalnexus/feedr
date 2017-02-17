@@ -1,11 +1,11 @@
 #' @import shiny
-ui_app <- function(name, ..., launch.browser = getOption("shiny.launch.browser", interactive())) {
+ui_app <- function(name, ..., diagnostic = FALSE, launch.browser = getOption("shiny.launch.browser", interactive())) {
 
   addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
 
   app <- shiny::shinyApp(ui = shiny::fluidPage(includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
                                                shinyjs::useShinyjs(),
-                                               get(paste0("mod_UI_", name))("standalone"),
+                                               get(paste0("mod_UI_", name))("standalone", diagnostic = diagnostic),
                                                mod_UI_stop("stp")),
                          server = function(input, output, session) {
                            shiny::callModule(get(paste0("mod_", name)), id = "standalone", ...)

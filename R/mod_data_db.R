@@ -1,9 +1,30 @@
 
-ui_db <- function(verbose = FALSE){
+#' User-interface for downloading from the animalnexus database
+#'
+#' Launches an interactive shiny app for downloading data interactively. Also
+#' available online at \url{http://animalnexus.ca} or by launching the local
+#' animalnexus app through \code{\link{animalnexus}}. See the \code{\link{dl_data}}
+#' function for a non-interactive method.
+#'
+#' @param verbose Logical Output status messages
+#' @param diagnostic Logical Display pause button for debugging
+#'
+#' @return  Downloaded data frame formatted and ready to be transformed
+#'
+#' @seealso \code{\link{dl_data}}
+#'
+#' @examples
+#'
+#' \dontrun{
+#'   my_data <- ui_db()
+#' }
+#'
+#' @export
+ui_db <- function(verbose = FALSE, diagnostic = FALSE){
   if(file.exists("/usr/local/share/feedr/db_full.R")) {
     source("/usr/local/share/feedr/db_full.R")
   } else db <- NULL
-  ui_app(name = "data_db", db = db, verbose = verbose)
+  ui_app(name = "data_db", db = db, verbose = verbose, diagnostic = diagnostic)
 }
 
 
@@ -13,7 +34,7 @@ ui_db <- function(verbose = FALSE){
 #' @import shiny
 #' @import magrittr
 #' @import shinyBS
-mod_UI_data_db <- function(id) {
+mod_UI_data_db <- function(id, diagnostic) {
 
   ns <- shiny::NS(id)
 
@@ -33,8 +54,8 @@ mod_UI_data_db <- function(id) {
              h3("Select Data", actionButton(ns("help_data"), "?", class = "help")),
              div(id = "selection",
                  uiOutput(ns("UI_data_site_name")),
-                 uiOutput(ns("UI_data_species")),
                  uiOutput(ns("UI_data_date")),
+                 uiOutput(ns("UI_data_species")),
                  hr(),
                  h3("Selected Data", actionButton(ns("help_selected"), "?", class = "help")),
                  strong("Data Access: "), textOutput(ns("data_access"), inline = TRUE),
@@ -61,7 +82,7 @@ mod_UI_data_db <- function(id) {
       )
     ),
     fluidRow(
-      #actionButton(ns("pause"), "Pause"),
+      conditionalPanel(diagnostic, actionButton(ns("pause"), "Pause")),
       shinyjs::hidden(div(id = ns("advanced"),
                           h3("Advanced Options"),
                           uiOutput(ns("UI_data_animal_id")),
@@ -290,7 +311,6 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
           }
         } else {
           ## If no values that match all options, keep time range, unselect all species and all ids:
-
           freezeReactiveValue(input, "data_date")
           updateDateRangeInput(session, "data_date",
                                start = min(values$input$date),
