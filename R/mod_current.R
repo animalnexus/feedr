@@ -86,7 +86,8 @@ mod_map_current <- function(input, output, session, db) {
                                     tags$li("The map will automatically refresh every five minutes, or you can force an update by clicking on the 'Update Now' button."),
                                     tags$li("Click on a 'pin' to get more information about the individual and the visit."),
                                     tags$li("Pin colour reflects species:"),
-                                  lapply(1:length(sp_icons), function(x) tagList(get_icon(sp_icons[[x]]), " = ", names(sp_icons)[x]))))
+                                  lapply(1:length(sp_icons), function(x) tagList(get_icon(sp_icons[[x]]), " = ", names(sp_icons)[x]))),
+                                  "Note that if individuals only make brief visits to the feeder, total time will remain zero.")
                           ))
   })
 
