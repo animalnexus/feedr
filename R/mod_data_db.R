@@ -6,8 +6,8 @@
 #' animalnexus app through \code{\link{animalnexus}}. See the \code{\link{dl_data}}
 #' function for a non-interactive method.
 #'
-#' @param verbose Logical Output status messages
-#' @param diagnostic Logical Display pause button for debugging
+#' @param verbose Logical. Print log events to console.
+#' @param diagnostic Logical. Display pause button for debugging
 #'
 #' @return  Downloaded data frame formatted and ready to be transformed
 #'
@@ -34,7 +34,7 @@ ui_db <- function(verbose = FALSE, diagnostic = FALSE){
 #' @import shiny
 #' @import magrittr
 #' @import shinyBS
-mod_UI_data_db <- function(id, diagnostic) {
+mod_UI_data_db <- function(id) {
 
   ns <- shiny::NS(id)
 
@@ -78,11 +78,9 @@ mod_UI_data_db <- function(id, diagnostic) {
                           direction = "x",
                           resetOnNew = TRUE), height = "100%"),
              div(strong(textOutput(ns("text_time"))), style = "text-align: center;")
-             #ggvisOutput("plot_data_ggvis")
       )
     ),
     fluidRow(
-      conditionalPanel(diagnostic, actionButton(ns("pause"), "Pause")),
       shinyjs::hidden(div(id = ns("advanced"),
                           h3("Advanced Options"),
                           uiOutput(ns("UI_data_animal_id")),
@@ -405,10 +403,6 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
     req(startup(input), !is.null(db), input$data_site_name != "")
     if(sites_all$dataaccess[sites_all$site_name == input$data_site_name] == 0) return("Fully Public")
     if(sites_all$dataaccess[sites_all$site_name == input$data_site_name] == 1) return("Visualizations Only")
-  })
-
-  observeEvent(input$pause, {
-    browser()
   })
 
   # Resets ----------------------------------------------------

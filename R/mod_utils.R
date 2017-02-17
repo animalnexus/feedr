@@ -13,3 +13,16 @@ mod_stop <- function(input, output, session) {
     stopApp()
   })
 }
+
+mod_UI_pause <- function(id) {
+  ns <- NS(id)
+  shinyjs::hidden(actionButton(ns("pause"), "Pause"))
+}
+
+mod_pause <- function(input, output, session, diagnostic) {
+  shinyjs::toggle("pause", condition = diagnostic)
+  observeEvent(input$pause, {
+    browser()
+  })
+}
+

@@ -1,23 +1,10 @@
 # Launch current
 
-# mod_current <- function() {
-#   if(file.exists("/usr/local/share/feedr/db_full.R")) {
-#     source("/usr/local/share/feedr/db_full.R")
-#   } else db <- NULL
-#
-#   app <- shiny::shinyApp(ui = shiny::fluidPage(mod_UI_map_current("standalone")),
-#                          server = function(input, output, session) {
-#                            shiny::callModule(mod_map_current, "standalone", db = db)
-#                          }
-#   )
-#   shiny::runApp(app, launch.browser = TRUE)
-# }
-
-ui_current <- function(){
+ui_current <- function(diagnostic = FALSE){
   if(file.exists("/usr/local/share/feedr/db_full.R")) {
     source("/usr/local/share/feedr/db_full.R")
   } else db <- NULL
-  ui_app(name = "map_current", db = db)
+  ui_app(name = "map_current", db = db, diagnostic = diagnostic)
 }
 
 
@@ -33,9 +20,7 @@ mod_UI_map_current <- function(id) {
       column(12,
              leafletOutput(ns("map_current"), height = 500),
              htmlOutput(ns("current_time")),
-             div(actionButton(ns("current_update"), "Update Now", style = "margin: 0 auto"), actionButton(ns("help_update"), "?", class = "help"))#,
-             #htmlOutput(ns("summary_current")),
-             #actionButton(ns("pause"), "Pause")
+             div(actionButton(ns("current_update"), "Update Now", style = "margin: 0 auto"), actionButton(ns("help_update"), "?", class = "help"))
       )
     )
   )

@@ -5,11 +5,13 @@ ui_app <- function(name, ..., diagnostic = FALSE, launch.browser = getOption("sh
 
   app <- shiny::shinyApp(ui = shiny::fluidPage(includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
                                                shinyjs::useShinyjs(),
-                                               get(paste0("mod_UI_", name))("standalone", diagnostic = diagnostic),
-                                               mod_UI_stop("stp")),
+                                               get(paste0("mod_UI_", name))("standalone"),
+                                               mod_UI_stop("stp"),
+                                               mod_UI_pause("pause")),
                          server = function(input, output, session) {
                            shiny::callModule(get(paste0("mod_", name)), id = "standalone", ...)
-                           shiny::callModule(mod_stop, "stp")
+                           shiny::callModule(mod_stop, id = "stp")  # Add Exit Buttons
+                           shiny::callModule(mod_pause, id = "pause", diagnostic = diagnostic)  # Add Pause button if 'diagnostic == TRUE'
                          }
   )
   shiny::runApp(app)
