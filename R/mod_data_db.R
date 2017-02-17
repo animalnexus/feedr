@@ -255,6 +255,8 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   # Update selection ----------------------------------------------------
 
+  plot_data_brush <- debounce(reactive({input$plot_data_brush}), 700, priority = 1000)
+
   # Update date selection based on plot brush
   observeEvent(input$plot_data_brush, {
     req(input$plot_data_brush)
