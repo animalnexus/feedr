@@ -10,13 +10,17 @@ ui_import()
 An imported data frame formatted and ready to be transformed.
 }
 \description{
-Launches an interactive shiny app for importing data interactively. Also available online at <http://animalnexus.ca> or
-by launching the local animalnexus app through \code{animalnexus()}.
+Launches an interactive shiny app for importing data interactively. Also
+available online at \url{http://animalnexus.ca} or by launching the local
+animalnexus app through \code{\link{animalnexus}}. Users can also import data by hand using the R base \code{\link[utils]{read.csv}} function coupled with \code{feedr}'s \code{\link{load_format}} function. Alternatively, for raw data collected directly from data loggers, check out the \code{\link{load_raw}} and \code{\link{load_raw_all}} functions.
 }
 \examples{
 \dontrun{
   my_data <- ui_import()
 }
 
+}
+\seealso{
+\code{\link{load_format}}, \code{\link{load_raw}}, \code{\link{load_raw_all}}
 }
 

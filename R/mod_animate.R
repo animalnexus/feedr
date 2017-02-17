@@ -1,11 +1,11 @@
 #' Animated map for individuals with leaflet
 #'
 #' Interactive shiny app to select and animate presence at and movements between
-#' RFID loggers over time. Also available online at <http://animalnexus.ca> or
-#' by launching the local animalnexus app through \code{animalnexus()}.
+#' RFID loggers over time. Also available online at \url{http://animalnexus.ca} or
+#' by launching the local animalnexus app through \code{\link{animalnexus}}.
 #'
-#' @param v Data frame. Visits data frame created with the
-#'   \code{visits()} function.
+#' @param v Data frame. Visits data frame created with the \code{\link{visits}}
+#'   function.
 #' @param verbose Logical. Print log events to console.
 #'
 #' @examples
