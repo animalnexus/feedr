@@ -108,7 +108,6 @@ mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
 
   # Time range - select subsection of data
   output$UI_time_range <- renderUI({
-    req(t())
     if(verbose) cat("  UI - Time range\n")
     isolate({
       x <- difftime(t()$end, t()$start)
@@ -127,98 +126,89 @@ mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
 
   ## UI Interval
   output$UI_interval <- renderUI({
-    req(t())
     if(verbose) cat("  UI - Interval\n")
     isolate(radioButtons(ns("interval"), "Resolution",
                          choices = data_limits()$i,
                          selected = interval_selection(c(min(t()$times), max(t()$times))), inline = TRUE))
   })
 
-  interval <- reactive({
+  interval_d <- debounce(reactive({
     req(input$interval)
     if(verbose) cat("  Input - Interval\n")
     as.numeric(input$interval)
+  }), 1000)
+
+  interval <- reactive({
+    if(ready(interval_d())) return(interval_d()) else return(as.vector(last(data_limits()$i)))
   })
 
   # Update Interval
   observe({
-    req(input$interval, data_range())
     i <- data_limits()
 
     ## Toggle radio buttons
-    #lapply(1:(length(i$i)-1), function(a) shinyjs::toggleState(id = paste0("interval_", i$i[a]), condition = data_range() < i$n[a+1]))
     lapply(1:(length(i$i)-1), function(a) shinyjs::toggleState(selector = paste0("input[type='radio'][value='", i$i[a], "']"), condition = data_range() < i$n[a+1]))
 
     ## Adjust selection
     s <- interval_selection(data_range(), i)
-    if(s > as.numeric(input$interval)) updateRadioButtons(session, "interval", selected = s)
-
+    if(s > as.numeric(interval())) updateRadioButtons(session, "interval", selected = s)
   })
 
   ## Floor/ceiling to nearest relevant hour. For larger time periods, start at 6am
-  time_range <- debounce(reactive({
-    req(t())
-    if(is.null(input$time_range)){
-      tr <- lubridate::with_tz(c(min(t()$times), max(t()$times)), t()$tz)
-    } else {
-      tr <- lubridate::with_tz(input$time_range, t()$tz)
-    }
+  time_range_d <- debounce(reactive({
+    req(input$time_range)
+
+    tr <- lubridate::with_tz(input$time_range, t()$tz)
+    i <- interval()
+
     isolate({
-      req(interval())
       if(verbose) cat("  Input - Time range\n")
-      if(interval() <= 60) {
+      if(i <= 60) {
         tr[1] <- lubridate::floor_date(tr[1], unit = "hour")
         tr[2] <- lubridate::ceiling_date(tr[2], unit = "hour")
-      } else if(interval() == 180) {
+      } else if(i == 180) {
         tr[1] <- lubridate::floor_date(tr[1], unit = "3 hours")
         tr[2] <- lubridate::ceiling_date(tr[2], unit = "3 hours")
-      } else if(interval() == 360) {
+      } else if(i == 360) {
         tr[1] <- lubridate::floor_date(tr[1], unit = "6 hours")
         tr[2] <- lubridate::ceiling_date(tr[2], unit = "6 hours")
-      } else if(interval() == 720) {
+      } else if(i == 720) {
         tr[1] <- round_6(tr[1])
         tr[2] <- round_6(tr[2])
-      } else if(interval() == 1440) {
+      } else if(i == 1440) {
         tr[1] <- lubridate::floor_date(tr[1], unit = "24 hours")
         tr[2] <- lubridate::ceiling_date(tr[2], unit = "24 hours")
       }
-      if(tr[1] == tr[2]) tr[2] <- tr[1] + interval()*60
+      if(tr[1] == tr[2]) tr[2] <- tr[1] + i*60
     })
     return(tr)
   }), 1000)
 
+  time_range <- reactive({
+    if(ready(time_range_d())) return(time_range_d()) else return(lubridate::with_tz(c(min(t()$times), max(t()$times)), tz = t()$tz))
+  })
+
   instant_range <- reactive({
-    req(interval())
     lubridate::seconds(interval()*60/2)
   })
 
+  # What is the time span of the data in hours/min/weeks etc.?
   data_range <- eventReactive(time_range(), {
-    req(time_range())
     d <- t()$times[t()$times >= time_range()[1] & t()$times <= time_range()[2]]
     if(length(d) == 0) d <- time_range()
     as.numeric(difftime(max(d), min(d), units = "min"))
   })
 
-  anim_speed <- debounce(reactive({input$anim_speed}), 700, priority = 1000)
-
-  breaks_input <- debounce(reactive({
-    req(interval(), time_range(), t(), data_range())
-    req(interval_selection(data_range()) <= interval())
-    if(verbose) cat("  Breaks Input\n")
-    list("interval" = interval(), "time_range" = time_range(), "t" = t())
-  }), 1000, priority = 2000)
+  anim_speed_d <- debounce(reactive({input$anim_speed}), 700, priority = 1000)
+  anim_speed <- reactive({if(ready(anim_speed_d())) return(anim_speed_d()) else return(50)})
 
   breaks <- reactive({
-    req(t())
-    if("try-error" %in% class(try(breaks_input(), silent = TRUE))) {
-      breaks <- seq(min(t()$times), max(t()$times), by = "1 day")
-    } else {
-      req(breaks_input())
-      if(verbose) cat("  Breaks\n")
-      breaks <- seq(breaks_input()$time_range[1], breaks_input()$time_range[2], by = paste(breaks_input()$interval, "min"))
-      if(max(breaks) < max(breaks_input()$t$times)) breaks <- seq(breaks_input()$time_range[1], breaks_input()$time_range[2] + instant_range()*2, by = paste(breaks_input()$interval, "min"))
-    }
-      return(breaks)
+    req(interval_selection(data_range()) <= interval())
+
+    if(verbose) cat("  Breaks\n")
+    breaks <- seq(time_range()[1], time_range()[2], by = paste(interval(), "min"))
+    if(max(breaks) < max(t()$times)) breaks <- seq(time_range()[1], time_range()[2] + instant_range()*2, by = paste(interval(), "min"))
+    return(breaks)
   })
 
   return(c(interval = interval,
@@ -251,9 +241,14 @@ mod_maps_advanced <- function(input, output, session, samples, verbose = FALSE) 
   ns <- session$ns
 
   # UIs
-  animal_id <- debounce(reactive({input$animal_id}), 700, priority = 1000)
-  type <- debounce(reactive({input$type}), 700, priority = 1000)
-  summary <- debounce(reactive({input$summary}), 700, priority = 1000)
+  animal_id_d <- debounce(reactive({input$animal_id}), 700, priority = 1000)
+  animal_id <- reactive({if(ready(animal_id_d())) return(animal_id_d()) else return("all")})
+
+  type_d <- debounce(reactive({input$type}), 700, priority = 1000)
+  type <- reactive({if(ready(type_d())) return(type_d()) else return("cumulative")})
+
+  summary_d <- debounce(reactive({input$summary}), 700, priority = 1000)
+  summary <- reactive({if(ready(summary_d())) return(summary_d()) else return("sum")})
 
   # Animal ID selection
   output$UI_animal_id <- renderUI({
@@ -342,7 +337,7 @@ mod_maps_time <- function(input, output, session, controls, events, verbose = FA
     req(input$instant)
     isolate({
       if(verbose) cat("Instant\n")
-      lubridate::with_tz(round.POSIXt(input$instant, units = "secs") - controls$instant_range(), isolate(controls$tz()))
+      lubridate::with_tz(round.POSIXt(input$instant, units = "secs") - controls$instant_range(), tz = isolate(controls$tz()))
     })
   })
 
@@ -411,7 +406,8 @@ mod_maps_sunrise <- function(input, output, session, instant, controls, verbose 
   ns <- session$ns
   values <- reactiveValues()
 
-  sunrise <- debounce(reactive({input$sunrise}), 700, priority = 1000)
+  sunrise_d <- debounce(reactive({input$sunrise}), 700, priority = 1000)
+  sunrise <- reactive({if(ready(sunrise_d())) return(input$sunrise) else return(FALSE)})
 
   ## Add sunrise sunset
   observeEvent(instant(), {
