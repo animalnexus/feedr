@@ -136,8 +136,8 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
       temp <- trans[[x]]
       output[[paste0("dt_", x)]] <- DT::renderDataTable({
         validate(need(!is.null(all$r), msg_select))
-        validate(need(!is.null(trans$r) && nrow(temp) > 0, msg_error))
         validate(need(!is.null(temp) && nrow(temp) > 0, msg_private))
+        validate(need(!is.null(trans$r) && nrow(temp) > 0, msg_error))
 
         if(x == "dom"){
           DT::datatable(temp, filter = "none",
@@ -200,6 +200,7 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
  ## Prepare Log Tab
   output$log <- renderText({
     req("v" %in% names(msg))
+    validate(need(!is.null(temp) && nrow(temp) > 0, msg_private))
     l <- lapply(2:nrow(types), function(x) {
       x <- types[x, ]
       tagList(h3(x$names), code(lapply(msg[[x$n]], br)))
