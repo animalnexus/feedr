@@ -60,16 +60,22 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
 
   ns <- session$ns
 
+  debounce_int <- 700 # Debounce interval
+
   # Instructions-------------------------------
   callModule(mod_maps_instructions, "details")
 
   # Controls ----------------------------------
-  controls <- callModule(mod_maps_controls, "setup", times = t_id, verbose = verbose)
-  summary <- callModule(mod_maps_advanced, "adv", samples = samples, verbose = verbose)
-  instant <- callModule(mod_maps_time, "setup_time", controls = controls, events = events, verbose = verbose)
+  controls <- callModule(mod_maps_controls, "setup", times = t_id,
+                         debounce_int = debounce_int, verbose = verbose)
+  summary <- callModule(mod_maps_advanced, "adv", samples = samples,
+                        debounce_int = debounce_int, verbose = verbose)
+  instant <- callModule(mod_maps_time, "setup_time", controls = controls,
+                        events = events, verbose = verbose)
 
   # Maps---------------------------------------
-  callModule(mod_maps_sunrise, "map", instant = instant, controls = controls, verbose = verbose)
+  callModule(mod_maps_sunrise, "map", instant = instant, controls = controls,
+             debounce_int = debounce_int, verbose = verbose)
   callModule(mod_maps_leaflet, "map",
              summary = summary$summary,
              data_instant = data_instant,

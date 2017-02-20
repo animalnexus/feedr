@@ -89,7 +89,7 @@ mod_UI_maps_controls <- function(id) {
 
 # Module server function
 #' @import shiny
-mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
+mod_maps_controls <- function(input, output, session, times, debounce_int, verbose = FALSE) {
 
   ns <- session$ns
 
@@ -136,7 +136,7 @@ mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
     req(input$interval)
     if(verbose) cat("  Input - Interval\n")
     as.numeric(input$interval)
-  }), 1000)
+  }), debounce_int)
 
   interval <- reactive({
     if(ready(interval_d())) return(interval_d()) else return(as.vector(last(data_limits()$i)))
@@ -182,7 +182,7 @@ mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
       if(tr[1] == tr[2]) tr[2] <- tr[1] + i*60
     })
     return(tr)
-  }), 1000)
+  }), debounce_int)
 
   time_range <- reactive({
     if(ready(time_range_d())) return(time_range_d()) else return(lubridate::with_tz(c(min(t()$times), max(t()$times)), tz = t()$tz))
@@ -199,7 +199,7 @@ mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
     as.numeric(difftime(max(d), min(d), units = "min"))
   })
 
-  anim_speed_d <- debounce(reactive({input$anim_speed}), 700, priority = 1000)
+  anim_speed_d <- debounce(reactive({input$anim_speed}), debounce_int)
   anim_speed <- reactive({if(ready(anim_speed_d())) return(anim_speed_d()) else return(50)})
 
   breaks <- reactive({
@@ -236,18 +236,18 @@ mod_UI_maps_advanced <- function(id) {
 }
 
 
-mod_maps_advanced <- function(input, output, session, samples, verbose = FALSE) {
+mod_maps_advanced <- function(input, output, session, samples, debounce_int, verbose = FALSE) {
 
   ns <- session$ns
 
   # UIs
-  animal_id_d <- debounce(reactive({input$animal_id}), 700, priority = 1000)
+  animal_id_d <- debounce(reactive({input$animal_id}), debounce_int)
   animal_id <- reactive({if(ready(animal_id_d())) return(animal_id_d()) else return("all")})
 
-  type_d <- debounce(reactive({input$type}), 700, priority = 1000)
+  type_d <- debounce(reactive({input$type}), debounce_int)
   type <- reactive({if(ready(type_d())) return(type_d()) else return("cumulative")})
 
-  summary_d <- debounce(reactive({input$summary}), 700, priority = 1000)
+  summary_d <- debounce(reactive({input$summary}), debounce_int)
   summary <- reactive({if(ready(summary_d())) return(summary_d()) else return("sum")})
 
   # Animal ID selection
@@ -401,12 +401,12 @@ mod_UI_maps_sunrise <- function(id) {
 
 
 #' @import shiny
-mod_maps_sunrise <- function(input, output, session, instant, controls, verbose = FALSE) {
+mod_maps_sunrise <- function(input, output, session, instant, controls, debounce_int, verbose = FALSE) {
 
   ns <- session$ns
   values <- reactiveValues()
 
-  sunrise_d <- debounce(reactive({input$sunrise}), 700, priority = 1000)
+  sunrise_d <- debounce(reactive({input$sunrise}), debounce_int)
   sunrise <- reactive({if(ready(sunrise_d())) return(input$sunrise) else return(FALSE)})
 
   ## Add sunrise sunset
