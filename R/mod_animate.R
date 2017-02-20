@@ -75,8 +75,7 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
              data_instant = data_instant,
              data_total = data_total, verbose = verbose)
 
-
-  # Data---------------------------------------
+  # Data ---------------------------------------
   # Fix time zone to local non-DST
 
   data_instant <- reactive({
