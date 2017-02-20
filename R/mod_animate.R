@@ -1,3 +1,4 @@
+# Map UI function -------------------------------------------------------
 #' Animated map for individuals with leaflet
 #'
 #' Interactive shiny app to select and animate presence at and movements between
@@ -27,7 +28,8 @@ ui_animate <-  function(v, verbose = FALSE, diagnostic = FALSE) {
 }
 
 
-## Animated map - UI
+
+# Complete UI for animations -------------------------------------------------------
 #' @import shiny
 #' @import magrittr
 mod_UI_map_animate <- function(id) {
@@ -50,7 +52,7 @@ mod_UI_map_animate <- function(id) {
   )
 }
 
-# Module server function
+# Complete server for animations -------------------------------------------------------
 #' @import shiny
 #' @import magrittr
 #' @import leaflet

@@ -1,16 +1,5 @@
-mod_maps <- function() {
 
-  app <- shiny::shinyApp(ui = shiny::fluidPage(includeCSS(system.file("extra", "style.css", package = "feedr")),
-                                               mod_UI_map_animate("standalone")),
-                         server = function(input, output, session) {
-                           shiny::callModule(mod_map_animate, "standalone",
-                                             v = v)
-                         }
-  )
-  shiny::runApp(app, display.mode = "normal")
-}
-
-
+# Instructions -------------------------------------------------------
 mod_UI_maps_instructions <- function(id, specific) {
   ns <- NS(id)
   tagList(
@@ -70,6 +59,7 @@ mod_maps_instructions <- function(input, output, session) {
 
 }
 
+# Tips -------------------------------------------------------
 mod_UI_maps_tips <- function(id, specific) {
   ns <- NS(id)
   tagList(
@@ -80,7 +70,7 @@ mod_UI_maps_tips <- function(id, specific) {
 }
 
 
-## Animated map - UI
+# Animation Controls -------------------------------------------------------
 #' @import shiny
 mod_UI_maps_controls <- function(id) {
   # Create a namespace function using the provided id
@@ -240,7 +230,7 @@ mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
            tz_offset = reactive({t()$tz_offset})))
 }
 
-
+# Advanced Animation Controls -------------------------------------------------------
 mod_UI_maps_advanced <- function(id) {
 
   ns <- NS(id)
@@ -286,6 +276,7 @@ mod_maps_advanced <- function(input, output, session, samples, verbose = FALSE) 
 }
 
 
+# Time Figure -------------------------------------------------------
 mod_UI_maps_time <- function(id, type = "the RFID logger") {
 
   ns <- NS(id)
@@ -319,7 +310,6 @@ mod_UI_maps_time <- function(id, type = "the RFID logger") {
   )
 }
 
-# Module server function
 #' @import shiny
 mod_maps_time <- function(input, output, session, controls, events, verbose = FALSE) {
 
@@ -447,7 +437,7 @@ mod_maps_sunrise <- function(input, output, session, instant, controls, verbose 
   })
 }
 
-## Map_leaflet UI
+# Actual leaflet map -------------------------------------------------------
 mod_UI_maps_leaflet <- function(id) {
   ns <- NS(id)
   tagList(
@@ -603,7 +593,7 @@ mod_maps_leaflet <- function(input, output, session, data_instant, data_total, s
   })
 }
 
-# Map_data Server
+# Data Prep -------------------------------------------------------
 #' @import shiny
 mod_maps_data <- function(input, output, session, controls, instant, data, verbose = FALSE) {
   data_instant <- reactive({
@@ -614,6 +604,7 @@ mod_maps_data <- function(input, output, session, controls, instant, data, verbo
   return(data_instant)
 }
 
+# Extra functions -------------------------------------------------------
 prep_presence <- function(x, y, type = "cumulative", summary = "sum") {
   if(type == "cumulative") x <- x[x$block <= y$block[1], ] else if(type == "instant") x <- x[x$block == y$block[1], ]
 
