@@ -15,7 +15,7 @@ mod_UI_indiv <- function(id) {
                  fluidRow(DT::dataTableOutput(ns("dt_animals")))),
           column(3,
                  div(style = "position: fixed",
-                 h4("Click on a row for more information"),
+                 h4("Click on a row for photos"),
                  htmlOutput(ns("img_animals"))))
   )
 
