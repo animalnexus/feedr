@@ -9,6 +9,7 @@ last <- function(x)  return(x[length(x)])
 #'
 #' @export
 tz_offset <- function(tz, dst = FALSE, tz_name = FALSE) {
+  tz <- check_tz(tz)
   if(!dst) t <- as.numeric(difftime(as.POSIXct("2016-01-01 00:00:00", tz = "UTC"),
                                     as.POSIXct("2016-01-01 00:00:00", tz = tz), units = "hours"))
   if(dst) t <- as.numeric(difftime(as.POSIXct("2016-06-01 00:00:00", tz = "UTC"),
