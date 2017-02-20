@@ -76,6 +76,8 @@ mod_UI_data_db <- function(id) {
                         brush = brushOpts(
                           id = ns("plot_data_brush"),
                           direction = "x",
+                          delay = 700,
+                          delayType = "debounce",
                           resetOnNew = TRUE), height = "100%"),
              div(strong(textOutput(ns("text_time"))), style = "text-align: center;")
       )
@@ -99,74 +101,16 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   ns <- session$ns
 
-  # Help ----------------------------------------------------
-  observeEvent(input$help_data, {
-    showModal(modalDialog(size = "m",
-                          title = "Data selection",
-                          easyClose = TRUE,
-                          tagList(h4("Site selection"),
-                                  tags$ul(
-                                    tags$li("First select a site by which to filter the data."),
-                                    tags$li("You may only select data from one site at a time.")),
-                                  h4("Dates"),
-                                  tags$ul(
-                                    tags$li("Next, select date range with slider bar, OR"),
-                                    tags$li("By clicking and dragging over the time plot"),
-                                    tags$ul(tags$li("The time plot actively updates to show the current data selection (dark colours are selected, pale are not)"))),
-                                  h4("Species"),
-                                  tags$ul(
-                                    tags$li("Refine your selection by choosing which species to include/exclude"),
-                                    tags$li("The selection will update depending on your other selections (i.e. if you select a date range with no visits by a particular species, that species will be deselected"),
-                                    tags$li("Numbers in brackets reflect the total number of RFID reads per species.")),
-                                  h4("Advanced Options"),
-                                  tags$ul(
-                                    tags$li("Further refine your selection by choosing which animal_ids or logger_ids to include/exclude"),
-                                    tags$li("The selection of available ids will update depending on your other selections (i.e. if you deselect a species, all animal_ids associated with that species will disappear"),
-                                    tags$li("Numbers in brackets reflect the total number of RFID reads per id.")),
-                                  strong("Note:"), "If you find you have 0 observations selected, try broadening your time range."
-                          )
-              ))
-  })
+  # Values ----------------------------------------------------
 
-  observeEvent(input$help_selected, {
-    showModal(modalDialog(size = "m",
-                          title = "Selected data",
-                          easyClose = TRUE,
-              tagList(h4("Data Access:"),
-                      "Some data in the Database is restricted to visualizations only to protect the hard work of scientists until they've had a chance to publish their findings.",
-                      tags$ul(
-                        tags$li(strong("Fully Public:"), "Users may visualize and download the data"),
-                        tags$li(strong("Visualizations Only:"), "Users may visualize but not download the data")),
-                      h4("Selected Data Table"),
-                      tags$ul(tags$li("Current number of reads per species in the selected data")),
-                      h4("Get Data"),
-                      tags$ul(tags$li("Load the selected data set")),
-                      h4("Reset Data"),
-                      tags$ul(tags$li("Resets data selection to default"))
-    )))
-  })
+  values <- reactiveValues(
+    pre_data = NULL,
+    data_map = NULL,          # Stores values which displayed on map
+    keep = NULL,              # Stores data selected for download
+    input = NULL,           # Stores selection options
+    input_previous = NULL)   # Stores previous selection options (for comparison)
 
-  observeEvent(input$help_map, {
-    showModal(modalDialog(size = "m",
-                          title = "Map of data available",
-                          easyClose = TRUE,
-                          tagList(tags$ul(
-                                    tags$li("Circle area depicts the amount of visits recorded per site or logger given the options selected"),
-                                    tags$li("Update Map button can be used to activily update the map of selected data"))
-                          )))
-  })
-
-  observeEvent(input$help_adv, {
-    showModal(modalDialog(size = "m",
-                          title = "Advanced Options",
-                          easyClose = TRUE,
-                          tagList(tags$ul(
-                            tags$li("Select specific animal ids or logger ids"),
-                            tags$li("Numbers in brackets indicate the total number of reads in the database for each individual or logger"))
-                          )))
-  })
-
-
+  debounce_int <- 700 # Debounce interval
 
   # Database ----------------------------------------------------
 
@@ -241,23 +185,10 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
     })
   }
 
-  # Values ----------------------------------------------------
-
-  values <- reactiveValues(
-    pre_data = NULL,
-    data_map = NULL,          # Stores values which displayed on map
-    keep = NULL,              # Stores data selected for download
-    input = NULL,           # Stores selection options
-    input_previous = NULL)   # Stores previous selection options (for comparison)
-
-
   # Update selection ----------------------------------------------------
-
-  plot_data_brush <- debounce(reactive({input$plot_data_brush}), 700, priority = 1000)
 
   # Update date selection based on plot brush
   observeEvent(input$plot_data_brush, {
-    req(input$plot_data_brush)
     cnts <- get_counts(c = counts_site(), summarize_by = "date") %>%
       dplyr::mutate(choices = as.Date(choices))
     dates <- c(as.Date(input$plot_data_brush$xmin, lubridate::origin),
@@ -283,21 +214,28 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
   })
 
   # Input variables
-  sel <- reactive({
+  selection_d <- debounce(reactive({
     req(startup(input), !is.null(db))
     input$data_species
     input$data_animal_id
     input$data_logger_id
     values_list(input, counts)
+  }), debounce_int)
+
+
+  selection <- reactive({
+    if(ready(selection_d())) {
+      return(selection_d())
+    } else {
+      req(startup(input), !is.null(db))
+      return(values_list(input, counts))
+    }
   })
-
-
-  selection <- debounce(sel, 700, priority = 1000)
 
   # Fires when selection complete
   observeEvent(selection(), {
     isolate({
-      req(startup(input), !is.null(db))
+      req(!is.null(selection()), startup(input), !is.null(db))
 
       values$input_previous <- values$input  ## Save old inputs
       values$input <- selection()
@@ -696,11 +634,11 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
     # At startup, use site values, elsewise use values$input
     isolate({
-      if(is.null(values$input)) {
-        date <- c(min(counts_site()$date), max(counts_site()$date))
-        total <- counts_site() %>%
-          dplyr::mutate(selected = factor("selected", levels = c("unselected", "selected")))
-      } else {
+      # if(is.null(values$input)) {
+      #   date <- c(min(counts_site()$date), max(counts_site()$date))
+      #   total <- counts_site() %>%
+      #     dplyr::mutate(selected = factor("selected", levels = c("unselected", "selected")))
+      # } else {
         i <- values$input
         date <- c(min(i$date), max(i$date))
         total <- counts_site() %>%
@@ -711,7 +649,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
                                              animal_id %in% i$animal_id &
                                              logger_id %in% i$logger_id,
                                            "selected"))
-      }
+      #}
 
       total <- total %>%
         dplyr::group_by(species, date, selected) %>%
@@ -748,6 +686,73 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
   output$text_time <- renderText({
     req(startup(input), !is.null(db), values$input)
     "Drag and select a date range to further refine the data selection"
+  })
+
+  # Help ----------------------------------------------------
+  observeEvent(input$help_data, {
+    showModal(modalDialog(size = "m",
+                          title = "Data selection",
+                          easyClose = TRUE,
+                          tagList(h4("Site selection"),
+                                  tags$ul(
+                                    tags$li("First select a site by which to filter the data."),
+                                    tags$li("You may only select data from one site at a time.")),
+                                  h4("Dates"),
+                                  tags$ul(
+                                    tags$li("Next, select date range with slider bar, OR"),
+                                    tags$li("By clicking and dragging over the time plot"),
+                                    tags$ul(tags$li("The time plot actively updates to show the current data selection (dark colours are selected, pale are not)"))),
+                                  h4("Species"),
+                                  tags$ul(
+                                    tags$li("Refine your selection by choosing which species to include/exclude"),
+                                    tags$li("The selection will update depending on your other selections (i.e. if you select a date range with no visits by a particular species, that species will be deselected"),
+                                    tags$li("Numbers in brackets reflect the total number of RFID reads per species.")),
+                                  h4("Advanced Options"),
+                                  tags$ul(
+                                    tags$li("Further refine your selection by choosing which animal_ids or logger_ids to include/exclude"),
+                                    tags$li("The selection of available ids will update depending on your other selections (i.e. if you deselect a species, all animal_ids associated with that species will disappear"),
+                                    tags$li("Numbers in brackets reflect the total number of RFID reads per id.")),
+                                  strong("Note:"), "If you find you have 0 observations selected, try broadening your time range."
+                          )
+    ))
+  })
+
+  observeEvent(input$help_selected, {
+    showModal(modalDialog(size = "m",
+                          title = "Selected data",
+                          easyClose = TRUE,
+                          tagList(h4("Data Access:"),
+                                  "Some data in the Database is restricted to visualizations only to protect the hard work of scientists until they've had a chance to publish their findings.",
+                                  tags$ul(
+                                    tags$li(strong("Fully Public:"), "Users may visualize and download the data"),
+                                    tags$li(strong("Visualizations Only:"), "Users may visualize but not download the data")),
+                                  h4("Selected Data Table"),
+                                  tags$ul(tags$li("Current number of reads per species in the selected data")),
+                                  h4("Get Data"),
+                                  tags$ul(tags$li("Load the selected data set")),
+                                  h4("Reset Data"),
+                                  tags$ul(tags$li("Resets data selection to default"))
+                          )))
+  })
+
+  observeEvent(input$help_map, {
+    showModal(modalDialog(size = "m",
+                          title = "Map of data available",
+                          easyClose = TRUE,
+                          tagList(tags$ul(
+                            tags$li("Circle area depicts the amount of visits recorded per site or logger given the options selected"),
+                            tags$li("Update Map button can be used to activily update the map of selected data"))
+                          )))
+  })
+
+  observeEvent(input$help_adv, {
+    showModal(modalDialog(size = "m",
+                          title = "Advanced Options",
+                          easyClose = TRUE,
+                          tagList(tags$ul(
+                            tags$li("Select specific animal ids or logger ids"),
+                            tags$li("Numbers in brackets indicate the total number of reads in the database for each individual or logger"))
+                          )))
   })
 
   # Return ----------------------------------------------------
