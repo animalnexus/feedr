@@ -394,16 +394,17 @@ mod_maps_time <- function(input, output, session, controls, events, verbose = FA
   return(instant = instant)
 }
 
-
+# Sunrise overlay -------------------------------------------------------
 mod_UI_maps_sunrise <- function(id) {
   ns <- NS(id)
   tagList(
     radioButtons(ns("sunrise"), "Show sunrise/sunset?",
-                 choices = list("Yes" = TRUE, "No" = FALSE), inline = TRUE)
+                 choices = list("Yes" = TRUE, "No" = FALSE),
+                 selected = FALSE, inline = TRUE)
   )
 }
 
-# Module server function
+
 #' @import shiny
 mod_maps_sunrise <- function(input, output, session, instant, controls, verbose = FALSE) {
 
@@ -416,7 +417,7 @@ mod_maps_sunrise <- function(input, output, session, instant, controls, verbose 
   observeEvent(instant(), {
     req(instant(), sunrise() == TRUE)
     leafletProxy(ns("map")) %>%
-      addTerminator(time = instant() + controls$instant_range(),
+      addTerminator(time = with_tz(instant() + controls$instant_range(), "UTC"),
                     layerId = "sun",
                     group = "Sunrise/Sunset")# %>%
       #removeShape(layerId = paste0("set-", values$time_prev))

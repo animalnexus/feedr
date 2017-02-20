@@ -544,7 +544,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
     if(nrow(data) > 0) {
       if(verbose) cat("Formatting selected data...")
-      tz_disp <- tz_offset(ifelse(d$site_name[1] == "Kamloops, BC", "America/Vancouver", "America/Costa Rica"), tz_name = TRUE)
+      tz_disp <- tz_offset(ifelse(d$site_name[1] == "Kamloops, BC", "America/Vancouver", "America/Costa_Rica"), tz_name = TRUE)
       data <- data %>%
         dplyr::mutate(time = lubridate::with_tz(time, "UTC")) %>% # Because otherwise has system timezone
         load_format(tz = "UTC", tz_disp = tz_disp) %>%
