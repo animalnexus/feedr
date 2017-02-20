@@ -184,3 +184,7 @@ data_tz <- function(data) {
   for(i in cols) data[, i] <- lubridate::with_tz(data[, i], tzone = tz)
   return(data)
 }
+
+ready <- function(r){
+  shiny::isTruthy(try(r, silent = TRUE))
+}
