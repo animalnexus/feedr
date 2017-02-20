@@ -1,4 +1,4 @@
-[![Travis-Ci Build Status](https://travis-ci.org/steffilazerte/feedr.svg?branch=master)](https://travis-ci.org/steffilazerte/feedr)
+[![Travis-Ci Build Status](https://travis-ci.org/animalnexus/feedr.svg?branch=master)](https://travis-ci.org/steffilazerte/feedr)
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/steffilazerte/feedr?branch=master&svg=true)](https://ci.appveyor.com/project/steffilazerte/feedr)
 # feedr
 
