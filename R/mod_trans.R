@@ -46,6 +46,7 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
 
   ns <- session$ns
 
+  # Help ---------------------------------------------------
   types <- tibble::tibble(
     names = c("Raw", "Visit", "Presence", "Movement", "Displacement", "Dominance", "Activity", "Daily Activity"),
     f_name = c("raw", "visits", "presence", "movements", "displacments", "dominance", "activity", "daily_activity"),
@@ -61,13 +62,19 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
                 "<h3>Activity</h3> <p>Each row corresponds to a 15-min time period and is scored as active or inactive (activity_c) or 1 or 0 (activity). Activity is definied by whether or not the individual had a 'presence' bout (at any logger) which overlapped the 15-min time slot. Rise and set reflect the time of sunrise and sun set based on the lat/lon of the logger.</p>",
                 "<h3>Daily Activity</h3> <p>Each row corresponds to an average activity score for that 15-min period calculated across all days included in the activity data. Rise and set reflect the time of sunrise and sun set based on the lat/lon of the logger.</p>"))
 
+  # Data Descriptions
+  output$data_desc <- renderText({
+    req(input$data_tabs)
+    types$details[types$names == input$data_tabs]
+  })
+
+  # Values ---------------------------------------------
   trans <- reactiveValues()
   msg <- reactiveValues()
   all <- reactiveValues()
 
-  ## Transform data
+  # Data Transformations --------------------------------
   observeEvent(r(), {
-    req(r())
 
     all$r <- r()
     if(!("dataaccess" %in% names(all$r))) all$r$dataaccess <- 0
@@ -107,6 +114,7 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
     })
   })
 
+  # Buttons ------------------------------------------------
   ## Create download buttons
   output$dl_buttons <- renderUI({
     lapply(1:nrow(types), function(x) {
@@ -124,26 +132,29 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
     shinyjs::toggleState("data_dl", condition = "data_tabs" %in% names(input))
   })
 
+  # Messages -------------------------------------------------
   msg_select <- "Please select data through the Database or by Importing"
   msg_error <- "No data (see log for more details)"
   msg_private <- "None of the currently selected data is available for download.\n
   Some of data in our Database is restricted to visualizations only to protect the hard work of scientists until they've had a chance to publish their findings."
 
 
-  ## Output Data Tables
+  # Table Output ---------------------------------------------
   observeEvent(trans$r, {
     lapply(types$n, function(x) {
-      temp <- trans[[x]]
+      temp <- as.data.frame(trans[[x]])
       output[[paste0("dt_", x)]] <- DT::renderDataTable({
         validate(need(!is.null(all$r), msg_select))
-        validate(need(!is.null(temp) && nrow(temp) > 0, msg_private))
-        validate(need(!is.null(trans$r) && nrow(temp) > 0, msg_error))
+        validate(need(!is.null(all$r) && !is.null(trans$r) && nrow(trans$r) > 0, msg_private))
+        validate(need(nrow(temp) > 0, msg_error))
 
         if(x == "dom"){
           DT::datatable(temp, filter = "none",
                         options = list(ordering = FALSE,
                                        pageLength = 100))
         } else {
+          t <- names(which(sapply(temp, lubridate::is.POSIXct)))
+          for(i in t) temp[, i] <- as.character(temp[, i])
           DT::datatable(temp,
                         filter = "top",
                         options = list(pageLength = 100),
@@ -154,7 +165,10 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
     })
   })
 
-  ## Setup downloads
+
+  # Downloads ---------------------------------------------------
+
+  # Setup
   observeEvent(trans$r, {
     lapply(1:nrow(types), function(x) {
       x <- types[x, ]
@@ -167,7 +181,7 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
   })
 
 
-  ## Download All
+  # Download All
   output$data_dl <- downloadHandler(
     filename = paste0("feedr_all_", Sys.Date(), ".zip"),
     content = function(file) {
@@ -186,7 +200,7 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
     contentType = "application/zip"
   )
 
-  ## Prepare tabs
+  # Data Tabs -------------------------------------------------------------
   output$data_tables <- renderUI({
     tabs <- lapply(1:nrow(types), function(x) {
       x <- types[x, ]
@@ -200,19 +214,15 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
  ## Prepare Log Tab
   output$log <- renderText({
     req("v" %in% names(msg))
-    validate(need(!is.null(temp) && nrow(temp) > 0, msg_private))
+
+    validate(need(!is.null(all$r), msg_select))
+    validate(need(!is.null(all$r) && !is.null(trans$r) && nrow(trans$r) > 0, msg_private))
+
     l <- lapply(2:nrow(types), function(x) {
       x <- types[x, ]
       tagList(h3(x$names), code(lapply(msg[[x$n]], br)))
     })
     as.character(do.call("tagList", l))
-  })
-
-  ## Data Descriptions
-
-  output$data_desc <- renderText({
-    req(input$data_tabs)
-    types$details[types$names == input$data_tabs]
   })
 
 
