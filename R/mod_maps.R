@@ -155,6 +155,7 @@ mod_maps_controls <- function(input, output, session, times, debounce_int, verbo
   ## Floor/ceiling to nearest relevant hour. For larger time periods, start at 6am
   time_range_d <- debounce(reactive({
     req(input$time_range)
+    req(lubridate::interval(input$time_range[1], input$time_range[2]) %in% lubridate::interval(t()$start, t()$end))
 
     tr <- lubridate::with_tz(input$time_range, t()$tz)
     i <- interval()
@@ -192,6 +193,7 @@ mod_maps_controls <- function(input, output, session, times, debounce_int, verbo
 
   # What is the time span of the data in hours/min/weeks etc.?
   data_range <- eventReactive(time_range(), {
+    if(verbose) cat("  Data range\n")
     d <- t()$times[t()$times >= time_range()[1] & t()$times <= time_range()[2]]
     if(length(d) == 0) d <- time_range()
     as.numeric(difftime(max(d), min(d), units = "min"))
@@ -202,8 +204,10 @@ mod_maps_controls <- function(input, output, session, times, debounce_int, verbo
 
   breaks <- reactive({
     req(interval_selection(data_range()) <= interval())
+    req(lubridate::interval(time_range()[1], time_range()[2]) %in% lubridate::interval(t()$start, t()$end)) #Make sure time range of data matches UIs (when switching datasets)
 
     if(verbose) cat("  Breaks\n")
+
     breaks <- seq(time_range()[1], time_range()[2], by = paste(interval(), "min"))
     if(max(breaks) < max(t()$times)) breaks <- seq(time_range()[1], time_range()[2] + instant_range()*2, by = paste(interval(), "min"))
     return(breaks)
@@ -358,7 +362,6 @@ mod_maps_time <- function(input, output, session, controls, events, verbose = FA
       ## Get limits
       l[2] <- l[2] + controls$interval()*60
       l <- l + c(-0.25, 0.25)* controls$interval()*60
-      #if(any(d$block <= min(l)) | any(d$block >= max(l))) browser()
 
       ## Get breaks
       y <- seq(min(l), max(l), length.out = 8)
