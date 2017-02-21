@@ -189,6 +189,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   # Update date selection based on plot brush
   observeEvent(input$plot_data_brush, {
+    if(verbose) cat("Get time brush input\n")
     cnts <- get_counts(c = counts_site(), summarize_by = "date") %>%
       dplyr::mutate(choices = as.Date(choices))
     dates <- c(as.Date(input$plot_data_brush$xmin, lubridate::origin),
@@ -202,6 +203,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   # Update all selections based on date
   observeEvent(input$data_date, {
+    if(verbose) cat("Update UI selections based on dates\n")
     sel <- counts_site() %>%
       dplyr::filter(date %within% interval(as.Date(input$data_date[1]), as.Date(input$data_date[2]))) %>%
       dplyr::count(species, animal_id, logger_id)
@@ -214,96 +216,86 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
   })
 
   # Input variables
-  selection_d <- debounce(reactive({
+  selection <- throttle(reactive({
     req(startup(input), !is.null(db))
+    if(verbose) cat("Update selections\n")
     input$data_species
     input$data_animal_id
     input$data_logger_id
     values_list(input, counts)
   }), debounce_int)
 
-
-  selection <- reactive({
-    if(ready(selection_d())) {
-      return(selection_d())
-    } else {
-      req(startup(input), !is.null(db))
-      return(values_list(input, counts))
-    }
-  })
-
   # Fires when selection complete
   observeEvent(selection(), {
     isolate({
       req(!is.null(selection()), startup(input), !is.null(db))
+      req(!is.logical(all.equal(selection(), values$inputs)))
+
+      if(verbose) cat("Updating values$input...\n")
 
       values$input_previous <- values$input  ## Save old inputs
       values$input <- selection()
+      values$keep <- get_counts(counts_site(), filter = selection())
 
-      if(!is.logical(all.equal(values$input, values$input_previous))) {
-        if(verbose) cat("Updating values$input...\n")
-        values$keep <- get_counts(counts_site(), filter = selection())
+      ## Added to current selection:
+      added <- list(
+        "species" = setdiff(values$input$species, values$input_previous$species),
+        "animal_id" = setdiff(values$input$animal_id, values$input_previous$animal_id),
+        "logger_id" = setdiff(values$input$logger_id, values$input_previous$logger_id))
+      added <- added[sapply(added, length) > 0]
 
-        ## Added to current selection:
-        added <- list(
-          "species" = setdiff(values$input$species, values$input_previous$species),
-          "animal_id" = setdiff(values$input$animal_id, values$input_previous$animal_id),
-          "logger_id" = setdiff(values$input$logger_id, values$input_previous$logger_id))
-        added <- added[sapply(added, length) > 0]
+      ## Force added back in:
+      if(length(added) > 0) {
+        dates <- values$input$date
+        cnts <- get_counts(counts_site(), filter = added) %>%
+          dplyr::filter(date >= dates[1],
+                        date <= dates[2])
+        values$keep <- unique(rbind(values$keep, cnts))
+      }
 
-        ## Force added back in:
-        if(length(added) > 0) {
-          dates <- values$input$date
-          cnts <- get_counts(counts_site(), filter = added) %>%
-            dplyr::filter(date >= dates[1],
-                          date <= dates[2])
-          values$keep <- unique(rbind(values$keep, cnts))
-        }
+      if(nrow(values$keep) > 0) {
 
-        if(nrow(values$keep) > 0) {
-
-          ## Uncheck species boxes if counts == 0 (But only if still checked)
-          cnts <- get_counts(c = values$keep, summarize_by = "species")
-          if(any(cnts$choices[cnts$sum == 0] %in% input$data_species)){
-            freezeReactiveValue(input, "data_species")
-            updateCheckboxGroupInput(session, "data_species",
-                                     selected = selected(cnts, "species"))
-          }
-
-          ## Uncheck animal id boxes if counts == 0 (But only if still checked)
-          cnts <- get_counts(c = values$keep, summarize_by = "animal_id")
-          if(any(cnts$choices[cnts$sum == 0] %in% input$data_animal_id)){
-            freezeReactiveValue(input, "data_animal_id")
-            updateCheckboxGroupInput(session, "data_animal_id",
-                                     selected = selected(cnts, "animal_id"))
-          }
-
-          ## Uncheck logger id boxes if counts == 0 (But only if still checked)
-          cnts <- get_counts(c = values$keep, summarize_by = "logger_id")
-          if(any(cnts$choices[cnts$sum == 0] %in% input$data_logger_id)){
-            freezeReactiveValue(input, "data_logger_id")
-            updateCheckboxGroupInput(session, "data_logger_id",
-                                     selected = selected(cnts, "logger_id"))
-          }
-        } else {
-          ## If no values that match all options, keep time range, unselect all species and all ids:
-          freezeReactiveValue(input, "data_date")
-          updateDateRangeInput(session, "data_date",
-                               start = min(values$input$date),
-                               end = max(values$input$date))
-
+        ## Uncheck species boxes if counts == 0 (But only if still checked)
+        cnts <- get_counts(c = values$keep, summarize_by = "species")
+        if(any(cnts$choices[cnts$sum == 0] %in% input$data_species)){
           freezeReactiveValue(input, "data_species")
           updateCheckboxGroupInput(session, "data_species",
-                                   selected = character(0))
+                                   selected = selected(cnts, "species"))
+        }
 
+        ## Uncheck animal id boxes if counts == 0 (But only if still checked)
+        cnts <- get_counts(c = values$keep, summarize_by = "animal_id")
+        if(any(cnts$choices[cnts$sum == 0] %in% input$data_animal_id)){
           freezeReactiveValue(input, "data_animal_id")
           updateCheckboxGroupInput(session, "data_animal_id",
-                                   selected = character(0))
+                                   selected = selected(cnts, "animal_id"))
+        }
 
+        ## Uncheck logger id boxes if counts == 0 (But only if still checked)
+        cnts <- get_counts(c = values$keep, summarize_by = "logger_id")
+        if(any(cnts$choices[cnts$sum == 0] %in% input$data_logger_id)){
           freezeReactiveValue(input, "data_logger_id")
           updateCheckboxGroupInput(session, "data_logger_id",
-                                   selected = character(0))
+                                   selected = selected(cnts, "logger_id"))
         }
+      } else {
+        ## If no values that match all options, keep time range, unselect all species and all ids:
+        freezeReactiveValue(input, "data_date")
+        updateDateRangeInput(session, "data_date",
+                             start = min(values$input$date),
+                             end = max(values$input$date))
+
+        freezeReactiveValue(input, "data_species")
+        updateCheckboxGroupInput(session, "data_species",
+                                 selected = character(0))
+
+        freezeReactiveValue(input, "data_animal_id")
+        updateCheckboxGroupInput(session, "data_animal_id",
+                                 selected = character(0))
+
+        freezeReactiveValue(input, "data_logger_id")
+        updateCheckboxGroupInput(session, "data_logger_id",
+                                 selected = character(0))
       }
     })
   }, priority = 100)
@@ -627,15 +619,11 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
   ## Plot of counts overtime
   plot_data_ggplot <- reactive({
     req(startup(input), !is.null(db))
+    req(i <- values$input)
 
     if(verbose) cat("Refreshing Time Plot...\n")
 
-    values$input
-
-    # At startup, use site values, elsewise use values$input
     isolate({
-      req(i <- values$input)
-
       date <- c(min(i$date), max(i$date))
       total <- counts_site() %>%
         dplyr::mutate(selected = factor("unselected", levels = c("unselected", "selected")),
