@@ -109,27 +109,25 @@ mod_maps_controls <- function(input, output, session, times, debounce_int, verbo
   # Time range - select subsection of data
   output$UI_time_range <- renderUI({
     if(verbose) cat("  UI - Time range\n")
-    isolate({
-      x <- difftime(t()$end, t()$start)
-      if(units(x) == "hours") s <- 60*60
-      if(units(x) == "days") s <- 60*60*24
+    x <- difftime(t()$end, t()$start)
+    if(units(x) == "hours") s <- 60*60
+    if(units(x) == "days") s <- 60*60*24
 
-      sliderInput(ns("time_range"), "Time Range",
-                  min = t()$start,
-                  max = t()$end,
-                  value = c(t()$start, t()$end),
-                  step = s,
-                  timezone = t()$tz_offset,
-                  width = '100%')
-    })
+    sliderInput(ns("time_range"), "Time Range",
+                min = t()$start,
+                max = t()$end,
+                value = c(t()$start, t()$end),
+                step = s,
+                timezone = t()$tz_offset,
+                width = '100%')
   })
 
   ## UI Interval
   output$UI_interval <- renderUI({
     if(verbose) cat("  UI - Interval\n")
-    isolate(radioButtons(ns("interval"), "Resolution",
-                         choices = data_limits()$i,
-                         selected = interval_selection(c(min(t()$times), max(t()$times))), inline = TRUE))
+    radioButtons(ns("interval"), "Resolution",
+                 choices = data_limits()$i,
+                 selected = interval_selection(c(min(t()$times), max(t()$times))), inline = TRUE)
   })
 
   interval_d <- debounce(reactive({
