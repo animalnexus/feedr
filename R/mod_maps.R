@@ -155,7 +155,7 @@ mod_maps_controls <- function(input, output, session, times, debounce_int, verbo
   ## Floor/ceiling to nearest relevant hour. For larger time periods, start at 6am
   time_range_d <- debounce(reactive({
     req(input$time_range)
-    req(lubridate::interval(input$time_range[1], input$time_range[2]) %in% lubridate::interval(t()$start, t()$end))
+    req(lubridate::interval(input$time_range[1], input$time_range[2]) %within% lubridate::interval(t()$start, t()$end))
 
     tr <- lubridate::with_tz(input$time_range, t()$tz)
     i <- interval()
@@ -204,7 +204,7 @@ mod_maps_controls <- function(input, output, session, times, debounce_int, verbo
 
   breaks <- reactive({
     req(interval_selection(data_range()) <= interval())
-    req(lubridate::interval(time_range()[1], time_range()[2]) %in% lubridate::interval(t()$start, t()$end)) #Make sure time range of data matches UIs (when switching datasets)
+    req(lubridate::interval(time_range()[1], time_range()[2]) %within% lubridate::interval(t()$start, t()$end)) #Make sure time range of data matches UIs (when switching datasets)
 
     if(verbose) cat("  Breaks\n")
 
@@ -243,14 +243,14 @@ mod_maps_advanced <- function(input, output, session, samples, debounce_int, ver
   ns <- session$ns
 
   # UIs
-  animal_id_d <- debounce(reactive({input$animal_id}), debounce_int)
-  animal_id <- reactive({if(ready(animal_id_d())) return(animal_id_d()) else return("all")})
+  animal_id <- debounce(reactive({input$animal_id}), debounce_int)
+  #animal_id <- reactive({if(ready(animal_id_d())) return(animal_id_d()) else return("all")})
 
-  type_d <- debounce(reactive({input$type}), debounce_int)
-  type <- reactive({if(ready(type_d())) return(type_d()) else return("cumulative")})
+  type <- debounce(reactive({input$type}), debounce_int)
+  #type <- reactive({if(ready(type_d())) return(type_d()) else return("cumulative")})
 
-  summary_d <- debounce(reactive({input$summary}), debounce_int)
-  summary <- reactive({if(ready(summary_d())) return(summary_d()) else return("sum")})
+  summary <- debounce(reactive({input$summary}), debounce_int)
+  #summary <- reactive({if(ready(summary_d())) return(summary_d()) else return("sum")})
 
   # Animal ID selection
   output$UI_animal_id <- renderUI({
