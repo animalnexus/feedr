@@ -634,24 +634,17 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
     # At startup, use site values, elsewise use values$input
     isolate({
-      # if(is.null(values$input)) {
-      #   date <- c(min(counts_site()$date), max(counts_site()$date))
-      #   total <- counts_site() %>%
-      #     dplyr::mutate(selected = factor("selected", levels = c("unselected", "selected")))
-      # } else {
-        i <- values$input
-        date <- c(min(i$date), max(i$date))
-        total <- counts_site() %>%
-          dplyr::mutate(selected = factor("unselected", levels = c("unselected", "selected")),
-                        selected = replace(selected,
-                                           species %in% i$species &
-                                             date %within% interval(as.Date(i$date[1]), as.Date(i$date[2])) &
-                                             animal_id %in% i$animal_id &
-                                             logger_id %in% i$logger_id,
-                                           "selected"))
-      #}
+      req(i <- values$input)
 
-      total <- total %>%
+      date <- c(min(i$date), max(i$date))
+      total <- counts_site() %>%
+        dplyr::mutate(selected = factor("unselected", levels = c("unselected", "selected")),
+                      selected = replace(selected,
+                                         species %in% i$species &
+                                           date %within% interval(as.Date(i$date[1]), as.Date(i$date[2])) &
+                                           animal_id %in% i$animal_id &
+                                           logger_id %in% i$logger_id,
+                                         "selected")) %>%
         dplyr::group_by(species, date, selected) %>%
         dplyr::summarize(count = sum(count))
 
