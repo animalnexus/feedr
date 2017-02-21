@@ -164,7 +164,6 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
   # Don't react to p_id/m_id, as p_id/m_id are updated, breaks() will be updated, so best to just respond to breaks
   p_avg <- reactive({
     req(controls$breaks(), summary$summary())
-    #req(summary$animal_id() %in% unique(p$animal_id))
     isolate({
       req(controls$tz(), p_id())
       if(verbose) cat("Presence avg: ")
