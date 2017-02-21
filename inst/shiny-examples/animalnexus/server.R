@@ -97,7 +97,7 @@ shinyServer(function(input, output, session) {
 
   ### Visualizations
   ## Animate Data
-  callModule(feedr:::mod_map_animate, "anim", visits = v)
+  callModule(feedr:::mod_map_animate, "anim", visits = v, verbose = TRUE)
 
   ## Add weather data
   #Get weather data
