@@ -1,5 +1,5 @@
 cat("Starting server...\n")
-library(feedr)
+library(feedr, lib.loc = "/usr/local/lib/R_exp/site-library/")
 library(magrittr)
 library(shiny)
 library(shinyjs)
@@ -11,7 +11,7 @@ addResourcePath("assets", system.file("shiny-examples", "app_files", package = "
 shinyServer(function(input, output, session) {
 
   output$package_version <- renderText({
-    paste0("Using <a href = 'http://github.com/steffilazerte/feedr' target = 'blank'>feedr v", packageVersion("feedr"), "</a>")
+    paste0("Using <a href = 'http://github.com/animalnexus/feedr' target = 'blank'>feedr v", packageVersion("feedr"), "</a>")
   })
 
   ## Load reactive expressions
