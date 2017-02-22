@@ -142,6 +142,7 @@ mod_maps_controls <- function(input, output, session, times, debounce_int, verbo
 
   # Update Interval
   observe({
+    req(input$interval)
     i <- data_limits()
 
     ## Toggle radio buttons
