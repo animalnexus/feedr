@@ -129,7 +129,7 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
     lapply(types$n, function(x) {
       shinyjs::toggleState(paste0("data_dl_", x), condition = !is.null(trans[[x]]) && nrow(trans[[x]]) > 0)
     })
-    shinyjs::toggleState("data_dl", condition = "data_tabs" %in% names(input))
+    shinyjs::toggleState("data_dl", condition = ("data_tabs" %in% names(input)) && nrow(trans$r) > 0)
   })
 
   # Messages -------------------------------------------------
