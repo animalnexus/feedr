@@ -334,14 +334,13 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
   })
 
 
-  observeEvent(data_selection(), {
-    if(identical(data_selection(), values$data_map)) {
-      shinyjs::disable(id = "map_update")
-    } else {
-      shinyjs::enable(id = "map_update")
-    }
+  observe({
+    shinyjs::toggleState(id = "map_update", condition = !identical(data_selection(), values$data_map))
+  })
+
+  observe({
     shinyjs::toggleState(id = "data_get", condition = nrow(data_selection()) > 0)
-  }, priority = 25)
+  })
 
   # Output UIs ---------------------------------------------
 
