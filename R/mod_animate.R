@@ -62,6 +62,15 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
 
   debounce_int <- 700 # Debounce interval
 
+  # Check Internet connection -----------------
+  if(!curl::has_internet()) {
+    showModal(modalDialog(
+      title = "No Internet connection",
+      "Animating maps requires an internet connection to download map tiles. Map tiles may fail to display.",
+      easyClose = TRUE
+    ))
+  }
+
   # Instructions-------------------------------
   callModule(mod_maps_instructions, "details")
 

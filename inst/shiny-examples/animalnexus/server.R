@@ -10,18 +10,28 @@ addResourcePath("assets", system.file("shiny-examples", "app_files", package = "
 
 shinyServer(function(input, output, session) {
 
+  # Check Internet connection -----------------
+  if(!curl::has_internet()) {
+    showModal(modalDialog(
+      title = "No Internet connection",
+      "Animalnexus requires an internet connection for downloading database data, creating animations, and looking at maps. May features are limited without an internet connection.",
+      easyClose = TRUE
+    ))
+  }
+
+  # Display package version -----------------
   output$package_version <- renderText({
     paste0("Using <a href = 'http://github.com/animalnexus/feedr' target = 'blank'>feedr v", packageVersion("feedr"), "</a>")
   })
 
-  ## Load reactive expressions
-  #source("reactive.R", local = TRUE)
 
+  # Values ------------------------------------------------------------------
   values <- reactiveValues(
     data_reset = TRUE,
     data_import = NULL,
     data_db = NULL)
 
+  # Data base ---------------------------------------------------------------
   cat("Get Database access if we have it\n")
   ## Get Database access if we have it
   if(file.exists("/usr/local/share/feedr/db_full.R")) {
@@ -32,20 +42,27 @@ shinyServer(function(input, output, session) {
     db <- NULL
   }
 
-  ## Current activity
+
+  # Modules (Tabs) --------------------------------------------------------
+
+  # Current Activity
   callModule(module = feedr:::mod_map_current, id = "current", db = db)
 
-  ## Pause
-  observeEvent(input$pause, browser())
-
-  ## Individuals
-
-  callModule(feedr:::mod_indiv, id = "indiv", r = r)
-
-  ## Database or Import
+  # Database and Import
   data_db <- callModule(feedr:::mod_data_db, "access", db = db)
   data_import <- callModule(feedr:::mod_data_import, "import")
 
+  # Visualizations
+  callModule(feedr:::mod_map_animate, "anim", visits = v, verbose = TRUE)
+
+  # Individuals
+  callModule(feedr:::mod_indiv, id = "indiv", r = r)
+
+  # Transformations
+  trans <- callModule(feedr:::mod_trans, "trans", r = reactive({values$r}))
+
+
+  # Getting data ------------------------------------------------------------
   observe({
     req(data_db$r())
     values$data_db <- data_db
@@ -81,13 +98,12 @@ shinyServer(function(input, output, session) {
     return(t)
   })
 
-  ## Transformations
-  trans <- callModule(feedr:::mod_trans, "trans", r = reactive({values$r}))
 
+  # Transformed data --------------------------------------------------------
   r <- reactive({trans$r()})
   v <- reactive({trans$v()})
 
-  ## loggers of current data
+  # Loggers of current data
   loggers <- reactive({
     req(r())
     r() %>%
@@ -95,9 +111,6 @@ shinyServer(function(input, output, session) {
       unique(.)
   })
 
-  ### Visualizations
-  ## Animate Data
-  callModule(feedr:::mod_map_animate, "anim", visits = v, verbose = TRUE)
 
   ## Add weather data
   #Get weather data
@@ -112,7 +125,8 @@ shinyServer(function(input, output, session) {
   # }
 
 
-  ## Links to panels
+  # Links to specific tabs --------------------------------------------------
+
   observeEvent(input$link_db, {
     updateTabsetPanel(session, "main", "Database")
   })
@@ -121,6 +135,8 @@ shinyServer(function(input, output, session) {
     updateTabsetPanel(session, "main", "Import")
   })
 
+  # Prevent tabs from loading -----------------------------------------------
+  # Wait until current/home tab finished
   observe({
     req("current-map_current_bounds" %in% names(input))
     session$sendCustomMessage('activeNavs', 'Database')
@@ -130,6 +146,17 @@ shinyServer(function(input, output, session) {
     hide('loading_app')
   })
 
+  # If no internet, show right away
+  observe({
+    req(!curl::has_internet())
+    session$sendCustomMessage('activeNavs', 'Database')
+    session$sendCustomMessage('activeNavs', 'Import')
+    session$sendCustomMessage('activeNavs', 'Help')
+    shinyjs::show("get-started")
+    hide('loading_app')
+  })
+
+  # Wait until data loaded before loading the rest
   observe({
     req(r())
     session$sendCustomMessage('activeNavs', 'Visualizations')

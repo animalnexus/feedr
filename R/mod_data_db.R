@@ -111,9 +111,18 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   debounce_int <- 700 # Debounce interval
 
-  # Database ----------------------------------------------------
+  # Database and Internet ----------------------------------------------------
 
   if(!is.null(db) && !curl::has_internet()) db <- NULL
+
+  if(is.null(db)) {
+    showModal(modalDialog(
+      title = "No Database access",
+      "To access the animalnexus database using `ui_db()` you must have an Internet connection as well as proper credentials stored on your computer. Otherwise visit", a("http://animalnexus.ca", href = "http://animalnexus.ca"), ".",
+      easyClose = TRUE
+    ))
+  }
+
 
   ## Get data base details
   if(!is.null(db)) {
@@ -454,7 +463,9 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   ## Render Map
   output$map_data <- renderLeaflet({
-    validate(need(!is.null(db), message = "No Database access. To work with local data, use the 'Import' tab. To work with the Database check out animalnexus.ca"))
+    if(ns("") == "standalone-") msg <- "use the 'Import' UI (ui_import())." else msg <- "go to the 'Import' tab."
+
+    validate(need(!is.null(db), message = paste0("No Database access\n\n- To work with local data, ", msg, "\n- To work with the Database check out animalnexus.ca")))
     req(!is.null(db))
     if(verbose) cat("Initializing data map...\n")
 
