@@ -138,6 +138,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
       loggers_all <- dbGetQuery(con, statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
                                                        "FROM feeders, fieldsites",
                                                        "WHERE (fieldsites.site_name = feeders.site_name)")) %>%
+        dplyr::rename(logger_id = feeder_id) %>%
         load_format() %>%
         dplyr::mutate(site_name = factor(site_name))
 
@@ -153,8 +154,11 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
       if(verbose) cat("Getting animal data...\n")
       #  incProgress(3/5)
 
-      animals_all <- dbGetQuery(con, statement = paste("SELECT bird_id, species, site_name, age, sex, tagged_on FROM birds",
-                                                      "WHERE birds.species NOT IN ('XXXX')")) %>%
+      animals_all <- dbGetQuery(con, statement = paste("SELECT birds.bird_id, species.code, species.engl_name, birds.site_name, birds.age, birds.sex, birds.tagged_on",
+                                                       "FROM birds, species",
+                                                       "WHERE (birds.species = species.code) AND (birds.species NOT IN ('XXXX'))")) %>%
+        dplyr::rename(species = engl_name,
+                      animal_id = bird_id) %>%
         load_format() %>%
         dplyr::mutate(species = factor(species),
                       site_name = factor(site_name),
@@ -169,6 +173,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
                                               "FROM raw.visits ",
                                               "GROUP BY DATE(raw.visits.time), raw.visits.feeder_id, raw.visits.bird_id"#,
                            )) %>%
+        dplyr::rename(animal_id = bird_id, logger_id = feeder_id) %>%
         load_format() %>%
         dplyr::inner_join(animals_all[, c("site_name", "species", "animal_id")], by = "animal_id") %>%
         dplyr::mutate(count = as.numeric(count),
