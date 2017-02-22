@@ -326,6 +326,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
     } else {
       shinyjs::enable(id = "map_update")
     }
+    shinyjs::toggleState(id = "data_get", condition = nrow(data_selection()) > 0)
   }, priority = 25)
 
   # Output UIs ---------------------------------------------
