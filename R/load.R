@@ -21,6 +21,12 @@
 #' @param tz_disp Character. The time zone the date/times should be displayed in
 #'   (if not the same as \code{tz}; should match one of the zones produced by
 #'   \code{OlsonNames())}. Defaults to tz if none supplied.
+#' @param dst Logical. Whether or not to use Daylight Savings. When set to FALSE
+#'   timezones are converted to the Etc/GMT+X timezones which do not include
+#'   DST. (Note this overrides the timezone specification such that a timezone
+#'   of America/Vancouver, which would normally include DST in the summer, will
+#'   be transformed to a timezone with the same GMT offset, but not including
+#'   DST).
 #' @param details Numeric. Where to find logger details, either 0 (file name),
 #'   1 (first line) or 2 (first two lines). See 'details'.
 #' @param logger_pattern Character. A regular expression matching the logger_id
@@ -67,6 +73,7 @@
 load_raw <- function(r_file,
                      tz = Sys.timezone(),
                      tz_disp = NULL,
+                     dst = FALSE,
                      details = 1,
                      logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
                      time_format = "mdy HMS",
@@ -91,6 +98,9 @@ load_raw <- function(r_file,
   # Timezone checks
   tz <- check_tz(tz)
   if(is.null(tz_disp)) tz_disp <- tz else tz_disp <- check_tz(tz_disp)
+
+  if(!dst) tz <- tz_offset(tz, tz_name = TRUE)
+  if(!dst) tz_disp <- tz_offset(tz_disp, tz_name = TRUE)
 
   skip <- details + skip
 
@@ -184,6 +194,12 @@ load_raw <- function(r_file,
 #' @param tz_disp Character. The time zone the date/times should be displayed in
 #'   (if not the same as \code{tz}; should match one of the zones produced by
 #'   \code{OlsonNames())}.
+#' @param dst Logical. Whether or not to use Daylight Savings. When set to FALSE
+#'   timezones are converted to the Etc/GMT+X timezones which do not include
+#'   DST. (Note this overrides the timezone specification such that a timezone
+#'   of America/Vancouver, which would normally include DST in the summer, will
+#'   be transformed to a timezone with the same GMT offset, but not including
+#'   DST).
 #' @param details Numeric. Where to find logger details, either 0 (file name),
 #'   1 (first line) or 2 (first two lines). See 'details'.
 #' @param logger_pattern Character. A regular expression matching the logger id
@@ -209,6 +225,7 @@ load_raw_all <- function(r_dir,
                          pattern = "DATA",
                          tz = Sys.timezone(),
                          tz_disp = NULL,
+                         dst = FALSE,
                          details = 1,
                          logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
                          time_format = "mdy HMS",
@@ -235,6 +252,7 @@ load_raw_all <- function(r_dir,
   r <- do.call('rbind', lapply(r_list, load_raw,
                                details = details,
                                tz = tz,
+                               dst = dst,
                                logger_pattern = logger_pattern,
                                time_format = time_format,
                                extra_pattern = extra_pattern,
@@ -298,6 +316,12 @@ load_raw_all <- function(r_dir,
 #' @param bird_details Deprecated. Use animal_details instead.
 #' @param tz_disp Character vector. Timezone data should be displayed in (should match one of
 #'   the zones produced by \code{OlsonNames()})
+#' @param dst Logical. Whether or not to use Daylight Savings. When set to FALSE
+#'   timezones are converted to the Etc/GMT+X timezones which do not include
+#'   DST. (Note this overrides the timezone specification such that a timezone
+#'   of America/Vancouver, which would normally include DST in the summer, will
+#'   be transformed to a timezone with the same GMT offset, but not including
+#'   DST).
 #'
 #' @examples
 #' \dontrun{
@@ -321,6 +345,7 @@ dl_data <- function(start = NULL,
                     logger_details = c("loc"),
                     animal_details = c("species"),
                     tz_disp = "Etc/GMT+8",
+                    dst = FALSE,
                     feeder_details, bird_details) {
 
   if (!missing(feeder_details)) {
@@ -337,6 +362,7 @@ dl_data <- function(start = NULL,
 
   # Timezone checks
   tz_disp <- check_tz(tz_disp)
+  if(!dst) tz_disp <- tz_offset(tz_disp, tz_name = TRUE)
 
   # Get data from website in GMT
   tz <- "GMT"
@@ -394,17 +420,25 @@ dl_data <- function(start = NULL,
 #' @param tz_disp Character. The time zone the date/times should be displayed in
 #'   (if not the same as \code{tz}; should match one of the zones produced by
 #'   \code{OlsonNames())}.
+#' @param dst Logical. Whether or not to use Daylight Savings. When set to FALSE
+#'   timezones are converted to the Etc/GMT+X timezones which do not include
+#'   DST. (Note this overrides the timezone specification such that a timezone
+#'   of America/Vancouver, which would normally include DST in the summer, will
+#'   be transformed to a timezone with the same GMT offset, but not including
+#'   DST).
 #' @param time_format Character. The time format of the 'time' column. Defaults
 #'   to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
 #'   function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
 #'   etc.).
 #'
 #' @export
-load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, time_format = "ymd HMS"){
+load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE, time_format = "ymd HMS"){
 
   # Checks
   tz <- check_tz(tz)
   if(is.null(tz_disp)) tz_disp <- tz else tz_disp <- check_tz(tz_disp)
+  if(!dst) tz <- tz_offset(tz, tz_name = TRUE)
+  if(!dst) tz_disp <- tz_offset(tz_disp, tz_name = TRUE)
 
   # Trim leading or trailing whitespace
   r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))

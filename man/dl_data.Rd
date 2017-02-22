@@ -7,7 +7,7 @@
 dl_data(start = NULL, end = NULL,
   url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
   logger_details = c("loc"), animal_details = c("species"),
-  tz_disp = "Etc/GMT+8", feeder_details, bird_details)
+  tz_disp = "Etc/GMT+8", dst = FALSE, feeder_details, bird_details)
 }
 \arguments{
 \item{start}{Character. This is the start date (with or without time) for the
@@ -31,6 +31,13 @@ details about the animals to download. Use NULL to download no extra columns.}
 
 \item{tz_disp}{Character vector. Timezone data should be displayed in (should match one of
 the zones produced by \code{OlsonNames()})}
+
+\item{dst}{Logical. Whether or not to use Daylight Savings. When set to FALSE
+timezones are converted to the Etc/GMT+X timezones which do not include
+DST. (Note this overrides the timezone specification such that a timezone
+of America/Vancouver, which would normally include DST in the summer, will
+be transformed to a timezone with the same GMT offset, but not including
+DST).}
 
 \item{feeder_details}{Deprecated. Use logger_details in stead}
 
