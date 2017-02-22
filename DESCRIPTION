@@ -18,7 +18,7 @@ Imports:
     ggplot2 (>= 2.1.0),
     ggmap (>= 2.6.1),
     htmltools (>= 0.3.5),
-    leaflet (>= 1.0.1.9004),
+    leaflet (>= 1.1.0),
     lubridate (>= 1.5.6),
     magrittr (>= 1.5),
     maptools (>= 0.8-39),
