@@ -30,6 +30,7 @@ ui_import <- function(diagnostic = FALSE) {
 #' @import magrittr
 mod_UI_data_import <- function(id) {
   ns <- NS(id)
+  tz_sys <- check_tz(Sys.timezone())
 
   tagList(
     fluidRow(
@@ -48,7 +49,7 @@ mod_UI_data_import <- function(id) {
              tags$hr(),
              h4("Options", actionButton(ns("help_options"), "?", class = "help")),
              uiOutput(ns("UI_time")),
-             selectInput(ns("tz"), "Data Timezone", choices = OlsonNames(), selected = Sys.timezone(), width = "200px"),
+             selectInput(ns("tz"), "Data Timezone", choices = OlsonNames(), selected = tz_sys, width = "200px"),
              uiOutput(ns("UI_sep")),
              uiOutput(ns("UI_skip")),
              shinyjs::disabled(actionButton(ns("get_data"), "Import"))
