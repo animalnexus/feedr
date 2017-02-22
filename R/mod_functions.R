@@ -27,7 +27,13 @@ startup <- function(x) {
   ) %in% names(x))
 }
 
+compare_values <- function(x, y) {
+  identical(sort(as.character(unique(x))), sort(as.character(unique(y))))
+}
+
 get_counts <- function(c, filter = NULL, summarize_by = NULL) {
+
+  if("date" %in% names(c)) c$date <- as.Date(c$date)
 
   if(!is.null(filter)){
     if("species" %in% names(filter))   c <- dplyr::filter(c, species %in% filter$species)
