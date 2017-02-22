@@ -115,7 +115,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   if(!is.null(db) && !curl::has_internet()) db <- NULL
 
-  if(is.null(db)) {
+  if(is.null(db) && ns("") == "standalone-") {
     showModal(modalDialog(
       title = "No Database access",
       "To access the animalnexus database using `ui_db()` you must have an Internet connection as well as proper credentials stored on your computer. Otherwise visit", a("http://animalnexus.ca", href = "http://animalnexus.ca"), ".",

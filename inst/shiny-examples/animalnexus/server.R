@@ -10,16 +10,17 @@ addResourcePath("assets", system.file("shiny-examples", "app_files", package = "
 
 shinyServer(function(input, output, session) {
 
-  # Check Internet connection -----------------
+
+  # Check Internet connection -----------------------------------------------
   if(!curl::has_internet()) {
     showModal(modalDialog(
       title = "No Internet connection",
-      "Animalnexus requires an internet connection for downloading database data, creating animations, and looking at maps. May features are limited without an internet connection.",
+      "Animalnexus requires an internet connection for downloading database data, creating animations, and looking at maps. Many features are limited without an internet connection.",
       easyClose = TRUE
     ))
   }
 
-  # Display package version -----------------
+  # Display package version -------------------------------------------------
   output$package_version <- renderText({
     paste0("Using <a href = 'http://github.com/animalnexus/feedr' target = 'blank'>feedr v", packageVersion("feedr"), "</a>")
   })
