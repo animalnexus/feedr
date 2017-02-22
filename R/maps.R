@@ -4,10 +4,10 @@
 map_prep <- function(p = NULL, m = NULL, locs = NULL) {
 
   # Check data
-  if(!is.null(p)){
+  if(!is.null(p) && nrow(p) > 0){
     if(!all(c("logger_id","amount") %in% names(p))) stop("The presence dataframe (p) requires two columns: 'logger_id' and 'amount'.")
   }
-  if(!is.null(m)){
+  if(!is.null(m) && nrow(m) > 0){
     if(!all(c("move_path","path_use", "logger_id") %in% names(m))) stop("The path dataframe (m) requires three columns: 'logger_id', 'move_path', 'path_use'.")
     if(any(stringr::str_count(m$move_path, "_") > 1)) stop("Using '_' in logger_id names conflicts with the mapping functions. You should remove any '_'s from logger_ids.")
   }
@@ -22,7 +22,7 @@ map_prep <- function(p = NULL, m = NULL, locs = NULL) {
   if(nrow(locs) == 0) stop(paste0("Locations (locs) dataframe is missing either latitude (", paste0(lat, collapse = ", "), ") or longitude (", paste0(lon, collapse = ", "), "), or both."))
 
   # Get locations and alert if any missing
-  if(!is.null(p)){
+  if(!is.null(p) && nrow(p) > 0){
     p <- rename_locs(p)
     n <- names(p)[names(p) %in% c("logger_id", "lat", "lon")]
     p <- merge(p, locs, by = n, all.x = TRUE, all.y = FALSE)
@@ -30,7 +30,7 @@ map_prep <- function(p = NULL, m = NULL, locs = NULL) {
     p <- p[!(is.na(p$lat) | is.na(p$lon)),]
   }
 
-  if(!is.null(m)){
+  if(!is.null(m) && nrow(m) > 0){
     m <- rename_locs(m)
     n <- names(m)[names(m) %in% c("logger_id", "lat", "lon")]
     m <- merge(m, locs, by = n, all.x = TRUE, all.y = FALSE)
@@ -39,9 +39,6 @@ map_prep <- function(p = NULL, m = NULL, locs = NULL) {
       dplyr::do(if(any(is.na(.[,c('lat','lon')]))) return(data.frame()) else return(.)) %>%
       dplyr::ungroup()
   }
-
-  #if(!is.null(p)) if(nrow(p) == 0) stop("Missing presence lat/lon data, did you supply location data in either p, m, or locs?")
-  #if(!is.null(m)) if(nrow(m) == 0) stop("Missing path lat/lon data, did you supply location data in either p, m, or locs?")
 
   return(list('p' = p, 'm' = m, 'locs' = locs))
 }
@@ -339,8 +336,8 @@ map_leaflet <- function(p = NULL, m = NULL, locs = NULL,
   map <- map_leaflet_base(locs = locs, controls = controls)
 
   # Layers
-  if(!is.null(p) && nrow(p) != 0) map <- presence_layer(map, p = p, p_scale = p_scale, p_pal = p_pal, p_title = p_title, controls = controls)
-  if(!is.null(m) && nrow(m) != 0) map <- path_layer(map, m = m, m_scale = m_scale, m_pal = m_pal, m_title = m_title, controls = controls)
+  if(!is.null(p) && nrow(p) > 0) map <- presence_layer(map, p = p, p_scale = p_scale, p_pal = p_pal, p_title = p_title, controls = controls)
+  if(!is.null(m) && nrow(m) > 0) map <- path_layer(map, m = m, m_scale = m_scale, m_pal = m_pal, m_title = m_title, controls = controls)
 
   return(map)
 }
@@ -493,14 +490,14 @@ map_ggmap <- function(p = NULL, m = NULL, locs = NULL,
   } else animal_id = NULL
 
   # Final Data Prep
-  if(!is.null(p)){
+  if(!is.null(p) && nrow(p) > 0){
     # Sort and Scale
     p$amount <- as.numeric(p$amount)
   #  p <- p[order(p$amount, decreasing = TRUE),]
     p$amount2 <- scale_area(p$amount, max = 30 * p_scale, min = 0.1 * p_scale)
   }
 
-  if(!is.null(m)){
+  if(!is.null(m) && nrow(m) > 0){
   #  # Sort and Scale
     m <- m[order(m$path_use, decreasing = TRUE), ]
     m$path_use2 <- scale_area(m$path_use, max = 3 * m_scale, min = 0.1 * m_scale)
@@ -518,7 +515,7 @@ map_ggmap <- function(p = NULL, m = NULL, locs = NULL,
     ggplot2::labs(x = "Longitude", y = "Latitude")
 
   # If presence data specified
-  if(!is.null(p)) {
+  if(!is.null(p) && nrow(p) > 0) {
     map <- map +
       ggplot2::geom_point(data = p, ggplot2::aes(x = lon, y = lat, fill = amount, size = amount2), shape = 21, alpha = 0.5) +
       ggplot2::scale_fill_gradientn(guide = guide_colourbar(title = p_title,
@@ -528,7 +525,7 @@ map_ggmap <- function(p = NULL, m = NULL, locs = NULL,
   }
 
   # If movement paths specified
-  if(!is.null(m)){
+  if(!is.null(m) && nrow(m) > 0){
     sort_by <- c("animal_id", "move_path", "logger_id")
     sort_by <- sort_by[sort_by %in% names(m)]
     m <- m %>%
