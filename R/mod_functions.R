@@ -17,16 +17,6 @@ ui_app <- function(name, ..., diagnostic = FALSE, launch.browser = getOption("sh
   shiny::runApp(app)
 }
 
-startup <- function(x) {
-  #require that input objects were at least created (first pass)
-  all(c("data_site_name",
-        "data_species",
-        "data_date",
-        "data_animal_id",
-        "data_logger_id"
-  ) %in% names(x))
-}
-
 compare_values <- function(x, y) {
   identical(sort(as.character(unique(x))), sort(as.character(unique(y))))
 }
