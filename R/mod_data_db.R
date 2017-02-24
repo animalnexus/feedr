@@ -28,7 +28,6 @@ ui_db <- function(verbose = FALSE, diagnostic = FALSE){
 }
 
 
-
 # Database data selector - UI
 
 #' @import shiny
