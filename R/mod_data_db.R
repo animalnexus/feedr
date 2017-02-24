@@ -269,41 +269,67 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
   }, priority = 10)
 
   # Update selections based on species (only really fires if input$data_species changed)
-  observeEvent(input$data_species, {
-    sel <- counts_site() %>%
-      dplyr::filter(date %within% interval(input$data_date[1], input$data_date[2]),
-                    species %in% input$data_species)
+  # Must be observer (not observeEvent) to catch null inputs (when all options deselected)
+  observe({
+    input$data_species
 
-    if(verbose) cat("Update UI selections based on species\n")
+    isolate({
+      # if there is a species value in input, OR if there PREVIOUSLY was a species value
+      req(values$selection$species)
 
-    if(!compare_values(sel$animal_id, input$data_animal_id)) {
-      if(verbose) cat("  - animal_id\n")
-      values$selection_update <- TRUE
-      values$selection$animal_id <- unique(sel$animal_id)
-      updateCheckboxGroupInput(session, "data_animal_id",
-                               selected = unique(sel$animal_id))
-    }
-    if(!compare_values(sel$logger_id, input$data_logger_id)) {
-      if(verbose) cat("  - logger_id\n")
-      values$selection_update <- TRUE
-      values$selection$logger_id <- unique(sel$logger_id)
-      updateCheckboxGroupInput(session, "data_logger_id",
-                               selected = unique(sel$logger_id))
-    }
+      sel <- counts_site() %>%
+        dplyr::filter(date %within% interval(input$data_date[1], input$data_date[2]),
+                      species %in% input$data_species)
+
+      if(verbose) cat("Update UI selections based on species\n")
+
+      if(!compare_values(sel$animal_id, input$data_animal_id)) {
+        if(verbose) cat("  - animal_id\n")
+        values$selection_update <- TRUE
+        values$selection$animal_id <- unique(sel$animal_id)
+        updateCheckboxGroupInput(session, "data_animal_id",
+                                 selected = unique(sel$animal_id))
+      }
+      if(!compare_values(sel$logger_id, input$data_logger_id)) {
+        if(verbose) cat("  - logger_id\n")
+        values$selection_update <- TRUE
+        values$selection$logger_id <- unique(sel$logger_id)
+        updateCheckboxGroupInput(session, "data_logger_id",
+                                 selected = unique(sel$logger_id))
+      }
+    })
   }, priority = 5)
 
-  observeEvent(input$data_animal_id, {
-    req(values$selection$animal_id)
-    req(!compare_values(input$data_animal_id, values$selection$animal_id))
-    values$selection_update <- TRUE
-    values$selection$animal_id <- input$data_animal_id
+  observe({
+    input$data_animal_id
+    isolate({
+      req(values$selection$animal_id)
+
+      sel <- counts_site() %>%
+        dplyr::filter(date %within% interval(input$data_date[1], input$data_date[2]),
+                      species %in% input$data_species,
+                      animal_id %in% input$data_animal_id)
+
+      req(!compare_values(sel$animal_id, values$selection$animal_id))
+      values$selection_update <- TRUE
+      values$selection$animal_id <- input$data_animal_id
+    })
   })
 
-  observeEvent(input$data_logger_id, {
-    req(values$selection$animal_id)
-    req(!compare_values(input$data_logger_id, values$selection$logger_id))
-    values$selection_update <- TRUE
-    values$selection$logger_id <- input$data_logger_id
+  observe({
+    input$data_logger_id
+    isolate({
+      req(values$selection$animal_id)
+
+      sel <- counts_site() %>%
+        dplyr::filter(date %within% interval(input$data_date[1], input$data_date[2]),
+                      species %in% input$data_species,
+                      logger_id %in% input$data_logger_id)
+
+      req(!compare_values(sel$logger_id, values$selection$logger_id))
+      values$selection_update <- TRUE
+      values$selection$logger_id <- input$data_logger_id
+    })
   })
 
   observeEvent(values$selection_update, {
