@@ -128,10 +128,9 @@ mod_data_import <- function(input, output, session, type = NULL) {
 
   # Timezones ---------------------------------------------------------------
   tz <- reactive({
-    req(input$tz, input$dst)
+    req(input$tz)
     validate(need(input$tz %in% OlsonNames(), "Timezone does not match any from Olson database. See OlsonNames() in R."))
     tz <- check_tz(input$tz)
-    if(input$dst == FALSE) tz <- tz_offset(tz, tz_name = TRUE)
     return(tz)
   })
 
@@ -326,8 +325,10 @@ GR13, 53.88689,	-122.8208", style = "width:80%; margin: auto;"),
 import_logger <- function(path, logger, tz, input) {
   req(input$details)
 
+  browser()
   d <- try(load_raw_all(r_list = path,
                         tz = tz,
+                        dst = as.logical(input$dst),
                         logger_pattern = if(input$id_pattern == "NA") NA else input$id_pattern,
                         time_format = input$time,
                         details = as.numeric(stringr::str_extract(input$details, "[012]")),
@@ -356,7 +357,7 @@ import_all <- function(path, tz, input, nrows = -1) {
                                    sep = input$sep,
                                    skip = input$skip,
                                    nrows = nrows)) %>%
-    load_format(tz = tz, time_format = input$time), silent = TRUE)
+    load_format(tz = tz, dst = as.logical(input$dst), time_format = input$time), silent = TRUE)
 
  return(d)
 }
