@@ -36,7 +36,6 @@ mod_map_current <- function(input, output, session, db) {
   ns <- session$ns
 
   values <- reactiveValues(
-    current_map = NULL,
     current_time = NULL)
 
   # Database ----------------------------------------------------------------
@@ -56,13 +55,13 @@ mod_map_current <- function(input, output, session, db) {
   }
 
   # Icons -------------------------------------------------------------------
-  sp_icons <- leaflet::awesomeIconList("MOCH" = leaflet::makeAwesomeIcon(icon = "star",
+  sp_icons <- leaflet::awesomeIconList("Mountain Chickadee" = leaflet::makeAwesomeIcon(icon = "star",
                                                                          marker = "green",
                                                                          iconColor = "white"),
-                                       "HOFI" = leaflet::makeAwesomeIcon(icon = "star",
+                                       "House Finch" = leaflet::makeAwesomeIcon(icon = "star",
                                                                          marker = "red",
                                                                          iconColor = "white"),
-                                       "DEJU" = leaflet::makeAwesomeIcon(icon = "star",
+                                       "Dark-eyed Junco" = leaflet::makeAwesomeIcon(icon = "star",
                                                                          marker = "darkpurple",
                                                                          iconColor = "white"))
 
@@ -116,30 +115,26 @@ mod_map_current <- function(input, output, session, db) {
       con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
 
       values$current_time <- Sys.time()
+
+      query <- paste("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time, feeders.site_name, feeders.loc, birds.age, birds.sex, species.engl_name ",
+                     "FROM raw.visits, feeders, birds, species",
+                     "WHERE (raw.visits.feeder_id = feeders.feeder_id)",
+                     "AND (birds.species = species.code)",
+                     "AND (birds.bird_id = raw.visits.bird_id)",
+                     "AND birds.species NOT IN ( 'XXXX' )",
+                     "AND feeders.site_name IN ( 'Kamloops, BC' )")
+    query_time <- "AND raw.visits.time::timestamp > ( CURRENT_TIMESTAMP::timestamp - INTERVAL '24 hours' )"
+
       withProgress(message = "Updating...", {
         suppressWarnings({
-          data <- dbGetQuery(con,
-                             statement = paste("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time, feeders.site_name, feeders.loc, birds.species, birds.age, birds.sex",
-                                                "FROM raw.visits, feeders, birds",
-                                                "WHERE (raw.visits.feeder_id = feeders.feeder_id)",
-                                                "AND (birds.bird_id = raw.visits.bird_id)",
-                                                "AND birds.species NOT IN ( 'XXXX' )",
-                                                "AND feeders.site_name IN ( 'Kamloops, BC' )",
-                                                "AND raw.visits.time::timestamp > ( CURRENT_TIMESTAMP::timestamp - INTERVAL '24 hours' )"))
-
-          if(nrow(data) == 0) data <- dbGetQuery(con,
-                                                     statement = paste("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time, feeders.site_name, feeders.loc, birds.species, birds.age, birds.sex ",
-                                                                       "FROM raw.visits, feeders, birds ",
-                                                                       "WHERE (raw.visits.feeder_id = feeders.feeder_id) ",
-                                                                       "AND (birds.bird_id = raw.visits.bird_id) ",
-                                                                       "AND birds.species NOT IN ( 'XXXX' )",
-                                                                       "AND feeders.site_name IN ( 'Kamloops, BC' ) ",
-                                                                       "ORDER BY raw.visits.time::timestamp DESC LIMIT 100"))
+          data <- dbGetQuery(con, statement = paste(query, query_time))
+          if(nrow(data) == 0) data <- dbGetQuery(con, statement = paste(query, "ORDER BY raw.visits.time::timestamp DESC LIMIT 100"))
           })
         dbDisconnect(con)
 
         if(nrow(data) > 0) {
           data <- data %>%
+            dplyr::rename(species = engl_name) %>%
             dplyr::mutate(time = lubridate::with_tz(time, tz = "UTC")) %>%
             load_format(., tz = "UTC", tz_disp = "America/Vancouver") %>%
             visits(.) %>%
@@ -164,12 +159,26 @@ mod_map_current <- function(input, output, session, db) {
 
   # Map of current activity
   output$map_current <- renderLeaflet({
-    req(current())
     cat("Initializing map of current activity (", as.character(Sys.time()), ") ...\n")
     isolate({
       d <- loggers_all %>% dplyr::filter(site_name == "Kamloops, BC")
       map <- map_leaflet_base(locs = d) %>%
         leaflet::addScaleBar(position = "bottomright") %>%
+        addLayersControl(baseGroups = c("Satellite", "Terrain", "Open Street Map", "Black and White"),
+                         overlayGroups = c("Loggers", "Activity"),
+                         options = layersControlOptions(collapsed = TRUE))
+
+    })
+  })
+
+  # Add activity points ------------------------------------------
+  # Add circle markers for sample sizes
+  observe({
+    req(current(), any(grepl("map_current_bounds", names(input))))
+    cat("Refreshing map of current activity (", as.character(Sys.time()), ") ...\n")
+    if(nrow(current()) > 0) {
+      leaflet::leafletProxy(ns("map_current")) %>%
+        leaflet::clearGroup(group = "Activity") %>%
         leaflet::addAwesomeMarkers(data = current(),
                                    icon = ~sp_icons[species],
                                    popup = ~paste0("<div class = \"current\">",
@@ -180,32 +189,7 @@ mod_map_current <- function(input, output, session, db) {
                                                    "<strong>Total time:</strong> ", time, "min <br>",
                                                    "<strong>Most recent visit:</strong> ", most_recent, "<br>",
                                                    "</div>"),
-                                   lng = ~lon, lat = ~lat, group = "Activity") %>%
-        addLayersControl(baseGroups = c("Satellite", "Terrain", "Open Street Map", "Black and White"),
-                         overlayGroups = c("Loggers", "Activity"),
-                         options = layersControlOptions(collapsed = TRUE))
-
-    })
-  })
-
-  ## Add activity points
-  # Add circle markers for sample sizes
-  observeEvent(current(), {
-    req(values$current_map)
-
-    cat("Refreshing map of current activity (", as.character(Sys.time()), ") ...\n")
-    if(nrow(current()) > 0) {
-      leaflet::leafletProxy(ns("map_current")) %>%
-        leaflet::clearGroup(group = "Activity") %>%
-        leaflet::addAwesomeMarkers(data = current(),
-                                   icon = ~sp_icons[species],
-                                   popup = ~paste0("<strong>Species:</strong> ", species, "<br>",
-                                                   "<strong>Animal ID:</strong> ", animal_id, "<br>",
-                                                   "<strong>No. visits:</strong> ", n, "<br>",
-                                                   "<strong>Total time:</strong> ", time, "min <br>",
-                                                   get_image(current(), animal_id, 100)),
                                    lng = ~lon, lat = ~lat, group = "Activity")
-
     } else {
       leaflet::leafletProxy("map_data") %>%
         leaflet::clearGroup(group = "Activity")
