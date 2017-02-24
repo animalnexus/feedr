@@ -540,6 +540,8 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
       tz_disp <- tz_offset(ifelse(d$site_name[1] == "Kamloops, BC", "America/Vancouver", "America/Costa_Rica"), tz_name = TRUE)
       data <- data %>%
         dplyr::mutate(time = lubridate::with_tz(time, "UTC")) %>% # Because otherwise has system timezone
+        dplyr::rename(animal_id = bird_id,
+                      logger_id = feeder_id) %>%
         load_format(tz = "UTC", tz_disp = tz_disp) %>%
         dplyr::mutate(animal_id = factor(animal_id, levels = sort(unique(animals_all$animal_id))),
                logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id)))) %>%
