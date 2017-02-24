@@ -76,15 +76,18 @@ shinyServer(function(input, output, session) {
 
   # Which data?
   observe({
+    req(!is.null(values$data_db) || !is.null(values$data_import))
     raw <- list(values$data_db, values$data_import)
     raw <- raw[sapply(raw, function(x) !is.null(x$r))]
     if(length(raw) > 1) raw <- raw[which.max(c(raw[[1]]$time(), raw[[2]]$time()))]
     if(length(raw) > 0){
       raw <- raw[[1]]
       values$r <- raw$r()
-      values$data_name <- raw$name()
+      values$data_name <- raw$name()[1]
       values$data_time <- raw$time()
     }
+    values$data_db <- NULL
+    values$data_import <- NULL
   })
 
   output$data_info <- renderText({
