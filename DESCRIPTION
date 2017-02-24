@@ -1,7 +1,7 @@
 Package: feedr
 Type: Package
 Title: Transforming Raw RFID Data
-Version: 0.8.0
+Version: 0.8.1
 Date: 2016-12-08
 Authors@R: person("LaZerte", "Stefanie E.", email = "stefanie.lazerte@unbc.ca", role = c("aut","cre"))
 URL: https://github.com/steffilazerte/feedr
@@ -18,16 +18,16 @@ Imports:
     ggplot2 (>= 2.1.0),
     ggmap (>= 2.6.1),
     htmltools (>= 0.3.5),
-    leaflet (>= 1.0.1.9004),
+    leaflet (>= 1.1.0),
     lubridate (>= 1.5.6),
     magrittr (>= 1.5),
     maptools (>= 0.8-39),
     RCurl (>= 1.95-4.8),
     RPostgreSQL (>= 0.4.1),
     scales(>= 0.4.0),
-    shiny (>= 0.14),
+    shiny (>= 1.0.0),
     shinyBS (>= 0.61),
-    shinyjs (>= 0.6),
+    shinyjs (>= 0.9),
     stringr (>= 1.0.0),
     tibble(>= 1.2),
     tidyr (>= 0.5.1),

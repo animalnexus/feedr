@@ -1,3 +1,24 @@
+# feedr 0.8.1 (2017-02-24)
+
+## Changes
+
+- Streamlined animalnexus database UI
+- Warnings added to ui's if launched without internet or database access
+- Updated package imports to include package updates and only packages on CRAN
+
+## Bug fixes
+
+- Timezone usage is more consistent and uses non-DST by default
+- Fixed numerous timezone issues in animalnexus
+- Fixed bug that prevented importing a second dataset in animalnexus
+- Fixed bug that reverted to original database dataset if tried to load second dataset in animalnexus
+- Species names are now English names
+- Active dataset name only shows first data set if multiple files loaded
+- Can't download data if zero selected
+- Can't download empty zip in trans if no data available
+- UI Trans gives more informative error when data is private
+- UI animate forces a pause on inputs to prevent too much activity
+
 # feedr 0.8.0 (2016-12-08)
 
 ## New features

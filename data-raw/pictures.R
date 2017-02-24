@@ -11,7 +11,7 @@ pics <- data.frame(img = paste0("http://gaia.tru.ca/birdMOVES/img.kl/", list.fil
 
 
 con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
-dbGetQuery(con, statement = paste0("SELECT bird_id, species FROM birds")) %>%
+dbGetQuery(con, statement = paste0("SELECT birds.bird_id, species.engl_name FROM birds, species WHERE (species.code = birds.species)")) %>%
   load_format(tz = "") %>%
   dplyr::mutate(author = "TRU",
                 citation = NA,

@@ -1,16 +1,5 @@
-mod_maps <- function() {
 
-  app <- shiny::shinyApp(ui = shiny::fluidPage(includeCSS(system.file("extra", "style.css", package = "feedr")),
-                                               mod_UI_map_animate("standalone")),
-                         server = function(input, output, session) {
-                           shiny::callModule(mod_map_animate, "standalone",
-                                             v = v)
-                         }
-  )
-  shiny::runApp(app, display.mode = "normal")
-}
-
-
+# Instructions -------------------------------------------------------
 mod_UI_maps_instructions <- function(id, specific) {
   ns <- NS(id)
   tagList(
@@ -70,6 +59,7 @@ mod_maps_instructions <- function(input, output, session) {
 
 }
 
+# Tips -------------------------------------------------------
 mod_UI_maps_tips <- function(id, specific) {
   ns <- NS(id)
   tagList(
@@ -80,7 +70,7 @@ mod_UI_maps_tips <- function(id, specific) {
 }
 
 
-## Animated map - UI
+# Animation Controls -------------------------------------------------------
 #' @import shiny
 mod_UI_maps_controls <- function(id) {
   # Create a namespace function using the provided id
@@ -99,7 +89,7 @@ mod_UI_maps_controls <- function(id) {
 
 # Module server function
 #' @import shiny
-mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
+mod_maps_controls <- function(input, output, session, times, debounce_int, verbose = FALSE) {
 
   ns <- session$ns
 
@@ -118,114 +108,122 @@ mod_maps_controls <- function(input, output, session, times, verbose = FALSE) {
 
   # Time range - select subsection of data
   output$UI_time_range <- renderUI({
-    req(t())
     if(verbose) cat("  UI - Time range\n")
-    isolate({
-      x <- difftime(t()$end, t()$start)
-      if(units(x) == "hours") s <- 60*60
-      if(units(x) == "days") s <- 60*60*24
+    x <- difftime(t()$end, t()$start)
+    if(units(x) == "hours") s <- 60*60
+    if(units(x) == "days") s <- 60*60*24
 
-      sliderInput(ns("time_range"), "Time Range",
-                  min = t()$start,
-                  max = t()$end,
-                  value = c(t()$start, t()$end),
-                  step = s,
-                  timezone = t()$tz_offset,
-                  width = '100%')
-    })
+    sliderInput(ns("time_range"), "Time Range",
+                min = t()$start,
+                max = t()$end,
+                value = c(t()$start, t()$end),
+                step = s,
+                timezone = t()$tz_offset,
+                width = '100%')
   })
-
-
 
   ## UI Interval
   output$UI_interval <- renderUI({
-    req(t())
     if(verbose) cat("  UI - Interval\n")
-    isolate(radioButtons2(ns("interval"), "Resolution", choices = data_limits()$i, selected = interval_selection(c(min(t()$times), max(t()$times))), inline = TRUE))
+    radioButtons(ns("interval"), "Resolution",
+                 choices = data_limits()$i,
+                 selected = interval_selection(c(min(t()$times), max(t()$times))), inline = TRUE)
   })
 
-  interval <- reactive({
-    req(input$interval, input$time_range) ## Fire on changes to time_range too, that way time_range() can fire only on interval() changes...
+  interval_d <- debounce(reactive({
+    req(input$interval)
     if(verbose) cat("  Input - Interval\n")
     as.numeric(input$interval)
+  }), debounce_int)
+
+  interval <- reactive({
+    if(ready(interval_d())) return(interval_d()) else return(as.vector(last(data_limits()$i)))
   })
 
   # Update Interval
   observe({
-    req(input$interval, data_range())
+    req(input$interval)
     i <- data_limits()
 
     ## Toggle radio buttons
-    lapply(1:(length(i$i)-1), function(a) shinyjs::toggleState(id = paste0("interval_", i$i[a]), condition = data_range() < i$n[a+1]))
+    lapply(1:(length(i$i)-1), function(a) shinyjs::toggleState(selector = paste0("input[type='radio'][value='", i$i[a], "']"), condition = data_range() < i$n[a+1]))
 
     ## Adjust selection
     s <- interval_selection(data_range(), i)
-    if(s > as.numeric(input$interval)) updateRadioButtons2(session, "interval", selected = s)
-
+    if(s > as.numeric(interval())) updateRadioButtons(session, "interval", selected = s)
   })
 
   ## Floor/ceiling to nearest relevant hour. For larger time periods, start at 6am
-  time_range <- reactive({
-    req(interval())
+  time_range_d <- debounce(reactive({
+    req(input$time_range)
+    req(lubridate::interval(input$time_range[1], input$time_range[2]) %within% lubridate::interval(t()$start, t()$end))
+
+    tr <- lubridate::with_tz(input$time_range, t()$tz)
+    i <- interval()
+
     isolate({
-      req(input$time_range)
       if(verbose) cat("  Input - Time range\n")
-      tr <- lubridate::with_tz(input$time_range, t()$tz)
-      if(interval() <= 60) {
+      if(i <= 60) {
         tr[1] <- lubridate::floor_date(tr[1], unit = "hour")
         tr[2] <- lubridate::ceiling_date(tr[2], unit = "hour")
-      } else if(interval() == 180) {
+      } else if(i == 180) {
         tr[1] <- lubridate::floor_date(tr[1], unit = "3 hours")
         tr[2] <- lubridate::ceiling_date(tr[2], unit = "3 hours")
-      } else if(interval() == 360) {
+      } else if(i == 360) {
         tr[1] <- lubridate::floor_date(tr[1], unit = "6 hours")
         tr[2] <- lubridate::ceiling_date(tr[2], unit = "6 hours")
-      } else if(interval() == 720) {
+      } else if(i == 720) {
         tr[1] <- round_6(tr[1])
         tr[2] <- round_6(tr[2])
-      } else if(interval() == 1440) {
+      } else if(i == 1440) {
         tr[1] <- lubridate::floor_date(tr[1], unit = "24 hours")
         tr[2] <- lubridate::ceiling_date(tr[2], unit = "24 hours")
       }
-      if(tr[1] == tr[2]) tr[2] <- tr[1] + interval()*60
-      return(tr)
+      if(tr[1] == tr[2]) tr[2] <- tr[1] + i*60
     })
+    return(tr)
+  }), debounce_int)
+
+  time_range <- reactive({
+    if(ready(time_range_d())) return(time_range_d()) else return(lubridate::with_tz(c(min(t()$times), max(t()$times)), tz = t()$tz))
   })
 
   instant_range <- reactive({
-    req(interval())
     lubridate::seconds(interval()*60/2)
   })
 
+  # What is the time span of the data in hours/min/weeks etc.?
   data_range <- eventReactive(time_range(), {
-    req(time_range())
+    if(verbose) cat("  Data range\n")
     d <- t()$times[t()$times >= time_range()[1] & t()$times <= time_range()[2]]
     if(length(d) == 0) d <- time_range()
     as.numeric(difftime(max(d), min(d), units = "min"))
   })
 
-  anim_speed <- reactive({input$anim_speed})
+  anim_speed_d <- debounce(reactive({input$anim_speed}), debounce_int)
+  anim_speed <- reactive({if(ready(anim_speed_d())) return(anim_speed_d()) else return(50)})
 
   breaks <- reactive({
-    req(interval())
-    isolate({
-      req(time_range(), t())
-      req(interval_selection(data_range()) <= interval())
-      if(verbose) cat("  Breaks\n")
-      breaks <- seq(time_range()[1], time_range()[2], by = paste(interval(), "min"))
-      if(max(breaks) < max(t()$times)) breaks <- seq(time_range()[1], time_range()[2] + instant_range()*2, by = paste(interval(), "min"))
-      return(breaks)
-    })
+    req(interval_selection(data_range()) <= interval())
+    req(lubridate::interval(time_range()[1], time_range()[2]) %within% lubridate::interval(t()$start, t()$end)) #Make sure time range of data matches UIs (when switching datasets)
+
+    if(verbose) cat("  Breaks\n")
+
+    breaks <- seq(time_range()[1], time_range()[2], by = paste(interval(), "min"))
+    if(max(breaks) < max(t()$times)) breaks <- seq(time_range()[1], time_range()[2] + instant_range()*2, by = paste(interval(), "min"))
+    return(breaks)
   })
 
-
-  return(c(interval = interval, instant_range = instant_range,
-           time_range = time_range, anim_speed = reactive({input$anim_speed}),
+  return(c(interval = interval,
+           instant_range = instant_range,
+           time_range = time_range,
+           anim_speed = anim_speed,
            breaks = breaks,
-           tz = reactive({t()$tz}), tz_offset = reactive({t()$tz_offset})))
+           tz = reactive({t()$tz}),
+           tz_offset = reactive({t()$tz_offset})))
 }
 
-
+# Advanced Animation Controls -------------------------------------------------------
 mod_UI_maps_advanced <- function(id) {
 
   ns <- NS(id)
@@ -234,18 +232,26 @@ mod_UI_maps_advanced <- function(id) {
       radioButtons(ns("type"), label = "Summary over time",
                    choices = c("Cumulative" = "cumulative", "Instant" = "instant"), inline = TRUE),
       uiOutput(ns("UI_animal_id")),
-      radioButtons2(ns("summary"),
+      radioButtons(ns("summary"),
                     label = "Summary type",
                     choices = c("Total sum" = "sum", "Average sum per individual" = "sum_indiv"))
   )
 }
 
 
-mod_maps_advanced <- function(input, output, session, samples, verbose = FALSE) {
+mod_maps_advanced <- function(input, output, session, samples, debounce_int, verbose = FALSE) {
 
   ns <- session$ns
 
   # UIs
+  animal_id <- debounce(reactive({input$animal_id}), debounce_int)
+  #animal_id <- reactive({if(ready(animal_id_d())) return(animal_id_d()) else return("all")})
+
+  type <- debounce(reactive({input$type}), debounce_int)
+  #type <- reactive({if(ready(type_d())) return(type_d()) else return("cumulative")})
+
+  summary <- debounce(reactive({input$summary}), debounce_int)
+  #summary <- reactive({if(ready(summary_d())) return(summary_d()) else return("sum")})
 
   # Animal ID selection
   output$UI_animal_id <- renderUI({
@@ -257,18 +263,18 @@ mod_maps_advanced <- function(input, output, session, samples, verbose = FALSE) 
   })
 
   ## Toggle summary buttons
-  observeEvent(input$animal_id, {
-    shinyjs::toggleState(id = "summary_sum_indiv", condition = input$animal_id == "all")
-    #shinyjs::toggleState(id = "summary_total_indiv", condition = input$subset == "all")
-    if(input$animal_id != "all" && input$summary != "sum") updateRadioButtons2(session, "summary", selected = "sum")
+  observeEvent(animal_id(), {
+    shinyjs::toggleState(selector = "input[type = 'radio'][value = 'sum_indiv']", condition = animal_id() == "all")
+    if(animal_id() != "all" && summary() != "sum") updateRadioButtons(session, "summary", selected = "sum")
   })
 
-  return(c(type = reactive({input$type}),
-           animal_id = reactive({input$animal_id}),
-           summary = reactive({input$summary})))
+  return(c(type = type,
+           animal_id = animal_id,
+           summary = summary))
 }
 
 
+# Time Figure -------------------------------------------------------
 mod_UI_maps_time <- function(id, type = "the RFID logger") {
 
   ns <- NS(id)
@@ -302,21 +308,26 @@ mod_UI_maps_time <- function(id, type = "the RFID logger") {
   )
 }
 
-# Module server function
 #' @import shiny
 mod_maps_time <- function(input, output, session, controls, events, verbose = FALSE) {
 
   ns <- session$ns
 
   output$UI_time <- renderUI({
-    req(controls$anim_speed(), controls$time_range())
+    req(controls$breaks(), controls$tz())
+    req(controls$instant_range(), controls$interval(), controls$anim_speed())
+    if("try-error" %in% class(try(controls$time_range(), silent = TRUE))) {
+      tr <- with_tz(c(min(controls$breaks()), max(controls$breaks())), controls$tz())
+    } else {
+      tr <- controls$time_range()
+    }
     isolate({
       if(verbose) cat("UI - Instant\n")
       # Add + controls$instant_range() to shift 'instant' to middle of block.
       sliderInput(ns("instant"), "Instant",
-                  min = controls$time_range()[1] + controls$instant_range(),
-                  max = controls$time_range()[2] + controls$instant_range(),
-                  value = controls$time_range()[1] + controls$instant_range(),
+                  min = tr[1] + controls$instant_range(),
+                  max = tr[2] + controls$instant_range(),
+                  value = tr[1] + controls$instant_range(),
                   step = 60 * controls$interval()[1],
                   timezone = controls$tz_offset(),
                   animate = animationOptions(interval = 500 * (1 - (controls$anim_speed()/100)) + 0.1, loop = FALSE),
@@ -329,15 +340,19 @@ mod_maps_time <- function(input, output, session, controls, events, verbose = FA
     req(input$instant)
     isolate({
       if(verbose) cat("Instant\n")
-      lubridate::with_tz(round.POSIXt(input$instant, units = "secs") - controls$instant_range(), isolate(controls$tz()))
+      lubridate::with_tz(round.POSIXt(input$instant, units = "secs") - controls$instant_range(), tz = isolate(controls$tz()))
     })
   })
 
   # Time figure
   g_time <- eventReactive(events(), {
-    req(events())
+    req(events(), controls$instant_range())
+    if("try-error" %in% class(try(controls$time_range(), silent = TRUE))) {
+      l <- with_tz(c(min(controls$breaks()), max(controls$breaks())), controls$tz())
+    } else {
+      l <- controls$time_range()
+    }
     isolate({
-      req(controls$time_range())
       if(verbose) cat("Figure - Events\n")
       if(length(unique(events()$type)) > 8) lp <- "none" else lp = "bottom"
 
@@ -346,10 +361,8 @@ mod_maps_time <- function(input, output, session, controls, events, verbose = FA
         tidyr::complete(block, type, fill = list(n = 0))
 
       ## Get limits
-      l <- controls$time_range()
       l[2] <- l[2] + controls$interval()*60
       l <- l + c(-0.25, 0.25)* controls$interval()*60
-      #if(any(d$block <= min(l)) | any(d$block >= max(l))) browser()
 
       ## Get breaks
       y <- seq(min(l), max(l), length.out = 8)
@@ -378,27 +391,31 @@ mod_maps_time <- function(input, output, session, controls, events, verbose = FA
   return(instant = instant)
 }
 
-
+# Sunrise overlay -------------------------------------------------------
 mod_UI_maps_sunrise <- function(id) {
   ns <- NS(id)
   tagList(
     radioButtons(ns("sunrise"), "Show sunrise/sunset?",
-                 choices = list("Yes" = TRUE, "No" = FALSE), inline = TRUE)
+                 choices = list("Yes" = TRUE, "No" = FALSE),
+                 selected = FALSE, inline = TRUE)
   )
 }
 
-# Module server function
+
 #' @import shiny
-mod_maps_sunrise <- function(input, output, session, instant, controls, verbose = FALSE) {
+mod_maps_sunrise <- function(input, output, session, instant, controls, debounce_int, verbose = FALSE) {
 
   ns <- session$ns
   values <- reactiveValues()
 
+  sunrise_d <- debounce(reactive({input$sunrise}), debounce_int)
+  sunrise <- reactive({if(ready(sunrise_d())) return(input$sunrise) else return(FALSE)})
+
   ## Add sunrise sunset
   observeEvent(instant(), {
-    req(instant(), input$sunrise == TRUE)
+    req(instant(), sunrise() == TRUE)
     leafletProxy(ns("map")) %>%
-      addTerminator(time = instant() + controls$instant_range(),
+      addTerminator(time = as.POSIXct(with_tz(instant() + controls$instant_range(), "UTC")),
                     layerId = "sun",
                     group = "Sunrise/Sunset")# %>%
       #removeShape(layerId = paste0("set-", values$time_prev))
@@ -406,8 +423,8 @@ mod_maps_sunrise <- function(input, output, session, instant, controls, verbose 
   }, priority = 100)
 
   # Get rid of sunrise if radio unselected
-  observeEvent(input$sunrise, {
-    req(input$sunrise == FALSE)
+  observeEvent(sunrise(), {
+    req(sunrise() == FALSE)
     leafletProxy(ns("map")) %>%
       clearGroup(group = "Sunrise/Sunset")
   })
@@ -419,7 +436,7 @@ mod_maps_sunrise <- function(input, output, session, instant, controls, verbose 
   })
 }
 
-## Map_leaflet UI
+# Actual leaflet map -------------------------------------------------------
 mod_UI_maps_leaflet <- function(id) {
   ns <- NS(id)
   tagList(
@@ -429,7 +446,7 @@ mod_UI_maps_leaflet <- function(id) {
 
 # Map_leaflet Server
 #' @import shiny
-mod_maps_leaflet <- function(input, output, session, data, data_total, summary, palette = NULL, verbose = FALSE) {
+mod_maps_leaflet <- function(input, output, session, data_instant, data_total, summary, palette = NULL, verbose = FALSE) {
 
   ns <- session$ns
 
@@ -518,13 +535,13 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
 
   ## Add points to map
   observe({
-    req(data(), lim(), pal())
+    req(data_instant(), lim(), pal())
 
-    if("visits" %in% names(data())){
-      if(nrow(data()) > 0){
+    if("visits" %in% names(data_instant())){
+      if(nrow(data_instant()) > 0){
         leaflet::leafletProxy(ns("map")) %>%
           leaflet::clearGroup(group = "Visits") %>%
-          presence_markers(data = data(), p_scale = 1,
+          presence_markers(data = data_instant(), p_scale = 1,
                            p_pal = pal()$visits, p_title = "Visits",
                            val_min = min(lim()$visits), val_max = max(lim()$visits))
       } else {
@@ -532,10 +549,10 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
       }
     }
 
-    if("movements" %in% names(data())) {
-      if(!compare_data(values$m_old, data()$movements)){
-        if(!is.null(data()$movements) && nrow(data()$movements) > 0) {
-          temp <- data()$movements %>%
+    if("movements" %in% names(data_instant())) {
+      if(!compare_data(values$m_old, data_instant()$movements)){
+        if(!is.null(data_instant()$movements) && nrow(data_instant()$movements) > 0) {
+          temp <- data_instant()$movements %>%
             dplyr::arrange(path_use)
           for(move_path in unique(temp$move_path)) {
             temp2 <- temp[temp$move_path == move_path, ]
@@ -551,41 +568,42 @@ mod_maps_leaflet <- function(input, output, session, data, data_total, summary, 
         } else {
           leafletProxy(ns("map")) %>% removeShape(layerId = as.character(move_paths()))
         }
-        values$m_old <- data()$movements
+        values$m_old <- data_instant()$movements
       }
     }
 
-    if("presence" %in% names(data())) {
-      if(!compare_data(values$f_old, data()$presence)){
-        if(!is.null(data()$presence) && nrow(data()$presence) > 0){
+    if("presence" %in% names(data_instant())) {
+      if(!compare_data(values$f_old, data_instant()$presence)){
+        if(!is.null(data_instant()$presence) && nrow(data_instant()$presence) > 0){
           leafletProxy(ns("map"), deferUntilFlush = FALSE) %>%
-            presence_markers(data = data()$presence,
+            presence_markers(data = data_instant()$presence,
                         p_scale = 1, p_pal = pal()[['presence']],
                         p_title = "Presence",
                         val_min = min(lim()$presence),
                         val_max = max(lim()$presence),
-                        layerId = as.character(data()$presence$logger_id)) %>%
-            removeMarker(layerId = as.character(loggers()$logger_id[!(loggers()$logger_id %in% data()$presence$logger_id)]))
+                        layerId = as.character(data_instant()$presence$logger_id)) %>%
+            removeMarker(layerId = as.character(loggers()$logger_id[!(loggers()$logger_id %in% data_instant()$presence$logger_id)]))
         } else {
           leafletProxy(ns("map")) %>% removeMarker(layerId = as.character(loggers()$logger_id))
         }
-        values$f_old <- data()$presence
+        values$f_old <- data_instant()$presence
       }
     }
   })
 }
 
-# Map_data Server
+# Data Prep -------------------------------------------------------
 #' @import shiny
 mod_maps_data <- function(input, output, session, controls, instant, data, verbose = FALSE) {
   data_instant <- reactive({
-    req(instant(), controls$interval(), data())
-    data() %>%
+    req(instant(), controls$interval(), data_instant())
+    data_instant() %>%
       dplyr::filter(block >= instant(), block < instant() + 60 * controls$interval())
   })
   return(data_instant)
 }
 
+# Extra functions -------------------------------------------------------
 prep_presence <- function(x, y, type = "cumulative", summary = "sum") {
   if(type == "cumulative") x <- x[x$block <= y$block[1], ] else if(type == "instant") x <- x[x$block == y$block[1], ]
 

@@ -4,10 +4,10 @@
 \alias{load_raw}
 \title{Load raw read data}
 \usage{
-load_raw(r_file, tz = Sys.timezone(), tz_disp = NULL, details = 1,
-  logger_pattern = "[GPR]{2,3}[0-9]{1,2}", time_format = "mdy HMS",
-  extra_pattern = NULL, extra_name = NULL, sep = "", skip = 0,
-  feeder_pattern)
+load_raw(r_file, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE,
+  details = 1, logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
+  time_format = "mdy HMS", extra_pattern = NULL, extra_name = NULL,
+  sep = "", skip = 0, feeder_pattern)
 }
 \arguments{
 \item{r_file}{Character. The location of a single file to load.}
@@ -19,6 +19,13 @@ timezone, if none supplied. Defaults to UTC if all else fails.}
 \item{tz_disp}{Character. The time zone the date/times should be displayed in
 (if not the same as \code{tz}; should match one of the zones produced by
 \code{OlsonNames())}. Defaults to tz if none supplied.}
+
+\item{dst}{Logical. Whether or not to use Daylight Savings. When set to FALSE
+timezones are converted to the Etc/GMT+X timezones which do not include
+DST. (Note this overrides the timezone specification such that a timezone
+of America/Vancouver, which would normally include DST in the summer, will
+be transformed to a timezone with the same GMT offset, but not including
+DST).}
 
 \item{details}{Numeric. Where to find logger details, either 0 (file name),
 1 (first line) or 2 (first two lines). See 'details'.}

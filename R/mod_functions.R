@@ -1,31 +1,29 @@
 #' @import shiny
-ui_app <- function(name, ..., launch.browser = getOption("shiny.launch.browser", interactive())) {
+ui_app <- function(name, ..., diagnostic = FALSE, launch.browser = getOption("shiny.launch.browser", interactive())) {
 
   addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
 
   app <- shiny::shinyApp(ui = shiny::fluidPage(includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
                                                shinyjs::useShinyjs(),
                                                get(paste0("mod_UI_", name))("standalone"),
-                                               mod_UI_stop("stp")),
+                                               mod_UI_stop("stp"),
+                                               mod_UI_pause("pause")),
                          server = function(input, output, session) {
                            shiny::callModule(get(paste0("mod_", name)), id = "standalone", ...)
-                           shiny::callModule(mod_stop, "stp")
+                           shiny::callModule(mod_stop, id = "stp")  # Add Exit Buttons
+                           shiny::callModule(mod_pause, id = "pause", diagnostic = diagnostic)  # Add Pause button if 'diagnostic == TRUE'
                          }
   )
   shiny::runApp(app)
 }
 
-startup <- function(x) {
-  #require that input objects were at least created (first pass)
-  all(c("data_site_name",
-        "data_species",
-        "data_date",
-        "data_animal_id",
-        "data_logger_id"
-  ) %in% names(x))
+compare_values <- function(x, y) {
+  identical(sort(as.character(unique(x))), sort(as.character(unique(y))))
 }
 
 get_counts <- function(c, filter = NULL, summarize_by = NULL) {
+
+  if("date" %in% names(c)) c$date <- as.Date(c$date)
 
   if(!is.null(filter)){
     if("species" %in% names(filter))   c <- dplyr::filter(c, species %in% filter$species)
@@ -69,14 +67,14 @@ selected <- function(s, var){
 # i = anything else means dealing with selection values
 values_list <- function(i = NULL, counts){
   if(any(class(i) == "reactivevalues")){
-    if(!is.null(i$plot_data_brush)) {
-      dates <- c(as.Date(i$plot_data_brush$xmin, lubridate::origin),
-                 as.Date(i$plot_data_brush$xmax, lubridate::origin))
-      if(dates[1] < min(counts$date)) dates[1] <- min(counts$date)
-      if(dates[2] > max(counts$date)) dates[2] <- max(counts$date)
-    } else {
+    # if(!is.null(i$plot_data_brush)) {
+    #   dates <- c(as.Date(i$plot_data_brush$xmin, lubridate::origin),
+    #              as.Date(i$plot_data_brush$xmax, lubridate::origin))
+    #   if(dates[1] < min(counts$date)) dates[1] <- min(counts$date)
+    #   if(dates[2] > max(counts$date)) dates[2] <- max(counts$date)
+    # } else {
       dates <- i$data_date
-    }
+    #}
     d <- list(
       'species' = i$data_species,
       'date' = dates,
@@ -181,4 +179,8 @@ data_tz <- function(data) {
   tz <- tz_offset(attr(data[, cols[1]][[1]], "tzone"), tz_name = TRUE)
   for(i in cols) data[, i] <- lubridate::with_tz(data[, i], tzone = tz)
   return(data)
+}
+
+ready <- function(r){
+  shiny::isTruthy(try(r, silent = TRUE))
 }

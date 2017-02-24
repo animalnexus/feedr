@@ -4,10 +4,15 @@
 
 #' User-interface for importing files
 #'
-#' Launches an interactive shiny app for importing data interactively. Also available online at <http://animalnexus.ca> or
-#' by launching the local animalnexus app through \code{animalnexus()}.
+#' Launches an interactive shiny app for importing data interactively. Also
+#' available online at \url{http://animalnexus.ca} or by launching the local
+#' animalnexus app through \code{\link{animalnexus}}. Users can also import data by hand using the R base \code{\link[utils]{read.csv}} function coupled with \code{feedr}'s \code{\link{load_format}} function. Alternatively, for raw data collected directly from data loggers, check out the \code{\link{load_raw}} and \code{\link{load_raw_all}} functions.
+#'
+#' @param diagnostic Logical. Display pause button for debugging
 #'
 #' @return An imported data frame formatted and ready to be transformed.
+#'
+#' @seealso \code{\link{load_format}}, \code{\link{load_raw}}, \code{\link{load_raw_all}}
 #'
 #' @examples
 #' \dontrun{
@@ -16,8 +21,8 @@
 #'
 #' @export
 
-ui_import <- function() {
-  ui_app(name = "data_import")
+ui_import <- function(diagnostic = FALSE) {
+  ui_app(name = "data_import", diagnostic = diagnostic)
 }
 
 ## Get current data
@@ -25,6 +30,7 @@ ui_import <- function() {
 #' @import magrittr
 mod_UI_data_import <- function(id) {
   ns <- NS(id)
+  tz_sys <- check_tz(Sys.timezone())
 
   tagList(
     fluidRow(
@@ -43,11 +49,11 @@ mod_UI_data_import <- function(id) {
              tags$hr(),
              h4("Options", actionButton(ns("help_options"), "?", class = "help")),
              uiOutput(ns("UI_time")),
-             selectInput(ns("tz"), "Data Timezone", choices = OlsonNames(), selected = Sys.timezone(), width = "200px"),
+             selectInput(ns("tz"), "Data Timezone", choices = OlsonNames(), selected = tz_sys, width = "200px"),
+             radioButtons(ns("dst"), "Use Daylight Savings Time?", choices = c("No DST" = FALSE, "Use DST" = TRUE), selected = FALSE),
              uiOutput(ns("UI_sep")),
              uiOutput(ns("UI_skip")),
-             shinyjs::disabled(actionButton(ns("get_data"), "Import"))#,
-             #actionButton(ns("pause"), "Pause")
+             shinyjs::disabled(actionButton(ns("get_data"), "Import"))
              ),
       column(8,
              h4("File Preview"),
@@ -73,7 +79,7 @@ mod_data_import <- function(input, output, session, type = NULL) {
                          pre_data = NULL,
                          quality = FALSE)
 
-  ## UIs
+  ## UIs ----------------------------------------------------------------------------
   output$UI_time <- renderUI({
     if(input$format == "all") s <- "ymd HMS" else s <- "mdy HMS"
     selectInput(ns('time'), "Date/Time format",
@@ -119,6 +125,17 @@ mod_data_import <- function(input, output, session, type = NULL) {
     numericInput(ns('skip'), "Skip", min = 0, max = 39, value = 0, width = "100px")
     })
 
+
+  # Timezones ---------------------------------------------------------------
+  tz <- reactive({
+    req(input$tz)
+    validate(need(input$tz %in% OlsonNames(), "Timezone does not match any from Olson database. See OlsonNames() in R."))
+    tz <- check_tz(input$tz)
+    return(tz)
+  })
+
+
+  # Preview File -----------------------------------------------------
   output$preview_file <- renderText({
     validate(need(path(), "No data"))
     d <- readLines(path()[1], n =  10)
@@ -126,7 +143,7 @@ mod_data_import <- function(input, output, session, type = NULL) {
   })
 
 
-  ## File details
+  ## File details ----------------------------------------------------
   path <- reactive({
     input$file1$datapath[!grepl("logger_index", input$file1$name)]
   })
@@ -135,15 +152,14 @@ mod_data_import <- function(input, output, session, type = NULL) {
     input$file1$datapath[grepl("logger_index", input$file1$name)]
   })
 
-  ## Preview Data
+  ## Preview Data ----------------------------------------------------
   preview_data <- reactive({
-    req(input$file1, input$format, input$tz, path())
+    req(input$file1, input$format, tz(), path())
     vars$get_data <- FALSE
-    validate(need(input$tz %in% OlsonNames(), "Timezone does not match any from Olson database. See OlsonNames() in R."))
 
     ## Import previews
-    if(input$format == "logger") d <- import_logger(path()[1], logger(), input)
-    if(input$format == "all") d <- import_all(path()[1], input, nrows = 40)
+    if(input$format == "logger") d <- import_logger(path()[1], logger(), tz(), input)
+    if(input$format == "all") d <- import_all(path()[1], tz(), input, nrows = 40)
 
     ## Check validations
     check_data(d)
@@ -166,6 +182,7 @@ mod_data_import <- function(input, output, session, type = NULL) {
 
   }, server = FALSE)
 
+  ## Buttons and Reset ----------------------------------------------------
   ## Toggle get data button
   observe({
     req(input$file1)
@@ -178,22 +195,27 @@ mod_data_import <- function(input, output, session, type = NULL) {
     vars$pre_data <- NULL
   })
 
+
+  ## Get Data ----------------------------------------------------
+
+  ##Import data
   observeEvent(input$get_data, {
     req(preview_data(), vars$get_data)
 
-    ## Import data
     withProgress({
-      if(input$format == "logger") vars$pre_data <- import_logger(path(), logger(), input)
-      if(input$format == "all") vars$pre_data <- import_all(path(), input)
+      if(input$format == "logger") vars$pre_data <- import_logger(path(), logger(), tz(), input)
+      if(input$format == "all") vars$pre_data <- import_all(path(), tz(), input)
     }, message = "Importing...")
   })
 
+  ## Check Data
   output$validations <- renderText({
     req(vars$pre_data)
     check_data(vars$pre_data)
     vars$quality <- TRUE
   })
 
+  ## Export data if clears checks
   observeEvent(vars$quality, {
     req(vars$quality == TRUE, vars$pre_data)
     if(ns("") == "standalone-") {
@@ -203,9 +225,10 @@ mod_data_import <- function(input, output, session, type = NULL) {
       vars$data = vars$pre_data
     }
     vars$pre_data <- NULL
+    vars$quality <- FALSE
   })
 
-  ## Help dialogues
+  ## Help dialogues ----------------------------------------------------
   observeEvent(input$help_file, {
     showModal(modalDialog(size = "l",
       title = "File setup",
@@ -286,27 +309,26 @@ GR13, 53.88689,	-122.8208", style = "width:80%; margin: auto;"),
     tagList(
       tags$ul(
         tags$li(strong("Date/Time Format:"), "The order of Day, Month, Year in the data. The exact format doesn't matter"),
-        tags$li(strong("Data Timezone:"),"Timezone that the data was recorded in"),
+        tags$li(strong("Data Timezone:"),"Timezone that the data was recorded in."),
+        tags$li(strong("Data DST:"), "Whether or not data includes daylight savings (assumed not)."),
         tags$li(strong("Separator:"), "For pre-formatted files, how are the columns separated?"),
         tags$li(strong("Skip:"), "Extra lines to skip at the top of all data files. For Logger files, this is", em("in addition"), "to the first (or first two) rows which will be automatically skipped.")))
     ))
   })
 
-  observeEvent(input$pause, {
-    browser()
-  })
-
+  # Return ----------------------------------------------------
   return(c(r = reactive({vars$data}),
            time = reactive({if(is.null(vars$data)) NULL else Sys.time()}),
            name = reactive({input$file1$name})))
 }
 
 
-import_logger <- function(path, logger, input) {
+import_logger <- function(path, logger, tz, input) {
   req(input$details)
 
   d <- try(load_raw_all(r_list = path,
-                        tz = input$tz,
+                        tz = tz,
+                        dst = as.logical(input$dst),
                         logger_pattern = if(input$id_pattern == "NA") NA else input$id_pattern,
                         time_format = input$time,
                         details = as.numeric(stringr::str_extract(input$details, "[012]")),
@@ -327,7 +349,7 @@ import_logger <- function(path, logger, input) {
   return(d)
 }
 
-import_all <- function(path, input, nrows = -1) {
+import_all <- function(path, tz, input, nrows = -1) {
   req(!is.null(input$sep), !is.null(input$skip))
 
   d <- try(dplyr::bind_rows(lapply(path, utils::read.csv,
@@ -335,7 +357,7 @@ import_all <- function(path, input, nrows = -1) {
                                    sep = input$sep,
                                    skip = input$skip,
                                    nrows = nrows)) %>%
-    load_format(tz = input$tz, time_format = input$time), silent = TRUE)
+    load_format(tz = tz, dst = as.logical(input$dst), time_format = input$time), silent = TRUE)
 
  return(d)
 }

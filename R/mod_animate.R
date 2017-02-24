@@ -1,12 +1,14 @@
+# Map UI function -------------------------------------------------------
 #' Animated map for individuals with leaflet
 #'
 #' Interactive shiny app to select and animate presence at and movements between
-#' RFID loggers over time. Also available online at <http://animalnexus.ca> or
-#' by launching the local animalnexus app through \code{animalnexus()}.
+#' RFID loggers over time. Also available online at \url{http://animalnexus.ca} or
+#' by launching the local animalnexus app through \code{\link{animalnexus}}.
 #'
-#' @param v Data frame. Visits data frame created with the
-#'   \code{visits()} function.
+#' @param v Data frame. Visits data frame created with the \code{\link{visits}}
+#'   function.
 #' @param verbose Logical. Print log events to console.
+#' @param diagnostic Logical. Display pause button for debugging
 #'
 #' @examples
 #'
@@ -16,17 +18,18 @@
 #'
 #' @export
 
-ui_animate <-  function(v, verbose = FALSE) {
+ui_animate <-  function(v, verbose = FALSE, diagnostic = FALSE) {
   # Check for correct formatting
   check_name(v, c("animal_id", "logger_id", "start", "end"))
   check_time(v)
   check_format(v)
 
-  ui_app(name = "map_animate", visits = reactive({v}), verbose = verbose)
+  ui_app(name = "map_animate", visits = reactive({v}), verbose = verbose, diagnostic = diagnostic)
 }
 
 
-## Animated map - UI
+
+# Complete UI for animations -------------------------------------------------------
 #' @import shiny
 #' @import magrittr
 mod_UI_map_animate <- function(id) {
@@ -49,7 +52,7 @@ mod_UI_map_animate <- function(id) {
   )
 }
 
-# Module server function
+# Complete server for animations -------------------------------------------------------
 #' @import shiny
 #' @import magrittr
 #' @import leaflet
@@ -57,35 +60,50 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
 
   ns <- session$ns
 
-  ## Instructions
+  debounce_int <- 700 # Debounce interval
+
+  # Check Internet connection -----------------
+  if(!curl::has_internet() &&  ns("") == "standalone-") {
+    showModal(modalDialog(
+      title = "No Internet connection",
+      "Animating maps requires an internet connection to download map tiles. Map tiles may fail to display.",
+      easyClose = TRUE
+    ))
+  }
+
+  # Instructions-------------------------------
   callModule(mod_maps_instructions, "details")
 
-  ## Controls
-  controls <- callModule(mod_maps_controls, "setup", times = t_id, verbose = verbose)
-  summary <- callModule(mod_maps_advanced, "adv", samples = samples, verbose = verbose)
-  instant <- callModule(mod_maps_time, "setup_time", controls = controls, events = events, verbose = verbose)
+  # Controls ----------------------------------
+  controls <- callModule(mod_maps_controls, "setup", times = t_id,
+                         debounce_int = debounce_int, verbose = verbose)
+  summary <- callModule(mod_maps_advanced, "adv", samples = samples,
+                        debounce_int = debounce_int, verbose = verbose)
+  instant <- callModule(mod_maps_time, "setup_time", controls = controls,
+                        events = events, verbose = verbose)
 
-  ## Maps
-  callModule(mod_maps_sunrise, "map", instant = instant, controls = controls, verbose = verbose)
+  # Maps---------------------------------------
+  callModule(mod_maps_sunrise, "map", instant = instant, controls = controls,
+             debounce_int = debounce_int, verbose = verbose)
   callModule(mod_maps_leaflet, "map",
              summary = summary$summary,
-             data = data,
+             data_instant = data_instant,
              data_total = data_total, verbose = verbose)
 
-  data <- reactive({
+  # Data ---------------------------------------
+  # Fix time zone to local non-DST
+
+  data_instant <- reactive({
     req(p_instant())
     if(nrow(m_avg()) == 0) d <- list(presence = p_instant()) else d <- list(presence = p_instant(), movements = m_instant())
     return(d)
-    })
+  })
 
   data_total <- reactive({
     req(p_data())
     if(nrow(m_avg()) == 0) d <- list(presence = p_data()) else d <- list(presence = p_data(), movements = m_data())
     return(d)
-    })
-
-  ## Data
-  # Fix time zone to local non-DST
+  })
 
   v <- reactive({
     req(visits())
@@ -105,7 +123,7 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
     return(p)
   })
 
-  ## Summarize movements and presence
+  # Summarize movements and presence -------------------------------------------
   samples <- reactive({
     req(p(), m())
     p() %>%
@@ -118,7 +136,7 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
       dplyr::mutate(move = replace(move, is.na(move), 0))
   })
 
-  ## Subselections - Get animal ID
+  # Subselections - Get animal ID -------------------------------------------------
   p_id <- reactive({
     req(p(), summary$animal_id())
     validate(need(sum(names(p()) %in% c("lat", "lon")) == 2, "Latitude and longitude ('lat' and 'lon', respectively) were not detected in the data. Can't determine movement paths without them"))
@@ -151,10 +169,10 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
     return(m_id)
   })
 
-  ## Get ranges (don't depend on p_id/m_id, as those are updated, breaks() will be updated, so best to THEN activate
+  # Get data ranges -------------------------------------------------------------------------
+  # Don't react to p_id/m_id, as p_id/m_id are updated, breaks() will be updated, so best to just respond to breaks
   p_avg <- reactive({
     req(controls$breaks(), summary$summary())
-    #req(summary$animal_id() %in% unique(p$animal_id))
     isolate({
       req(controls$tz(), p_id())
       if(verbose) cat("Presence avg: ")
@@ -217,7 +235,7 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
     })
   })
 
-  ## Get multiple data sets corresponding to all instants
+  # Get multiple data sets corresponding to all instants ---------------------------
   p_data <- reactive({
     req(p_avg(), summary$type()) #cumulative vs. instant
     if(verbose) cat("Presence data\n")
@@ -241,7 +259,7 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
     return(m_data)
   })
 
-  ## Get data corresponding to specific instant
+  # Get data corresponding to specific instant --------------------------------------
   p_instant <- reactive({
     req(p_data(), instant())
     isolate({
@@ -262,16 +280,17 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
     })
   })
 
-  ## Total time range
+  # Total time range ----------------------------------------------------------------------
   t_id <- reactive({
     req(m_id(), p_id())
     if(verbose) cat("Times ID\n")
     sort(lubridate::with_tz(c(p_id()$start, p_id()$end), tz = lubridate::tz(p_id()$start)))
   })
 
-  ## Summary for time figure
+  # Summary for time figure ---------------------------------------------------------------
   events <- reactive({
     req(p_avg(), m_avg(), any(nrow(m_avg()) > 0, nrow(p_avg()) > 0))
+    req(controls$instant_range())
 
     if(verbose) cat("Events\n")
 
@@ -296,9 +315,5 @@ mod_map_animate <- function(input, output, session, visits, verbose = FALSE) {
       dplyr::group_by(block, type) %>%
       dplyr::summarize(n = sum(n)) %>%
       dplyr::ungroup()
-  })
-
-  observeEvent(input$pause, {
-    browser()
   })
 }

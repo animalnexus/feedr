@@ -67,7 +67,7 @@ if(getRversion() >= "2.15.1")
       "lat", "lon", "amount2", "combo", "lon_1", "lon_2", "lat_1", "lat_2", "path_use2", "block",
 
       # Shiny Modules
-      "site_name", "dataaccess", "count", "start", "x", "fill", "facet", "end", "y", "counts_sum", "temp",
+      "site_name", "dataaccess", "count", "start", "x", "fill", "facet", "end", "y", "counts_sum", "temp", "engl_name",
 
       # piping requires '.' at times
       ".")
