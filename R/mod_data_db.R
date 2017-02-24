@@ -445,7 +445,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   ## UI Site_name
   output$UI_data_site_name <- renderUI({
-    req(!is.null(db))
+    req(counts_sum)
     selectInput(ns("data_site_name"), "Sites:",
                 choices = c(c("Choose site" = ""), choices(counts_sum, "site_name")))
   })
