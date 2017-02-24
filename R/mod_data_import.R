@@ -325,7 +325,6 @@ GR13, 53.88689,	-122.8208", style = "width:80%; margin: auto;"),
 import_logger <- function(path, logger, tz, input) {
   req(input$details)
 
-  browser()
   d <- try(load_raw_all(r_list = path,
                         tz = tz,
                         dst = as.logical(input$dst),
