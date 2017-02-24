@@ -211,10 +211,14 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
         input$data_animal_id,
         input$data_logger_id)
 
-    if(is.null(values$selection$date)) values$selection$date <- input$data_date
-    if(is.null(values$selection$species)) values$selection$species <- input$data_species
-    if(is.null(values$selection$animal_id)) values$selection$animal_id <- input$data_animal_id
-    if(is.null(values$selection$logger_id)) values$selection$logger_id <- input$data_logger_id
+    # Isolate so fires ONLY on input changes (when resetting site, this helps
+    # ensure inputs change before resetting values$selection)
+    isolate({
+      if(is.null(values$selection$date)) values$selection$date <- input$data_date
+      if(is.null(values$selection$species)) values$selection$species <- input$data_species
+      if(is.null(values$selection$animal_id)) values$selection$animal_id <- input$data_animal_id
+      if(is.null(values$selection$logger_id)) values$selection$logger_id <- input$data_logger_id
+    })
   })
 
   # Update date selection based on plot brush
