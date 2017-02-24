@@ -415,7 +415,9 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
   # Reset values with site selection
   observeEvent(input$data_site_name, {
     req(counts_site())
+    if(verbose) cat("Reset data selection via new site...\n")
     values$selection <- values$input_selection <- NULL
+    values$selection_update <- FALSE
   }, priority = 100)
 
 
