@@ -415,7 +415,7 @@ mod_maps_sunrise <- function(input, output, session, instant, controls, debounce
   observeEvent(instant(), {
     req(instant(), sunrise() == TRUE)
     leafletProxy(ns("map")) %>%
-      addTerminator(time = with_tz(instant() + controls$instant_range(), "UTC"),
+      addTerminator(time = as.POSIXct(with_tz(instant() + controls$instant_range(), "UTC")),
                     layerId = "sun",
                     group = "Sunrise/Sunset")# %>%
       #removeShape(layerId = paste0("set-", values$time_prev))
