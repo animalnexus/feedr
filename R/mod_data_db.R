@@ -104,9 +104,12 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
   # Values ----------------------------------------------------
 
   values <- reactiveValues(
-    pre_data = NULL,          # Stores download values before returned
-    data_map = NULL,          # Stores values which displayed on map
-    data_time = NULL          # Stores values which displayed on time plot
+    selection_update = FALSE,   # Whether or not to update input_selection
+    selection = NULL,           # Builds inputs as they are modified
+    input_selection = NULL,     # Stores combines all inputs when finished
+    pre_data = NULL,            # Stores download values before returned
+    data_map = NULL,            # Stores values which displayed on map
+    data_time = NULL            # Stores values which displayed on time plot
   )
 
   debounce_int <- 700 # Debounce interval
@@ -201,9 +204,22 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   # Update selection ----------------------------------------------------
 
+  # Initialization
+  observe({
+    req(input$data_date,
+        input$data_species,
+        input$data_animal_id,
+        input$data_logger_id)
+
+    if(is.null(values$selection$date)) values$selection$date <- input$data_date
+    if(is.null(values$selection$species)) values$selection$species <- input$data_species
+    if(is.null(values$selection$animal_id)) values$selection$animal_id <- input$data_animal_id
+    if(is.null(values$selection$logger_id)) values$selection$logger_id <- input$data_logger_id
+  })
+
   # Update date selection based on plot brush
   observeEvent(input$plot_data_brush, {
-    if(verbose) cat("Get time brush input\n")
+    if(verbose) cat("Update date range from brush input\n")
 
     cnts <- get_counts(c = counts_site(), summarize_by = "date") %>%
       dplyr::mutate(choices = as.Date(choices))
@@ -224,24 +240,31 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
     sel <- counts_site() %>%
       dplyr::filter(date %within% interval(input$data_date[1], input$data_date[2]))
 
+    # Save input dates
+    values$selection_update <- TRUE
+    values$selection$date <- input$data_date
+
     if(!compare_values(sel$species, input$data_species)) {
       if(verbose) cat("  - species\n")
+      values$selection$species <- unique(sel$species)
       updateCheckboxGroupInput(session, "data_species",
                                selected = unique(sel$species))
     }
     if(!compare_values(sel$animal_id, input$data_animal_id)) {
       if(verbose) cat("  - animal_id\n")
+      values$selection$animal_id <- unique(sel$animal_id)
       updateCheckboxGroupInput(session, "data_animal_id",
                                selected = unique(sel$animal_id))
     }
     if(!compare_values(sel$logger_id, input$data_logger_id)) {
       if(verbose) cat("  - logger_id\n")
+      values$selection$logger_id <- unique(sel$logger_id)
       updateCheckboxGroupInput(session, "data_logger_id",
                                selected = unique(sel$logger_id))
     }
   }, priority = 10)
 
-  # Update selections based on species
+  # Update selections based on species (only really fires if input$data_species changed)
   observeEvent(input$data_species, {
     sel <- counts_site() %>%
       dplyr::filter(date %within% interval(input$data_date[1], input$data_date[2]),
@@ -251,30 +274,55 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
     if(!compare_values(sel$animal_id, input$data_animal_id)) {
       if(verbose) cat("  - animal_id\n")
+      values$selection_update <- TRUE
+      values$selection$animal_id <- unique(sel$animal_id)
       updateCheckboxGroupInput(session, "data_animal_id",
                                selected = unique(sel$animal_id))
     }
     if(!compare_values(sel$logger_id, input$data_logger_id)) {
       if(verbose) cat("  - logger_id\n")
+      values$selection_update <- TRUE
+      values$selection$logger_id <- unique(sel$logger_id)
       updateCheckboxGroupInput(session, "data_logger_id",
                                selected = unique(sel$logger_id))
     }
   }, priority = 5)
 
-  input_selection <- throttle(reactive({
-    req(input$data_animal_id, input$data_logger_id, !is.null(db))
-    if(verbose) cat("Update input selections\n")
+  observeEvent(input$data_animal_id, {
+    req(values$selection$animal_id)
+    req(!compare_values(input$data_animal_id, values$selection$animal_id))
+    values$selection_update <- TRUE
+    values$selection$animal_id <- input$data_animal_id
+  })
 
-    list('species' = as.character(unique(input$data_species)),
-         'date' = c(min(input$data_date), max(input$data_date)),
-         'animal_id' = as.character(unique(input$data_animal_id)),
-         'logger_id' = as.character(unique(input$data_logger_id)))
-  }), debounce_int)
+  observeEvent(input$data_logger_id, {
+    req(values$selection$animal_id)
+    req(!compare_values(input$data_logger_id, values$selection$logger_id))
+    values$selection_update <- TRUE
+    values$selection$logger_id <- input$data_logger_id
+  })
+
+  observeEvent(values$selection_update, {
+    req(values$selection_update == TRUE)  # Update triggered
+
+    req(any(!compare_values(values$selection$date, values$input_selection$date),
+            !compare_values(values$selection$species, values$input_selection$species),
+            !compare_values(values$selection$animal_id, values$input_selection$animal_id),
+            !compare_values(values$selection$logger_id, values$input_selection$logger_id)))
+
+    if(verbose) cat("Update input selections\n")
+    values$selection_update <- FALSE
+
+    values$input_selection <- list('date' = as.Date(values$selection$date),
+                                   'species' = as.character(values$selection$species),
+                                   'animal_id' = as.character(values$selection$animal_id),
+                                   'logger_id' = as.character(values$selection$logger_id))
+  })
 
   # Input variables
   data_selection <- reactive({
     if(verbose) cat("Update data selections\n")
-    get_counts(counts_site(), filter = input_selection())
+    get_counts(counts_site(), filter = values$input_selection)
   })
 
   # Counts and info ----------------------------------------------------
@@ -282,6 +330,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
   ## Subset of counts reflecting site
   counts_site <- reactive({
     req(input$data_site_name)
+    if(verbose) cat("Updating counts_site()\n")
     droplevels(counts[counts$site_name == input$data_site_name, ])
   })
 
@@ -306,7 +355,8 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
   observeEvent(input$data_reset, {
     req(input$data_site_name)
     if(verbose) cat("Reset data selection...\n")
-    #values$input <- values$input_previous <- values$keep <- NULL
+    values$selection <- values$input_selection <- NULL
+    values$selection_update <- FALSE
     updateSelectInput(session, "data_site_name",
                       selected = c("Choose site" = ""))
   })
@@ -314,9 +364,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
   # Reset values with site selection
   observeEvent(input$data_site_name, {
     req(counts_site())
-
-    #values$input <- values$input_previous <- NULL
-    #values$keep <- counts_site()
+    values$selection <- values$input_selection <- NULL
   }, priority = 100)
 
 
@@ -582,12 +630,12 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   ## Plot of counts overtime
   plot_data_ggplot <- reactive({
-    req(input_selection())
+    req(values$selection_update == FALSE, values$input_selection)
     if(verbose) cat("Refreshing Time Plot...\n")
 
     isolate({
 
-      i <- input_selection()
+      i <- values$input_selection
 
       date <- c(min(i$date), max(i$date))
       total <- counts_site() %>%
@@ -631,7 +679,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   ## For time plot tooltip
   output$text_time <- renderText({
-    req(input_selection())
+    req(values$input_selection)
     "Drag and select a date range to further refine the data selection"
   })
 
