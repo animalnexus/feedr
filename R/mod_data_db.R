@@ -355,6 +355,27 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
     get_counts(counts_site(), filter = values$input_selection)
   })
 
+  # Disable animal_id and logger_ids based on date/species selections
+  observe({
+    req(values$selection$date, values$selection$species)
+
+    d <- interval(values$selection$date[1], values$selection$date[2])
+    s <- values$selection$species
+
+    sel <- counts_site() %>%
+      dplyr::filter(date %within% d,
+                    species %in% s)
+
+    #temp <- sapply(unique(counts_site()$animal_id), FUN = function(x) x %in% unique(sel$animal_id))
+    lapply(unique(counts_site()$animal_id),
+           FUN = function(x) shinyjs::toggleState(condition = x %in% unique(sel$animal_id), selector = paste0("input[type='checkbox'][value='", x, "']")))
+
+    lapply(unique(counts_site()$logger_id),
+           FUN = function(x) shinyjs::toggleState(condition = x %in% unique(sel$logger_id), selector = paste0("input[type='checkbox'][value='", x, "']")))
+
+  })
+
+
   # Counts and info ----------------------------------------------------
 
   ## Subset of counts reflecting site
