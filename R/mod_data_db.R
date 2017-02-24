@@ -530,6 +530,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
                                       statement = paste0("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time ",
                                                          "FROM raw.visits ",
                                                          "WHERE raw.visits.bird_id IN ( '", paste0(unique(d$animal_id), collapse = "', '"), "' ) ",
+                                                         "AND raw.visits.feeder_id IN ( '", paste0(unique(d$logger_id), collapse = "', '"), "') ",
                                                          dates
                                       ))
                  )
