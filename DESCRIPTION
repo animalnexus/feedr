@@ -1,7 +1,7 @@
 Package: feedr
 Type: Package
 Title: Transforming Raw RFID Data
-Version: 0.8.0
+Version: 0.8.1
 Date: 2016-12-08
 Authors@R: person("LaZerte", "Stefanie E.", email = "stefanie.lazerte@unbc.ca", role = c("aut","cre"))
 URL: https://github.com/steffilazerte/feedr
