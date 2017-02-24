@@ -274,24 +274,26 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
     isolate({
       # if there is a species value in input, OR if there PREVIOUSLY was a species value
-      req(values$selection$species)
-
       sel <- counts_site() %>%
         dplyr::filter(date %within% interval(input$data_date[1], input$data_date[2]),
                       species %in% input$data_species)
+
+      req(!compare_values(values$selection$species, sel$species))
+
+      # Save input species
+      values$selection$species <- input$data_species
+      values$selection_update <- TRUE
 
       if(verbose) cat("Update UI selections based on species\n")
 
       if(!compare_values(sel$animal_id, input$data_animal_id)) {
         if(verbose) cat("  - animal_id\n")
-        values$selection_update <- TRUE
         values$selection$animal_id <- unique(sel$animal_id)
         updateCheckboxGroupInput(session, "data_animal_id",
                                  selected = unique(sel$animal_id))
       }
       if(!compare_values(sel$logger_id, input$data_logger_id)) {
         if(verbose) cat("  - logger_id\n")
-        values$selection_update <- TRUE
         values$selection$logger_id <- unique(sel$logger_id)
         updateCheckboxGroupInput(session, "data_logger_id",
                                  selected = unique(sel$logger_id))
