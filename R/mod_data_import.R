@@ -225,6 +225,7 @@ mod_data_import <- function(input, output, session, type = NULL) {
       vars$data = vars$pre_data
     }
     vars$pre_data <- NULL
+    vars$quality <- FALSE
   })
 
   ## Help dialogues ----------------------------------------------------
