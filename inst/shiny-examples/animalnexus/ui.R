@@ -12,9 +12,9 @@ shinyUI(
     tags$head(
       #tags$link(rel = "stylesheet", href = "assets/style.css"),
       cat("UI - Javascripts...\n"),
+
+      # Hide tabs on load -------------------------------------------------------
       tags$script("
-
-
         window.onload = function() {
             $('#main a:contains(\"Database\")').parent().addClass('hidden');
             $('#main a:contains(\"Import\")').parent().addClass('hidden');
@@ -29,6 +29,8 @@ shinyUI(
         });
 
    ")),
+
+        # Load navbar -------------------------------------------------------------
     cat("UI - navbarPage...\n"),
     navbarPage(title = a(href = "http://animalnexus.ca", HTML("animal<strong>nexus</strong>")),
                id = "main",
@@ -41,9 +43,8 @@ shinyUI(
                                div(class = "data-status", textOutput("data_info")),
                                div(class = "package-version", htmlOutput("package_version"))),
 
-             #################
-             ## Watch Now
-             #################
+            # Current Map -------------------------------------------------------------
+
              tabPanel("Home",
                       fluidRow(
                         div(style = "font-size: 200%; padding: 10px; max-width: 350px; margin: auto; text-align:center; border-style: solid; border-radius: 5px; box-shadow: 10px 10px 5px #888888; color: red;", "This is EXPERIMENTAL"),
@@ -53,7 +54,6 @@ shinyUI(
                         #actionButton("pause", "Pause"),
 
                         div(class = "alert", id = "loading_app", "Please wait while the app loads..."),
-
                         hr(),
                         h4(style = "text-align:center", "Current activity at RFID-enabled feeders on Thompson Rivers University Campus")),
                       fluidRow(
@@ -62,34 +62,20 @@ shinyUI(
                         ))
              ),
 
-             #################
-             ## SETUP
-             #################
-             tabPanel(title = "Database", icon = icon("database"),
-                      feedr:::mod_UI_data_db("access")),
-             tabPanel(title = "Import", icon = icon("upload"),
-                      feedr:::mod_UI_data_import("import")),
 
-            #################
-            ## Visualization
-            #################
+            # Modules -------------------------------------------------------------------
+            tabPanel("Database", icon = icon("database"),
+                     feedr:::mod_UI_data_db("access")),
+            tabPanel("Import", icon = icon("upload"),
+                     feedr:::mod_UI_data_import("import")),
             tabPanel("Visualizations", icon = icon("eye"),
-                     column(12,
-                            feedr:::mod_UI_map_animate("anim")
-                     )
-            ),
-            #################
-            ## INDIVIDUALS
-            #################
+                     feedr:::mod_UI_map_animate("anim")),
             tabPanel("Individuals",
-                     feedr:::mod_UI_indiv("indiv")
-            ),
-            #################
-            ## DATA
-            #################
+                     feedr:::mod_UI_indiv("indiv")),
             tabPanel("Transformations", icon = icon("exchange"),
-                     feedr:::mod_UI_trans("trans")
-            ),
+                     feedr:::mod_UI_trans("trans")),
+
+            # Help --------------------------------------------------------------------
             tabPanel("Help",
                      navlistPanel(widths = c(2, 10),
                                   HTML("About animal<strong>nexus</strong>"),
@@ -102,6 +88,5 @@ shinyUI(
                                   tabPanel("Using the feedr package (in progress)")
                      )
             )
-
   )
 ))
