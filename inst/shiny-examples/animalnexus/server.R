@@ -39,10 +39,10 @@ shinyServer(function(input, output, session) {
   # Modules (Tabs) --------------------------------------------------------
 
   # Current Activity
-  callModule(module = feedr:::mod_map_current, id = "current", db = db)
+  callModule(module = feedr:::mod_map_current, id = "current")
 
   # Database and Import
-  data_db <- callModule(feedr:::mod_data_db, "access", db = db)
+  data_db <- callModule(feedr:::mod_data_db, "access")
   data_import <- callModule(feedr:::mod_data_import, "import")
 
   # Visualizations
