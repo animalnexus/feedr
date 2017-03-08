@@ -73,6 +73,7 @@ get_manual_single <- function(func){
     }
   }
 }
+
 get_manual <- function(x = "feedr"){
   db <- tools::Rd_db(x)
   do.call('rbind', lapply(db, get_manual_single))
