@@ -54,6 +54,9 @@ shinyServer(function(input, output, session) {
   # Transformations
   trans <- callModule(feedr:::mod_trans, "trans", r = reactive({values$r}))
 
+  # Settings
+  settings <- callModule(feedr:::mod_settings, "settings")
+
 
   # Getting data ------------------------------------------------------------
   observe({

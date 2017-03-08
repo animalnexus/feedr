@@ -74,6 +74,8 @@ shinyUI(
                      feedr:::mod_UI_indiv("indiv")),
             tabPanel("Transformations", icon = icon("exchange"),
                      feedr:::mod_UI_trans("trans")),
+            tabPanel("Settings", icon = icon("cog"),
+                     feedr:::mod_UI_settings("settings")),
 
             # Help --------------------------------------------------------------------
             tabPanel("Help",
