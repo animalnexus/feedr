@@ -164,3 +164,11 @@ data_tz <- function(data) {
 ready <- function(r){
   shiny::isTruthy(try(r, silent = TRUE))
 }
+
+# Check to see whether the database credentials exist on this system
+check_db <- function(){
+  if(file.exists("/usr/local/share/feedr/db_code.txt")) {
+    db <- readLines("/usr/local/share/feedr/db_code.txt", n = 1)
+  } else db <- NULL
+  return(db)
+}

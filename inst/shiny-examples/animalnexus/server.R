@@ -34,15 +34,7 @@ shinyServer(function(input, output, session) {
 
   # Data base ---------------------------------------------------------------
   cat("Get Database access if we have it\n")
-  ## Get Database access if we have it
-  if(file.exists("/usr/local/share/feedr/db_full.R")) {
-    cat("  Getting credentials\n")
-    source("/usr/local/share/feedr/db_full.R")
-  } else {
-    cat("  No credentials\n")
-    db <- NULL
-  }
-
+  db <- check_db()
 
   # Modules (Tabs) --------------------------------------------------------
 
