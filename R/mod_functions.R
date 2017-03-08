@@ -1,6 +1,7 @@
 
-compare_values <- function(x, y) {
-  identical(sort(as.character(unique(x))), sort(as.character(unique(y))))
+check_values <- function(x, y, unique = TRUE) {
+  if(unique) return(identical(sort(as.character(unique(x))), sort(as.character(unique(y)))))
+  if(!unique) return(identical(sort(as.character(x)), sort(as.character(y))))
 }
 
 get_counts <- function(c, filter = NULL, summarize_by = NULL) {
