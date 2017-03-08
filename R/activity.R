@@ -19,8 +19,8 @@
 #'
 #' @param p Dataframe. A \code{\link{presence}} data frame (may contain multiple
 #'   animal_ids).
-#' @param res Character. The resolution over which to calculate activity. Should
-#'   be in the format of "15 min" or "1 hour", etc.
+#' @param res Numeric. The resolution over which to calculate activity in
+#'   minutes.
 #' @param by_logger Logical. Should the activity be calculated overall, or
 #'   individually for each logger visited? If there is only one logger,
 #'   by_logger will automatically revert to TRUE to enable passing of

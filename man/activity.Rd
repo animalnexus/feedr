@@ -11,8 +11,8 @@ activity(p, res = 15, by_logger = FALSE, missing = NULL, sun = TRUE,
 \item{p}{Dataframe. A \code{\link{presence}} data frame (may contain multiple
 animal_ids).}
 
-\item{res}{Character. The resolution over which to calculate activity. Should
-be in the format of "15 min" or "1 hour", etc.}
+\item{res}{Numeric. The resolution over which to calculate activity in
+minutes.}
 
 \item{by_logger}{Logical. Should the activity be calculated overall, or
 individually for each logger visited? If there is only one logger,
