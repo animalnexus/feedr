@@ -93,11 +93,13 @@ mod_UI_data_db <- function(id) {
 #' @import lubridate
 #' @import RPostgreSQL
 #' @import DBI
-mod_data_db <- function(input, output, session, db, verbose = TRUE) {
+mod_data_db <- function(input, output, session, verbose = TRUE) {
 
   ns <- session$ns
 
   # Values ----------------------------------------------------
+  url <-       "http://gaia.tru.ca/birdMOVES/rscripts/anquery.csv"
+  url_count <- "http://gaia.tru.ca/birdMOVES/rscripts/anInit.csv"
 
   values <- reactiveValues(
     selection_update = FALSE,   # Whether or not to update input_selection
@@ -112,9 +114,14 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   # Database and Internet ----------------------------------------------------
 
-  if(!is.null(db) && !curl::has_internet()) db <- NULL
+  # Database?
+  db <- check_db()
 
-  if(is.null(db) && ns("") == "standalone-") {
+  # Internet?
+  net <- curl::has_internet()
+
+  # No Internet
+  if(!net && ns("") == "standalone-") {
     showModal(modalDialog(
       title = "No Database access",
       "To access the animalnexus database using `ui_db()` you must have an Internet connection as well as proper credentials stored on your computer. Otherwise visit", a("http://animalnexus.ca", href = "http://animalnexus.ca"), ".",
@@ -122,79 +129,50 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
     ))
   }
 
+  ## Get data base details provided we have an internet conncetion
+  if(net) {
+    withProgress(message = "Loading...", detail = "Connecting to database...", value = 0, {
+      suppressWarnings({
 
-  ## Get data base details
-  if(!is.null(db)) {
+        if(verbose) cat("Connecting to server...\n")
 
-    withProgress(message = "Loading...", detail = "Connecting to server...", value = 0, {
-    suppressWarnings({
-      if(verbose) cat("Connecting to server...\n")
-      con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
+        setProgress(value = 0.15, detail = "Getting sample information..")
+        if(verbose) cat("Getting sample information...\n")
 
-      setProgress(value = 0.15, detail = "Getting logger data..")
+        counts <- utils::read.csv(text = RCurl::getForm(url_count, key = db), strip.white = TRUE, colClasses = "character") %>%
+          dplyr::rename(animal_id = bird_id, logger_id = feeder_id, species = engl_name) %>%
+          load_format() %>%
+          dplyr::mutate(count = as.numeric(count),
+                        date = as.Date(date))
+      })
+
+      setProgress(value = 0.30, detail = "Getting logger data..")
       if(verbose) cat("Getting logger data...\n")
-      #   incProgress(1/5)
-      loggers_all <- dbGetQuery(con, statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
-                                                       "FROM feeders, fieldsites",
-                                                       "WHERE (fieldsites.site_name = feeders.site_name)")) %>%
-        dplyr::rename(logger_id = feeder_id) %>%
-        load_format() %>%
-        dplyr::mutate(site_name = factor(site_name))
+      loggers_all <- counts %>%
+        dplyr::select(site_name, logger_id, lat, lon, dataaccess) %>%
+        unique()
 
-      setProgress(value = 0.30, detail = "Getting site data..")
+      setProgress(value = 0.45, detail = "Getting site data..")
       if(verbose) cat("Getting site data...\n")
-      #    incProgress(2/5)
       sites_all <- loggers_all %>%
         dplyr::group_by(site_name) %>%
         dplyr::summarize(lon = mean(lon), lat = mean(lat), dataaccess = unique(dataaccess)) %>%
         dplyr::mutate(site_name = factor(site_name))
 
-      setProgress(value = 0.45, detail = "Getting animal data..")
+      setProgress(value = 0.60, detail = "Getting animal data..")
       if(verbose) cat("Getting animal data...\n")
-      #  incProgress(3/5)
+      animals_all <- counts %>%
+        dplyr::select(animal_id, species, site_name, age, sex) %>%
+        unique()
 
-      animals_all <- dbGetQuery(con, statement = paste("SELECT birds.bird_id, species.code, species.engl_name, birds.site_name, birds.age, birds.sex, birds.tagged_on",
-                                                       "FROM birds, species",
-                                                       "WHERE (birds.species = species.code) AND (birds.species NOT IN ('XXXX'))")) %>%
-        dplyr::rename(species = engl_name,
-                      animal_id = bird_id) %>%
-        load_format() %>%
-        dplyr::mutate(species = factor(species),
-                      site_name = factor(site_name),
-                      animal_id = factor(animal_id))
-
-      setProgress(value = 0.60, detail = "Getting sample information..")
-      if(verbose) cat("Getting sample information...\n")
-      #    incProgress(4/5)
-      counts <- dbGetQuery(con,
-                           statement = paste0("SELECT raw.visits.bird_id, raw.visits.feeder_id, DATE(raw.visits.time), ",
-                                              "COUNT(*) ",
-                                              "FROM raw.visits ",
-                                              "GROUP BY DATE(raw.visits.time), raw.visits.feeder_id, raw.visits.bird_id"#,
-                           )) %>%
-        dplyr::rename(animal_id = bird_id, logger_id = feeder_id) %>%
-        load_format() %>%
-        dplyr::inner_join(animals_all[, c("site_name", "species", "animal_id")], by = "animal_id") %>%
-        dplyr::mutate(count = as.numeric(count),
-                      date = as.Date(date),
-                      species = factor(species, levels = sort(unique(animals_all$species))),
-                      site_name = factor(site_name, levels = sort(sites_all$site_name)),
-                      animal_id = factor(animal_id, levels = sort(unique(animals_all$animal_id))),
-                      logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id))))
-      dbDisconnect(con)
-    })
-
-
-    #  incProgress(5/5)
-    setProgress(value = 0.75, detail = "Summarizing samples..")
-    if(verbose) cat("Summarizing samples...\n")
-    counts_sum <- dplyr::bind_rows(
-      get_counts(counts, summarize_by = "site_name"),
-      get_counts(counts, summarize_by = "species"),
-      get_counts(counts, summarize_by = "date"),
-      get_counts(counts, summarize_by = "animal_id"),
-      get_counts(counts, summarize_by = "logger_id"))
-
+      setProgress(value = 0.75, detail = "Summarizing samples..")
+      if(verbose) cat("Summarizing samples...\n")
+      counts_sum <- dplyr::bind_rows(
+        get_counts(counts, summarize_by = "site_name"),
+        get_counts(counts, summarize_by = "species"),
+        get_counts(counts, summarize_by = "date"),
+        get_counts(counts, summarize_by = "animal_id"),
+        get_counts(counts, summarize_by = "logger_id"))
     })
   }
 
@@ -507,10 +485,8 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   ## Download Selected Data
   observeEvent(input$data_get, {
-    req(data_selection(), !is.null(db))
+    req(data_selection())
     if(verbose) cat("Downloading selected data...\n")
-
-    con <- dbConnect(dbDriver("PostgreSQL"),host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
 
     d <- data_selection()
 
@@ -521,30 +497,26 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
       dates <- paste0("AND raw.visits.time >= '", dates[1], "' AND raw.visits.time < ('", dates[2], "'::date + '1 day'::interval)")
     }
 
-    withProgress(message = "Retrieving Data...",
-                 suppressWarnings(
-                   data <- dbGetQuery(con,
-                                      statement = paste0("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time ",
-                                                         "FROM raw.visits ",
-                                                         "WHERE raw.visits.bird_id IN ( '", paste0(unique(d$animal_id), collapse = "', '"), "' ) ",
-                                                         "AND raw.visits.feeder_id IN ( '", paste0(unique(d$logger_id), collapse = "', '"), "') ",
-                                                         dates
-                                      ))
-                 )
-    )
-    dbDisconnect(con)
+    qry <- paste0("raw.visits.bird_id IN ( '", paste0(unique(d$animal_id), collapse = "', '"), "' ) ",
+                  "AND raw.visits.feeder_id IN ( '", paste0(unique(d$logger_id), collapse = "', '"), "') ",
+                  dates)
+
+    withProgress(message = "Retrieving Data...", expr = {
+                 data <- utils::read.csv(text = RCurl::getForm(url, where = qry, key = db), strip.white = TRUE, colClasses = "character")
+    })
 
     if(nrow(data) > 0) {
       if(verbose) cat("Formatting selected data...")
       tz_disp <- tz_offset(ifelse(d$site_name[1] == "Kamloops, BC", "America/Vancouver", "America/Costa_Rica"), tz_name = TRUE)
       data <- data %>%
-        dplyr::mutate(time = lubridate::with_tz(time, "UTC")) %>% # Because otherwise has system timezone
+        #dplyr::mutate(time = lubridate::with_tz(time, "UTC")) %>% # Because otherwise has system timezone
         dplyr::rename(animal_id = bird_id,
-                      logger_id = feeder_id) %>%
+                      logger_id = feeder_id,
+                      species = engl_name) %>%
         load_format(tz = "UTC", tz_disp = tz_disp) %>%
         dplyr::mutate(animal_id = factor(animal_id, levels = sort(unique(animals_all$animal_id))),
-               logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id)))) %>%
-        dplyr::left_join(animals_all, by = c("animal_id")) %>%
+                      logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id)))) %>%
+        #dplyr::left_join(animals_all, by = c("animal_id")) %>%
         dplyr::left_join(loggers_all, by = c("logger_id", "site_name")) %>%
         dplyr::arrange(time)
     } else data <- NULL
