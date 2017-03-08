@@ -2,7 +2,7 @@
 % Please edit documentation in R/transformations.R
 \name{dom}
 \alias{dom}
-\title{Displacements}
+\title{Dominance}
 \usage{
 dom(d, tries = 50, omit_cutoff = 3)
 }

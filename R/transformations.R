@@ -576,7 +576,7 @@ disp <- function(v, bw = 5, pass = TRUE){
   }
 }
 
-#' Displacements
+#' Dominance
 #'
 #' Takes output from \code{disp()} and calculates dominance hierarchies. Should
 #' be considered experimental.
