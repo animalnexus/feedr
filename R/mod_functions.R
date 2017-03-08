@@ -1,21 +1,3 @@
-#' @import shiny
-ui_app <- function(name, ..., diagnostic = FALSE, launch.browser = getOption("shiny.launch.browser", interactive())) {
-
-  addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
-
-  app <- shiny::shinyApp(ui = shiny::fluidPage(includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
-                                               shinyjs::useShinyjs(),
-                                               get(paste0("mod_UI_", name))("standalone"),
-                                               mod_UI_stop("stp"),
-                                               mod_UI_pause("pause")),
-                         server = function(input, output, session) {
-                           shiny::callModule(get(paste0("mod_", name)), id = "standalone", ...)
-                           shiny::callModule(mod_stop, id = "stp")  # Add Exit Buttons
-                           shiny::callModule(mod_pause, id = "pause", diagnostic = diagnostic)  # Add Pause button if 'diagnostic == TRUE'
-                         }
-  )
-  shiny::runApp(app)
-}
 
 compare_values <- function(x, y) {
   identical(sort(as.character(unique(x))), sort(as.character(unique(y))))
@@ -47,8 +29,6 @@ get_counts <- function(c, filter = NULL, summarize_by = NULL) {
   }
   return(c)
 }
-
-
 
 choices <- function(s, var){
   c <- s$choices[s$variable == var]
