@@ -173,3 +173,10 @@ check_db <- function(){
   } else db <- NULL
   return(db)
 }
+
+# Check class of imported settings (mod_settings)
+check_class <- function(x, class) {
+  if(class == "Numeric") t <- suppressWarnings(as.numeric(x))
+  if(class == "Logical") t <- suppressWarnings(as.logical(x))
+  return(!is.na(t))
+}
