@@ -45,11 +45,14 @@ mod_map_current <- function(input, output, session, db) {
     con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
     suppressWarnings({
       loggers_all <- dbGetQuery(con,
-                                statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
+                                statement = paste("SELECT feeders.feeder_id, feeders.site_id, feeders.loc, fieldsites.dataaccess",
                                                   "FROM feeders, fieldsites",
-                                                  "WHERE (fieldsites.site_name = feeders.site_name)")) %>%
+                                                  "WHERE (fieldsites.site_id = feeders.site_id)")) %>%
         load_format() %>%
-        dplyr::mutate(site_name = factor(site_name))
+        dplyr::rename(site_name = site_id) %>%
+        dplyr::mutate(site_name = replace(site_name, site_name == "kl", "Kamloops, BC"),
+                      site_name = replace(site_name, site_name == "cr", "Costa Rica"),
+                      site_name = factor(site_name))
     })
     dbDisconnect(con)
   }
@@ -116,13 +119,13 @@ mod_map_current <- function(input, output, session, db) {
 
       values$current_time <- Sys.time()
 
-      query <- paste("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time, feeders.site_name, feeders.loc, birds.age, birds.sex, species.engl_name ",
+      query <- paste("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time, feeders.site_id, feeders.loc, birds.age, birds.sex, species.engl_name ",
                      "FROM raw.visits, feeders, birds, species",
                      "WHERE (raw.visits.feeder_id = feeders.feeder_id)",
                      "AND (birds.species = species.code)",
                      "AND (birds.bird_id = raw.visits.bird_id)",
                      "AND birds.species NOT IN ( 'XXXX' )",
-                     "AND feeders.site_name IN ( 'Kamloops, BC' )")
+                     "AND feeders.site_id IN ( 'kl' )")
     query_time <- "AND raw.visits.time::timestamp > ( CURRENT_TIMESTAMP::timestamp - INTERVAL '24 hours' )"
 
       withProgress(message = "Updating...", {
@@ -134,7 +137,8 @@ mod_map_current <- function(input, output, session, db) {
 
         if(nrow(data) > 0) {
           data <- data %>%
-            dplyr::rename(species = engl_name) %>%
+            dplyr::rename(site_name = site_id,
+                          species = engl_name) %>%
             dplyr::mutate(time = lubridate::with_tz(time, tz = "UTC")) %>%
             load_format(., tz = "UTC", tz_disp = "America/Vancouver") %>%
             visits(.) %>%

@@ -20,11 +20,11 @@
 #' }
 #'
 #' @export
-ui_db <- function(verbose = FALSE, diagnostic = FALSE){
+ui_db <- function(verbose = FALSE){
   if(file.exists("/usr/local/share/feedr/db_full.R")) {
     source("/usr/local/share/feedr/db_full.R")
   } else db <- NULL
-  ui_app(name = "data_db", db = db, verbose = verbose, diagnostic = diagnostic)
+  ui_app(name = "data_db", db = db, verbose = verbose)
 }
 
 
@@ -137,12 +137,14 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
       setProgress(value = 0.15, detail = "Getting logger data..")
       if(verbose) cat("Getting logger data...\n")
       #   incProgress(1/5)
-      loggers_all <- dbGetQuery(con, statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
+      loggers_all <- dbGetQuery(con, statement = paste("SELECT feeders.feeder_id, feeders.site_id, feeders.loc, fieldsites.dataaccess",
                                                        "FROM feeders, fieldsites",
-                                                       "WHERE (fieldsites.site_name = feeders.site_name)")) %>%
-        dplyr::rename(logger_id = feeder_id) %>%
+                                                       "WHERE (fieldsites.site_id = feeders.site_id)")) %>%
+        dplyr::rename(logger_id = feeder_id, site_name = site_id) %>%
         load_format() %>%
-        dplyr::mutate(site_name = factor(site_name))
+        dplyr::mutate(site_name = replace(site_name, site_name == "kl", "Kamloops, BC"),
+                      site_name = replace(site_name, site_name == "cr", "Costa Rica"),
+                      site_name = factor(site_name))
 
       setProgress(value = 0.30, detail = "Getting site data..")
       if(verbose) cat("Getting site data...\n")
@@ -156,13 +158,16 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
       if(verbose) cat("Getting animal data...\n")
       #  incProgress(3/5)
 
-      animals_all <- dbGetQuery(con, statement = paste("SELECT birds.bird_id, species.code, species.engl_name, birds.site_name, birds.age, birds.sex, birds.tagged_on",
+      animals_all <- dbGetQuery(con, statement = paste("SELECT birds.bird_id, species.code, species.engl_name, birds.site_id, birds.age, birds.sex, birds.tagged_on",
                                                        "FROM birds, species",
                                                        "WHERE (birds.species = species.code) AND (birds.species NOT IN ('XXXX'))")) %>%
         dplyr::rename(species = engl_name,
-                      animal_id = bird_id) %>%
+                      animal_id = bird_id,
+                      site_name = site_id) %>%
         load_format() %>%
         dplyr::mutate(species = factor(species),
+                      site_name = replace(site_name, site_name == "kl", "Kamloops, BC"),
+                      site_name = replace(site_name, site_name == "cr", "Costa Rica"),
                       site_name = factor(site_name),
                       animal_id = factor(animal_id))
 
@@ -181,6 +186,8 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
         dplyr::mutate(count = as.numeric(count),
                       date = as.Date(date),
                       species = factor(species, levels = sort(unique(animals_all$species))),
+                      site_name = replace(site_name, site_name == "kl", "Kamloops, BC"),
+                      site_name = replace(site_name, site_name == "cr", "Costa Rica"),
                       site_name = factor(site_name, levels = sort(sites_all$site_name)),
                       animal_id = factor(animal_id, levels = sort(unique(animals_all$animal_id))),
                       logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id))))
@@ -546,7 +553,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
                       logger_id = feeder_id) %>%
         load_format(tz = "UTC", tz_disp = tz_disp) %>%
         dplyr::mutate(animal_id = factor(animal_id, levels = sort(unique(animals_all$animal_id))),
-               logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id)))) %>%
+                      logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id)))) %>%
         dplyr::left_join(animals_all, by = c("animal_id")) %>%
         dplyr::left_join(loggers_all, by = c("logger_id", "site_name")) %>%
         dplyr::arrange(time)
