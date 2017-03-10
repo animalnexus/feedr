@@ -222,19 +222,19 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
     values$selection_update <- TRUE
     values$selection$date <- input$data_date
 
-    if(!compare_values(sel$species, input$data_species)) {
+    if(!check_values(sel$species, input$data_species)) {
       if(verbose) cat("  - species\n")
       values$selection$species <- unique(sel$species)
       updateCheckboxGroupInput(session, "data_species",
                                selected = unique(sel$species))
     }
-    if(!compare_values(sel$animal_id, input$data_animal_id)) {
+    if(!check_values(sel$animal_id, input$data_animal_id)) {
       if(verbose) cat("  - animal_id\n")
       values$selection$animal_id <- unique(sel$animal_id)
       updateCheckboxGroupInput(session, "data_animal_id",
                                selected = unique(sel$animal_id))
     }
-    if(!compare_values(sel$logger_id, input$data_logger_id)) {
+    if(!check_values(sel$logger_id, input$data_logger_id)) {
       if(verbose) cat("  - logger_id\n")
       values$selection$logger_id <- unique(sel$logger_id)
       updateCheckboxGroupInput(session, "data_logger_id",
@@ -253,7 +253,7 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
         dplyr::filter(date %within% interval(input$data_date[1], input$data_date[2]),
                       species %in% input$data_species)
 
-      req(!compare_values(values$selection$species, sel$species))
+      req(!check_values(values$selection$species, sel$species))
 
       # Save input species
       values$selection$species <- input$data_species
@@ -261,13 +261,13 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
 
       if(verbose) cat("Update UI selections based on species\n")
 
-      if(!compare_values(sel$animal_id, input$data_animal_id)) {
+      if(!check_values(sel$animal_id, input$data_animal_id)) {
         if(verbose) cat("  - animal_id\n")
         values$selection$animal_id <- unique(sel$animal_id)
         updateCheckboxGroupInput(session, "data_animal_id",
                                  selected = unique(sel$animal_id))
       }
-      if(!compare_values(sel$logger_id, input$data_logger_id)) {
+      if(!check_values(sel$logger_id, input$data_logger_id)) {
         if(verbose) cat("  - logger_id\n")
         values$selection$logger_id <- unique(sel$logger_id)
         updateCheckboxGroupInput(session, "data_logger_id",
@@ -286,7 +286,7 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
                       species %in% input$data_species,
                       animal_id %in% input$data_animal_id)
 
-      req(!compare_values(sel$animal_id, values$selection$animal_id))
+      req(!check_values(sel$animal_id, values$selection$animal_id))
       values$selection_update <- TRUE
       values$selection$animal_id <- input$data_animal_id
     })
@@ -302,7 +302,7 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
                       species %in% input$data_species,
                       logger_id %in% input$data_logger_id)
 
-      req(!compare_values(sel$logger_id, values$selection$logger_id))
+      req(!check_values(sel$logger_id, values$selection$logger_id))
       values$selection_update <- TRUE
       values$selection$logger_id <- input$data_logger_id
     })
@@ -311,10 +311,10 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
   observeEvent(values$selection_update, {
     req(values$selection_update == TRUE)  # Update triggered
 
-    req(any(!compare_values(values$selection$date, values$input_selection$date),
-            !compare_values(values$selection$species, values$input_selection$species),
-            !compare_values(values$selection$animal_id, values$input_selection$animal_id),
-            !compare_values(values$selection$logger_id, values$input_selection$logger_id)))
+    req(any(!check_values(values$selection$date, values$input_selection$date),
+            !check_values(values$selection$species, values$input_selection$species),
+            !check_values(values$selection$animal_id, values$input_selection$animal_id),
+            !check_values(values$selection$logger_id, values$input_selection$logger_id)))
 
     if(verbose) cat("Update input selections\n")
     values$selection_update <- FALSE
