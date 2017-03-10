@@ -4,7 +4,7 @@
 \alias{ui_trans}
 \title{User-interface for transforming data}
 \usage{
-ui_trans(r)
+ui_trans(r, verbose = FALSE)
 }
 \arguments{
 \item{r}{Data frame. Raw RFID data to transform}

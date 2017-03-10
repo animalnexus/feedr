@@ -16,9 +16,34 @@
 #'
 #' @export
 
-ui_trans <- function(r) {
+ui_trans <- function(r, verbose = FALSE) {
   if(missing(r)) stop("ui_trans() requires raw data to transform")
-  ui_app(name = "trans", r = reactive({r}), launch.browser = TRUE)
+  ui_app(name = "trans", r = reactive({r}, verbose = verbose), launch.browser = TRUE)
+}
+
+trans_preamble <- function(args = TRUE) {
+  trans_functions <- c("raw", "visits", "move", "presence", "disp", "dom", "activity", "daily")
+
+  manual <- man %>%
+    dplyr::right_join(
+      tibble::tibble(
+        f = trans_functions,
+        req = c(NA, "raw", "visits", "visits", "visits", "disp", "presence", "activity"),
+        p = round(seq(0, 1, length.out = 8), 2),
+        details = c("<h3>Raw RFID data</h3> <p>Each row corresponds to an RFID 'read' event.</p>",
+                    "<h3>Visits</h3> <p>Each row corresponds to a single 'visit' to the reader. Visits are defined as a series of consecutive RFID reads, with each read occurring within 3s of the next. See the visits() function in the feedr package for R to fine tune these settings.</p><p>Animal N and Logger N refer to the total number of individuals and readers in the data, respectively.</p>",
+                    "<h3>Presence</h3> <p>Each row corresponds to a single 'presence event' at the reader if the reader is a logger, or a period of time spent near the reader otherwise. These are defined as a series of visits at a single logger separated by no more than 15min. See the presence() function in the feedr package for R to fine tune these settings.</p><p>Start and End reflect the start and end of the time present and length refers to the length in minutes.</p><p>Animal N and Logger N refer to the total number of individuals and readers in the data, respectively.</p>",
+                    "<h3>Movements</h3> <p>Each two rows correspond to a single 'movement' from one reader to another. A movement is defined as the last and first consecutive visits made by an individual to two different readers.</p><p>Move Id refers to the unique identifier of each movement made by an individual. Move Path reflects the unique path between readers (without accounting for direction) whereas Move Dir reflect s the unique path between readers, including direction. Strength is a measure of how connected two readers are and is calculated as the inverse of time taken to move between the readers.</p>",
+                    "<h3>Displacements</h3> <p>Each row corresponds to a single displacement event recorded at a particular RFID logger. Displacements are events when one animal leaves the logger within 5s of the arrival of another. In some species this can be used to infer dominance.</p>",
+                    "<h3>Dominance</h3> <p>Assuming that displacements reflect dominance, calculate a dominance matrix. The function attempts to determine dominance rank for all individuals by order individuals based individual win/loss interactions and minimizing reversals (situations in which A beats B, B beats C, and C beats A). This matrix reflects a starting point and may require more work by the research. Displacers are across the top, displacees down the side. Values reflect wins in the upper triangle, losses in the lower triangle.</p>",
+                    "<h3>Activity</h3> <p>Each row corresponds to a 15-min time period and is scored as active or inactive (activity_c) or 1 or 0 (activity). Activity is definied by whether or not the individual had a 'presence' bout (at any logger) which overlapped the 15-min time slot. Rise and set reflect the time of sunrise and sun set based on the lat/lon of the logger.</p>",
+                    "<h3>Daily Activity</h3> <p>Each row corresponds to an average activity score for that 15-min period calculated across all days included in the activity data. Rise and set reflect the time of sunrise and sun set based on the lat/lon of the logger.</p>")),
+      by = "f") %>%
+    dplyr::mutate(title = replace(title, f == "raw", "Raw"),
+                  file_name = tolower(stringr::str_extract(title, "^[^ ]*")))
+
+  if(args) return(dplyr::filter(manual, !is.na(value), !(arg %in% c("missing", "pass"))))
+  if(!args) return(unique(dplyr::select(manual, -arg, -desc, -class, -value, -id, -lab)))
 }
 
 #' @import shiny
@@ -42,74 +67,75 @@ mod_UI_trans <- function(id) {
 # Module server function
 #' @import shiny
 #' @import magrittr
-mod_trans <- function(input, output, session, r, verbose = FALSE) {
+mod_trans <- function(input, output, session, r, settings, verbose = FALSE) {
 
   ns <- session$ns
-
-  # Help ---------------------------------------------------
-  types <- tibble::tibble(
-    names = c("Raw", "Visit", "Presence", "Movement", "Displacement", "Dominance", "Activity", "Daily Activity"),
-    f_name = c("raw", "visits", "presence", "movements", "displacments", "dominance", "activity", "daily_activity"),
-    n = c("r", "v", "f", "m", "disp", "dom", "a", "da"),
-    req = c(NA, "r", "v", "v", "v", "disp", "f", "a"),
-    p = round(seq(0, 1, length.out = 8), 2),
-    details = c("<h3>Raw RFID data</h3> <p>Each row corresponds to an RFID 'read' event.</p>",
-                "<h3>Visits</h3> <p>Each row corresponds to a single 'visit' to the reader. Visits are defined as a series of consecutive RFID reads, with each read occurring within 3s of the next. See the visits() function in the feedr package for R to fine tune these settings.</p><p>Animal N and Logger N refer to the total number of individuals and readers in the data, respectively.</p>",
-                "<h3>Presence</h3> <p>Each row corresponds to a single 'presence event' at the reader if the reader is a logger, or a period of time spent near the reader otherwise. These are defined as a series of visits at a single logger separated by no more than 15min. See the presence() function in the feedr package for R to fine tune these settings.</p><p>Start and End reflect the start and end of the time present and length refers to the length in minutes.</p><p>Animal N and Logger N refer to the total number of individuals and readers in the data, respectively.</p>",
-                "<h3>Movements</h3> <p>Each two rows correspond to a single 'movement' from one reader to another. A movement is defined as the last and first consecutive visits made by an individual to two different readers.</p><p>Move Id refers to the unique identifier of each movement made by an individual. Move Path reflects the unique path between readers (without accounting for direction) whereas Move Dir reflect s the unique path between readers, including direction. Strength is a measure of how connected two readers are and is calculated as the inverse of time taken to move between the readers.</p>",
-                "<h3>Displacements</h3> <p>Each row corresponds to a single displacement event recorded at a particular RFID logger. Displacements are events when one animal leaves the logger within 5s of the arrival of another. In some species this can be used to infer dominance.</p>",
-                "<h3>Dominance</h3> <p>Assuming that displacements reflect dominance, calculate a dominance matrix. The function attempts to determine dominance rank for all individuals by order individuals based individual win/loss interactions and minimizing reversals (situations in which A beats B, B beats C, and C beats A). This matrix reflects a starting point and may require more work by the research. Displacers are across the top, displacees down the side. Values reflect wins in the upper triangle, losses in the lower triangle.</p>",
-                "<h3>Activity</h3> <p>Each row corresponds to a 15-min time period and is scored as active or inactive (activity_c) or 1 or 0 (activity). Activity is definied by whether or not the individual had a 'presence' bout (at any logger) which overlapped the 15-min time slot. Rise and set reflect the time of sunrise and sun set based on the lat/lon of the logger.</p>",
-                "<h3>Daily Activity</h3> <p>Each row corresponds to an average activity score for that 15-min period calculated across all days included in the activity data. Rise and set reflect the time of sunrise and sun set based on the lat/lon of the logger.</p>"))
-
-  # Data Descriptions
-  output$data_desc <- renderText({
-    req(input$data_tabs)
-    types$details[types$names == input$data_tabs]
-  })
 
   # Values ---------------------------------------------
   trans <- reactiveValues()
   msg <- reactiveValues()
   all <- reactiveValues()
 
+  types_args <- trans_preamble()
+  types <- trans_preamble(args = FALSE)
+
+  # Help ---------------------------------------------------
+  # Data Descriptions
+  output$data_desc <- renderText({
+    req(input$data_tabs)
+    types$details[types$title == input$data_tabs]
+  })
+
   # Data Transformations --------------------------------
-  observeEvent(r(), {
+  observe({
+    req(settings(), r())
 
-    all$r <- r()
-    if(!("dataaccess" %in% names(all$r))) all$r$dataaccess <- 0
-    trans$r <- all$r %>%
-      dplyr::filter(dataaccess == 0) %>%
-      dplyr::select(-dataaccess)
+    isolate({
+      all$raw <- r()
+      if(!("dataaccess" %in% names(all$raw))) all$raw$dataaccess <- 0
+      trans$raw <- all$raw %>%
+        dplyr::filter(dataaccess == 0) %>%
+        dplyr::select(-dataaccess)
 
-    withProgress(message = "Transforming Data", {
-      lapply(2:nrow(types), function(x) { #Omit 'r'
-        x <- types[x, ]
-        if(verbose) cat(x$n, "\n")
-        setProgress(detail = x$names, value = x$p)
-        sink(con <- textConnection("temp","w"), type = "message")
-        if(is.null(trans[[x$req]])) message(paste0("No ", types$names[types$n == x$req], " data"))
-        if(x$n == "dom") message("Note that only first matrix returned (there may be alternatives)")
-        trans[[x$n]] <- switch(x$n,
-                               "v" = try(visits(all$r, allow_imp = TRUE)),
-                               "m" = try(move(trans$v)),
-                               "f" = try(presence(trans$v)),
-                               "disp" = try(disp(trans$v)$displacements),
-                               "dom" = try(dom(disp(trans$v))$matrices[[1]]),
-                               "a" = try(activity(trans$f)),
-                               "da" = try(daily(trans$a)))
-        if(any(class(trans[[x$n]]) == "try-error")) trans[[x$n]] <- NULL
-        msg[[x$n]] <- temp
-        sink(type = "message"); close(con)
+      withProgress(message = "Transforming Data", {
+        lapply(2:nrow(types), function(x) { #Omit 'r'
+          x <- types[x, ]
+          if(verbose) cat("Trans -", x$f, "\n")
+          setProgress(detail = x$title, value = x$p)
+          sink(con <- textConnection("temp","w"), type = "message")
+          if(is.null(trans[[x$req]])) message(paste0("No ", types$title[types$f == x$req], " data"))
+          if(x$f == "dom") message("Note that only first matrix returned (there may be alternatives)")
+          trans[[x$f]] <- switch(x$f,
+                                 "visits" = try(visits(all$raw,
+                                                  bw = as.numeric(settings()$set_visits_bw),
+                                                  allow_imp = as.logical(settings()$set_visits_allow_imp),
+                                                  na_rm = as.logical(settings()$set_visits_na_rm),
+                                                  bw_imp = as.numeric(settings()$set_visits_bw_imp))),
+                                 "move" = try(move(trans$visits, all = as.logical(settings()$set_move_all))),
+                                 "presence" = try(presence(trans$visits, bw = as.numeric(settings()$set_presence_bw))),
+                                 "disp" = try(disp(trans$visits, bw = as.numeric(settings()$set_disp_bw))$displacements),
+                                 "dom" = try(dom(disp(trans$visits, bw = as.numeric(settings()$set_disp_bw)),
+                                                 omit_cutoff = as.numeric(settings()$set_dom_omit_cutoff),
+                                                 tries = as.numeric(settings()$set_dom_tries))$matrices[[1]]),
+                                 "activity" = try(activity(trans$presence,
+                                                    res = as.numeric(settings()$set_activity_res),
+                                                    by_logger = as.logical(settings()$set_activity_by_logger),
+                                                    keep_all = as.logical(settings()$set_activity_keep_all),
+                                                    sun = as.logical(settings()$set_activity_sun))),
+                                 "daily" = try(daily(trans$activity)))
+          if(any(class(trans[[x$f]]) == "try-error")) trans[[x$f]] <- NULL
+          msg[[x$f]] <- temp
+          sink(type = "message"); close(con)
 
-        if(x$n == "v") {
-          all$v <- trans[[x$n]]
-          if(!is.null(trans[[x$n]])){
-            trans[[x$n]] <- trans[[x$n]] %>%
-              dplyr::filter(dataaccess == 0) %>%
-              dplyr::select(-dataaccess)
+          if(x$f == "visits") {
+            all$visits <- trans[[x$f]]
+            if(!is.null(trans[[x$f]])){
+              trans[[x$f]] <- trans[[x$f]] %>%
+                dplyr::filter(dataaccess == 0) %>%
+                dplyr::select(-dataaccess)
+            }
           }
-        }
+        })
       })
     })
   })
@@ -119,17 +145,17 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
   output$dl_buttons <- renderUI({
     lapply(1:nrow(types), function(x) {
       x <- types[x, ]
-      p(downloadButton(ns(paste0('data_dl_', x$n)), x$names))
+      p(downloadButton(ns(paste0('data_dl_', x$f)), x$title))
     })
   })
 
   ## Activate/deactivate buttons
   observe({
     req("data_tabs" %in% names(input))
-    lapply(types$n, function(x) {
+    lapply(types$f, function(x) {
       shinyjs::toggleState(paste0("data_dl_", x), condition = !is.null(trans[[x]]) && nrow(trans[[x]]) > 0)
     })
-    shinyjs::toggleState("data_dl", condition = ("data_tabs" %in% names(input)) && nrow(trans$r) > 0)
+    shinyjs::toggleState("data_dl", condition = ("data_tabs" %in% names(input)) && nrow(trans$raw) > 0)
   })
 
   # Messages -------------------------------------------------
@@ -140,42 +166,45 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
 
 
   # Table Output ---------------------------------------------
-  observeEvent(trans$r, {
-    lapply(types$n, function(x) {
-      temp <- as.data.frame(trans[[x]])
-      output[[paste0("dt_", x)]] <- DT::renderDataTable({
-        validate(need(!is.null(all$r), msg_select))
-        validate(need(!is.null(all$r) && !is.null(trans$r) && nrow(trans$r) > 0, msg_private))
-        validate(need(nrow(temp) > 0, msg_error))
+  observe({
+    lapply(types$f, function(x) trans[[x]])
+    isolate({
+      if(verbose) cat("Trans - Update table output\n")
+      lapply(types$f, function(x) {
+        temp <- as.data.frame(trans[[x]])
+        output[[paste0("dt_", x)]] <- DT::renderDataTable({
+          validate(need(!is.null(all$raw), msg_select))
+          validate(need(!is.null(all$raw) && !is.null(trans$raw) && nrow(trans$raw) > 0, msg_private))
+          validate(need(nrow(temp) > 0, msg_error))
 
-        if(x == "dom"){
-          DT::datatable(temp, filter = "none",
-                        options = list(ordering = FALSE,
-                                       pageLength = 100))
-        } else {
-          t <- names(which(sapply(temp, lubridate::is.POSIXct)))
-          for(i in t) temp[, i] <- as.character(temp[, i])
-          DT::datatable(temp,
-                        filter = "top",
-                        options = list(pageLength = 100),
-                        rownames = FALSE,
-                        colnames = gsub("_", " ", names(temp)) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE))
-        }
+          if(x == "dom"){
+            DT::datatable(temp, filter = "none",
+                          options = list(ordering = FALSE,
+                                         pageLength = 100))
+          } else {
+            t <- names(which(sapply(temp, lubridate::is.POSIXct)))
+            for(i in t) temp[, i] <- as.character(temp[, i])
+            DT::datatable(temp,
+                          filter = "top",
+                          options = list(pageLength = 100),
+                          rownames = FALSE,
+                          colnames = gsub("_", " ", names(temp)) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE))
+          }
+        })
       })
     })
   })
 
-
   # Downloads ---------------------------------------------------
 
   # Setup
-  observeEvent(trans$r, {
+  observeEvent(trans$raw, {
     lapply(1:nrow(types), function(x) {
       x <- types[x, ]
-      output[[paste0("data_dl_", x$n)]] <- downloadHandler(
-        filename = paste0(x$f_name, "_", Sys.Date(), '.csv'),
+      output[[paste0("data_dl_", x$f)]] <- downloadHandler(
+        filename = paste0(x$file_name, "_", Sys.Date(), '.csv'),
         content = function(file) {
-          utils::write.csv(req(trans[[x$n]]), file, row.names = FALSE)
+          utils::write.csv(req(trans[[x$f]]), file, row.names = FALSE)
         })
     })
   })
@@ -189,9 +218,9 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
       setwd(tempdir())
       cat(tempdir())
 
-      fs <- paste0(types$f_name, "_", Sys.Date(), ".csv")
+      fs <- paste0(types$file_name, "_", Sys.Date(), ".csv")
       for(d in 1:nrow(types)){
-        utils::write.csv(trans[[types$n[d]]], file = fs[d], row.names = FALSE)
+        utils::write.csv(trans[[types$f[d]]], file = fs[d], row.names = FALSE)
       }
       cat(fs)
 
@@ -200,32 +229,56 @@ mod_trans <- function(input, output, session, r, verbose = FALSE) {
     contentType = "application/zip"
   )
 
-  # Data Tabs -------------------------------------------------------------
+  # Tabs -------------------------------------------------------------
   output$data_tables <- renderUI({
+    if(verbose) cat("Rendering data tabs\n")
     tabs <- lapply(1:nrow(types), function(x) {
       x <- types[x, ]
-      tabPanel(x$names, DT::dataTableOutput(ns(paste0("dt_", x$n))))
+      tabPanel(x$title, DT::dataTableOutput(ns(paste0("dt_", x$f))))
     })
-    tabs[[length(tabs) + 1]] <- tabPanel("Log", htmlOutput(ns("log")))
+    tabs[[length(tabs) + 1]] <- tabPanel("Log", value = "log", htmlOutput(ns("log")))
     tabs$id = ns("data_tabs")
     do.call(tabsetPanel, tabs)
   })
 
- ## Prepare Log Tab
+  # Log -------------------------------------------------------------
   output$log <- renderText({
-    req("v" %in% names(msg))
+    req("visits" %in% names(msg))
 
-    validate(need(!is.null(all$r), msg_select))
-    validate(need(!is.null(all$r) && !is.null(trans$r) && nrow(trans$r) > 0, msg_private))
+    validate(need(!is.null(all$raw), msg_select))
+    validate(need(!is.null(all$raw) && !is.null(trans$raw) && nrow(trans$raw) > 0, msg_private))
 
-    l <- lapply(2:nrow(types), function(x) {
-      x <- types[x, ]
-      tagList(h3(x$names), code(lapply(msg[[x$n]], br)))
+    l <- lapply(unique(types$f)[-1], function(x) {
+
+      #Get title
+      ti <- types$title[types$f == x]
+
+      # Get settings
+      s <- types_args[types_args$f == x, ]
+      if(nrow(s) > 0) {
+        s$settings <- t(settings()[, s$id])
+        s$settings <- stringr::str_replace_all(s$settings, c("FALSE" = "No", "TRUE" = "Yes"))
+        s <- paste0("<br>",paste0(paste0(s$lab, " = ", s$settings), collapse = "<br>"))
+      } else s <- "Nothing to set"
+
+      # Get log messages
+      m <- lapply(msg[[x]], br)
+
+      # Return text
+      tagList(h3(ti),
+              strong("Settings: "),
+              HTML(s),
+              p(),
+              strong("Log messages: "),
+              if(length(m) > 0) br(code(m)) else "No messages")
     })
-    as.character(do.call("tagList", l))
+    as.character(do.call("tagList",
+                         c(list(p("Date: ", Sys.Date())),
+                           list(p(paste0("feedr version: ", packageVersion("feedr")))),
+                           l)))
   })
 
 
-  return(c(r = reactive({all$r}),
-           v = reactive({all$v})))
+  return(c(r = reactive({all$raw}),
+           v = reactive({all$visits})))
 }
