@@ -1,10 +1,7 @@
 # Launch current
 
 ui_current <- function(diagnostic = FALSE){
-  if(file.exists("/usr/local/share/feedr/db_full.R")) {
-    source("/usr/local/share/feedr/db_full.R")
-  } else db <- NULL
-  ui_app(name = "map_current", db = db, diagnostic = diagnostic)
+  ui_app(name = "map_current")
 }
 
 
@@ -30,30 +27,37 @@ mod_UI_map_current <- function(id) {
 #' @import shiny
 #' @import magrittr
 #' @import RPostgreSQL
-mod_map_current <- function(input, output, session, db) {
+mod_map_current <- function(input, output, session) {
 
   # Setup -------------------------------------------------------------------
   ns <- session$ns
+
+  url <-       "http://gaia.tru.ca/birdMOVES/rscripts/anquery.csv"
+  url_count <- "http://gaia.tru.ca/birdMOVES/rscripts/anInit.csv"
 
   values <- reactiveValues(
     current_map = NULL,
     current_time = NULL)
 
   # Database ----------------------------------------------------------------
-  if(!is.null(db) && !curl::has_internet()) db <- NULL
 
-  if(!is.null(db)){
-    con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
-    suppressWarnings({
-      loggers_all <- dbGetQuery(con,
-                                statement = paste("SELECT feeders.feeder_id, feeders.site_name, feeders.loc, fieldsites.dataaccess",
-                                                  "FROM feeders, fieldsites",
-                                                  "WHERE (fieldsites.site_name = feeders.site_name)")) %>%
-        load_format() %>%
-        dplyr::mutate(site_name = factor(site_name))
-    })
-    dbDisconnect(con)
+  # Database?
+  db <- check_db()
+
+  # Internet?
+  net <- curl::has_internet()
+
+  # No Internet
+  if(!net && ns("") == "standalone-") {
+    # Placeholder
   }
+
+  # TEMPORARY FIX -------------------------------------------------------------------
+  loggers_all <- dplyr::select(finches_lg, logger_id, lat, lon) %>%
+    dplyr::distinct()  %>%
+    dplyr::mutate(logger_id = as.character(logger_id)) #%>%
+    #dplyr::filter(site_name == "Kamloops, BC")
+
 
   # Icons -------------------------------------------------------------------
   sp_icons <- leaflet::awesomeIconList("MOCH" = leaflet::makeAwesomeIcon(icon = "star",
@@ -107,57 +111,46 @@ mod_map_current <- function(input, output, session, db) {
 
   # Current activity ----------------------------------------------------
   current <- reactive({
-    validate(need(!is.null(db), message = "No Database access. To see Current Activity, check out animalnexus.ca"))
+    validate(need(net, message = "No Internet access. To see Current Activity, an Internet connection is required"))
 
     invalidateLater(5 * 60 * 1000) # Update again after 5min
     input$current_update
 
     isolate({
-      con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
-
       values$current_time <- Sys.time()
       withProgress(message = "Updating...", {
-        suppressWarnings({
-          data <- dbGetQuery(con,
-                             statement = paste("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time, feeders.site_name, feeders.loc, birds.species, birds.age, birds.sex",
-                                                "FROM raw.visits, feeders, birds",
-                                                "WHERE (raw.visits.feeder_id = feeders.feeder_id)",
-                                                "AND (birds.bird_id = raw.visits.bird_id)",
-                                                "AND birds.species NOT IN ( 'XXXX' )",
-                                                "AND feeders.site_name IN ( 'Kamloops, BC' )",
-                                                "AND raw.visits.time::timestamp > ( CURRENT_TIMESTAMP::timestamp - INTERVAL '24 hours' )"))
+        qry <- paste("site_name IN ( 'Kamloops, BC' ) ",
+                     "ORDER BY time::timestamp DESC LIMIT 100")
+        data <- utils::read.csv(text = RCurl::getForm(url, where = qry, key = db),
+                                strip.white = TRUE, colClasses = "character") %>%
+          dplyr::rename(animal_id = bird_id, logger_id = feeder_id, species = engl_name) %>%
+          load_format(., tz = "UTC", tz_disp = "America/Vancouver") %>%
+          dplyr::mutate(logger_id = as.character(logger_id)) %>% # To avoid join warnings
+          dplyr::left_join(loggers_all, by = "logger_id") %>%
+          visits(.) %>%
+          dplyr::group_by(animal_id, logger_id, species, age, sex, lat, lon) %>%
+          dplyr::summarize(first = min(start),
+                           last = max(end),
+                           n = length(animal_id),
+                           time = round(sum(end - start)/60, 2)) %>%
+          dplyr::group_by(logger_id) %>%
+          dplyr::do(circle(point = unique(.[, c("lat", "lon")]), data = ., radius = 0.01))
 
-          if(nrow(data) == 0) data <- dbGetQuery(con,
-                                                     statement = paste("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time, feeders.site_name, feeders.loc, birds.species, birds.age, birds.sex ",
-                                                                       "FROM raw.visits, feeders, birds ",
-                                                                       "WHERE (raw.visits.feeder_id = feeders.feeder_id) ",
-                                                                       "AND (birds.bird_id = raw.visits.bird_id) ",
-                                                                       "AND birds.species NOT IN ( 'XXXX' )",
-                                                                       "AND feeders.site_name IN ( 'Kamloops, BC' ) ",
-                                                                       "ORDER BY raw.visits.time::timestamp DESC LIMIT 100"))
-          })
-        dbDisconnect(con)
+        last_24 <- lubridate::with_tz(Sys.time(), tz = "America/Vancouver") - lubridate::hours(24)
 
-        if(nrow(data) > 0) {
-          data <- data %>%
-            dplyr::mutate(time = lubridate::with_tz(time, tz = "UTC")) %>%
-            load_format(., tz = "UTC", tz_disp = "America/Vancouver") %>%
-            visits(.) %>%
-            dplyr::group_by(animal_id, logger_id, species, age, sex, lon, lat) %>%
-            dplyr::summarize(most_recent = max(end),
-                             n = length(animal_id),
-                             time = round(sum(end - start)/60, 2)) %>%
-            dplyr::group_by(logger_id) %>%
-            dplyr::do(circle(point = unique(.[, c("lat", "lon")]), data = ., radius = 0.01))
-        } else data <- NULL
+        if(nrow(dplyr::filter(data, time >= last_24)) > 0) data <- dplyr::filter(data, time >= last_24)
       })
     })
-    data
+    return(data)
   })
 
   # Status output ------------------------------------
-  output$current_time <- renderText(paste0("Most recent activity: ", max(current()$most_recent), " Pacific <br>",
-                                           "Most recent update: ", lubridate::with_tz(values$current_time, tz = "America/Vancouver"), " Pacific"))
+  output$current_time <- renderText({
+    req(current(), nrow(current()) > 0)
+    paste0("Most recent activity: ", max(current()$last), " Pacific <br>",
+           "Time window: ", round(as.numeric(difftime(max(current()$last), min(current()$first), units = "hours"))), " hour(s) <br>",
+           "Most recent update: ", lubridate::with_tz(values$current_time, tz = "America/Vancouver"), " Pacific <br>")
+  })
 
 
   # Map ------------------------------------------------
@@ -167,7 +160,7 @@ mod_map_current <- function(input, output, session, db) {
     req(current())
     cat("Initializing map of current activity (", as.character(Sys.time()), ") ...\n")
     isolate({
-      d <- loggers_all %>% dplyr::filter(site_name == "Kamloops, BC")
+      d <- loggers_all
       map <- map_leaflet_base(locs = d) %>%
         leaflet::addScaleBar(position = "bottomright") %>%
         leaflet::addAwesomeMarkers(data = current(),
@@ -178,7 +171,7 @@ mod_map_current <- function(input, output, session, db) {
                                                    "<strong>Animal ID:</strong> ", animal_id, "<br>",
                                                    "<strong>No. visits:</strong> ", n, "<br>",
                                                    "<strong>Total time:</strong> ", time, "min <br>",
-                                                   "<strong>Most recent visit:</strong> ", most_recent, "<br>",
+                                                   "<strong>Most recent visit:</strong> ", last, "<br>",
                                                    "</div>"),
                                    lng = ~lon, lat = ~lat, group = "Activity") %>%
         addLayersControl(baseGroups = c("Satellite", "Terrain", "Open Street Map", "Black and White"),
