@@ -52,7 +52,7 @@ shinyServer(function(input, output, session) {
   callModule(feedr:::mod_indiv, id = "indiv", r = r)
 
   # Transformations
-  trans <- callModule(feedr:::mod_trans, "trans", r = reactive({values$r}))
+  trans <- callModule(feedr:::mod_trans, "trans", r = reactive({values$r}), settings = settings)
 
   # Settings
   settings <- callModule(feedr:::mod_settings, "settings")
@@ -99,8 +99,8 @@ shinyServer(function(input, output, session) {
 
 
   # Transformed data --------------------------------------------------------
-  r <- reactive({trans$r()})
-  v <- reactive({trans$v()})
+  r <- reactive({trans$raw()})
+  v <- reactive({trans$visits()})
 
   # Loggers of current data
   loggers <- reactive({
@@ -157,9 +157,10 @@ shinyServer(function(input, output, session) {
 
   # Wait until data loaded before loading the rest
   observe({
-    req(r())
+    req(!is.null(values$r))
     session$sendCustomMessage('activeNavs', 'Visualizations')
     session$sendCustomMessage('activeNavs', 'Individuals')
     session$sendCustomMessage('activeNavs', 'Transformations')
+    session$sendCustomMessage('activeNavs', 'Settings')
   })
 })

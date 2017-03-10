@@ -21,6 +21,7 @@ shinyUI(
             $('#main a:contains(\"Visualizations\")').parent().addClass('hidden');
             $('#main a:contains(\"Individuals\")').parent().addClass('hidden');
             $('#main a:contains(\"Transformations\")').parent().addClass('hidden');
+            $('#main a:contains(\"Settings\")').parent().addClass('hidden');
             $('#main a:contains(\"Help\")').parent().addClass('hidden');
         };
 
