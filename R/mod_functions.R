@@ -1,8 +1,4 @@
 
-check_values <- function(x, y, unique = TRUE) {
-  if(unique) return(identical(sort(as.character(unique(x))), sort(as.character(unique(y)))))
-  if(!unique) return(identical(sort(as.character(x)), sort(as.character(y))))
-}
 
 get_counts <- function(c, filter = NULL, summarize_by = NULL) {
 
@@ -179,4 +175,16 @@ check_class <- function(x, class) {
   if(class == "Numeric") t <- suppressWarnings(as.numeric(x))
   if(class == "Logical") t <- suppressWarnings(as.logical(x))
   return(!is.na(t))
+}
+
+check_values <- function(x, y, unique = TRUE) {
+  if(unique) return(identical(sort(as.character(unique(x))), sort(as.character(unique(y)))))
+  if(!unique) return(identical(sort(as.character(x)), sort(as.character(y))))
+}
+
+dedupe <- function(r) {
+  # From Joe Cheng: https://github.com/rstudio/shiny/issues/1484#issuecomment-262812760
+  makeReactiveBinding("val")
+  observe(val <<- r(), priority = 10)
+  reactive(val)
 }
