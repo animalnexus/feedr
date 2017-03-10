@@ -1,34 +1,47 @@
 # Launch settings
-ui_settings <- function(){
-  ui_app(name = "settings")
+ui_settings <- function(verbose = FALSE){
+  ui_app(name = "settings", verbose = verbose)
+}
+
+test_settings <- function(){
+  addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
+
+  app <- shiny::shinyApp(ui = shiny::fluidPage(includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
+                                               shinyjs::useShinyjs(),
+                                               tagList(
+                                                 navbarPage(title = a(href = "http://animalnexus.ca", HTML("animal<strong>nexus</strong>")),
+                                                            id = "main",
+                                                            position = "fixed-top",
+                                                            collapsible = TRUE,
+                                                            windowTitle = "animalnexus",
+                                                            header = includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
+                                                            footer = column(12,
+                                                                            hr(),
+                                                                            div(class = "data-status", textOutput("data_info")),
+                                                                            div(class = "package-version", htmlOutput("package_version"))),
+                                                            tabPanel("Transformations", icon = icon("exchange"),
+                                                                     feedr:::mod_UI_trans("trans")),
+                                                            tabPanel("Settings", icon = icon("cog"),
+                                                                     feedr:::mod_UI_settings("settings"))))),
+                         server = function(input, output, session) {
+                           r <- finches_lg
+                           settings <- shiny::callModule(feedr:::mod_settings, "settings", verbose = TRUE)
+                           trans <- shiny::callModule(feedr:::mod_trans, "trans", r = reactive(r), settings = settings, verbose = TRUE)
+                         }
+  )
+  shiny::runApp(app)
+
 }
 
 
 settings_preamble <- function(){
   settings_functions <- c("visits", "move", "presence", "disp", "dom", "activity", "daily")
 
-  labs <- data.frame(
-    rbind(cbind(f = "activity",
-                arg = c("by_logger", "sun", "keep_all", "res"),
-                lab = c("Calculate activity by logger", "Calculate sunrise/sunset times",
-                        "Keep all individuals", "Time resolution in minutes")),
-          cbind(f = "disp", arg = "bw", lab = "Max seconds between two events"),
-          cbind(f = "dom",
-                arg = c("tries", "omit_cutoff"),
-                lab = c("Number of iterations", "Min number of interactions per individual")),
-          cbind(f = "move", arg = "all", lab = "Keep individuals which didn't move?"),
-          cbind(f = "presence", arg = "bw", lab = "Max minutes between visits"),
-          cbind(f = "visits",
-                arg = c("allow_imp", "na_rm", "bw", "bw_imp"),
-                lab = c("Allow impossible visits?", "Remove data with missing values", "Min seconds between visits", "Min seconds to travel between loggers"))), stringsAsFactors = FALSE)
-
   return(man %>%
            dplyr::filter(f %in% settings_functions,
                          !is.na(value),
                          !(arg %in% c("missing", "pass"))) %>%
-           dplyr::left_join(labs, by = c("f", "arg")) %>%
-           dplyr::mutate(id = paste0("set_", f, "_", arg),
-                         f = factor(f, levels = settings_functions)) %>%
+           dplyr::mutate(f = factor(f, levels = settings_functions)) %>%
            dplyr::arrange(f))
 }
 
@@ -54,6 +67,7 @@ mod_UI_settings <- function(id) {
            p(actionButton(ns("reset"), "Reset to default", class = "btn-danger"))
     ),
     column(9,
+           h3("Settings for Transformations", actionButton(ns("help_settings"), "?", class = "help")),
            lapply(1:length(unique(manual$f)), function(x) {
              x <- manual[manual$f == unique(manual$f)[x], ]
              tagList(h3(x$title[1], actionButton(ns(paste0("help_", x$f[1])), "?", class = "help")),
@@ -71,7 +85,7 @@ mod_UI_settings <- function(id) {
 
 #' @import shiny
 #' @import magrittr
-mod_settings <- function(input, output, session) {
+mod_settings <- function(input, output, session, verbose = FALSE) {
 
   # Setup -------------------------------------------------------------------
   ns <- session$ns
@@ -86,7 +100,8 @@ mod_settings <- function(input, output, session) {
 
   # Start with defaults
    observe({
-     req(is.null(values$settings))
+     req(is.null(values$settings), settings())
+     if(verbose) cat("Settings - Set starting values\n")
      values$settings <- settings()
    })
 
@@ -104,14 +119,15 @@ mod_settings <- function(input, output, session) {
                                                     inputId = x$id,
                                                     selected = as.logical(x$value))
       } else {
-        if(x$class == "Numeric") ui <- numericInput(label = x$lab,
+        if(x$class == "Numeric") ui <- numericInput(label = tagList(x$lab, code(x$arg)),
                                                     inputId = ns(x$id),
                                                     min = 1,
                                                     value = as.numeric(x$value))
-        if(x$class == "Logical") ui <- radioButtons(label = x$lab,
+        if(x$class == "Logical") ui <- radioButtons(label = tagList(x$lab, code(x$arg)),
                                                     inputId = ns(x$id),
                                                     choices = c("Yes" = TRUE, "No" = FALSE),
-                                                    selected = as.logical(x$value))
+                                                    selected = as.logical(x$value),
+                                                    inline = TRUE)
         return(output[[paste0("ui_", x$id)]] <- renderUI({ui}))
       }
     })
@@ -119,6 +135,9 @@ mod_settings <- function(input, output, session) {
 
   # Create UIs
    settings_ui(manual)
+
+  # Render UIs even when hidden (or when Tab isn't in focus)
+   lapply(manual$id, function(x) outputOptions(output, paste0("ui_", x), suspendWhenHidden = FALSE))
 
   # Reset ---------------------------------------------------
   observeEvent(input$reset, {
@@ -162,8 +181,9 @@ mod_settings <- function(input, output, session) {
     })
 
   settings <- reactive({
-    req(stringr::str_detect(names(input), "set_"))
-    tibble::tibble(id = names(input)[stringr::str_detect(names(input), "set_")]) %>%
+    lapply(manual$id, function(x) req(!is.null(input[[x]])))
+    if(verbose) cat("Settings - Recalculate\n")
+    tibble::tibble(id = manual$id) %>%
       dplyr::rowwise() %>%
       dplyr::mutate(value = as.character(input[[id]]))
   })
@@ -187,16 +207,24 @@ mod_settings <- function(input, output, session) {
   })
 
   ## Help dialogues ----------------------------------------------------
-  settings_help <- function(df) {
+  observeEvent(input$help_settings, {
+    showModal(modalDialog(size = "m",
+                          title = "Settings for Transformations",
+                          easyClose = TRUE,
+                          tagList("Each settings corresponds to an argument for the relevant function from the feedr package (e.g., visits(), move(), etc.). The argument name from the feedr function is shown as", code("argument"), ".")))
+  })
+
+  help_settings_args <- function(df) {
     lapply(unique(df$f), function(func) {
       x <- dplyr::filter(df, f == func)
       observeEvent(input[[paste0("help_", x$f[1])]], {
         showModal(modalDialog(size = "m",
                               title = paste(x$title[1]),
                               easyClose = TRUE,
-                              tagList(lapply(1:nrow(x), function(y) {
+                              tagList(
+                                lapply(1:nrow(x), function(y) {
                                 tagList(
-                                  h4(x$lab[y], "(", code(x$arg[y]), ")"),
+                                  h4(x$lab[y], code(x$arg[y])),
                                   x$desc[y])
                               }))
         ))
@@ -206,9 +234,9 @@ mod_settings <- function(input, output, session) {
 
   observe({
     req(any(stringr::str_detect(names(input), "help_")))
-    settings_help(manual)
+    help_settings_args(manual)
   })
 
   # Return ----------------------------------------------------
-  return(reactive(values$settings))
+  return(reactive({if(is.null(values$settings)) values$settings else tidyr::spread(values$settings, id, value)}))
 }
