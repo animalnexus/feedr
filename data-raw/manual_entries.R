@@ -67,7 +67,8 @@ get_manual_single <- function(func){
       col_split <- stringr::str_count(d$arg, ",")
     }
     if(nrow(d) > 0) {
-      d <- dplyr::left_join(d, get_defaults(d), by = "arg")
+      d <- dplyr::left_join(d, get_defaults(d), by = "arg") %>%
+        dplyr::mutate(id = paste0("set_", f, "_", arg))
       #message(d$f[1])
       return(d)
     }
@@ -79,7 +80,23 @@ get_manual <- function(x = "feedr"){
   do.call('rbind', lapply(db, get_manual_single))
 }
 
-man <- get_manual()
+labs <- data.frame(
+  rbind(cbind(f = "activity",
+              arg = c("by_logger", "sun", "keep_all", "res"),
+              lab = c("Calculate activity by logger", "Calculate sunrise/sunset times",
+                      "Keep all individuals", "Time resolution in minutes")),
+        cbind(f = "disp", arg = "bw", lab = "Max seconds between two events"),
+        cbind(f = "dom",
+              arg = c("tries", "omit_cutoff"),
+              lab = c("Number of iterations", "Min number of interactions per individual")),
+        cbind(f = "move", arg = "all", lab = "Keep individuals which didn't move?"),
+        cbind(f = "presence", arg = "bw", lab = "Max minutes between visits"),
+        cbind(f = "visits",
+              arg = c("allow_imp", "na_rm", "bw", "bw_imp"),
+              lab = c("Allow impossible visits?", "Remove data with missing values", "Min seconds between visits", "Min seconds to travel between loggers"))), stringsAsFactors = FALSE)
+
+man <- get_manual() %>%
+  dplyr::left_join(labs, by = c("f", "arg"))
 
 if(nrow(man) > 0) {
   devtools::use_data(man, internal = TRUE, overwrite = TRUE)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/activity.R
 \name{daily}
 \alias{daily}
-\title{Create daily activity data}
+\title{Daily activity}
 \usage{
 daily(a, pass = TRUE)
 }

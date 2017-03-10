@@ -2,7 +2,7 @@
 % Please edit documentation in R/transformations.R
 \name{move}
 \alias{move}
-\title{Movements between loggers}
+\title{Movements}
 \usage{
 move(v, all = FALSE, pass = TRUE)
 }

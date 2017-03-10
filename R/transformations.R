@@ -152,7 +152,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
 }
 
 
-#' Movements between loggers
+#' Movements
 #'
 #' Turns visits to mulitple loggers into movements between loggers
 #'
@@ -302,7 +302,7 @@ move_single <- function(v1, move_dir, move_path, all = FALSE){
   return(m)
 }
 
-#' Presence at a logger
+#' Presence
 #'
 #' Turns multiple visits at specific loggers into overall presence events.
 #' Presence is different from a visit in that a visit is considered a specific

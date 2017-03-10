@@ -234,7 +234,7 @@ activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = 
   }
 }
 
-#' Create daily activity data
+#' Daily activity
 #'
 #' Summarizes and averages activity data over a 24-hr period, generating a 24-hr
 #' daily activity pattern for plotting. The resulting data set contains four
