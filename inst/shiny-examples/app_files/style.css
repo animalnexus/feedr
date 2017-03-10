@@ -1,3 +1,8 @@
+a[data-value="log"] {
+    font-weight: bold;
+    font-style: italic;
+}
+
 body {
   padding-top: 70px;
 }
