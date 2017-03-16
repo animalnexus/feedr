@@ -218,7 +218,7 @@ mod_trans <- function(input, output, session, r, settings, verbose = FALSE) {
 
   # Downloads ---------------------------------------------------
 
-  # Setup
+  # Download Individual
   observeEvent(trans$raw, {
     lapply(1:nrow(types), function(x) {
       x <- types[x, ]
