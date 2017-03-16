@@ -341,7 +341,7 @@ load_raw_all <- function(r_dir,
 #' @export
 dl_data <- function(start = NULL,
                     end = NULL,
-                    url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
+                    url = "http://gaia.tru.ca/birdMOVES/rscripts/anquery.csv",
                     logger_details = c("loc"),
                     animal_details = c("species"),
                     tz_disp = "Etc/GMT+8",
@@ -364,48 +364,48 @@ dl_data <- function(start = NULL,
   tz_disp <- check_tz(tz_disp)
   if(!dst) tz_disp <- tz_offset(tz_disp, tz_name = TRUE)
 
-  # Get data from website in GMT
-  tz <- "GMT"
-
   # Stop if time is not in the correct format
-
   t_start <- NULL
   t_end <- NULL
   if(!is.null(start)) {
     suppressWarnings(t_start <- lubridate::parse_date_time(start, orders = "ymd hms", truncated = 5))
     if(is.na(t_start)) stop("Your start time is ambiguous. Format should be YYYY-MM-DD (HH:MM:SS is optional)")
-    t_start <- format(t_start, "%Y-%m-%d %H:%M:%S")
+    t_start <- lubridate::with_tz(t_start, tz = "UTC")
   }
   if(!is.null(end)) {
     suppressWarnings(t_end <- lubridate::parse_date_time(end, orders = "ymd hms", truncated = 5))
     if(is.na(t_end)) stop("Your end time is ambiguous. Format should be YYYY-MM-DD (HH:MM:SS is optional)")
-    t_end <- format(t_end, "%Y-%m-%d %H:%M:%S")
+    t_end <- lubridate::with_tz(t_end, tz = "UTC")
   }
 
   # Stop if url doesn't exist
-  if(!RCurl::url.exists(url)) stop("The url '", url, "' doesn't exist (or you have no internet connection).")
-
-  sites <- "qskam"
+  if(!curl::has_internet()) stop("No internet connection")
 
   # Get form options
-  params <- as.list(rep("1", length(c(logger_details, animal_details, sites))))
-  names(params) <- c(logger_details, animal_details, sites)
-  params <- append(params,
-                   list(feeder_id = "1",
-                        bird_id = "1",
-                        tz = tz,
-                        qstart = t_start,
-                        qend = t_end,
-                        qstarttz = tz_disp,
-                        qendtz = tz_disp))
+  qry <- paste("time::timestamp >= '", t_start, "' AND",
+               "time::timestamp <= '", t_end, "'")
 
-  g <- RCurl::getForm(url, .params = params)
+  # params <- as.list(rep("1", length(c(logger_details, animal_details, sites))))
+  # names(params) <- c(logger_details, animal_details, sites)
+  # params <- append(params,
+  #                  list(feeder_id = "1",
+  #                       bird_id = "1",
+  #                       tz = tz,
+  #                       qstart = t_start,
+  #                       qend = t_end,
+  #                       qstarttz = tz_disp,
+  #                       qendtz = tz_disp))
 
-  if(nchar(g) < 200) stop("There are no online data matching these parameters. Try different sites or a different date range.")
+  g <- RCurl::getForm(url, where = qry)
+
+  if(nchar(g) < 200) stop("There are no online data matching these parameters. Try different url or a different date range.")
 
   r <- load_format(utils::read.csv(text = g, strip.white = TRUE, colClasses = "character"),
-                   tz = tz,
-                   tz_disp = tz_disp)
+                   tz = "UTC",
+                   tz_disp = tz_disp) %>%
+    dplyr::rename(species = engl_name) %>%
+    dplyr::select(-site_id) %>%
+    dplyr::arrange(time)
   return(r)
 }
 
