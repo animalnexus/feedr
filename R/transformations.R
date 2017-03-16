@@ -107,9 +107,9 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
     }
   }
   # Start if
-  # - time before is greater than 'bw' OR
-  # - animal before is not the same OR
-  # - logger before is not the same
+  # - time before is greater than 'bw' (same animal, same logger) OR
+  # - animal before is not the same (same logger, time < bw) OR
+  # - logger before is not the same (same animal, time < bw)
   # End if
   # - time after is great than 'bw' OR
   # - animal after is not the same OR
