@@ -7,7 +7,6 @@
 #' function for a non-interactive method.
 #'
 #' @param verbose Logical. Print log events to console.
-#' @param diagnostic Logical. Display pause button for debugging
 #'
 #' @return  Downloaded data frame formatted and ready to be transformed
 #'
@@ -20,8 +19,8 @@
 #' }
 #'
 #' @export
-ui_db <- function(verbose = FALSE, diagnostic = FALSE){
-  ui_app(name = "data_db", verbose = verbose, diagnostic = diagnostic)
+ui_db <- function(verbose = FALSE){
+  ui_app(name = "data_db", verbose = verbose)
 }
 
 
@@ -140,7 +139,8 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
         setProgress(value = 0.15, detail = "Getting sample information..")
         if(verbose) cat("Getting sample information...\n")
 
-        counts <- utils::read.csv(text = RCurl::getForm(url_count, key = db), strip.white = TRUE, colClasses = "character") %>%
+        counts <- RCurl::getForm(url_count, key = db) %>%
+          utils::read.csv(text = ., strip.white = TRUE, colClasses = "character") %>%
           dplyr::rename(animal_id = bird_id, logger_id = feeder_id, species = engl_name) %>%
           load_format() %>%
           dplyr::mutate(count = as.numeric(count),
@@ -150,15 +150,14 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
       setProgress(value = 0.30, detail = "Getting logger data..")
       if(verbose) cat("Getting logger data...\n")
       loggers_all <- counts %>%
-        dplyr::select(site_name, logger_id, lat, lon, dataaccess) %>%
+        dplyr::select(site_name, logger_id, lon, lat, dataaccess) %>%
         unique()
 
       setProgress(value = 0.45, detail = "Getting site data..")
       if(verbose) cat("Getting site data...\n")
       sites_all <- loggers_all %>%
         dplyr::group_by(site_name) %>%
-        dplyr::summarize(lon = mean(lon), lat = mean(lat), dataaccess = unique(dataaccess)) %>%
-        dplyr::mutate(site_name = factor(site_name))
+        dplyr::summarize(lon = mean(lon), lat = mean(lat), dataaccess = unique(dataaccess))
 
       setProgress(value = 0.60, detail = "Getting animal data..")
       if(verbose) cat("Getting animal data...\n")
@@ -371,10 +370,11 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
   }, digits = 0, include.rownames = FALSE)
 
   output$data_access <- renderText({
-    req(input$data_site_name)
+    req(input$data_site_name, data_selection())
     req(input$data_site_name != "")
-    if(sites_all$dataaccess[sites_all$site_name == input$data_site_name] == 0) return("Fully Public")
-    if(sites_all$dataaccess[sites_all$site_name == input$data_site_name] == 1) return("Visualizations Only")
+    da <- unique(data_selection()$dataaccess)
+    if(da == 0) return("Fully Public")
+    if(da == 1) return("Visualizations Only")
   })
 
   # Resets ----------------------------------------------------
