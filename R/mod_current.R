@@ -32,9 +32,6 @@ mod_map_current <- function(input, output, session) {
   # Setup -------------------------------------------------------------------
   ns <- session$ns
 
-  url <-       "http://gaia.tru.ca/birdMOVES/rscripts/anquery.csv"
-  url_count <- "http://gaia.tru.ca/birdMOVES/rscripts/anInit.csv"
-
   values <- reactiveValues(
     current_map = NULL,
     current_time = NULL)

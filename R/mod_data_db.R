@@ -98,8 +98,9 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
   ns <- session$ns
 
   # Values ----------------------------------------------------
-  url <-       "http://gaia.tru.ca/birdMOVES/rscripts/anquery.csv"
-  url_count <- "http://gaia.tru.ca/birdMOVES/rscripts/anInit.csv"
+
+  # NOTE url, url_code and url_loggers are internal variables stored in the
+  # feedr package
 
   values <- reactiveValues(
     selection_update = FALSE,   # Whether or not to update input_selection
