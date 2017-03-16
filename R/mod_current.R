@@ -49,21 +49,22 @@ mod_map_current <- function(input, output, session) {
     # Placeholder
   }
 
-  # TEMPORARY FIX -------------------------------------------------------------------
-  loggers_all <- dplyr::select(finches_lg, logger_id, lat, lon) %>%
-    dplyr::distinct()  %>%
-    dplyr::mutate(logger_id = as.character(logger_id)) #%>%
-    #dplyr::filter(site_name == "Kamloops, BC")
+  # Loggers -------------------------------------------------------------------
+  loggers_all <- RCurl::getForm(url_loggers, key = db) %>%
+    utils::read.csv(text = ., strip.white = TRUE, colClasses = "character") %>%
+    dplyr::rename(logger_id = feeder_id) %>%
+    load_format() %>%
+    dplyr::filter(site_name == "Kamloops, BC")
 
 
   # Icons -------------------------------------------------------------------
-  sp_icons <- leaflet::awesomeIconList("MOCH" = leaflet::makeAwesomeIcon(icon = "star",
+  sp_icons <- leaflet::awesomeIconList("Mountain Chickadee" = leaflet::makeAwesomeIcon(icon = "star",
                                                                          marker = "green",
                                                                          iconColor = "white"),
-                                       "HOFI" = leaflet::makeAwesomeIcon(icon = "star",
+                                       "House Finch" = leaflet::makeAwesomeIcon(icon = "star",
                                                                          marker = "red",
                                                                          iconColor = "white"),
-                                       "DEJU" = leaflet::makeAwesomeIcon(icon = "star",
+                                       "Dark-eyed Junco" = leaflet::makeAwesomeIcon(icon = "star",
                                                                          marker = "darkpurple",
                                                                          iconColor = "white"))
 
@@ -116,10 +117,10 @@ mod_map_current <- function(input, output, session) {
     isolate({
       values$current_time <- Sys.time()
       withProgress(message = "Updating...", {
-        qry <- paste("site_name IN ( 'Kamloops, BC' ) ",
+        qry <- paste("fieldsites.site_id = 'kl'",
                      "ORDER BY time::timestamp DESC LIMIT 100")
-        data <- utils::read.csv(text = RCurl::getForm(url, where = qry, key = db),
-                                strip.white = TRUE, colClasses = "character") %>%
+        data <- RCurl::getForm(url, where = qry, key = db) %>%
+          utils::read.csv(text = ., strip.white = TRUE, colClasses = "character") %>%
           dplyr::rename(animal_id = bird_id, logger_id = feeder_id, species = engl_name) %>%
           load_format(., tz = "UTC", tz_disp = "America/Vancouver") %>%
           dplyr::mutate(logger_id = as.character(logger_id)) %>% # To avoid join warnings
@@ -144,9 +145,10 @@ mod_map_current <- function(input, output, session) {
   # Status output ------------------------------------
   output$current_time <- renderText({
     req(current(), nrow(current()) > 0)
-    paste0("Most recent activity: ", max(current()$last), " Pacific <br>",
-           "Time window: ", round(as.numeric(difftime(max(current()$last), min(current()$first), units = "hours"))), " hour(s) <br>",
-           "Most recent update: ", lubridate::with_tz(values$current_time, tz = "America/Vancouver"), " Pacific <br>")
+    paste0("Most recent update: ", lubridate::with_tz(values$current_time, tz = "America/Vancouver"), " Pacific <br>",
+           "Most recent activity: ", max(current()$last), " Pacific <br>",
+           "Time window: ", round(as.numeric(difftime(max(current()$last), min(current()$first), units = "hours")), 2), " hour(s) <br>"
+           )
   })
 
 
