@@ -15,10 +15,30 @@ test_that("visits() returns appropriate, non-empty dataframe", {
 })
 
 test_that("visits() has correct spacing", {
-  for(b in c(3, 5, 30)) {
-    v <- visits(finches[finches$animal_id == "041868D396",], bw = b)
-    expect_true(all(as.numeric(difftime(v$start[2:nrow(v)], v$end[1:(nrow(v)-1)], units = "secs")) > b))
+  t <- data.frame(n = c(1, 1, 8, 3),
+                  bw = c(3, 10, 30, 3600),
+                  start = as.POSIXct(c("2016-01-28 12:35:52",
+                                       "2016-01-28 12:35:52",
+                                       "2016-01-29 09:53:53",
+                                       "2016-01-28 13:23:40"), tz = "America/Vancouver"),
+                  end = as.POSIXct(c("2016-01-28 12:35:52",
+                                     "2016-01-28 12:36:12",
+                                     "2016-01-29 09:55:37",
+                                     "2016-01-28 15:09:19"), tz = "America/Vancouver"))
+
+  # First two visits interrupted by other birds arriving, last is not (at the same feeder at least)
+
+  for(i in 1:nrow(t)){
+    v <- visits(finches, bw = t$bw[i]) %>%
+      dplyr::filter(animal_id == "06200004F8")
+    expect_true(v$start[t$n[i]] == t$start[i])
+    expect_true(v$end[t$n[i]] == t$end[i])
   }
+
+})
+
+test_that("visits() jumps over obs of diff animals at diff loggers", {
+
 })
 
 test_that("visits() returns correct data", {
