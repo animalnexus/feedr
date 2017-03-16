@@ -16,6 +16,18 @@ ui_app <- function(name, ..., launch.browser = getOption("shiny.launch.browser",
   shiny::runApp(app)
 }
 
+mod_UI_nav <- function(id, ...) {
+  ns <- NS(id)
+  addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
+  navbarPage(title = a(href = "http://animalnexus.ca", HTML("animal<strong>nexus</strong>")),
+             id = "main",
+             position = "fixed-top",
+             collapsible = TRUE,
+             windowTitle = "animalnexus",
+             header = includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
+             ...)
+}
+
 mod_UI_stop <- function(id) {
   ns <- NS(id)
   actionButton(ns("stop"), "X", class = "stop-button")
