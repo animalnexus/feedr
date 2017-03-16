@@ -15,10 +15,30 @@
 #' }
 #'
 #' @export
-
 ui_trans <- function(r, verbose = FALSE) {
   if(missing(r)) stop("ui_trans() requires raw data to transform")
-  ui_app(name = "trans", r = reactive({r}, verbose = verbose), launch.browser = TRUE)
+
+  addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
+
+  app <- shiny::shinyApp(ui = shiny::fluidPage(includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
+                                               shinyjs::useShinyjs(),
+                                               mod_UI_nav("standalone",
+                                                          tabPanel("Transformations", icon = icon("exchange"),
+                                                                   mod_UI_trans("standalone")),
+                                                          tabPanel("Settings", icon = icon("cog"),
+                                                                   mod_UI_settings("standalone")),
+                                                          mod_UI_stop("stp"))),
+                         server = function(input, output, session) {
+                           settings <- shiny::callModule(mod_settings, id = "standalone", verbose = verbose)
+                           shiny::callModule(mod_trans, id = "standalone",
+                                             r = shiny::reactive({r}),
+                                             settings = settings,
+                                             verbose = verbose)
+                           shiny::callModule(mod_stop, id = "stp")  # Add Exit Buttons
+                           session$onSessionEnded(stopApp)
+                         }
+  )
+  shiny::runApp(app)
 }
 
 trans_preamble <- function(args = TRUE) {
