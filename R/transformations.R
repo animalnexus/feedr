@@ -87,18 +87,32 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
   tz <- attr(r$time, "tzone")
 
   # Get spacing between visits, whether same animal or not, and whether same logger or not
-  r <- r[order(r$time),]
-  diff_time <- difftime(r$time[-1], r$time[-nrow(r)], units = "sec") > bw
-  diff_animal <- r$animal_id[-nrow(r)] != r$animal_id[-1]
-  diff_logger <- r$logger_id[-nrow(r)] != r$logger_id[-1]
+
+  # Diff animal_id AT SAME LOGGER
+  # Diff time < bw PER ID
+  # Diff logger PER ID
+
+  v <- r %>%
+    dplyr::arrange(time) %>%
+    dplyr::mutate(diff_animal = dplyr::lead(logger_id) == logger_id & dplyr::lead(animal_id) != animal_id) %>%
+    dplyr::group_by(animal_id) %>%
+    dplyr::mutate(diff_time = difftime(lead(time), time, units = "sec") > bw,
+                  diff_logger = dplyr::lead(logger_id) != logger_id)
 
   # Check for impossible combos: where less than bw, still the same animal, but a different logger
   if(!allow_imp) {
-    diff_imp <- difftime(r$time[-1], r$time[-nrow(r)], units = "sec") < bw_imp
-    impos <- which(rowSums(matrix(c(diff_imp, !diff_animal, diff_logger), ncol = 3)) == 3)
-    impos <- r[unique(c(impos, impos + 1)), ]
+    impos <- v %>%
+      dplyr::mutate(diff_imp = difftime(lead(time), time, units = "sec") < bw_imp,
+                    diff_imp = diff_imp & diff_logger) %>%
+      dplyr::arrange(animal_id) %>%
+      dplyr::filter(diff_imp | lag(diff_imp)) %>%
+      unique()
+
     if(nrow(impos) > 0) {
-      impos <- impos[order(impos$animal_id, impos$time), ]
+      impos <- impos %>%
+        dplyr::arrange(animal_id, time) %>%
+        dplyr::select(animal_id, time, logger_id)
+
       rows <- nrow(impos)
       if(nrow(impos) > 5) {
         rows <- 5
@@ -106,23 +120,38 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
       stop("Impossible visits found, no specification for how to handle:\n\nIndividual(s) detected at 2+ loggers within ", bw_imp, "s.\nDecrease the `bw_imp` argument, remove these reads, or\nallow impossible visits (allow_imp = TRUE) and try again.\n\n", paste0(utils::capture.output(impos[1:rows, ]), collapse = "\n"))
     }
   }
-  # Start if
-  # - time before is greater than 'bw' (same animal, same logger) OR
-  # - animal before is not the same (same logger, time < bw) OR
-  # - logger before is not the same (same animal, time < bw)
+
   # End if
-  # - time after is great than 'bw' OR
-  # - animal after is not the same OR
-  # - logger after is not the same
+  # - for same animal:
+  #     - next logger diff OR next time > bw  ==> diff_logger OR diff_bw
+  #     - final obs
+  # - next animal diff (at same logger)       ==> diff_animal
 
-  new_visit <- apply(cbind(diff_time, diff_animal, diff_logger), 1, any)
-  r$end <- r$start <- as.POSIXct(NA, tz = tz)
-  r$start[c(TRUE, new_visit)] <- r$time[c(TRUE, new_visit)]
-  r$end[c(new_visit, TRUE)] <- r$time[c(new_visit, TRUE)]
+  # Start if
+  # All PER ANIMAL (i.e. keep grouping)
+  # - first obs is an include
+  # - previous obs was an end
 
-  # Get visits
-  v <- r %>%
-    dplyr::filter(!(is.na(start) & is.na(end))) %>%
+  # Start/End if (only one obs in visit)
+  # - first obs is an end
+  # - end, but previous obs was also an end
+
+  v <- v %>%
+    # Assign end points
+    dplyr::mutate(new = "include") %>%
+    dplyr::mutate(new = replace(new, diff_logger | diff_time | diff_animal, "end"),
+                  new = replace(new, is.na(dplyr::lead(new)), "end")) %>%
+    # Assign start or start-end points for each individual
+    dplyr::mutate(new = replace(new, new == "include" &
+                                  (is.na(dplyr::lag(new)) | dplyr::lag(new) == "end"), "start"),
+                  new = replace(new, new == "end" &
+                                  (is.na(dplyr::lag(new)) | dplyr::lag(new) == "end"), "start-end")) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(new != "include") %>%
+    dplyr::mutate(start = as.POSIXct(NA, tz = tz),
+                  end = as.POSIXct(NA, tz = tz),
+                  start = replace(start, stringr::str_detect(new, "start"), time[stringr::str_detect(new, "start")]),
+                  end = replace(end, stringr::str_detect(new, "end"), time[stringr::str_detect(new, "end")])) %>%
     dplyr::select(logger_id, animal_id, start, end) %>%
     tidyr::gather(variable, value, start, end) %>%
     dplyr::filter(!is.na(value)) %>%
@@ -133,8 +162,8 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
     dplyr::select(-n) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(animal_n = length(unique(animal_id)),         # Get sample sizes
-                  logger_n = length(unique(logger_id)),
-                  date = as.Date(start))
+                 logger_n = length(unique(logger_id)),
+                 date = as.Date(start))
 
   # Set timezone attributes
   attr(v$start, "tzone") <- tz
