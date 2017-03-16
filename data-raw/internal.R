@@ -1,3 +1,5 @@
+## feedr Manual Entries for ui_settings and ui_trans
+
 library(magrittr)
 
 types <- list("Logical" = c("logical", "logic", "boolean", "bool"),
@@ -98,6 +100,11 @@ labs <- data.frame(
 man <- get_manual() %>%
   dplyr::left_join(labs, by = c("f", "arg"))
 
+############################################################################
+url <- "http://gaia.tru.ca/birdMOVES/rscripts/anquery.csv"
+url_count <- "http://gaia.tru.ca/birdMOVES/rscripts/anInit.csv"
+url_loggers <- "http://gaia.tru.ca/birdMOVES/rscripts/anloggers.csv"
+
 if(nrow(man) > 0) {
-  devtools::use_data(man, internal = TRUE, overwrite = TRUE)
+  devtools::use_data(man, url, url_count, url_loggers, internal = TRUE, overwrite = TRUE)
 } else stop("Manual entries didn't compile")
