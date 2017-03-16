@@ -78,10 +78,11 @@ mod_UI_trans <- function(id) {
            h3("Downloads"),
            shinyjs::disabled(downloadButton(ns("data_dl"), "All")),
            hr(),
-           uiOutput(ns("dl_buttons"))
+           uiOutput(ns("dl_buttons")),
+           downloadButton(ns('data_dl_log'), label = "Log")
     ),
     column(9, uiOutput(ns("data_tables")))
-    )
+  )
 }
 
 # Module server function
@@ -229,6 +230,13 @@ mod_trans <- function(input, output, session, r, settings, verbose = FALSE) {
     })
   })
 
+  # Download Log
+  output$data_dl_log <- downloadHandler(
+    filename = paste0("feedr_log_", Sys.Date(), ".txt"),
+    content = function(file) {
+      s <- sapply(log(), function(x) c(sapply(x, function(y) paste0(paste0(y, collapse = "\n"), "\n")), "\n"))
+      write(unlist(s), file)
+    })
 
   # Download All
   output$data_dl <- downloadHandler(
@@ -238,10 +246,17 @@ mod_trans <- function(input, output, session, r, settings, verbose = FALSE) {
       setwd(tempdir())
       cat(tempdir())
 
-      fs <- paste0(types$file_name, "_", Sys.Date(), ".csv")
+      ## Regular files
+      fs <- c(paste0(types$file_name, "_", Sys.Date(), ".csv"),
+              paste0("feedr_log_", Sys.Date(), ".txt"))
       for(d in 1:nrow(types)){
         utils::write.csv(trans[[types$f[d]]], file = fs[d], row.names = FALSE)
       }
+
+      ## Log file
+      s <- sapply(log(), function(x) c(sapply(x, function(y) paste0(paste0(y, collapse = "\n"), "\n")), "\n"))
+      write(unlist(s), fs[length(fs)])
+
       cat(fs)
 
       utils::zip(zipfile = file, files = fs)
@@ -262,7 +277,7 @@ mod_trans <- function(input, output, session, r, settings, verbose = FALSE) {
   })
 
   # Log -------------------------------------------------------------
-  output$log <- renderText({
+  log <- reactive({
     req("visits" %in% names(msg))
 
     validate(need(!is.null(all$raw), msg_select))
@@ -278,27 +293,36 @@ mod_trans <- function(input, output, session, r, settings, verbose = FALSE) {
       if(nrow(s) > 0) {
         s$settings <- t(settings()[, s$id])
         s$settings <- stringr::str_replace_all(s$settings, c("FALSE" = "No", "TRUE" = "Yes"))
-        s <- paste0("<br>",paste0(paste0(s$lab, " = ", s$settings), collapse = "<br>"))
+        s <- paste0(s$lab, " = ", s$settings)
       } else s <- "Nothing to set"
 
       # Get log messages
-      m <- lapply(msg[[x]], br)
-
-      # Return text
-      tagList(h3(ti),
-              strong("Settings: "),
-              HTML(s),
-              p(),
-              strong("Log messages: "),
-              if(length(m) > 0) br(code(m)) else "No messages")
+      m <- if(length(msg[[x]]) > 0) msg[[x]] else "No messages"
+      list("title" = ti, "settings" = s, "messages" = m)
     })
-    as.character(do.call("tagList",
-                         c(list(p("Date: ", Sys.Date())),
-                           list(p(paste0("feedr version: ", packageVersion("feedr")))),
-                           l)))
+    c(list(c(paste0("Date: ", Sys.Date()),
+             paste0("feedr version: ", packageVersion("feedr")))),
+      l)
+  })
+
+  output$log <- renderText({
+    as.character(tagList(
+      lapply(log(), function(x) {
+        if(is.null(names(x))) {
+          return(tagList(HTML(paste0(x, collpase = "<br>"))))
+        } else {
+          tagList(h3(x$title),
+                  p(strong(HTML("Settings: <br>")),
+                    HTML(paste0(x$settings, collapse = "<br>"))),
+                  p(strong("Log messages: "),
+                    code(lapply(x$messages, br))))
+        }
+      })
+    ))
   })
 
 
-  return(c(r = reactive({all$raw}),
-           v = reactive({all$visits})))
+# Return ------------------------------------------------------------------
+  return(c(raw = reactive({all$raw}),
+           visits = reactive({all$visits})))
 }
