@@ -1,5 +1,3 @@
-last <- function(x)  return(x[length(x)])
-
 #' Get timezone offset from UTC
 #'
 #' @param tz Character. Timezone to calculate offset from
@@ -20,6 +18,8 @@ tz_offset <- function(tz, dst = FALSE, tz_name = FALSE) {
   }
   return(t)
 }
+
+last <- function(x)  return(x[length(x)])
 
 mp <- function(x) paste0(sort(unlist(strsplit(as.character(x), "_"))), collapse = "_")
 
@@ -86,3 +86,12 @@ round_6 <- function(time, by = "12") {
   time <- lubridate::force_tz(as.POSIXct(time), tz = tz)
   return(time)
 }
+
+# Average clock time
+mean_clock <- function(time, origin = FALSE) {
+  tz <- lubridate::tz(time[1])
+  mean_time <- format(mean(as.POSIXct(paste("1970-01-01", format(time, "%H:%M:%S")))), "%H:%M:%S")
+  mean_date <- ifelse(origin, "1970-01-01", as.character(as.Date(mean(time))))
+  return(as.POSIXct(paste(mean_date, mean_time), tz = tz))
+}
+
