@@ -1,3 +1,15 @@
+# feedr 0.8.2
+
+## Changes
+
+- Update database service for `dl_data()`
+- Update database service for animalnexus
+
+## Bug fixes
+
+- Fix bug in `visits()` where visit was premature terminated if another animal_id was detected at a different logger.
+
+
 # feedr 0.8.1 (2017-02-24)
 
 ## Changes
