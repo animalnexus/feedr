@@ -1,38 +1,7 @@
-# Launch settings
+# Launch settings for testing
 ui_settings <- function(verbose = FALSE){
   ui_app(name = "settings", verbose = verbose)
 }
-
-test_settings <- function(){
-  addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
-
-  app <- shiny::shinyApp(ui = shiny::fluidPage(includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
-                                               shinyjs::useShinyjs(),
-                                               tagList(
-                                                 navbarPage(title = a(href = "http://animalnexus.ca", HTML("animal<strong>nexus</strong>")),
-                                                            id = "main",
-                                                            position = "fixed-top",
-                                                            collapsible = TRUE,
-                                                            windowTitle = "animalnexus",
-                                                            header = includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
-                                                            footer = column(12,
-                                                                            hr(),
-                                                                            div(class = "data-status", textOutput("data_info")),
-                                                                            div(class = "package-version", htmlOutput("package_version"))),
-                                                            tabPanel("Transformations", icon = icon("exchange"),
-                                                                     feedr:::mod_UI_trans("trans")),
-                                                            tabPanel("Settings", icon = icon("cog"),
-                                                                     feedr:::mod_UI_settings("settings"))))),
-                         server = function(input, output, session) {
-                           r <- finches_lg
-                           settings <- shiny::callModule(feedr:::mod_settings, "settings", verbose = TRUE)
-                           trans <- shiny::callModule(feedr:::mod_trans, "trans", r = reactive(r), settings = settings, verbose = TRUE)
-                         }
-  )
-  shiny::runApp(app)
-
-}
-
 
 settings_preamble <- function(){
   settings_functions <- c("visits", "move", "presence", "disp", "dom", "activity", "daily")
@@ -73,7 +42,7 @@ mod_UI_settings <- function(id) {
              tagList(h3(x$title[1], actionButton(ns(paste0("help_", x$f[1])), "?", class = "help")),
                      lapply(1:nrow(x), function(y) {
                        y <- x[y, ]
-                       uiOutput(ns(paste0("ui_set_", y$f, "_", y$arg)))
+                       uiOutput(ns(paste0("UI_set_", y$f, "_", y$arg)))
                      }),
                      tags$hr()
              )
@@ -128,7 +97,7 @@ mod_settings <- function(input, output, session, verbose = FALSE) {
                                                     choices = c("Yes" = TRUE, "No" = FALSE),
                                                     selected = as.logical(x$value),
                                                     inline = TRUE)
-        return(output[[paste0("ui_", x$id)]] <- renderUI({ui}))
+        return(output[[paste0("UI_", x$id)]] <- renderUI({ui}))
       }
     })
   }
@@ -137,7 +106,7 @@ mod_settings <- function(input, output, session, verbose = FALSE) {
    settings_ui(manual)
 
   # Render UIs even when hidden (or when Tab isn't in focus)
-   lapply(manual$id, function(x) outputOptions(output, paste0("ui_", x), suspendWhenHidden = FALSE))
+   lapply(manual$id, function(x) outputOptions(output, paste0("UI_", x), suspendWhenHidden = FALSE))
 
   # Reset ---------------------------------------------------
   observeEvent(input$reset, {
