@@ -278,26 +278,6 @@ load_raw_all <- function(r_dir,
 #' 00 and trucated dates as the first of the month and the first month of the
 #' year. Thus "2015" will be sumbitted as "2015-01-01 00:00:00".
 #'
-#' For specifying extra \code{animal_details}:
-#'
-#' \itemize{
-#'   \item "species" gives species name
-#'   \item "sex" gives sex (M, F, U for male, female and unknown)
-#'   \item "age" gives age (ASY, AHY, SY, and HY for After Second Year, After
-#' Hatch Year, Second Year, and Hatch Year) See
-#' \href{https://www.pwrc.usgs.gov/BBL/manual/age.cfm}{USGS banding lab} for
-#' details about banding
-#'   \item "tagged_on" gives you the date the RFID tag was
-#' mounted on the animal
-#' }
-#'
-#' For specifying extra \code{logger_details}:
-#'
-#' \itemize{
-#'  \item "site_name" gives site name
-#'  \item "loc" gives lon/lat coordiates
-#'  }
-#'
 #' @param start Character. This is the start date (with or without time) for the
 #'   data to download. There is some flexibility in the format (see details). If
 #'   NULL, get records from start.
