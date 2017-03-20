@@ -383,8 +383,6 @@ dl_data <- function(start = NULL,
   # Stop if url doesn't exist
   if(!curl::has_internet()) stop("No internet connection")
 
-  # Get db credentitials if available
-  db <- check_db()
 
   # Get form options
   qry <- paste("time::timestamp >= '", t_start, "' AND",
@@ -401,7 +399,7 @@ dl_data <- function(start = NULL,
                                     " AND fieldsites.site_id IN ( '",
                                     paste0(site_id, collapse = ", "), "')")
 
-  g <- RCurl::getForm(url, where = qry, key = db)
+  g <- RCurl::getForm(url, where = qry, key = check_db())
 
   if(nchar(g) < 200) stop("There are no online data matching these parameters. Try different url or a different date range.")
 

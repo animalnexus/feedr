@@ -6,6 +6,7 @@
 #' See indivdial data transformations for more details: \code{visits()}, \code{presence()}, \code{move()}, \code{disp()}, \code{dom()}, \code{activity()}, and \code{daily()}.
 #'
 #' @param r Data frame. Raw RFID data to transform
+#' @param verbose Logical. Print log events to console.
 #'
 #' @return Returns nothing. Data can be saved to disk from the user-interface, but transformation are not returned to the current R session.
 #'

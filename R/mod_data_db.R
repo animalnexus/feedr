@@ -114,9 +114,6 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
 
   # Database and Internet ----------------------------------------------------
 
-  # Database?
-  db <- check_db()
-
   # Internet?
   net <- curl::has_internet()
 
@@ -139,7 +136,7 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
         setProgress(value = 0.15, detail = "Getting sample information..")
         if(verbose) cat("Getting sample information...\n")
 
-        counts <- RCurl::getForm(url_count, key = db) %>%
+        counts <- RCurl::getForm(url_count, key = check_db()) %>%
           utils::read.csv(text = ., strip.white = TRUE, colClasses = "character") %>%
           dplyr::rename(animal_id = bird_id, logger_id = feeder_id, species = engl_name) %>%
           load_format() %>%
@@ -503,7 +500,7 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
                   dates)
 
     withProgress(message = "Retrieving Data...", expr = {
-                 data <- utils::read.csv(text = RCurl::getForm(url, where = qry, key = db), strip.white = TRUE, colClasses = "character")
+                 data <- utils::read.csv(text = RCurl::getForm(url, where = qry, key = check_db()), strip.white = TRUE, colClasses = "character")
     })
 
     if(nrow(data) > 0) {

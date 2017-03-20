@@ -38,9 +38,6 @@ mod_map_current <- function(input, output, session) {
 
   # Database ----------------------------------------------------------------
 
-  # Database?
-  db <- check_db()
-
   # Internet?
   net <- curl::has_internet()
 
@@ -50,7 +47,7 @@ mod_map_current <- function(input, output, session) {
   }
 
   # Loggers -------------------------------------------------------------------
-  loggers_all <- RCurl::getForm(url_loggers, key = db) %>%
+  loggers_all <- RCurl::getForm(url_loggers, key = check_db()) %>%
     utils::read.csv(text = ., strip.white = TRUE, colClasses = "character") %>%
     dplyr::rename(logger_id = feeder_id) %>%
     load_format() %>%
@@ -119,7 +116,7 @@ mod_map_current <- function(input, output, session) {
       withProgress(message = "Updating...", {
         qry <- paste("fieldsites.site_id = 'kl'",
                      "ORDER BY time::timestamp DESC LIMIT 100")
-        data <- RCurl::getForm(url, where = qry, key = db) %>%
+        data <- RCurl::getForm(url, where = qry, key = check_db()) %>%
           utils::read.csv(text = ., strip.white = TRUE, colClasses = "character") %>%
           dplyr::rename(animal_id = bird_id, logger_id = feeder_id, species = engl_name) %>%
           load_format(., tz = "UTC", tz_disp = "America/Vancouver") %>%

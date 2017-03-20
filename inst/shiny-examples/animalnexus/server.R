@@ -32,10 +32,6 @@ shinyServer(function(input, output, session) {
     data_import = NULL,
     data_db = NULL)
 
-  # Data base ---------------------------------------------------------------
-  cat("Get Database access if we have it\n")
-  db <- feedr:::check_db()
-
   # Modules (Tabs) --------------------------------------------------------
 
   # Current Activity
