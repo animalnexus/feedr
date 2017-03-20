@@ -8,6 +8,8 @@ ui_trans(r, verbose = FALSE)
 }
 \arguments{
 \item{r}{Data frame. Raw RFID data to transform}
+
+\item{verbose}{Logical. Print log events to console.}
 }
 \value{
 Returns nothing. Data can be saved to disk from the user-interface, but transformation are not returned to the current R session.
