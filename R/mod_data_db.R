@@ -539,8 +539,8 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
   output$map_data <- renderLeaflet({
     if(ns("") == "standalone-") msg <- "use the 'Import' UI (ui_import())." else msg <- "go to the 'Import' tab."
 
-    validate(need(!is.null(db), message = paste0("No Database access\n\n- To work with local data, ", msg, "\n- To work with the Database check out animalnexus.ca")))
-    req(!is.null(db))
+    validate(need(!is.null(check_db()), message = paste0("No Database access\n\n- To work with local data, ", msg, "\n- To work with the Database check out animalnexus.ca")))
+    req(!is.null(check_db()))
     if(verbose) cat("Initializing data map...\n")
 
     #Get counts summed across all dates
@@ -571,7 +571,7 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
 
   ## Reset map on Reset Button
   observeEvent(input$data_reset, {
-    req(!is.null(db))
+    req(!is.null(check_db()))
     if(verbose) cat("Reset map\n")
     leafletProxy(ns("map_data")) %>%
       clearGroup(group = "Points") %>%
@@ -594,7 +594,7 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
 
   # Update map logger sites automatically on site selection
   observeEvent(input$data_site_name, {
-    req(!is.null(db), input$data_site_name != "")
+    req(!is.null(check_db()), input$data_site_name != "")
     if(verbose) cat("Updating markers...\n")
     f <- loggers_all[loggers_all$site_name == input$data_site_name, ]
     if(nrow(f) > 0) {
