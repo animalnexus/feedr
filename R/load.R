@@ -307,13 +307,10 @@ load_raw_all <- function(r_dir,
 #' @param url Character. This is the url for the web form action. _Not_ the url
 #'   where users go to download their data by hand. The default should not need
 #'   to be changed.
-#' @param logger_details Character vector. This specifies extra columns with
-#'   details about the loggers to download. Use NULL to download no extra
-#'   columns.
-#' @param feeder_details Deprecated. Use logger_details in stead
-#' @param animal_details Character vector. This specifies extra columns with
-#'   details about the animals to download. Use NULL to download no extra columns.
-#' @param bird_details Deprecated. Use animal_details instead.
+#' @param logger_details Deprecated.
+#' @param feeder_details Deprecated.
+#' @param animal_details Deprecated.
+#' @param bird_details Deprecated.
 #' @param tz_disp Character vector. Timezone data should be displayed in (should match one of
 #'   the zones produced by \code{OlsonNames()})
 #' @param dst Logical. Whether or not to use Daylight Savings. When set to FALSE
@@ -342,22 +339,29 @@ load_raw_all <- function(r_dir,
 dl_data <- function(start = NULL,
                     end = NULL,
                     url = "http://gaia.tru.ca/birdMOVES/rscripts/anquery.csv",
-                    logger_details = c("loc"),
-                    animal_details = c("species"),
                     tz_disp = "Etc/GMT+8",
                     dst = FALSE,
-                    feeder_details, bird_details) {
+                    feeder_details, bird_details,
+                    logger_details, animal_details) {
 
   if (!missing(feeder_details)) {
-    warning("Argument feeder_details is deprecated; please use logger_details instead.",
+    warning("Argument feeder_details is deprecated (all logger details will be returned)",
             call. = FALSE)
-    logger_details <- feeder_details
   }
 
   if (!missing(bird_details)) {
-    warning("Argument bird_details is deprecated; please use animal_details instead.",
+    warning("Argument bird_details is deprecated (all animal details will be returned)",
             call. = FALSE)
-    animal_details <- bird_details
+  }
+
+  if (!missing(logger_details)) {
+    warning("Argument logger_details is deprecated (all logger details will be returned)",
+            call. = FALSE)
+  }
+
+  if (!missing(animal_details)) {
+    warning("Argument animal_details is deprecated (all animal details will be returned)",
+            call. = FALSE)
   }
 
   # Timezone checks
