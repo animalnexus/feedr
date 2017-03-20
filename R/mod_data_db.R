@@ -114,6 +114,9 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
 
   # Database and Internet ----------------------------------------------------
 
+  # Database?
+  db <- check_db()
+
   # Internet?
   net <- curl::has_internet()
 
@@ -136,7 +139,7 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
         setProgress(value = 0.15, detail = "Getting sample information..")
         if(verbose) cat("Getting sample information...\n")
 
-        counts <- RCurl::getForm(url_count, key = check_db()) %>%
+        counts <- RCurl::getForm(url_count, key = db) %>%
           utils::read.csv(text = ., strip.white = TRUE, colClasses = "character") %>%
           dplyr::rename(animal_id = bird_id, logger_id = feeder_id, species = engl_name) %>%
           load_format() %>%
@@ -500,7 +503,7 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
                   dates)
 
     withProgress(message = "Retrieving Data...", expr = {
-                 data <- utils::read.csv(text = RCurl::getForm(url, where = qry, key = check_db()), strip.white = TRUE, colClasses = "character")
+                 data <- utils::read.csv(text = RCurl::getForm(url, where = qry, key = db), strip.white = TRUE, colClasses = "character")
     })
 
     if(nrow(data) > 0) {
@@ -539,8 +542,8 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
   output$map_data <- renderLeaflet({
     if(ns("") == "standalone-") msg <- "use the 'Import' UI (ui_import())." else msg <- "go to the 'Import' tab."
 
-    validate(need(!is.null(check_db()), message = paste0("No Database access\n\n- To work with local data, ", msg, "\n- To work with the Database check out animalnexus.ca")))
-    req(!is.null(check_db()))
+    validate(need(!is.null(db), message = paste0("No Database access\n\n- To work with local data, ", msg, "\n- To work with the Database check out animalnexus.ca")))
+    req(!is.null(db))
     if(verbose) cat("Initializing data map...\n")
 
     #Get counts summed across all dates
@@ -571,7 +574,7 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
 
   ## Reset map on Reset Button
   observeEvent(input$data_reset, {
-    req(!is.null(check_db()))
+    req(!is.null(db))
     if(verbose) cat("Reset map\n")
     leafletProxy(ns("map_data")) %>%
       clearGroup(group = "Points") %>%
@@ -594,7 +597,7 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
 
   # Update map logger sites automatically on site selection
   observeEvent(input$data_site_name, {
-    req(!is.null(check_db()), input$data_site_name != "")
+    req(!is.null(db), input$data_site_name != "")
     if(verbose) cat("Updating markers...\n")
     f <- loggers_all[loggers_all$site_name == input$data_site_name, ]
     if(nrow(f) > 0) {
