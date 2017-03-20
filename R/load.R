@@ -385,22 +385,14 @@ dl_data <- function(start = NULL,
   # Stop if url doesn't exist
   if(!curl::has_internet()) stop("No internet connection")
 
+  # Get db credentitials if available
+  db <- check_db()
+
   # Get form options
   qry <- paste("time::timestamp >= '", t_start, "' AND",
                "time::timestamp <= '", t_end, "'")
 
-  # params <- as.list(rep("1", length(c(logger_details, animal_details, sites))))
-  # names(params) <- c(logger_details, animal_details, sites)
-  # params <- append(params,
-  #                  list(feeder_id = "1",
-  #                       bird_id = "1",
-  #                       tz = tz,
-  #                       qstart = t_start,
-  #                       qend = t_end,
-  #                       qstarttz = tz_disp,
-  #                       qendtz = tz_disp))
-
-  g <- RCurl::getForm(url, where = qry)
+  g <- RCurl::getForm(url, where = qry, key = db)
 
   if(nchar(g) < 200) stop("There are no online data matching these parameters. Try different url or a different date range.")
 
