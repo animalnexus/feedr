@@ -6,8 +6,8 @@
 \usage{
 dl_data(start = NULL, end = NULL,
   url = "http://gaia.tru.ca/birdMOVES/rscripts/anquery.csv",
-  logger_details = c("loc"), animal_details = c("species"),
-  tz_disp = "Etc/GMT+8", dst = FALSE, feeder_details, bird_details)
+  tz_disp = "Etc/GMT+8", dst = FALSE, species = NULL, site_id = NULL,
+  feeder_details, bird_details, logger_details, animal_details)
 }
 \arguments{
 \item{start}{Character. This is the start date (with or without time) for the
@@ -18,16 +18,8 @@ NULL, get records from start.}
 data to download. There is some flexibility in the format (see details). If
 NULL, get records to end.}
 
-\item{url}{Character. This is the url for the web form action. _Not_ the url
-where users go to download their data by hand. The default should not need
-to be changed.}
-
-\item{logger_details}{Character vector. This specifies extra columns with
-details about the loggers to download. Use NULL to download no extra
-columns.}
-
-\item{animal_details}{Character vector. This specifies extra columns with
-details about the animals to download. Use NULL to download no extra columns.}
+\item{url}{Character. This is the url for the database service. The default
+should not need to be changed.}
 
 \item{tz_disp}{Character vector. Timezone data should be displayed in (should match one of
 the zones produced by \code{OlsonNames()})}
@@ -39,18 +31,26 @@ of America/Vancouver, which would normally include DST in the summer, will
 be transformed to a timezone with the same GMT offset, but not including
 DST).}
 
-\item{feeder_details}{Deprecated. Use logger_details in stead}
+\item{species}{Character. Vector of species to include (defaults to all). See
+details for valid entries.}
 
-\item{bird_details}{Deprecated. Use animal_details instead.}
+\item{site_id}{Character. Vector of sites to include (defaults to all
+permissible). See details for valid entries.}
+
+\item{feeder_details}{Deprecated.}
+
+\item{bird_details}{Deprecated.}
+
+\item{logger_details}{Deprecated.}
+
+\item{animal_details}{Deprecated.}
 }
 \description{
-This function uses RCurl to submit an HTML form and retrieve the csv file.
-This is simply a convenience function to replace going to the website
-yourself (http://gaia.tru.ca/birdMOVES/datadownload.html).
+This function uses RCurl to submit an HTML form and retrieve the csv file
+from the animalnexus database.
 }
 \details{
-Note that while the website requires a date in the format of YYYY-MM-DD
-HH:MM:SS, this function is a bit more flexible. Using
+This function is flexible with respect to date formats. Using
 \code{\link[lubridate]{parse_date_time}} from the lubridate package, the
 format of the date/time supplied will estimated. This allows for partial
 date/times to be supplied (e.g., "2015-01-01 09" or "2015-09" or
@@ -59,25 +59,21 @@ HH:MM:SS and truncate as needed. Note that truncated times are interpreted as
 00 and trucated dates as the first of the month and the first month of the
 year. Thus "2015" will be sumbitted as "2015-01-01 00:00:00".
 
-For specifying extra \code{animal_details}:
-
+\code{species} options are:
 \itemize{
-  \item "species" gives species name
-  \item "sex" gives sex (M, F, U for male, female and unknown)
-  \item "age" gives age (ASY, AHY, SY, and HY for After Second Year, After
-Hatch Year, Second Year, and Hatch Year) See
-\href{https://www.pwrc.usgs.gov/BBL/manual/age.cfm}{USGS banding lab} for
-details about banding
-  \item "tagged_on" gives you the date the RFID tag was
-mounted on the animal
-}
+  \item House Finch
+  \item Mountain Chickadee
+  \item Dark-eyed Junco
+  \item Green Hermit
+  \item Violet Sabrewing
+  \item Rufous-tailed Hummingbird
+  \item Stripe-throated Hermit
+  }
 
-For specifying extra \code{logger_details}:
-
-\itemize{
- \item "site_name" gives site name
- \item "loc" gives lon/lat coordiates
- }
+\code{site_id} options are either 'kl' for Kamloops, BC, or 'cr' for Costa
+Rica. Note that Costa Rican data is protected while the scientist work on
+publishing. Only users with valid credentials will be able to download this
+data.
 }
 \examples{
 \dontrun{
@@ -90,8 +86,7 @@ r <- dl_date(start = "2016")
 
 # Get specific data
 r <- dl_data(start = "2016-01-01 09:34:12",
-              end = "2016-02-01",
-              animal_details = c("species", "age", "sex", "tagged_on"))
+              end = "2016-02-01")
 }
 
 }

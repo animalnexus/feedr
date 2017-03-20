@@ -264,12 +264,10 @@ load_raw_all <- function(r_dir,
 
 #' Download data from original animalnexus database
 #'
-#' This function uses RCurl to submit an HTML form and retrieve the csv file.
-#' This is simply a convenience function to replace going to the website
-#' yourself (http://gaia.tru.ca/birdMOVES/datadownload.html).
+#' This function uses RCurl to submit an HTML form and retrieve the csv file
+#' from the animalnexus database.
 #'
-#' Note that while the website requires a date in the format of YYYY-MM-DD
-#' HH:MM:SS, this function is a bit more flexible. Using
+#' This function is flexible with respect to date formats. Using
 #' \code{\link[lubridate]{parse_date_time}} from the lubridate package, the
 #' format of the date/time supplied will estimated. This allows for partial
 #' date/times to be supplied (e.g., "2015-01-01 09" or "2015-09" or
@@ -278,19 +276,30 @@ load_raw_all <- function(r_dir,
 #' 00 and trucated dates as the first of the month and the first month of the
 #' year. Thus "2015" will be sumbitted as "2015-01-01 00:00:00".
 #'
+#' \code{species} options are:
+#' \itemize{
+#'   \item House Finch
+#'   \item Mountain Chickadee
+#'   \item Dark-eyed Junco
+#'   \item Green Hermit
+#'   \item Violet Sabrewing
+#'   \item Rufous-tailed Hummingbird
+#'   \item Stripe-throated Hermit
+#'   }
+#'
+#' \code{site_id} options are either 'kl' for Kamloops, BC, or 'cr' for Costa
+#' Rica. Note that Costa Rican data is protected while the scientist work on
+#' publishing. Only users with valid credentials will be able to download this
+#' data.
+#'
 #' @param start Character. This is the start date (with or without time) for the
 #'   data to download. There is some flexibility in the format (see details). If
 #'   NULL, get records from start.
 #' @param end  Character. This is the end date (with or without time) for the
 #'   data to download. There is some flexibility in the format (see details). If
 #'   NULL, get records to end.
-#' @param url Character. This is the url for the web form action. _Not_ the url
-#'   where users go to download their data by hand. The default should not need
-#'   to be changed.
-#' @param logger_details Deprecated.
-#' @param feeder_details Deprecated.
-#' @param animal_details Deprecated.
-#' @param bird_details Deprecated.
+#' @param url Character. This is the url for the database service. The default
+#'   should not need to be changed.
 #' @param tz_disp Character vector. Timezone data should be displayed in (should match one of
 #'   the zones produced by \code{OlsonNames()})
 #' @param dst Logical. Whether or not to use Daylight Savings. When set to FALSE
@@ -299,6 +308,14 @@ load_raw_all <- function(r_dir,
 #'   of America/Vancouver, which would normally include DST in the summer, will
 #'   be transformed to a timezone with the same GMT offset, but not including
 #'   DST).
+#' @param species Character. Vector of species to include (defaults to all). See
+#'   details for valid entries.
+#' @param site_id Character. Vector of sites to include (defaults to all
+#'   permissible). See details for valid entries.
+#' @param logger_details Deprecated.
+#' @param feeder_details Deprecated.
+#' @param animal_details Deprecated.
+#' @param bird_details Deprecated.
 #'
 #' @examples
 #' \dontrun{
@@ -311,8 +328,7 @@ load_raw_all <- function(r_dir,
 #'
 #' # Get specific data
 #' r <- dl_data(start = "2016-01-01 09:34:12",
-#'               end = "2016-02-01",
-#'               animal_details = c("species", "age", "sex", "tagged_on"))
+#'               end = "2016-02-01")
 #' }
 #'
 #' @export
@@ -321,6 +337,8 @@ dl_data <- function(start = NULL,
                     url = "http://gaia.tru.ca/birdMOVES/rscripts/anquery.csv",
                     tz_disp = "Etc/GMT+8",
                     dst = FALSE,
+                    species = NULL,
+                    site_id = NULL,
                     feeder_details, bird_details,
                     logger_details, animal_details) {
 
@@ -371,6 +389,17 @@ dl_data <- function(start = NULL,
   # Get form options
   qry <- paste("time::timestamp >= '", t_start, "' AND",
                "time::timestamp <= '", t_end, "'")
+
+  if(!is.null(species)) {
+    species <- species_list[tolower(species_list) %in% tolower(species)]
+    qry <- paste0(qry,
+                 " AND engl_name IN ( '",
+                 paste0(species, collapse = ","), "' )")
+  }
+
+  if(!is.null(site_id)) qry <- paste0(qry,
+                                    " AND fieldsites.site_id IN ( '",
+                                    paste0(site_id, collapse = ", "), "')")
 
   g <- RCurl::getForm(url, where = qry, key = db)
 
