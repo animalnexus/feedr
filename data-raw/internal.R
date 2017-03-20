@@ -1,3 +1,5 @@
+## Must have package built (Build and Reload), not just in memory
+
 ## feedr Manual Entries for ui_settings and ui_trans
 
 library(magrittr)
@@ -105,6 +107,13 @@ url <- "http://gaia.tru.ca/birdMOVES/rscripts/anquery.csv"
 url_count <- "http://gaia.tru.ca/birdMOVES/rscripts/anInit.csv"
 url_loggers <- "http://gaia.tru.ca/birdMOVES/rscripts/anloggers.csv"
 
+# Get species list
+species_list <- RCurl::getForm(url_count, key = feedr:::check_db()) %>%
+  utils::read.csv(text = ., strip.white = TRUE, colClasses = "character") %>%
+  dplyr::select(species = engl_name) %>%
+  unique() %>%
+  unlist(., use.names = FALSE)
+
 if(nrow(man) > 0) {
-  devtools::use_data(man, url, url_count, url_loggers, internal = TRUE, overwrite = TRUE)
+  devtools::use_data(man, url, url_count, url_loggers, species_list, internal = TRUE, overwrite = TRUE)
 } else stop("Manual entries didn't compile")
