@@ -5,7 +5,7 @@
 \title{Download data from original animalnexus database}
 \usage{
 dl_data(start = NULL, end = NULL,
-  url = "http://gaia.tru.ca/birdMOVES/rscripts/rawvisits.csv",
+  url = "http://gaia.tru.ca/birdMOVES/rscripts/anquery.csv",
   logger_details = c("loc"), animal_details = c("species"),
   tz_disp = "Etc/GMT+8", dst = FALSE, feeder_details, bird_details)
 }
