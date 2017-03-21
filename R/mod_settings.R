@@ -201,10 +201,7 @@ mod_settings <- function(input, output, session, verbose = FALSE) {
     })
   }
 
-  observe({
-    req(any(stringr::str_detect(names(input), "help_")))
-    help_settings_args(manual)
-  })
+  help_settings_args(manual)
 
   # Return ----------------------------------------------------
   return(reactive({if(is.null(values$settings)) values$settings else tidyr::spread(values$settings, id, value)}))
