@@ -699,85 +699,93 @@ dom <- function(d, tries = 50, omit_cutoff = 3){
     if(length(omit) > 0) message("animal_ids with fewer than ", omit_cutoff, " interactions have been omitted: ", paste0(omit, collapse = ", "))
   }
 
-  o <- list(as.character(unique(o$displacer)))
+  if((nrow(o) == 0 | nrow(d) == 0)) { # No individuals, return empty lists/dataframes
+    message("No individuals remaining.")
+    r <- list()
+    m <- list()
+    o_l <- vector()
+  } else {
 
-  ## Setup the matrix
-  dm <- tidyr::spread(d, displacee, n)
-  dm <- as.matrix(dm[, -grep("^displacer$", names(dm))])
-  rownames(dm) <- colnames(dm)
+    o <- list(as.character(unique(o$displacer)))
 
-  ## Setup Loop
-  try <- 0
-  o_l <- o
-  rev <- list()
-  done <- FALSE  ## Are we done this iteration?
-  prev <- vector()
+    ## Setup the matrix
+    dm <- tidyr::spread(d, displacee, n)
+    dm <- as.matrix(dm[, -grep("^displacer$", names(dm))])
+    rownames(dm) <- colnames(dm)
 
-  while(done == FALSE & try < tries){
+    ## Setup Loop
+    try <- 0
+    o_l <- o
+    rev <- list()
+    done <- FALSE  ## Are we done this iteration?
+    prev <- vector()
 
-    ## For each alternative dominance ranking (o_l)
-    for(i in 1:length(o_l)){
-      new_o <- o_l[[i]]
-      temp <- dm
+    while(done == FALSE & try < tries){
 
-      ## Sort matrix by dominance hierarchy (new_o)
-      temp <- temp[order(match(rownames(temp), new_o)), order(match(colnames(temp), new_o))]
+      ## For each alternative dominance ranking (o_l)
+      for(i in 1:length(o_l)){
+        new_o <- o_l[[i]]
+        temp <- dm
 
-      ## CHECK (TODO set to stop script if this doesn't work)
-      all(is.na(diag(temp)))
-      all(dimnames(temp)[[1]] == dimnames(temp)[[2]])
+        ## Sort matrix by dominance hierarchy (new_o)
+        temp <- temp[order(match(rownames(temp), new_o)), order(match(colnames(temp), new_o))]
 
-      ## Get upper and lower to compare
-      upper <- temp
-      upper[lower.tri(upper, diag = TRUE)] <- NA
-      lower <- t(temp)
-      lower[lower.tri(lower, diag = TRUE)] <- NA
+        ## CHECK (TODO set to stop script if this doesn't work)
+        all(is.na(diag(temp)))
+        all(dimnames(temp)[[1]] == dimnames(temp)[[2]])
 
-      ## Get reversals
-      if(length(which(upper < lower, arr.ind = TRUE)) > 0){
-        rev[[length(rev) + 1]] <- which(upper < lower, arr.ind = TRUE)
-      }
-    }
+        ## Get upper and lower to compare
+        upper <- temp
+        upper[lower.tri(upper, diag = TRUE)] <- NA
+        lower <- t(temp)
+        lower[lower.tri(lower, diag = TRUE)] <- NA
 
-    ## Keep only the orders with the fewest reversals
-    if(length(rev) > 0){
-      n <- sapply(rev, nrow)
-      rev <- rev[n == min(n)]
-      o_l <- o_l[n == min(n)]
-    }
-
-    # Compare with previous matrix, if the same, we're done
-    if(identical(prev, o_l)) done <- TRUE else prev <- o_l
-
-    if(length(rev) > 0 && length(rev[[1]]) > 0 && done == FALSE){
-      ## Add the new reversal switches to our list of options and try again
-      for(j in 1:length(rev)){
-        for(i in 1:nrow(rev[[j]])){
-          a <- rev[[j]][i,2]  ## Which individuals to move up
-          b <- rev[[j]][i,1]  ## Where to move it
-          o_l[[length(o_l) + 1]] <- c(new_o[1:(b - 1)], new_o[a], new_o[-c(1:(b - 1), a)])
+        ## Get reversals
+        if(length(which(upper < lower, arr.ind = TRUE)) > 0){
+          rev[[length(rev) + 1]] <- which(upper < lower, arr.ind = TRUE)
         }
       }
-    } else {
-      done <- TRUE
-      try <- try + 1
+
+      ## Keep only the orders with the fewest reversals
+      if(length(rev) > 0){
+        n <- sapply(rev, nrow)
+        rev <- rev[n == min(n)]
+        o_l <- o_l[n == min(n)]
+      }
+
+      # Compare with previous matrix, if the same, we're done
+      if(identical(prev, o_l)) done <- TRUE else prev <- o_l
+
+      if(length(rev) > 0 && length(rev[[1]]) > 0 && done == FALSE){
+        ## Add the new reversal switches to our list of options and try again
+        for(j in 1:length(rev)){
+          for(i in 1:nrow(rev[[j]])){
+            a <- rev[[j]][i,2]  ## Which individuals to move up
+            b <- rev[[j]][i,1]  ## Where to move it
+            o_l[[length(o_l) + 1]] <- c(new_o[1:(b - 1)], new_o[a], new_o[-c(1:(b - 1), a)])
+          }
+        }
+      } else {
+        done <- TRUE
+        try <- try + 1
+      }
+
+      ## Loop controls
+      if(done == FALSE){
+        try <- try + 1
+        o_l <- unique(o_l)
+        rev <- list()
+      }
     }
 
-    ## Loop controls
-    if(done == FALSE){
-      try <- try + 1
-      o_l <- unique(o_l)
-      rev <- list()
+    message(paste0("Tried ",try," times. Found ",length(o_l), " 'best' matrix(ces), each with ",if(length(rev) > 0) nrow(rev[[1]]) else 0," reversal(s)"))
+
+    m <- list()
+    r <- list()
+    for(i in 1:length(o_l)) {
+      m[[length(m) + 1]] <- dm[order(match(rownames(dm), o_l[[i]])), order(match(colnames(dm), o_l[[i]]))]
+      if(length(rev) > 0 && length(rev[[i]]) > 0) r[[length(r)+1]] <- data.frame(animal_id1 = o_l[[i]][rev[[i]][, 1]], animal_id2 = o_l[[i]][rev[[i]][, 2]])
     }
-  }
-
-  message(paste0("Tried ",try," times. Found ",length(o_l), " 'best' matrix(ces), each with ",if(length(rev) > 0) nrow(rev[[1]]) else 0," reversal(s)"))
-
-  m <- list()
-  r <- list()
-  for(i in 1:length(o_l)) {
-    m[[length(m) + 1]] <- dm[order(match(rownames(dm), o_l[[i]])), order(match(colnames(dm), o_l[[i]]))]
-    if(length(rev) > 0 && length(rev[[i]]) > 0) r[[length(r)+1]] <- data.frame(animal_id1 = o_l[[i]][rev[[i]][, 1]], animal_id2 = o_l[[i]][rev[[i]][, 2]])
   }
 
   return(list(dominance = o_l, reversals = r, matrices = m))
