@@ -27,10 +27,10 @@ ui_trans <- function(r, verbose = FALSE) {
                                                           tabPanel("Transformations", icon = icon("exchange"),
                                                                    mod_UI_trans("standalone")),
                                                           tabPanel("Settings", icon = icon("cog"),
-                                                                   mod_UI_settings("standalone")),
+                                                                   mod_UI_settings("standalone_trans")),
                                                           mod_UI_stop("stp"))),
                          server = function(input, output, session) {
-                           settings <- shiny::callModule(mod_settings, id = "standalone", verbose = verbose)
+                           settings <- shiny::callModule(mod_settings, id = "standalone_trans", verbose = verbose)
                            shiny::callModule(mod_trans, id = "standalone",
                                              r = shiny::reactive({r}),
                                              settings = settings,
