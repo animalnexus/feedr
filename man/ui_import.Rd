@@ -4,10 +4,7 @@
 \alias{ui_import}
 \title{User-interface for importing files}
 \usage{
-ui_import(diagnostic = FALSE)
-}
-\arguments{
-\item{diagnostic}{Logical. Display pause button for debugging}
+ui_import()
 }
 \value{
 An imported data frame formatted and ready to be transformed.
