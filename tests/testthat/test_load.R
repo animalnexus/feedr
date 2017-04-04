@@ -130,6 +130,11 @@ test_that("dl_data filters by species_code and site_id", {
   expect_equal(unique(all$species), c("House Finch", "Mountain Chickadee"))
   expect_equal(unique(hofi$species), c("House Finch"))
   expect_equal(unique(moch$species), c("Mountain Chickadee"))
+  expect_equal(nrow(all), 413)
+  expect_equal(nrow(hofi), 412)
+  expect_equal(nrow(moch), 1)
+  expect_true(min(all$time) >= as.POSIXct("2016-01-28"))
+  expect_true(max(all$time) <= as.POSIXct("2016-02-01"))
 
   hofi_sp <- dl_data(start = "2016-01-28", end = "2016-02-01", species = "house finch")
   moch_sp <- dl_data(start = "2016-01-28", end = "2016-02-01", species = "mountain CHICKadee")

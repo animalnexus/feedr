@@ -10,13 +10,13 @@ dl_data(start = NULL, end = NULL,
   feeder_details, bird_details, logger_details, animal_details)
 }
 \arguments{
-\item{start}{Character. This is the start date (with or without time) for the
-data to download. There is some flexibility in the format (see details). If
-NULL, get records from start.}
+\item{start}{Character. This is the start date (inclusive, with or without
+time) for the data to download. There is some flexibility in the format
+(see details). If NULL, get records from start.}
 
-\item{end}{Character. This is the end date (with or without time) for the
-data to download. There is some flexibility in the format (see details). If
-NULL, get records to end.}
+\item{end}{Character. This is the end date (inclusive, with or without time)
+for the data to download. There is some flexibility in the format (see
+details). If NULL, get records to end.}
 
 \item{url}{Character. This is the url for the database service. The default
 should not need to be changed.}

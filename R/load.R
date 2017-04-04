@@ -292,12 +292,12 @@ load_raw_all <- function(r_dir,
 #' publishing. Only users with valid credentials will be able to download this
 #' data.
 #'
-#' @param start Character. This is the start date (with or without time) for the
-#'   data to download. There is some flexibility in the format (see details). If
-#'   NULL, get records from start.
-#' @param end  Character. This is the end date (with or without time) for the
-#'   data to download. There is some flexibility in the format (see details). If
-#'   NULL, get records to end.
+#' @param start Character. This is the start date (inclusive, with or without
+#'   time) for the data to download. There is some flexibility in the format
+#'   (see details). If NULL, get records from start.
+#' @param end  Character. This is the end date (inclusive, with or without time)
+#'   for the data to download. There is some flexibility in the format (see
+#'   details). If NULL, get records to end.
 #' @param url Character. This is the url for the database service. The default
 #'   should not need to be changed.
 #' @param tz_disp Character vector. Timezone data should be displayed in (should match one of
@@ -370,22 +370,23 @@ dl_data <- function(start = NULL,
   t_start <- NULL
   t_end <- NULL
   if(!is.null(start)) {
-    suppressWarnings(t_start <- lubridate::parse_date_time(start, orders = "ymd hms", truncated = 5))
+    suppressWarnings(t_start <- lubridate::parse_date_time(start, orders = "ymd HMS", truncated = 5, tz = tz_disp))
     if(is.na(t_start)) stop("Your start time is ambiguous. Format should be YYYY-MM-DD (HH:MM:SS is optional)")
+    if(format(t_start, "%H:%M:%S") == "00:00:00") t_start <- as.Date(t_start)
     t_start <- lubridate::with_tz(t_start, tz = "UTC")
   }
   if(!is.null(end)) {
-    suppressWarnings(t_end <- lubridate::parse_date_time(end, orders = "ymd hms", truncated = 5))
+    suppressWarnings(t_end <- lubridate::parse_date_time(end, orders = "ymd HMS", truncated = 5, tz = tz_disp))
     if(is.na(t_end)) stop("Your end time is ambiguous. Format should be YYYY-MM-DD (HH:MM:SS is optional)")
+    if(format(t_end, "%H:%M:%S") == "00:00:00") t_end <- as.Date(t_end) + lubridate::days(1)
     t_end <- lubridate::with_tz(t_end, tz = "UTC")
   }
 
   # Stop if url doesn't exist
   if(!curl::has_internet()) stop("No internet connection")
 
-
   # Get form options
-  qry <- paste("time::timestamp >= '", t_start, "' AND",
+  qry <- paste0("time::timestamp >= '", t_start, "' AND ",
                "time::timestamp <= '", t_end, "'")
 
   if(!is.null(species)) {
