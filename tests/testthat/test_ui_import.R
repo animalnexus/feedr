@@ -1,93 +1,58 @@
-run <- FALSE
-
-if(run) {
-context("basic")
+context("ui_import() locally")
 
 library(RSelenium)
 library(testthat)
+library(feedr)
 
-user <- "rselenium0"
-pass <- "***************************"
-port <- 80
-ip <- paste0(user, ':', pass, "@ondemand.saucelabs.com")
-browser <- "firefox"
-version <- "26"
-platform <- "Windows 8.1"
-extraCapabilities <- list(name = "shinytestapp screenshot", username = user, accessKey = pass)
-
-remDr <- remoteDriver$new(remoteServerAddr = ip, port = port, browserName = browser
-                          , version = version, platform = platform
-                          , extraCapabilities = extraCapabilities)
+# Start Selenium Server ---------------------------------------------------
+system("(java -jar ~/R/x86_64-pc-linux-gnu-library/3.3/RSelenium/bin/selenium-server-standalone.jar &)", ignore.stdout = TRUE, ignore.stderr = TRUE)
 
 
-###########################
-remDr <- remoteDriver(browser = "firefox")
-remDr$open(silent = TRUE)
+# Setup -------------------------------------------------------------------
+test_dir <- "/home/steffi/Projects/feedr Project/tests/"
+appURL <- "http://127.0.0.1:4100"
+f <- "feedr::ui_import"
 
-appURL <- "http://127.0.0.1:4142"
-remDr$navigate(appURL)
 
-webElems <- remDr$findElements("css selector", "#ctrlSelect input")
-lapply(webElems, function(x){x$clickElement()})
-scr <- remDr$screenshot(display = TRUE)
+# Import single pretty file -----------------------------------------------
+test_that("Import single pretty file", {
+  remDr <- shiny_test_startup(f, appURL)
 
-sysDetails <- remDr$getStatus()
-browser <- remDr$sessionInfo$browserName
+  # Load file
+  click_button(remDr, id = "import_reveal")
+  e <- remDr$findElement("css", "[id $= 'import_settings']")
+  e$sendKeysToElement(list(paste0("/home/steffi/Downloads/animalnexus_settings_", Sys.Date(), ".csv")))
 
-test_that("can connect to app", {  
-  remDr$navigate(appURL)
-  appTitle <- remDr$getTitle()[[1]]
-  expect_equal(appTitle, "")  
+  shiny_test_cleanup(remDr, f)
 })
 
-test_that("controls are present", {  
-  ids <- remDr$findElements("css selector", "[id^=standalone]")
-  e <- sapply(ids, function(x){x$getElementAttribute("id")})
-  
-  expect_equal(appCtrlLabels[[1]], "Select controls required:")  
-  expect_equal(appCtrlLabels[[2]], "selectInput")  
-  expect_equal(appCtrlLabels[[3]], "numericInput")  
-  expect_equal(appCtrlLabels[[4]], "dateRangeInput")  
-  expect_equal(appCtrlLabels[[5]], "sliderInput")  
+test_that("Import multiple pretty file", {
+  remDr <- shiny_test_startup(f, appURL)
+
+  shiny_test_cleanup(remDr, f)
 })
 
-remDr$navigate(appURL)
-e <- remDr$findElement("id", "standalone-format")
-initState <- e$isElementSelected()[[1]]
+test_that("Import single logger file", {
+  remDr <- shiny_test_startup(f, appURL)
 
-# check if we can select/deselect
-if(browser == "internet explorer"){
-  e$sendKeysToElement(list(key = "space"))
-}else{
-  e$clickElement()
-}
-changeState <- e$isElementSelected()[[1]]
-expect_is(initState, "logical")  
-expect_is(changeState, "logical")  
-expect_false(initState == changeState)  
+  shiny_test_cleanup(remDr, f)
+})
 
+test_that("Import multiple logger file", {
+  remDr <- shiny_test_startup(f, appURL)
 
-test <- remDr$findElements("css selector", "[data-value]")
+  shiny_test_cleanup(remDr, f)
+})
 
-e <- remDr$findElement("css selector", "[id=standalone-tz]")
-val <- e$getElementAttribute("value")
+test_that("Error on incorrect pretty file", {
+  remDr <- shiny_test_startup(f, appURL)
 
-e$isElementSelected()
+  shiny_test_cleanup(remDr, f)
+})
 
-ceState <- sapply(ce, function(x){x$isElementSelected()})
-newState <- sample(seq_along(ceState)[!unlist(ceState)], 1)
+test_that("Error on incorrect logger file", {
+  remDr <- shiny_test_startup(f, appURL)
 
-outElem <- remDr$findElement("css selector", "#summary")
-initOutput <- outElem$getElementText()[[1]]
+  shiny_test_cleanup(remDr, f)
+})
 
-# change dataset 
-childElems[[newState]]$clickElement()
-outElem <- remDr$findElement("css selector", "#summary")  
-changeOutput <- outElem$getElementText()[[1]]
-
-expect_false(initOutput == changeOutput)
-
-
-remDr$close()
-
-}
