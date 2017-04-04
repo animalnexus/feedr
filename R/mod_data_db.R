@@ -513,6 +513,7 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
         load_format(tz = "UTC", tz_disp = tz_disp) %>%
         dplyr::mutate(animal_id = factor(animal_id, levels = sort(unique(animals_all$animal_id))),
                       logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id)))) %>%
+        dplyr::select(-site_id) %>%
         dplyr::left_join(loggers_all, by = c("logger_id", "site_name")) %>%
         dplyr::arrange(time)
     } else data <- NULL
