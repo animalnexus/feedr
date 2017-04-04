@@ -402,14 +402,26 @@ dl_data <- function(start = NULL,
 
   g <- RCurl::getForm(url, where = qry, key = check_db())
 
-  if(nchar(g) < 200) stop("There are no online data matching these parameters. Try different url or a different date range.")
+  if(nchar(g) < 80) stop("There are no online data matching these parameters. Try different url or a different date range.")
+
+  l <- RCurl::getForm(url_loggers, key = check_db()) %>%
+    utils::read.csv(text = ., strip.white = TRUE, colClasses = "character") %>%
+    dplyr::rename(logger_id = feeder_id) %>%
+    load_format() %>%
+    dplyr::mutate(logger_id = as.character(logger_id),
+                  site_name = as.character(site_name))
 
   r <- load_format(utils::read.csv(text = g, strip.white = TRUE, colClasses = "character"),
                    tz = "UTC",
                    tz_disp = tz_disp) %>%
     dplyr::rename(species = engl_name) %>%
     dplyr::select(-site_id) %>%
-    dplyr::arrange(time)
+    dplyr::arrange(time) %>%
+    dplyr::mutate(logger_id = as.character(logger_id),
+                  site_name = as.character(site_name)) %>%
+    dplyr::left_join(l, by = c("logger_id", "site_name")) %>%
+    load_format(tz = tz_disp)
+
   return(r)
 }
 
