@@ -279,9 +279,9 @@ mod_data_import <- function(input, output, session, type = NULL) {
           tags$li("Any other columns will be ignored")),
         div(strong("Example of", a("logger_index file", href = "assets/logger_index_example.csv", target = "blank")), style = "text-align: center;"),
         pre("logger_id, lat, lon
-GR10, 53.914484, -122.769248
-GR11, 53.88821,	-122.8205
-GR13, 53.88689,	-122.8208", style = "width:80%; margin: auto;"),
+GR10DATA, 53.914484, -122.769248
+GR11DATA, 53.88821,	-122.8205
+GR13DATA, 53.88689,	-122.8208", style = "width:80%; margin: auto;"),
         p("Note: These ids match the file ids only when", strong("Logger id pattern"), "is set to 'TRU loggers'"),
 
         strong("In the data file"),
