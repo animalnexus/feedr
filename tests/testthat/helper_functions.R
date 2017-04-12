@@ -229,6 +229,11 @@ test_tables <- function(remDr, trans = "Raw", data, n = 20){
   }
 }
 
+test_preview <- function(preview, output) {
+  preview <- unlist(stringr::str_split(preview, "\n"))
+  for(x in 1:length(preview)) expect_row_equal(preview[x], output[x,], info = "test preview against output")
+}
+
 expect_row_equal <- function(row_e, row_d, info = "") {
   expect_equal(paste0(sapply(row_d, as.character), collapse = " "),
                unlist(row_e), info = info)
@@ -236,6 +241,34 @@ expect_row_equal <- function(row_e, row_d, info = "") {
 
 msg_table <- function(t){
  paste0(capture.output(t), collapse = "\n")
+}
+
+select_files <- function(remDr, files){
+  e <- remDr$findElement("css", "[id $= 'file1']")
+  for(f in files) e$sendKeysToElement(list(f))
+  data_loaded(remDr)
+  expect_false(test_error(remDr))
+}
+
+download_files <- function(remDr, files, preview = NULL, type = "preformat", time_format = "ymd HMS") {
+  # Import
+  click_button(remDr, "get_data")
+  Sys.sleep(0.5)
+  expect_false(test_error(remDr))
+
+  # Compare to expected
+  if(type == "preformat") {
+    i1 <- load_format(dplyr::bind_rows(lapply(files, function(x) load_format(read.csv(x), time_format = time_format))))
+    if(!is.null(preview)) ip <- load_format(read.csv(files[1]), time_format = time_format)
+  } else if (type == "logger") {
+    i1 <- load_format(dplyr::bind_rows(lapply(files, load_raw, logger_pattern = NA, time_format = time_format)))
+    if(!is.null(preview)) ip <- load_format(load_raw(files[1], logger_pattern = NA, time_format = time_format))
+  }
+  i2 <- load_format(read.csv(paste0(test_dir, "/downloads/output.csv")))
+  expect_equivalent(i1, i2, info = paste0("Comparing: ", paste0(files, collapse = "\n")))
+
+  # Compare to preview
+  if(!is.null(preview)) test_preview(preview, ip)
 }
 
 test_db_site <- function(remDr, site = "Kamloops, BC") {
