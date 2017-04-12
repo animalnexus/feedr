@@ -7,7 +7,7 @@ start_shiny <- function(f, args = NULL){
 
 stop_shiny <- function(f){
   pid_shiny <- system(paste0("pgrep -f ", stringr::str_replace(f, "^([a-z])", "[\\1]")), intern = TRUE)
-  system(paste0("kill -TERM ", pid_shiny))
+  if(length(pid_shiny) > 0) system(paste0("kill -TERM ", pid_shiny))
 }
 
 shiny_test_startup <- function(f, appURL, args = NULL, type = "saucelabs", extra = NULL) {
