@@ -353,3 +353,34 @@ compare_screenshot <- function(file){
   }
   return(diff)
 }
+
+test_time_formats <- function(f, file, format = "ymd") {
+  test_that(paste0("Date/Time format - ", format), {
+    remDr <- shiny_test_startup(f, appURL)
+
+    # Select file
+    select_files(remDr, file)
+
+    fs <- c("ymd", "mdy", "dmy")
+    fs <- fs[order(fs == format)]
+    for(h in fs){
+      remDr$findElement("css", "[data-value $= 'HMS']")$clickElement()
+      Sys.sleep(0.25)
+      remDr$findElement("css", paste0("[data-value = '", h, " HMS']"))$clickElement()
+      Sys.sleep(0.25)
+
+      if(format == h) {
+        expect_null(test_msg(remDr))
+      } else {
+        expect_match(test_msg(remDr), "Cannot proceed: NA times detected, check your time format")
+      }
+    }
+
+    # Test output
+    download_files(remDr, file, time_format = paste0(format, " HMS"))
+
+    # Clean up
+    shiny_test_cleanup(remDr, f)
+  })
+}
+
