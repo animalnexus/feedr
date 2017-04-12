@@ -1,8 +1,9 @@
-context("ui_import() locally")
-
 library(RSelenium)
 library(testthat)
 library(feedr)
+library(magrittr)
+
+context("ui_import() locally")
 
 # Start Selenium Server ---------------------------------------------------
 system("(java -jar ~/R/x86_64-pc-linux-gnu-library/3.3/RSelenium/bin/selenium-server-standalone.jar &)", ignore.stdout = TRUE, ignore.stderr = TRUE)
