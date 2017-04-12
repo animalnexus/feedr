@@ -56,6 +56,24 @@ ui_loaded <- function(remDr) {
   return(ready)
 }
 
+data_loaded <- function(remDr) {
+  ready <- FALSE
+  start <- Sys.time()
+  while(!ready) {
+    message("Wait..")
+    msg <- remDr$findElement(using = "css selector",
+                              value = "[class = 'progress-bar']")
+    msg <- unlist(msg$getElementText())
+    ready <- msg == "Upload complete"
+    if(as.numeric(difftime(Sys.time(), start, units = "sec")) > 30) {
+      message("Too long, breaking")
+      break
+    }
+    if(!ready) Sys.sleep(0.25)
+  }
+  return(ready)
+}
+
 nav_tab <- function(remDr, tab){
   remDr$findElement(using = "css",
                     value = paste0("[data-value = '", tab, "']"))$clickElement()
