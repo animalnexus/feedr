@@ -333,6 +333,11 @@ test_present <- function(remDr, selector){
   length(remDr$findElements(using = 'css selector', value = selector)) > 0
 }
 
+test_msg <- function(remDr){
+  e <- remDr$findElements("css", "[class ~= 'shiny-output-error-validation']")
+  return(unlist(lapply(e, function(x) x$getElementText())))
+}
+
 take_screenshot <- function(remDr, file, ref = FALSE){
   # Take screenshot
   if(!ref) file <- paste0(file, Sys.Date(), ".png") else file <- paste0(file, "ref.png")
