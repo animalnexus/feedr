@@ -139,6 +139,7 @@ reg_escape <- function(string) {
 click_button <- function(remDr, id, type = "button") {
   remDr$findElement(using = "css",
                     value = paste0(type, "[id $= '", id, "']"))$clickElement()
+  Sys.sleep(0.5)
 }
 
 default_settings <- function(m) {
@@ -253,6 +254,7 @@ select_files <- function(remDr, files){
   e <- remDr$findElement("css", "[id $= 'file1']")
   for(f in files) e$sendKeysToElement(list(f))
   data_loaded(remDr)
+  Sys.sleep(0.5)
   expect_false(test_error(remDr))
 }
 
