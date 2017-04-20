@@ -319,9 +319,9 @@ test_db_n <- function(remDr, species, n){
   t <- remDr$findElements(using = 'css selector', value = "[id $= 'data_selection'] * td")
   t <- unlist(sapply(t, function(x) x$getElementText()))
   t <- data.frame(species = t[seq(1, length(t), 2)], n = t[seq(2, length(t), 2)])
-  expect_equal(nrow(t), length(species))
-  expect_true(setequal(t$species, species))
-  expect_true(setequal(t$n, n))
+  expect_equal(nrow(t), length(species), info = "No. species match")
+  expect_true(setequal(t$species, species), info = paste0(species, " present"))
+  expect_true(setequal(t$n, n), info = paste0(paste0(species, "; n = ", n), collapse = "\n"))
 }
 
 test_error <- function(remDr){
