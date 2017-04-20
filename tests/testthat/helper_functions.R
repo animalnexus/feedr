@@ -74,6 +74,12 @@ data_loaded <- function(remDr) {
   return(ready)
 }
 
+click_setting <- function(remDr, css) {
+  remDr$findElement("css", css)$clickElement()
+  ui_loaded(remDr)
+  expect_false(test_error(remDr))
+}
+
 nav_tab <- function(remDr, tab){
   remDr$findElement(using = "css",
                     value = paste0("[data-value = '", tab, "']"))$clickElement()
