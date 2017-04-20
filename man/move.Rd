@@ -53,7 +53,6 @@ m.totals <- m \%>\%
   summarize(n_path = length(move_path) /2)
 
 # Calculate across different experiments:
-library(dplyr)
 
 v <- chickadees \%>\%
   group_by(experiment) \%>\%
