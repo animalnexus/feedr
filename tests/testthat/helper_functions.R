@@ -265,10 +265,10 @@ download_files <- function(remDr, files, preview = NULL, type = "preformat", tim
 
   # Compare to expected
   if(type == "preformat") {
-    i1 <- load_format(dplyr::bind_rows(lapply(files, function(x) load_format(read.csv(x), time_format = time_format))))
+    suppressWarnings(i1 <- load_format(dplyr::bind_rows(lapply(files, function(x) load_format(read.csv(x), time_format = time_format)))))
     if(!is.null(preview)) ip <- load_format(read.csv(files[1]), time_format = time_format)
   } else if (type == "logger") {
-    i1 <- load_format(dplyr::bind_rows(lapply(files, load_raw, logger_pattern = NA, time_format = time_format)))
+    suppressWarnings(i1 <- load_format(dplyr::bind_rows(lapply(files, load_raw, logger_pattern = NA, time_format = time_format))))
     if(!is.null(preview)) ip <- load_format(load_raw(files[1], logger_pattern = NA, time_format = time_format))
   }
   i2 <- load_format(read.csv(paste0(test_dir, "/downloads/output.csv")))
