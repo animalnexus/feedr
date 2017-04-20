@@ -1,28 +1,10 @@
-library(RSelenium)
-library(testthat)
-library(feedr)
-library(magrittr)
-
 context("ui_trans() locally")
-
-
-
-# Start Selenium Server ---------------------------------------------------
-system("(java -jar ~/R/x86_64-pc-linux-gnu-library/3.3/RSelenium/bin/selenium-server-standalone.jar &)", ignore.stdout = TRUE, ignore.stderr = TRUE)
-
-
-# Setup -------------------------------------------------------------------
-test_dir <- "/home/steffi/Projects/feedr Project/tests/"
-appURL <- "http://127.0.0.1:4100"
-f <- "feedr::ui_trans"
-man2 <- feedr:::man %>%
-  dplyr::filter(!is.na(lab))
 
 
 # Initial loading: Finches dataset ----------------------------------------
 test_that("Initial loading: Finches dataset", {
 
-  remDr <- shiny_test_startup(f, appURL, args = "feedr::finches")
+  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches")
 
   # All download buttons as expected
   b <- remDr$findElements("css selector", "a[id *= 'data_dl']")
@@ -49,15 +31,17 @@ test_that("Initial loading: Finches dataset", {
   # Check Data access message
 
   # Take and compare screenshots
-  test_screenshot(remDr, file = paste0(test_dir, "/screenshots/trans_kam_"))
+  #take_screenshot(remDr, file = paste0(test_dir, "/screenshots/trans_kam_"), ref = TRUE)
+  take_screenshot(remDr, file = paste0(test_dir, "/screenshots/trans_kam_"))
+  expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/trans_kam_")))
 
-  shiny_test_cleanup(remDr, f)
+  shiny_test_cleanup(remDr, f_trans)
 })
 
 
 # Log returns correct values: Finches dataset -----------------------------
 test_that("Log returns correct values: Finches dataset", {
-  remDr <- shiny_test_startup(f, appURL, args = "feedr::finches")
+  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches")
 
   nav_tab(remDr, "Settings")
   s <- lapply(1:nrow(man2), function(x) get_settings(remDr, setting = man2$id[x], type = man2$class[x]))
@@ -93,14 +77,14 @@ test_that("Log returns correct values: Finches dataset", {
             "0620000514: 88.89% of obs are shorter than 'res' (15 min). Median obs is 4.42 min.")
   lapply(msgs, function(x) expect_match(l, reg_escape(x), info = x))
 
-  shiny_test_cleanup(remDr, f)
+  shiny_test_cleanup(remDr, f_trans)
 })
 
 
 # Test Activity Settings --------------------------------------------------
 test_that("Test Activity Settings", {
 
-  remDr <- shiny_test_startup(f, appURL, args = "feedr::finches")
+  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches")
 
   # Set settings
   nav_tab(remDr, "Settings")
@@ -125,14 +109,14 @@ test_that("Test Activity Settings", {
   test_tables(remDr, trans = "Daily activity",
               data = t[['daily']])
 
-  shiny_test_cleanup(remDr, f)
+  shiny_test_cleanup(remDr, f_trans)
 })
 
 
 # Test Movement Settings --------------------------------------------------
 test_that("Test Movement Settings", {
 
-  remDr <- shiny_test_startup(f, appURL, args = "feedr::finches")
+  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches")
 
   # Set settings
   nav_tab(remDr, "Settings")
@@ -155,14 +139,14 @@ test_that("Test Movement Settings", {
   test_tables(remDr, trans = "Movements",
               data = t[['movements']])
 
-  shiny_test_cleanup(remDr, f)
+  shiny_test_cleanup(remDr, f_trans)
 })
 
 
 # Test Random Settings ----------------------------------------------------
 test_that("Test Random Settings", {
 
-  remDr <- shiny_test_startup(f, appURL, args = "feedr::finches")
+  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches")
 
   # Set settings randomly and test
   for(i in 1:3){
@@ -205,7 +189,8 @@ test_that("Test Random Settings", {
                 data = t[['daily']])
   }
 
-  shiny_test_cleanup(remDr, f)
+  file.remove(list.files(paste0(test_dir, "/settings/"), pattern = "settings", full.names = TRUE))
+  shiny_test_cleanup(remDr, f_trans)
 })
 
 
@@ -215,7 +200,7 @@ test_that("All data download to csv", {
     "browser.helperApps.neverAsk.saveToDisk"='application/csv,application/zip'
   ))
 
-  remDr <- shiny_test_startup(f, appURL, args = "feedr::finches", extra = dl_profile)
+  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches", extra = dl_profile)
 
   dl <- remDr$findElement("css", "[id $= 'data_dl']")
   dl$clickElement()
@@ -253,7 +238,7 @@ test_that("All data download to csv", {
   file.remove(list.files(paste0(test_dir, "/downloads/"), full.names = TRUE))
   file.remove(list.files("/home/steffi/Downloads/", "feedr_all", full.names = TRUE))
 
-  shiny_test_cleanup(remDr, f)
+  shiny_test_cleanup(remDr, f_trans)
 })
 
 
@@ -262,7 +247,7 @@ test_that("Settings download properly", {
   dl_profile <- makeFirefoxProfile(list(
     "browser.helperApps.neverAsk.saveToDisk"='application/csv,text/csv'
   ))
-  remDr <- shiny_test_startup(f, appURL, args = "feedr::finches", extra = dl_profile)
+  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches", extra = dl_profile)
 
   # Settings
   nav_tab(remDr, "Settings")
@@ -274,7 +259,7 @@ test_that("Settings download properly", {
   click_button(remDr, id = "settings_save", type = "a")
 
   # Wait until complete
-  s_file <- file.path("/home/steffi/Downloads/", paste0("animalnexus_settings_", Sys.Date(), ".csv"))
+  s_file <- paste0(download_dir, "animalnexus_settings_", Sys.Date(), ".csv")
   start <- Sys.time()
   while(!file.exists(s_file)) {
     if(difftime(Sys.time(), start, units = "sec") > 15) break
@@ -295,9 +280,8 @@ test_that("Settings download properly", {
   # Expect downloaded == current
   expect_true(all(sort(s2) == sort(s_set2)))
 
-  file.remove(list.files("/home/steffi/Downloads/", "animalnexus_settings", full.names = TRUE))
-
-  shiny_test_cleanup(remDr, f)
+  file.remove(list.files(download_dir, pattern = "animalnexus_settings", full.names = TRUE))
+  shiny_test_cleanup(remDr, f_trans)
 })
 
 
@@ -306,19 +290,20 @@ test_that("Settings load properly", {
   dl_profile <- makeFirefoxProfile(list(
     "browser.helperApps.neverAsk.saveToDisk"='application/csv,text/csv'
   ))
-  remDr <- shiny_test_startup(f, appURL, args = "feedr::finches", extra = dl_profile)
+  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches", extra = dl_profile)
 
   # Get random Settings
   nav_tab(remDr, "Settings")
   s <- random_settings(man2)
   for(x in names(s)) change_settings(remDr, x, s[[x]])
   change_settings(remDr, "set_move_all", s[['set_move_all']])
+  Sys.sleep(0.5)
   s1 <- lapply(1:nrow(man2), function(x) get_settings(remDr, setting = man2$id[x], type = man2$class[x]))
 
   # Download
   click_button(remDr, id = "settings_save", type = "a")
   # Wait until complete
-  s_file <- file.path("/home/steffi/Downloads/", paste0("animalnexus_settings_", Sys.Date(), ".csv"))
+  s_file <- file.path(download_dir, paste0("animalnexus_settings_", Sys.Date(), ".csv"))
   start <- Sys.time()
   while(!file.exists(s_file)) {
     if(difftime(Sys.time(), start, units = "sec") > 15) break
@@ -334,20 +319,14 @@ test_that("Settings load properly", {
   # Load first settings
   click_button(remDr, id = "import_reveal")
   e <- remDr$findElement("css", "[id $= 'import_settings']")
-  e$sendKeysToElement(list(paste0("/home/steffi/Downloads/animalnexus_settings_", Sys.Date(), ".csv")))
+  e$sendKeysToElement(list(paste0(download_dir, "animalnexus_settings_", Sys.Date(), ".csv")))
 
+  Sys.sleep(0.5)
   s2 <- lapply(1:nrow(man2), function(x) get_settings(remDr, setting = man2$id[x], type = man2$class[x]))
+  Sys.sleep(0.5)
 
   expect_equivalent(s1, s2)
 
-  file.remove(list.files("/home/steffi/Downloads/", "animalnexus_settings", full.names = TRUE))
-
-  shiny_test_cleanup(remDr, f)
+  file.remove(list.files(download_dir, pattern = "animalnexus_settings", full.names = TRUE))
+  shiny_test_cleanup(remDr, f_trans)
 })
-
-
-# Clean Up ----------------------------------------------------------------
-
-# Get server PIDs and terminate
-pid_sel <- system("pgrep -f [s]elenium-server-standalone.jar", intern = TRUE)
-system(paste0("kill -TERM ", pid_sel))

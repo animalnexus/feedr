@@ -1,28 +1,9 @@
 context("ui_db() locally")
 
-library(RSelenium)
-library(testthat)
-library(feedr)
-
-# Start Selenium Server ---------------------------------------------------
-system("(java -jar ~/R/x86_64-pc-linux-gnu-library/3.3/RSelenium/bin/selenium-server-standalone.jar &)", ignore.stdout = TRUE, ignore.stderr = TRUE)
-
-
-# Setup -------------------------------------------------------------------
-test_dir <- "/home/steffi/Projects/feedr Project/tests/"
-appURL <- "http://127.0.0.1:4100"
-f <- "feedr::ui_db"
-
-# Download reference data set
-write.csv(dl_data(start = "2017-01-01", end = "2017-03-02", site_id = "kl", species = "Mountain Chickadee"),
-          "../tests/ref_db_kamloops.csv", row.names = FALSE)
-write.csv(dl_data(start = "2013-04-01", end = "2013-05-02",
-                          tz_disp = "America/Costa_Rica", site_id = "cr", species = "Green Hermit"),
-          "../tests/ref_db_costa_rica.csv", row.names = FALSE)
 
 # Select Kamloops data -------------------------------------------------------------------
 test_that("Select Kamloops data", {
-  remDr <- shiny_test_startup(f, appURL)
+  remDr <- shiny_test_startup(f_db, appURL)
 
   # Test valide data range
   test_db_site(remDr, site = "Kamloops, BC")
@@ -50,16 +31,17 @@ test_that("Select Kamloops data", {
   expect_equivalent(a$getElementText(), "Fully Public")
 
   # Take and compare screenshots
-  take_screenshot(remDr, file = "../tests/db_kam_")
-  expect_lt(99, compare_screenshot(file = "../tests/db_kam_"))
+  #take_screenshot(remDr, file = paste0(test_dir, "/screenshots/db_kam_"), ref = TRUE)
+  take_screenshot(remDr, file = paste0(test_dir, "/screenshots/db_kam_"))
+  expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/db_kam_")))
 
-  shiny_test_cleanup(remDr, f)
+  shiny_test_cleanup(remDr, f_db)
 })
 
 
 # Select Costa Rican Data -------------------------------------------------
 test_that("Select Costa Rican Data", {
-  remDr <- shiny_test_startup(f, appURL)
+  remDr <- shiny_test_startup(f_db, appURL)
 
   # Test valid data range
   test_db_site(remDr, site = "Costa Rica")
@@ -77,22 +59,23 @@ test_that("Select Costa Rican Data", {
   expect_equivalent(a$getElementText(), "Visualizations Only")
 
   # Take and compare screenshots
-  take_screenshot(remDr, file = "../tests/db_cr_")
-  expect_lt(99, compare_screenshot(file = "../tests/db_cr_"))
+  #take_screenshot(remDr, file = paste0(test_dir, "/screenshots/db_cr_"), ref = TRUE)
+  take_screenshot(remDr, file = paste0(test_dir, "/screenshots/db_cr_"))
+  expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/db_cr_")))
 
-  shiny_test_cleanup(remDr, f)
+  shiny_test_cleanup(remDr, f_db)
 })
 
 
 # Select Advanced Options -------------------------------------------------
 test_that("Select Advanced Options", {
-  remDr <- shiny_test_startup(f, appURL)
+  remDr <- shiny_test_startup(f_db, appURL)
 
   test_db_site(remDr, site = "Kamloops, BC")
   test_db_dates(remDr, dates = c("2017-01-01", "2017-03-02"))
   test_db_species(remDr, species = c("Mountain Chickadee"))
 
-  # Advanced Options show with click
+  # Advanced Options show with click (expect no errors)
   click_button(remDr, "showadv")
   expect_error(animal_ids <- remDr$findElement("css", "[id $= 'data_animal_id']"), NA)
   expect_error(logger_ids <- remDr$findElement("css", "[id $= 'data_logger_id']"), NA)
@@ -115,21 +98,23 @@ test_that("Select Advanced Options", {
   # animal_id
   n_id <- animal_ids$findChildElement("css", "[value = '062000034E']")
   n_id$clickElement()
+  Sys.sleep(0.5)
   test_db_n(remDr, species = "Mountain Chickadee", n = 453) # after
 
   # logger_id
   n_id <- logger_ids$findChildElement("css", "[value = '1500']")
   n_id$clickElement()
+  Sys.sleep(0.5)
   test_db_n(remDr, species = "Mountain Chickadee", n = 391) # after
 
-  shiny_test_cleanup(remDr, f)
+  shiny_test_cleanup(remDr, f_db)
 })
 
 
 # Reset Data - Kamloops selected ------------------------------------------
 test_that("Reset Data - Kamloops selected", {
 
-  remDr <- shiny_test_startup(f, appURL)
+  remDr <- shiny_test_startup(f_db, appURL)
 
   # No data selected - Reset Disabled
   r <- remDr$findElement("css", "[id $= 'data_reset']")
@@ -140,6 +125,7 @@ test_that("Reset Data - Kamloops selected", {
   test_db_dates(remDr, dates = c("2017-01-01", "2017-03-02"))
   test_db_species(remDr, species = c("Mountain Chickadee"))
 
+  # Select advanced
   click_button(remDr, "showadv")
   remDr$findElement("css", "[value $= '062000034E'")$clickElement()
   remDr$findElement("css", "[value $= '1500'")$clickElement()
@@ -156,8 +142,6 @@ test_that("Reset Data - Kamloops selected", {
   test_db_site(remDr, site = "Kamloops, BC")
   expect_equal(length(remDr$findElements("css", "[name $='data_species']:checked")), 3)
 
-  click_button(remDr, "showadv")
-
   # Animal ids
   animal_ids_all <- remDr$findElements("css", "[name $= 'data_animal_id']")
   animal_ids_checked <- remDr$findElements("css", "[name $= 'data_animal_id']:checked")
@@ -168,14 +152,14 @@ test_that("Reset Data - Kamloops selected", {
   logger_ids_checked <- remDr$findElements("css", "[name $= 'data_logger_id']:checked")
   expect_equal(length(logger_ids_all), length(logger_ids_checked))
 
-  shiny_test_cleanup(remDr, f)
+  shiny_test_cleanup(remDr, f_db)
 })
 
 
 # Reset Data - Costa Rica selected ----------------------------------------
 test_that("Reset Data - Costa Rica selected", {
 
-  remDr <- shiny_test_startup(f, appURL)
+  remDr <- shiny_test_startup(f_db, appURL)
 
   # No data selected - Reset Disabled
   r <- remDr$findElement("css", "[id $= 'data_reset']")
@@ -186,6 +170,7 @@ test_that("Reset Data - Costa Rica selected", {
   test_db_dates(remDr, dates = c("2013-04-01", "2013-05-02"))
   test_db_species(remDr, species = c("Green Hermit"))
 
+  # Select Advanced
   click_button(remDr, "showadv")
   remDr$findElement("css", "[value $= '30D27598596F0001'")$clickElement()
   remDr$findElement("css", "[value $= '10sc2-175'")$clickElement()
@@ -200,10 +185,7 @@ test_that("Reset Data - Costa Rica selected", {
 
   # Expect previous settings not saved
   test_db_site(remDr, site = "Costa Rica")
-  expect_equal(length(remDr$findElements("css", "[name $='data_species']:checked")), 3)
-
-  # Check advanced
-  click_button(remDr, "showadv")
+  expect_equal(length(remDr$findElements("css", "[name $='data_species']:checked")), 4)
 
   # Animal ids
   animal_ids_all <- remDr$findElements("css", "[name $= 'data_animal_id']")
@@ -215,14 +197,14 @@ test_that("Reset Data - Costa Rica selected", {
   logger_ids_checked <- remDr$findElements("css", "[name $= 'data_logger_id']:checked")
   expect_equal(length(logger_ids_all), length(logger_ids_checked))
 
-  shiny_test_cleanup(remDr, f)
+  shiny_test_cleanup(remDr, f_db)
 })
 
 
 # Reset Data - Kam then CR selected ---------------------------------------
 test_that("Reset Data - Kam then CR selected", {
 
-  remDr <- shiny_test_startup(f, appURL)
+  remDr <- shiny_test_startup(f_db, appURL)
 
   # No data selected - Reset Disabled
   r <- remDr$findElement("css", "[id $= 'data_reset']")
@@ -233,6 +215,7 @@ test_that("Reset Data - Kam then CR selected", {
   test_db_dates(remDr, dates = c("2017-01-01", "2017-03-02"))
   test_db_species(remDr, species = c("Mountain Chickadee"))
 
+  # Select Advanced
   click_button(remDr, "showadv")
   remDr$findElement("css", "[value $= '062000034E'")$clickElement()
   remDr$findElement("css", "[value $= '1500'")$clickElement()
@@ -242,7 +225,7 @@ test_that("Reset Data - Kam then CR selected", {
   test_db_dates(remDr, dates = c("2013-04-01", "2013-05-02"))
   test_db_species(remDr, species = c("Green Hermit"))
 
-  click_button(remDr, "showadv")
+  # Select Advanced
   remDr$findElement("css", "[value $= '30D27598596F0001'")$clickElement()
   remDr$findElement("css", "[value $= '10sc2-175'")$clickElement()
 
@@ -259,7 +242,6 @@ test_that("Reset Data - Kam then CR selected", {
   expect_equal(length(remDr$findElements("css", "[name $='data_species']:checked")), 3)
 
   # Check advanced
-  click_button(remDr, "showadv")
 
   # Animal ids
   animal_ids_all <- remDr$findElements("css", "[name $= 'data_animal_id']")
@@ -271,12 +253,12 @@ test_that("Reset Data - Kam then CR selected", {
   logger_ids_checked <- remDr$findElements("css", "[name $= 'data_logger_id']:checked")
   expect_equal(length(logger_ids_all), length(logger_ids_checked))
 
-  shiny_test_cleanup(remDr, f)
+  shiny_test_cleanup(remDr, f_db)
 })
 
 # Download Kamloops Data --------------------------------------------------
 test_that("Download Kamloops Data", {
-  remDr <- shiny_test_startup(f, appURL)
+  remDr <- shiny_test_startup(f_db, appURL)
 
   test_db_site(remDr, site = "Kamloops, BC")
   test_db_dates(remDr, dates = c("2017-01-01", "2017-03-02"))
@@ -292,13 +274,13 @@ test_that("Download Kamloops Data", {
 
   file.remove(paste0(test_dir, "/downloads/output.csv"))
 
-  shiny_test_cleanup(remDr, f)
+  shiny_test_cleanup(remDr, f_db)
 })
 
 
 # Download Costa Rica Data ------------------------------------------------
 test_that("Download Costa Rica Data", {
-  remDr <- shiny_test_startup(f, appURL)
+  remDr <- shiny_test_startup(f_db, appURL)
 
   test_db_site(remDr, site = "Costa Rica")
   test_db_dates(remDr, dates = c("2013-04-01", "2013-05-02"))
@@ -314,33 +296,33 @@ test_that("Download Costa Rica Data", {
 
   file.remove(paste0(test_dir, "/downloads/output.csv"))
 
-  shiny_test_cleanup(remDr, f)
+  shiny_test_cleanup(remDr, f_db)
 })
 
 
 # Update map --------------------------------------------------------------
 test_that("Update map", {
-  remDr <- shiny_test_startup(f, appURL)
+  remDr <- shiny_test_startup(f_db, appURL)
 
+  # Get initial (reference) shot
   test_db_site(remDr, site = "Kamloops, BC")
-
-  take_screenshot(remDr, "../tests/db_map_", ref = TRUE)
+  take_screenshot(remDr, paste0(test_dir, "/screenshots/db_map_"), ref = TRUE)
 
   test_db_dates(remDr, dates = c("2017-01-01", "2017-03-02"))
   test_db_species(remDr, species = c("Mountain Chickadee"))
 
   # Expect little difference (just checkboxes)
-  take_screenshot(remDr, "../tests/db_map_")
-  expect_lt(90, compare_screenshot("../tests/db_map_"))
+  take_screenshot(remDr, paste0(test_dir, "/screenshots/db_map_"))
+  expect_lt(90, compare_screenshot(paste0(test_dir, "/screenshots/db_map_")))
 
   # Click map update button
   click_button(remDr, "map_update")
 
   # Expected bigger change with update map
-  take_screenshot(remDr, "../tests/db_map_")
-  expect_gt(90, compare_screenshot("../tests/db_map_"))
+  take_screenshot(remDr, paste0(test_dir, "/screenshots/db_map_"))
+  expect_gt(90, compare_screenshot(paste0(test_dir, "/screenshots/db_map_")))
 
-  shiny_test_cleanup(remDr, f)
+  shiny_test_cleanup(remDr, f_db)
 })
 
 
@@ -351,8 +333,3 @@ test_that("Random - Kamloops data", {
 # Select and Download Random Costa Rican data -----------------------------
 test_that("Random - Costa Rican data", {
 })
-
-# Clean Up ----------------------------------------------------------------
-# Get server PIDs and terminate
-pid_sel <- system("pgrep -f [s]elenium-server-standalone.jar", intern = TRUE)
-system(paste0("kill -TERM ", pid_sel))
