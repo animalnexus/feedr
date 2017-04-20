@@ -362,19 +362,25 @@ compare_screenshot <- function(file){
 }
 
 test_time_formats <- function(f, file, format = "ymd") {
-  test_that(paste0("Date/Time format - ", format), {
+  test_that(paste0("Date/Time format - ", format, " (", file, ")"), {
     remDr <- shiny_test_startup(f, appURL)
 
     # Select file
     select_files(remDr, file)
 
+    if(stringr::str_detect(file, "logger")) {
+      type <- "logger"
+      remDr$findElement("css", "[type = 'radio'][value = 'logger']")$clickElement()
+      Sys.sleep(0.5)
+    } else type <- "preformat"
+
     fs <- c("ymd", "mdy", "dmy")
     fs <- fs[order(fs == format)]
     for(h in fs){
       remDr$findElement("css", "[data-value $= 'HMS']")$clickElement()
-      Sys.sleep(0.25)
+      Sys.sleep(0.5)
       remDr$findElement("css", paste0("[data-value = '", h, " HMS']"))$clickElement()
-      Sys.sleep(0.25)
+      Sys.sleep(0.5)
 
       if(format == h) {
         expect_null(test_msg(remDr))
@@ -384,7 +390,7 @@ test_time_formats <- function(f, file, format = "ymd") {
     }
 
     # Test output
-    download_files(remDr, file, time_format = paste0(format, " HMS"))
+    download_files(remDr, file, type = type, time_format = paste0(format, " HMS"))
 
     # Clean up
     shiny_test_cleanup(remDr, f)
