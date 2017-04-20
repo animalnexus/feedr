@@ -4,15 +4,13 @@
 \alias{ui_animate}
 \title{Animated map for individuals with leaflet}
 \usage{
-ui_animate(v, verbose = FALSE, diagnostic = FALSE)
+ui_animate(v, verbose = FALSE)
 }
 \arguments{
 \item{v}{Data frame. Visits data frame created with the \code{\link{visits}}
 function.}
 
 \item{verbose}{Logical. Print log events to console.}
-
-\item{diagnostic}{Logical. Display pause button for debugging}
 }
 \description{
 Interactive shiny app to select and animate presence at and movements between
