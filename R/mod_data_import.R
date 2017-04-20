@@ -1,7 +1,3 @@
-## import module function
-
-
-
 #' User-interface for importing files
 #'
 #' Launches an interactive shiny app for importing data interactively. Also
@@ -350,12 +346,15 @@ import_logger <- function(path, logger, tz, input) {
 import_all <- function(path, tz, input, nrows = -1) {
   req(!is.null(input$sep), !is.null(input$skip))
 
-  d <- try(dplyr::bind_rows(lapply(path, utils::read.csv,
-                                   colClasses = "character",
-                                   sep = input$sep,
-                                   skip = input$skip,
-                                   nrows = nrows)) %>%
-    load_format(tz = tz, dst = as.logical(input$dst), time_format = input$time), silent = TRUE)
+  d <- try({
+    temp <- dplyr::bind_rows(lapply(path, utils::read.csv,
+                                    colClasses = "character",
+                                    sep = input$sep,
+                                    skip = input$skip,
+                                    nrows = nrows))
+    load_format(temp, tz = tz, dst = as.logical(input$dst),
+                time_format = input$time)
+    }, silent = TRUE)
 
  return(d)
 }
