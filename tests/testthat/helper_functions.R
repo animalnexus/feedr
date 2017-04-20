@@ -1,24 +1,23 @@
 start_shiny <- function(f, args = NULL){
   if(is.null(args)) args <- ""
-  suppressWarnings(pid_shiny <- system(paste0("pgrep -f ", stringr::str_replace(f, "^([a-z])", "[\\1]")), intern = TRUE))
-  if(length(pid_shiny) > 0) stop_shiny(f)
-  system(paste0("(Rscript -e \"options(shiny.port = 4100); d <- ", f, "(", args, "); write.csv(d, '/home/steffi/Projects/feedr Project/tests/downloads/output.csv', row.names = FALSE)\" &)"))#, ignore.stdout = TRUE, ignore.stderr = TRUE)
+  stop_shiny(f)
+  suppressWarnings(system(paste0("(Rscript -e \"options(shiny.port = 4100); d <- ", f, "(", args, "); write.csv(d, '/home/steffi/Projects/feedr Project/tests/downloads/output.csv', row.names = FALSE)\" &)"), ignore.stderr = TRUE))#, ignore.stdout = TRUE, ignore.stderr = TRUE)
 }
 
 stop_shiny <- function(f){
-  pid_shiny <- system(paste0("pgrep -f ", stringr::str_replace(f, "^([a-z])", "[\\1]")), intern = TRUE)
-  if(length(pid_shiny) > 0) system(paste0("kill -TERM ", pid_shiny))
+  suppressWarnings(pid_shiny <- system(paste0("pgrep -f ", stringr::str_replace(f, "^([a-z])", "[\\1]")), intern = TRUE, ignore.stderr = TRUE))
+  if(length(pid_shiny) > 0) system(paste0("kill -TERM ", pid_shiny), ignore.stderr = TRUE)
 }
 
-shiny_test_startup <- function(f, appURL, args = NULL, type = "saucelabs", extra = NULL) {
+shiny_test_startup <- function(f, appURL, args = NULL, browserName = "firefox", extra = NULL) {
   #skip_on_cran()
   skip_on_travis()
   skip_on_appveyor()
 
   start_shiny(f, args)
   if(!is.null(extra)) {
-    remDr <- remoteDriver(extraCapabilities = extra)
-  } else remDr <- remoteDriver()
+    remDr <- remoteDriver(browserName = browserName, extraCapabilities = extra)
+  } else remDr <- remoteDriver(browserName = browserName)
 
   remDr$open(silent = TRUE)
   remDr$setImplicitWaitTimeout(milliseconds = 1000) #Wait 1s for elements to load
