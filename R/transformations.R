@@ -46,7 +46,7 @@
 #' v <- chickadees %>%
 #'   group_by(experiment) %>%
 #'   do(visits(.))
-
+#'
 #' @import magrittr
 #' @export
 visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass = TRUE, allow.imp, na.rm){
@@ -61,7 +61,6 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
             call. = FALSE)
     na_rm <- na.rm
   }
-
 
   # Confirm that expected columns and formats are present
   check_name(r, n = c("animal_id", "logger_id", "time"), "raw RFID")
@@ -225,7 +224,6 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
 #'   summarize(n_path = length(move_path) /2)
 #'
 #' # Calculate across different experiments:
-#' library(dplyr)
 #'
 #' v <- chickadees %>%
 #'   group_by(experiment) %>%
