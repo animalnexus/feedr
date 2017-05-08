@@ -268,7 +268,7 @@ test_that("Settings download properly", {
   expect_true(file.exists(s_file))
 
   # Read Downloaded settings
-  s <- read.csv(s_file)
+  s <- utils::read.csv(s_file)
   s2 <- as.character(s$value)
   names(s2) <- s$id
 

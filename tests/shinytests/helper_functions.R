@@ -9,12 +9,20 @@ stop_shiny <- function(f){
   if(length(pid_shiny) > 0) system(paste0("kill -TERM ", pid_shiny), ignore.stderr = TRUE)
 }
 
-shiny_test_startup <- function(f, appURL, args = NULL, browserName = "firefox", extra = NULL) {
+shiny_test_startup <- function(f = NULL, appURL, args = NULL,
+                               browserName = "firefox", extra = NULL, type = "local") {
   #skip_on_cran()
   skip_on_travis()
   skip_on_appveyor()
 
-  start_shiny(f, args)
+  # Start Selenium Server
+  system("(java -jar ~/R/x86_64-pc-linux-gnu-library/3.3/RSelenium/bin/selenium-server-standalone.jar &)",
+         ignore.stdout = TRUE, ignore.stderr = TRUE)
+
+  if(type == "local"){
+    start_shiny(f, args)
+  }
+
   if(!is.null(extra)) {
     remDr <- remoteDriver(browserName = browserName, extraCapabilities = extra)
   } else remDr <- remoteDriver(browserName = browserName)
@@ -27,13 +35,19 @@ shiny_test_startup <- function(f, appURL, args = NULL, browserName = "firefox", 
   return(remDr)
 }
 
-shiny_test_cleanup <- function(remDr, f){
-  stop_shiny(f)
+shiny_test_cleanup <- function(remDr, f = NULL, type = "local"){
+  if(type == "local") stop_shiny(f)
   remDr$closeWindow()
   remDr$close()
+
+  # Get server PIDs and terminate Selenium server
+  suppressWarnings({
+    pid_sel <- system("pgrep -f [s]elenium-server-standalone.jar", intern = TRUE)
+    system(paste0("kill -TERM ", pid_sel))
+  })
 }
 
-app_loaded <- function() {
+app_loaded <- function(remDr) {
   msg <- remDr$findElement(using = "css selector", value = "[id = 'loading_app']")
   !unlist(msg$isElementDisplayed())
 }
@@ -73,10 +87,36 @@ data_loaded <- function(remDr) {
   return(ready)
 }
 
-click_setting <- function(remDr, css) {
+slider_move <- function(remDr, id, dist = 1) {
+  e <- remDr$findElement("css", paste0("label[for $= '", id, "']+[class ^= 'irs'] [class ^= 'irs-slider']"))
+
+  w_current <- remDr$findElement("css",
+                                 paste0("label[for $= '", id, "']+[class ^= 'irs'] [class = 'irs-bar']"))$getElementSize()$width
+
+  w <- remDr$findElement("css",
+                         paste0("label[for $= '", id, "']+[class ^= 'irs']"))$getElementSize()$width
+
+
+  # Reset
+  remDr$mouseMoveToLocation(webElement = e)
+  remDr$buttondown()
+  remDr$mouseMoveToLocation(x = -w_current, y = -1L)
+  remDr$buttonup()
+  Sys.sleep(0.25)
+
+  # Set
+  remDr$mouseMoveToLocation(webElement = e)
+  remDr$buttondown()
+  remDr$mouseMoveToLocation(x = w * dist, y = -1L)
+  remDr$buttonup()
+  Sys.sleep(0.25)
+}
+
+click_setting <- function(remDr, css, id = "time-instant") {
   remDr$findElement("css", css)$clickElement()
   ui_loaded(remDr)
   expect_false(test_error(remDr))
+  slider_move(remDr, id)
 }
 
 nav_tab <- function(remDr, tab){
@@ -153,7 +193,7 @@ default_settings <- function(m) {
 }
 
 file_settings <- function(file) {
-  s_file <- read.csv(file)
+  s_file <- utils::read.csv(file)
   s <- lapply(1:length(s_file), function(x) {
     y <- as.vector(s_file[, x])
     names(y) <- names(s_file)[x]
@@ -265,13 +305,13 @@ download_files <- function(remDr, files, preview = NULL, type = "preformat", tim
 
   # Compare to expected
   if(type == "preformat") {
-    suppressWarnings(i1 <- load_format(dplyr::bind_rows(lapply(files, function(x) load_format(read.csv(x), time_format = time_format)))))
-    if(!is.null(preview)) ip <- load_format(read.csv(files[1]), time_format = time_format)
+    suppressWarnings(i1 <- load_format(dplyr::bind_rows(lapply(files, function(x) load_format(utils::read.csv(x), time_format = time_format)))))
+    if(!is.null(preview)) ip <- load_format(utils::read.csv(files[1]), time_format = time_format)
   } else if (type == "logger") {
     suppressWarnings(i1 <- load_format(dplyr::bind_rows(lapply(files, load_raw, logger_pattern = NA, time_format = time_format))))
     if(!is.null(preview)) ip <- load_format(load_raw(files[1], logger_pattern = NA, time_format = time_format))
   }
-  i2 <- load_format(read.csv(paste0(test_dir, "/downloads/output.csv")))
+  i2 <- load_format(utils::read.csv(paste0(test_dir, "/downloads/output.csv")))
   expect_equivalent(i1, i2, info = paste0("Comparing: ", paste0(files, collapse = "\n")))
 
   # Compare to preview
@@ -288,10 +328,12 @@ test_db_site <- function(remDr, site = "Kamloops, BC") {
 
 test_db_dates <- function(remDr, dates = NULL){
     # Select Dates
-    e <- remDr$findElements(using = 'css selector', value = "[data-initial-date]")
+    e <- remDr$findElements(using = 'css', value = "[data-initial-date]")
     sapply(e, function(x) x$clearElement())
+    e[[1]]$clickElement()
     e[[1]]$sendKeysToElement(list(dates[1]))
     e[[1]]$sendKeysToElement(list("", key = "escape"))
+    e[[2]]$clickElement()
     e[[2]]$sendKeysToElement(list(dates[2]))
     e[[2]]$sendKeysToElement(list("", key = "escape"))
     expect_false(test_error(remDr))
@@ -397,3 +439,18 @@ test_time_formats <- function(f, file, format = "ymd") {
   })
 }
 
+rand_opts <- function(){
+  opts <- list('sum' = c("cumulative", "instant"),
+               'id' = c("all", "041868D396", "041868D861", "062000043E", "06200004F8", "0620000514"),
+               'sum_type' = c("sum", "sum_indiv"),
+               #'time_range' = c(0, 0.5),
+               'res' = c(5, 15, 30, 60, 180, 360, 1440), #720
+               'anim_speed' = seq(0, 1, 0.2),
+               'sun' = c(TRUE, FALSE))
+
+  ran_opts <- lapply(opts, sample, 1)
+
+  if(ran_opts$id != "all") ran_opts$sum_type <- "sum"
+  if(ran_opts$res == 1440) ran_opts$sun <- FALSE
+  return(ran_opts)
+}
