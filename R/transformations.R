@@ -95,16 +95,16 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
     dplyr::arrange(time) %>%
     dplyr::mutate(diff_animal = dplyr::lead(logger_id) == logger_id & dplyr::lead(animal_id) != animal_id) %>%
     dplyr::group_by(animal_id) %>%
-    dplyr::mutate(diff_time = difftime(lead(time), time, units = "sec") > bw,
+    dplyr::mutate(diff_time = difftime(dplyr::lead(time), time, units = "sec") > bw,
                   diff_logger = dplyr::lead(logger_id) != logger_id)
 
   # Check for impossible combos: where less than bw, still the same animal, but a different logger
   if(!allow_imp) {
     impos <- v %>%
-      dplyr::mutate(diff_imp = difftime(lead(time), time, units = "sec") < bw_imp,
+      dplyr::mutate(diff_imp = difftime(dplyr::lead(time), time, units = "sec") < bw_imp,
                     diff_imp = diff_imp & diff_logger) %>%
       dplyr::arrange(animal_id) %>%
-      dplyr::filter(diff_imp | lag(diff_imp)) %>%
+      dplyr::filter(diff_imp | dplyr::lag(diff_imp)) %>%
       unique()
 
     if(nrow(impos) > 0) {

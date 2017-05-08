@@ -302,7 +302,7 @@ mod_trans <- function(input, output, session, r, settings, verbose = FALSE) {
       list("title" = ti, "settings" = s, "messages" = m)
     })
     c(list(c(paste0("Date: ", Sys.Date()),
-             paste0("feedr version: ", packageVersion("feedr")))),
+             paste0("feedr version: ", utils::packageVersion("feedr")))),
       l)
   })
 

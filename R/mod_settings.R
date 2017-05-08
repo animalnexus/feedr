@@ -122,7 +122,7 @@ mod_settings <- function(input, output, session, verbose = FALSE) {
   # Update UIs - Import Data
   observeEvent(input$import_settings, {
     req(input$import_settings)
-    s <- read.csv(input$import_settings$data, colClasses = "character") %>%
+    s <- utils::read.csv(input$import_settings$data, colClasses = "character") %>%
       dplyr::left_join(manual[, c("id", "class")], by = "id")
 
     # Require that coercible classes match colnames, ids, classes, and values

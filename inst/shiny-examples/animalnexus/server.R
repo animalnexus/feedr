@@ -22,7 +22,7 @@ shinyServer(function(input, output, session) {
 
   # Display package version -------------------------------------------------
   output$package_version <- renderText({
-    paste0("Using <a href = 'http://github.com/animalnexus/feedr' target = 'blank'>feedr v", packageVersion("feedr"), "</a>")
+    paste0("Using <a href = 'http://github.com/animalnexus/feedr' target = 'blank'>feedr v", utils::packageVersion("feedr"), "</a>")
   })
 
 
