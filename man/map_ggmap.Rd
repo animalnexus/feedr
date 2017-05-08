@@ -4,22 +4,30 @@
 \alias{map_ggmap}
 \title{Map data using ggmap}
 \usage{
-map_ggmap(p = NULL, m = NULL, locs = NULL, p_scale = 1, m_scale = 1,
-  p_title = "Time", m_title = "Path use", p_pal = c("yellow", "red"),
-  m_pal = c("yellow", "red"), maptype = "satellite", mapsource = "google",
-  zoom = 17, which = NULL, u.scale, p.scale, u.title, p.title, u.pal, p.pal)
+map_ggmap(p = NULL, m = NULL, locs = NULL, summary = "none",
+  p_scale = 1, m_scale = 1, p_title = "Time", m_title = "Path use",
+  p_pal = c("yellow", "red"), m_pal = c("yellow", "red"),
+  maptype = "satellite", mapsource = "google", zoom = 17, which = NULL,
+  u.scale, p.scale, u.title, p.title, u.pal, p.pal)
 }
 \arguments{
-\item{p}{Dataframe. Summarized presence data with columns \code{logger_id} and
-\code{amount}. It can also contain \code{animal_id} for individual-based
-data, and lat/lon instead of a locs argument.}
+\item{p}{Dataframe. Regular or summarized presence data with columns
+\code{logger_id} and, if already summarized, \code{amount}. It can also
+contain \code{animal_id} for individual-based data, and lat/lon columns.}
 
-\item{m}{Dataframe. Summarized movement data with columns \code{logger_id},
-\code{move_path}, and \code{path_use}. It can also contain \code{animal_id}
-for individual-based data, and lat/lon instead of a locs argument.}
+\item{m}{Dataframe. Regular or summarized movement data with columns
+\code{logger_id}, \code{move_path}, and, if already summarized,
+\code{path_use}. It can also contain \code{animal_id} for individual-based
+data, and lat/lon columns.}
 
 \item{locs}{Dataframe. Lat and lon for each logger_id, required if lat and
-lon not in either p or m.}
+lon not provided in either p or m.}
+
+\item{summary}{Character. How the data should be summarized. If providing
+summarized data, use "none" (default). "sum" calculates total movements and
+total amount of time spent at a logger, "sum_indiv", averages the totals by
+the number of individuals in the data, "indiv" calculates totals for each
+individual.}
 
 \item{p_scale, m_scale}{Numerical. Relative scaling constants to increase (> 1) or
 decrease (< 1) the relative size of presence (p) and path (m) data.}
@@ -49,10 +57,20 @@ An interactive leaflet map with layers for presence, movements and
   logger positions.
 }
 \description{
-Visualize presence at and movements between loggers using ggmap in R. This produces a
-static map. The user must summarize presence and movements in the manner
-that they wish to visualize it. This function can take invidiual animal data as
-well as grand summarise (see Details and Examples).
+A visual summary of presence at and movements between loggers using ggmap in
+R. This produces a static map. This function can take invidiual data as well
+as grand summaries (see Details and Examples).
+}
+\details{
+The type of summary visualized is defined by the \code{summary}
+  argument: \code{summary = "sum"} calculates the total amount of time spent
+  at each logger (presence) or total number of movements between loggers
+  (movements). \code{summary = "sum_indiv"} averages these totals by the
+  number of individuals in the data set, resulting in an average total amount
+  of time per individual and an average amount of movements per individual
+  for, or between, each logger. \code{summary = "indiv"} calculates
+  individual totals. If the data is already summarized, use \code{summary =
+  "none"}.
 }
 \examples{
 
@@ -60,31 +78,25 @@ v <- visits(finches)
 p <- presence(v, bw = 15)
 m <- move(v)
 
-# Summarise data for visualization (use totals):
+# Built in summaries
+map_ggmap(p = p, m = m, summary = "sum")
+map_ggmap(p = p, m = m, summary = "sum_indiv")
+map_ggmap(p = p, m = m, summary = "indiv")
+
+# Custom summaries
+# Here, we average by the number of loggers (using dplyr)
+
 library(dplyr)
-p_all <- p \%>\%
+
+p2 <- p \%>\%
   group_by(logger_id, lat, lon) \%>\%
-  summarise(amount = sum(length) / animal_n[1])
+  summarize(amount = sum(length) / logger_n[1])
 
-m_all <- m \%>\%
+m2 <- m \%>\%
   group_by(logger_id, move_path, lat, lon) \%>\%
-  summarise(path_use = length(move_path) / animal_n[1])
+  summarize(path_use = length(move_path) / logger_n[1])
 
-# Look at total summary maps
-map_ggmap(p = p_all, m = m_all)
-
-# Summarise data for visualization (use individuals):
-p_indiv <- p \%>\%
-  group_by(animal_id, logger_id, lat, lon) \%>\%
-  summarise(amount = sum(length))
-
-m_indiv <- m \%>\%
-  group_by(animal_id, logger_id, move_path, lat, lon) \%>\%
-  summarise(path_use = length(move_path))
-
-# Look at individual summary maps (note that Leaflet just stacks individuals
-# one on top of the other)
-map_ggmap(p = p_indiv, m = m_indiv)
+map_ggmap(p = p2, m = m2)
 
 }
 

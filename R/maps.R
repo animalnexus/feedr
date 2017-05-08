@@ -1,51 +1,65 @@
 
 # Prep data for mapping
 # A data prep function used by mapping functions
-map_prep <- function(p = NULL, m = NULL, locs = NULL) {
+map_prep <- function(p = NULL, m = NULL, locs = NULL, summary = "none") {
 
   # Check data
+  msg <- character()
   if(!is.null(p) && nrow(p) > 0){
-    if(!all(c("logger_id","amount") %in% names(p))) stop("The presence dataframe (p) requires two columns: 'logger_id' and 'amount'.")
+    p <- dplyr::ungroup(p)
+
+    if(!("logger_id" %in% names(p))) msg <- c(msg, "The presence dataframe (p) requires the column: 'logger_id'")
   }
   if(!is.null(m) && nrow(m) > 0){
-    if(!all(c("move_path","path_use", "logger_id") %in% names(m))) stop("The path dataframe (m) requires three columns: 'logger_id', 'move_path', 'path_use'.")
-    if(any(stringr::str_count(m$move_path, "_") > 1)) stop("Using '_' in logger_id names conflicts with the mapping functions. You should remove any '_'s from logger_ids.")
+    m <- dplyr::ungroup(m)
+    if(!all(c("move_path", "logger_id") %in% names(m))) msg <- c(msg, "The movement dataframe (m) requires two columns: 'logger_id' and 'move_path'")
+    if("move_path" %in% names(m) && any(stringr::str_count(m$move_path, "_") > 1)) msg <- c(msg, "Using '_' in logger_id names conflicts with the mapping functions. You should remove any '_'s from logger_ids.")
   }
+  if(length(msg) > 0) stop(paste0(msg, collapse = "\n  "))
 
   # Check and format location data
-  # Lat / Lon needs to be in EITHER locs, p, OR p
+  # Lat / Lon needs to be in EITHER locs, p, OR m
+  if(!is.null(locs) && nrow(locs) > 0) locs <- dplyr::ungroup(locs)
+  locs <- dplyr::bind_rows(get_locs(p), get_locs(m), get_locs(locs)) %>%
+    dplyr::distinct() %>%
+    dplyr::arrange(logger_id)
 
-  lat <- c("lat", "latitude")
-  lon <- c("lon", "long", "longitude")
+  if(nrow(locs) == 0) stop(paste0("Data is missing latitude (lat) or longitude (lon) or both."))
 
-  locs <- unique(dplyr::bind_rows(get_locs(p), get_locs(m), get_locs(locs)))
-  if(nrow(locs) == 0) stop(paste0("Locations (locs) dataframe is missing either latitude (", paste0(lat, collapse = ", "), ") or longitude (", paste0(lon, collapse = ", "), "), or both."))
+  # Add locations and alert if any missing
+  if(!is.null(p) && nrow(p) > 0) p <- add_locs(p, locs)
+  if(!is.null(m) && nrow(m) > 0) m <- add_locs(m, locs)
 
-  # Get locations and alert if any missing
-  if(!is.null(p) && nrow(p) > 0){
-    p <- rename_locs(p)
-    n <- names(p)[names(p) %in% c("logger_id", "lat", "lon")]
-    p <- merge(p, locs, by = n, all.x = TRUE, all.y = FALSE)
-    if(nrow(p[is.na(p$lat) | is.na(p$lon),]) > 0) message(paste0("Removed ", nrow(p[is.na(p$lat) | is.na(p$lon),]), " loggers due to missing lat or lon."))
-    p <- p[!(is.na(p$lat) | is.na(p$lon)),]
+  # Summarize data if not already summarized
+  if(summary != "none") {
+    if(!is.null(p) && nrow(p) > 0) p <- summaries(p, summary = summary)
+    if(!is.null(m) && nrow(m) > 0) m <- summaries(m, summary = summary)
+  } else {
+    if(!("amount" %in% names(p)) | !("path_use" %in% names(m))) stop("If not supplying a summary type (i.e. summary = 'none') data must already be summarized. Presence data (p) should contain a summary column 'amount', Movement data (m) should contain a summary column 'path_use' (see examples).")
+
+    # Check data format
+    msg <- character()
+
+    if(xor("animal_id" %in% names(p), "animal_id" %in% names(m))) {
+      msg <- c(msg, "Movements (m) and presence (p) data do not both have an 'animal_id' column. Either summarize both data sets to animal_idor neither data set.")
+    } else {
+      if("animal_id" %in% names(p)){
+        if(nrow(unique(p[, c("logger_id", "animal_id")])) != nrow(p)) msg <- c(msg, "Presence data should be summarized to have at most one row per logger, or one row per individual per logger.")
+        if(nrow(unique(m[, c("move_path", "animal_id")])) != nrow(m)/2) msg <- c(msg, "Movement data should be summarized to have two rows per movement path (one row per logger), or two rows per individual per movement path.")
+      } else {
+        if(length(unique(p$logger_id)) != nrow(p)) msg <- c(msg, "Presence data should be summarized to have one row per logger, or one row per individual per logger.")
+        if(length(unique(m$move_path)) != nrow(m)/2) msg <- c(msg, "Movement data should be summarized to have two rows per movement path (one row for each logger), or two rows per individual per movement path.")
+        if(nrow(unique(m[, c("move_path", "path_use")])) != length(unique(m$move_path))) msg <- c(msg, "Movement data should have identical path_use values for each move_path category")
+      }
+    }
+    if(length(msg) > 0) stop(paste0(msg, collapse = "\n  "))
   }
 
-  if(!is.null(m) && nrow(m) > 0){
-    m <- rename_locs(m)
-    n <- names(m)[names(m) %in% c("logger_id", "lat", "lon")]
-    m <- merge(m, locs, by = n, all.x = TRUE, all.y = FALSE)
-    if(nrow(m[is.na(m$lat) | is.na(m$lon),]) > 0) message(paste0("Removed ", nrow(m[is.na(m$lat) | is.na(m$lon),]), " paths due to at least one missing lat or lon."))
-    m <- dplyr::group_by(m, move_path) %>%
-      dplyr::do(if(any(is.na(.[,c('lat','lon')]))) return(data.frame()) else return(.)) %>%
-      dplyr::ungroup()
-  }
 
   return(list('p' = p, 'm' = m, 'locs' = locs))
 }
 
 # Base map for leaflet
-#
-# Designed for advanced use (see map_leaflet() for general mapping)
 map_leaflet_base <- function(locs, marker = "logger_id", controls = TRUE, minZoom = NULL, maxZoom = 18) {
   l <- leaflet::leaflet(data = locs,
                         options = leaflet::leafletOptions(minZoom = minZoom, maxZoom = maxZoom)) %>%
@@ -227,19 +241,34 @@ use.layer <- function(map, p, p_scale = 1, p_title = "Time", p_pal = c("yellow",
 
 #' Map data using leaflet
 #'
-#' Visualize presence at and movements between loggers using leaflet for R. This produces
-#' an interactive html map. The user must summarize presence and movements in
-#' the manner that they wish to visualize it. This function can take invidiual
-#' data as well as grand summaries (see Details and Examples).
+#' A visual summary of presence at and movements between loggers using leaflet
+#' for R. This produces an interactive html map. This function can take
+#' invidiual data as well as grand summaries (see Details and Examples).
 #'
-#' @param p Dataframe. Summarized 'presence' data with columns \code{logger_id} and
-#'   \code{amount}. It can also contain \code{animal_id} for individual-based
-#'   data, and lat/lon instead of a locs argument.
-#' @param m Dataframe. Summarized 'movement' data with columns \code{logger_id},
-#'   \code{move_path}, and \code{path_use}. It can also contain \code{animal_id}
-#'   for individual-based data, and lat/lon instead of a locs argument.
+#' @details The type of summary visualized is defined by the \code{summary}
+#'   argument: \code{summary = "sum"} calculates the total amount of time spent
+#'   at each logger (presence) or total number of movements between loggers
+#'   (movements). \code{summary = "sum_indiv"} averages these totals by the
+#'   number of individuals in the data set, resulting in an average total amount
+#'   of time per individual and an average amount of movements per individual
+#'   for, or between, each logger. \code{summary = "indiv"} calculates
+#'   individual totals. If the data is already summarized, use \code{summary =
+#'   "none"}.
+#'
+#' @param p Dataframe. Regular or summarized presence data with columns
+#'   \code{logger_id} and, if already summarized, \code{amount}. It can also
+#'   contain \code{animal_id} for individual-based data, and lat/lon columns.
+#' @param m Dataframe. Regular or summarized movement data with columns
+#'   \code{logger_id}, \code{move_path}, and, if already summarized,
+#'   \code{path_use}. It can also contain \code{animal_id} for individual-based
+#'   data, and lat/lon columns.
 #' @param locs Dataframe. Lat and lon for each logger_id, required if lat and
-#'   lon not in either p or m.
+#'   lon not provided in either p or m.
+#' @param summary Character. How the data should be summarized. If providing
+#'   summarized data, use "none" (default). "sum" calculates total movements and
+#'   total amount of time spent at a logger, "sum_indiv", averages the totals by
+#'   the number of individuals in the data, "indiv" calculates totals for each
+#'   individual.
 #' @param p_scale,m_scale Numerical. Scaling constants to increase (> 1) or
 #'   decrease (< 1) the relative size of presence (p) and movements (m) data.
 #' @param p_title,m_title Character. Titles for the legends of presence (p) and
@@ -250,48 +279,44 @@ use.layer <- function(map, p, p_scale = 1, p_title = "Time", p_pal = c("yellow",
 #'   different layers)
 #' @param u.scale,p.scale,u.title,p.title,u.pal,p.pal Depreciated.
 #'
-#' @return An interactive leaflet map with layers for presence, paths and logger positions.
+#' @return An interactive leaflet map with layers for presence, movement paths and logger positions.
 #'
 #' @examples
 #' v <- visits(finches)
 #' p <- presence(v, bw = 15)
 #' m <- move(v)
 #'
-#' # Summarise data for visualization (use totals):
+#' # Built in summaries
+#' map_leaflet(p = p, m = m, summary = "sum")
+#' map_leaflet(p = p, m = m, summary = "sum_indiv")
+#' map_leaflet(p = p, m = m, summary = "indiv")
+#'
+#' # Custom summaries
+#' # Here, we average by the number of loggers (using dplyr)
+#'
 #' library(dplyr)
-#' p_all <- p %>%
+#'
+#' p2 <- p %>%
 #'   group_by(logger_id, lat, lon) %>%
-#'   summarise(amount = sum(length) / animal_n[1])
+#'   summarize(amount = sum(length) / logger_n[1])
 #'
-#' m_all <- m %>%
+#' m2 <- m %>%
 #'   group_by(logger_id, move_path, lat, lon) %>%
-#'   summarise(path_use = length(move_path) / animal_n[1])
+#'   summarize(path_use = length(move_path) / logger_n[1])
 #'
-#' # Look at total summary maps
-#' map_leaflet(p = p_all, m = m_all)
+#' map_leaflet(p = p2, m = m2)
 #'
-#' # Summarise data for visualization (use individuals):
-#' p_indiv <- p %>%
-#'   group_by(animal_id, logger_id, lat, lon) %>%
-#'   summarise(amount = sum(length))
-#'
-#' m_indiv <- m %>%
-#'   group_by(animal_id, logger_id, move_path, lat, lon) %>%
-#'   summarise(path_use = length(move_path))
-#'
-#' # Look at individual summary maps (note that Leaflet just stacks individuals
-#' # one on top of the other)
-#' map_leaflet(p = p_indiv, m = m_indiv)
 #'
 #' @export
 #' @import leaflet
 map_leaflet <- function(p = NULL, m = NULL, locs = NULL,
-                 p_scale = 1, m_scale = 1,
-                 p_title = "Time", m_title = "Path use",
-                 p_pal = c("yellow","red"),
-                 m_pal = c("yellow","red"),
-                 controls = TRUE,
-                 u.scale, p.scale, u.title, p.title, u.pal, p.pal) {
+                        summary = "none",
+                        p_scale = 1, m_scale = 1,
+                        p_title = "Time", m_title = "Path use",
+                        p_pal = c("yellow","red"),
+                        m_pal = c("yellow","red"),
+                        controls = TRUE,
+                        u.scale, p.scale, u.title, p.title, u.pal, p.pal) {
 
   if (!missing(u.scale)) {
     warning("Argument u.scale is deprecated; please use p_scale instead.",
@@ -324,7 +349,7 @@ map_leaflet <- function(p = NULL, m = NULL, locs = NULL,
     m_pal <- p.pal
   }
 
-  data <- map_prep(p = p, m = m, locs = locs)
+  data <- map_prep(p = p, m = m, locs = locs, summary = summary)
   p <- data[['p']]
   m <- data[['m']]
   locs <- data[['locs']]
@@ -354,19 +379,34 @@ map.leaflet <- function(p = NULL, m = NULL, locs = NULL,
 
 #' Map data using ggmap
 #'
-#' Visualize presence at and movements between loggers using ggmap in R. This produces a
-#' static map. The user must summarize presence and movements in the manner
-#' that they wish to visualize it. This function can take invidiual animal data as
-#' well as grand summarise (see Details and Examples).
+#' A visual summary of presence at and movements between loggers using ggmap in
+#' R. This produces a static map. This function can take invidiual data as well
+#' as grand summaries (see Details and Examples).
 #'
-#' @param p Dataframe. Summarized presence data with columns \code{logger_id} and
-#'   \code{amount}. It can also contain \code{animal_id} for individual-based
-#'   data, and lat/lon instead of a locs argument.
-#' @param m Dataframe. Summarized movement data with columns \code{logger_id},
-#'   \code{move_path}, and \code{path_use}. It can also contain \code{animal_id}
-#'   for individual-based data, and lat/lon instead of a locs argument.
+#' @details The type of summary visualized is defined by the \code{summary}
+#'   argument: \code{summary = "sum"} calculates the total amount of time spent
+#'   at each logger (presence) or total number of movements between loggers
+#'   (movements). \code{summary = "sum_indiv"} averages these totals by the
+#'   number of individuals in the data set, resulting in an average total amount
+#'   of time per individual and an average amount of movements per individual
+#'   for, or between, each logger. \code{summary = "indiv"} calculates
+#'   individual totals. If the data is already summarized, use \code{summary =
+#'   "none"}.
+#'
+#' @param p Dataframe. Regular or summarized presence data with columns
+#'   \code{logger_id} and, if already summarized, \code{amount}. It can also
+#'   contain \code{animal_id} for individual-based data, and lat/lon columns.
+#' @param m Dataframe. Regular or summarized movement data with columns
+#'   \code{logger_id}, \code{move_path}, and, if already summarized,
+#'   \code{path_use}. It can also contain \code{animal_id} for individual-based
+#'   data, and lat/lon columns.
 #' @param locs Dataframe. Lat and lon for each logger_id, required if lat and
-#'   lon not in either p or m.
+#'   lon not provided in either p or m.
+#' @param summary Character. How the data should be summarized. If providing
+#'   summarized data, use "none" (default). "sum" calculates total movements and
+#'   total amount of time spent at a logger, "sum_indiv", averages the totals by
+#'   the number of individuals in the data, "indiv" calculates totals for each
+#'   individual.
 #' @param p_scale,m_scale Numerical. Relative scaling constants to increase (> 1) or
 #'   decrease (< 1) the relative size of presence (p) and path (m) data.
 #' @param p_title,m_title Character. Titles for the legends of presence (p) and
@@ -392,34 +432,29 @@ map.leaflet <- function(p = NULL, m = NULL, locs = NULL,
 #' p <- presence(v, bw = 15)
 #' m <- move(v)
 #'
-#' # Summarise data for visualization (use totals):
+#' # Built in summaries
+#' map_ggmap(p = p, m = m, summary = "sum")
+#' map_ggmap(p = p, m = m, summary = "sum_indiv")
+#' map_ggmap(p = p, m = m, summary = "indiv")
+#'
+#' # Custom summaries
+#' # Here, we average by the number of loggers (using dplyr)
+#'
 #' library(dplyr)
-#' p_all <- p %>%
+#'
+#' p2 <- p %>%
 #'   group_by(logger_id, lat, lon) %>%
-#'   summarise(amount = sum(length) / animal_n[1])
+#'   summarize(amount = sum(length) / logger_n[1])
 #'
-#' m_all <- m %>%
+#' m2 <- m %>%
 #'   group_by(logger_id, move_path, lat, lon) %>%
-#'   summarise(path_use = length(move_path) / animal_n[1])
+#'   summarize(path_use = length(move_path) / logger_n[1])
 #'
-#' # Look at total summary maps
-#' map_ggmap(p = p_all, m = m_all)
-#'
-#' # Summarise data for visualization (use individuals):
-#' p_indiv <- p %>%
-#'   group_by(animal_id, logger_id, lat, lon) %>%
-#'   summarise(amount = sum(length))
-#'
-#' m_indiv <- m %>%
-#'   group_by(animal_id, logger_id, move_path, lat, lon) %>%
-#'   summarise(path_use = length(move_path))
-#'
-#' # Look at individual summary maps (note that Leaflet just stacks individuals
-#' # one on top of the other)
-#' map_ggmap(p = p_indiv, m = m_indiv)
+#' map_ggmap(p = p2, m = m2)
 #'
 #' @export
 map_ggmap <- function(p = NULL, m = NULL, locs = NULL,
+                      summary = "none",
                       p_scale = 1, m_scale = 1,
                       p_title = "Time", m_title = "Path use",
                       p_pal = c("yellow","red"),
@@ -461,9 +496,8 @@ map_ggmap <- function(p = NULL, m = NULL, locs = NULL,
     m_pal <- p.pal
   }
 
-
   # Prep and Check Data
-  data <- map_prep(p = p, m = m, locs = locs)
+  data <- map_prep(p = p, m = m, locs = locs, summary = summary)
   p <- data[['p']]
   m <- data[['m']]
   locs <- data[['locs']]
