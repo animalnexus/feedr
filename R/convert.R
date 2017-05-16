@@ -1,8 +1,9 @@
 #' Convert data for use in two asnipe functions
 #'
-#' Converts raw RFID data in a format for easy use in either the \code{\link[asnipe]{gmmevents}}
-#' or the \code{\link[asnipe]{get_associations_points_tw}} functions included in the asnipe
-#' package.
+#' Converts raw RFID data into a format for easy use by either the
+#' \code{\link[asnipe]{gmmevents}} or the
+#' \code{\link[asnipe]{get_associations_points_tw}} functions included in the
+#' \link{asnipe} package.
 #'
 #' @param r Dataframe. Raw RFID dataset. Must have at least columns
 #'   \code{animal_id}, \code{logger_id} and \code{time}. The column time should
@@ -31,7 +32,7 @@
 #'
 #' If \code{fun = "get_associations_points_tw"}, a data frame with four columns: \code{Date}, \code{Time}, \code{ID}, \code{Location}. Date is converted to count starting with 1 as the first day, time is converted to the number of seconds since the first observation.
 #'
-#' @seealso \link{asnipe} package and it's functions: \link[asnipe]{gmmevents} and \link[asnipe]{get_associations_points_tw}. \link{https://cran.r-project.org/package=asnipe}
+#' @seealso \link{asnipe} package and it's functions: \link[asnipe]{gmmevents} and \link[asnipe]{get_associations_points_tw}. \url{https://cran.r-project.org/package=asnipe}
 #'
 #' @examples
 #'
@@ -70,42 +71,145 @@ convert_asnipe <- function(r, fun = "gmmevents", by_day = TRUE, time_scale = "se
       dplyr::select(Date = date, Time = time,
                     ID = animal_id, Location = logger_id)
   }
-  return(r)
+  return(as.data.frame(r))
 }
 
 
-#' Convert displacements for use in aniDom functions
+#' Convert displacements for use by functions from the aniDom package
 #'
-#' @return
+#' Converts displacements data into a format for easy use by either the
+#' \code{\link[aniDom]{elo_scores}}, the
+#' \code{\link[aniDom]{estimate_uncertainty_by_repeatability}}, or the
+#' \code{\link[aniDom]{estimate_uncertainty_by_splitting}} functions included in
+#' the \link{aniDom} package.
+#'
+#' @param d Data frame or List. Either the specific displacements data frame which is
+#'   returned as a list item from \code{disp()}, or the whole displacements list
+#'   returned by \code{disp()}.
+#'
+#' @return A data frame listing winners and losers of all displacements sorted
+#'   by time of the event.
+#'
+#' @seealso \link{aniDom} package and it's functions: \link[aniDom]{elo_scores}, \link[aniDom]{estimate_uncertainty_by_repeatability}, and \link[aniDom]{estimate_uncertainty_by_splitting}. \url{https://cran.r-project.org/package=aniDom}
 #'
 #' @examples
 #'
+#' # Calculate displacements
+#' d <- disp(visits(finches_lg))
+#'
+#' # Format for use in aniDom's elo_scores
+#' i <- convert_anidom(d)
+#' i <- convert_anidom(d$displacements) # Equivalent
+#'
+#' # Use aniDom functions:
+#'
 #' library(aniDom)
 #'
+#' # Calculate elo_scores
+#' s <- elo_scores(winners = i$winner, losers = i$loser)
 #'
+#' # Estimate repeatability
+#' r1 <- estimate_uncertainty_by_repeatability(winners = i$winner, losers = i$loser)
+#' r2 <- estimate_uncertainty_by_splitting(winners = i$winner, losers = i$loser, randomise = TRUE)
 #'
+#' @import magrittr
 #' @export
-#'
-convert_anidom <- function(){
-  d <- disp(visits(finches_lg))
+convert_anidom <- function(d){
 
-  e <- d$displacements %>%
+  # Function takes either the whole output of disp() or just the displacements
+  if(!is.data.frame(d)) d <- d$displacements
+
+  # Check for Correct formating
+  check_name(d, c("animal_id","role"), type = "displacement")
+  check_format(d)
+
+  # Format
+  d %>%
+    dplyr::arrange(left) %>%
     dplyr::select(animal_id, role, left, arrived) %>%
-    tidyr::spread(key = role, value = animal_id)
-
-
-
-  s <- elo_scores(winners = as.character(e$displacer), losers = as.character(e$displacee))
-  plot_ranks(s)
-
+    tidyr::spread(key = role, value = animal_id) %>%
+    dplyr::mutate(displacer = as.character(displacer),
+                  displacee = as.character(displacee)) %>%
+    dplyr::select(winner = displacer, loser = displacee) %>%
+    as.data.frame()
 }
 
-convert_dominance <- function() {
 
-}
+#' Convert displacements for use by functions from the Dominance package
+#'
+#' Converts displacements RFID data into a format for easy use by either the
+#' \code{\link[Dominance]{ADI}} or the \code{\link[asnipe]{Sociogram}} functions
+#' included in the \link{Dominance} package.
+#'
+#' @param d Data frame or List. Either the specific displacements data frame which is
+#'   returned as a list item from \code{disp()}, or the whole displacements list
+#'   returned by \code{disp()}.
+#'
+#' @return List of data frames to use in functions from the \link{Dominance}
+#'   package. data_sheet contains all interactions: action.from/action.to
+#'   represent individuals (code is matched to animal_id in the items data
+#'   frame). action.from represent displacers (winners), action.to represent
+#'   displacees (losers), kind.of.action is a dummy variable representing the
+#'   action type (displacement). items is a data frame matching animal_ids to to
+#'   the code used in the data_sheet. actions contain the one action type
+#'   (displacements) and the classification and weighting (corresponds to
+#'   action.from being a winner, and action.to being a loser). bytes is a dummy
+#'   vector indicating that the action type "displacement" should be included in
+#'   the calculation. See examples for specific application.
+#'
+#' @seealso \link{Dominance} package and it's functions: \link[Dominance]{ADI} and \link[Dominance]{Sociogram}. \url{https://cran.r-project.org/package=Dominance}
+#'
+#' @examples
+#' # Calculate displacements
+#' d <- disp(visits(finches_lg))
+#'
+#' # Format for use by Dominance package
+#' i <- convert_dominance(d)
+#' i <- convert_dominance(d$displacements) # Equivalent
+#'
+#' # Use Dominance package:
+#' library(Dominance)
+#'
+#' # Calculate the Average Dominance Index
+#' ADI(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bytes = i$bytes)
+#'
+#' # Construct social network graphs
+#' Sociogram(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bits = i$bytes)
+#'
+#' @import magrittr
+#' @export
+convert_dominance <- function(d) {
+  # Function takes either the whole output of disp() or just the displacements
+  if(!is.data.frame(d)) d <- d$displacements
 
-convert_perc <- function() {
+  # Check for Correct formating
+  check_name(d, c("animal_id","role"), type = "displacement")
+  check_format(d)
 
+  d <- d %>%
+    dplyr::arrange(left) %>%
+    dplyr::mutate(animal_id = as.character(animal_id),
+                  item.number = as.numeric(factor(d$animal_id)))
+
+  items <- d %>%
+    dplyr::select(Name = animal_id, item.number) %>%
+    dplyr::distinct() %>%
+    dplyr::arrange(item.number) %>%
+    as.data.frame()
+
+  data_sheet <- d %>%
+    dplyr::select(item.number, role, left, arrived) %>%
+    tidyr::spread(key = role, value = item.number) %>%
+    dplyr::select(action.from = displacer, action.to = displacee) %>%
+    dplyr::mutate(kind.of.action = 1) %>%
+    as.data.frame()
+
+  actions <- data.frame(name.of.action = "displacement", action.number = 1,
+                        classification = 1, weighting = 1, stringsAsFactors = FALSE)
+
+  bytes <- paste0(rep(1, nrow(actions)), collapse = "")
+
+  return(list(data_sheet = data_sheet, items = items, actions = actions, bytes = bytes))
 }
 
 

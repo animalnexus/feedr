@@ -39,9 +39,10 @@ If \code{fun = "gmmevents"}, a data frame with three columns, \code{time}, \code
 If \code{fun = "get_associations_points_tw"}, a data frame with four columns: \code{Date}, \code{Time}, \code{ID}, \code{Location}. Date is converted to count starting with 1 as the first day, time is converted to the number of seconds since the first observation.
 }
 \description{
-Converts raw RFID data in a format for easy use in either the \code{\link[asnipe]{gmmevents}}
-or the \code{\link[asnipe]{get_associations_points_tw}} functions included in the asnipe
-package.
+Converts raw RFID data into a format for easy use by either the
+\code{\link[asnipe]{gmmevents}} or the
+\code{\link[asnipe]{get_associations_points_tw}} functions included in the
+\link{asnipe} package.
 }
 \examples{
 
@@ -61,6 +62,5 @@ get_associations_points_bw(a)
 
 }
 \seealso{
-\link{asnipe} package and it's functions: \link[asnipe]{gmmevents} and \link[asnipe]{get_associations_points_tw}. \link{https://cran.r-project.org/package=asnipe}
+\link{asnipe} package and it's functions: \link[asnipe]{gmmevents} and \link[asnipe]{get_associations_points_tw}. \url{https://cran.r-project.org/package=asnipe}
 }
-
