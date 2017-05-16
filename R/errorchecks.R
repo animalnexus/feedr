@@ -6,7 +6,7 @@ check_name <- function(d, n = c("animal_id", "logger_id"), type = "visit") {
 
 check_time <- function(d, n = c("start", "end"), internal = TRUE) {
   if(!all(sapply(d[, n], class) == c("POSIXct", "POSIXt"))) {
-    stop(paste0("Columns ", paste0("'", n, "'", collapse = ", "), " must be in R's date/time formating (POSIXct).", ifelse(internal == TRUE, " Consider using as.POSIXct() and strptime() or lubridate::parse_date_time().")), call. = FALSE)
+    stop(paste0("Columns ", paste0("'", n, "'", collapse = ", "), " must be in R's date/time formating (POSIXct).", ifelse(internal == FALSE, " Consider using as.POSIXct() and strptime() or lubridate::parse_date_time().", "")), call. = FALSE)
   }
 }
 

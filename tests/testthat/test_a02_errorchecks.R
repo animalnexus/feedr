@@ -14,8 +14,8 @@ test_that("check_time returns error if col not time", {
   expect_error(check_time(d, c("start", "end")))
   expect_silent(check_name(d, c("start")))
 
-  expect_error(check_time(d, c("start", "end")), "This data frame should have been created")
-  expect_error(check_time(d, c("start", "end"), internal = FALSE), "Consider as.POSIXct()")
+  expect_error(check_time(d, c("start", "end")), "Columns 'start', 'end' must be in R's date/time formating \\(POSIXct\\).")
+  expect_error(check_time(d, c("start", "end"), internal = FALSE), "Consider using as.POSIXct()")
 })
 
 # check_tz()
