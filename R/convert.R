@@ -103,6 +103,7 @@ convert_asnipe <- function(r, fun = "gmmevents", by_day = TRUE, time_scale = "se
 #'
 #' # Use aniDom functions:
 #'
+#' \dontrun{
 #' library(aniDom)
 #'
 #' # Calculate elo_scores
@@ -111,6 +112,8 @@ convert_asnipe <- function(r, fun = "gmmevents", by_day = TRUE, time_scale = "se
 #' # Estimate repeatability
 #' r1 <- estimate_uncertainty_by_repeatability(winners = i$winner, losers = i$loser)
 #' r2 <- estimate_uncertainty_by_splitting(winners = i$winner, losers = i$loser, randomise = TRUE)
+#'
+#' }
 #'
 #' @import magrittr
 #' @export
@@ -167,6 +170,7 @@ convert_anidom <- function(d){
 #' i <- convert_dominance(d)
 #' i <- convert_dominance(d$displacements) # Equivalent
 #'
+#' \dontrun{
 #' # Use Dominance package:
 #' library(Dominance)
 #'
@@ -175,6 +179,7 @@ convert_anidom <- function(d){
 #'
 #' # Construct social network graphs
 #' Sociogram(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bits = i$bytes)
+#' }
 #'
 #' @import magrittr
 #' @export
