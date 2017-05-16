@@ -159,6 +159,9 @@ test_that("convert_dominance converts as expected", {
 })
 
 test_that("convert_dominance runs Dominance ADI functions as expected", {
+  skip_on_travis()
+  skip_on_appveyor()
+
   d <- disp(visits(finches_lg))
   i <- convert_dominance(d)
 
