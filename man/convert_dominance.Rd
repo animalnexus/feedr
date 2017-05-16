@@ -37,6 +37,7 @@ d <- disp(visits(finches_lg))
 i <- convert_dominance(d)
 i <- convert_dominance(d$displacements) # Equivalent
 
+\dontrun{
 # Use Dominance package:
 library(Dominance)
 
@@ -45,6 +46,7 @@ ADI(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bytes = i$b
 
 # Construct social network graphs
 Sociogram(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bits = i$bytes)
+}
 
 }
 \seealso{

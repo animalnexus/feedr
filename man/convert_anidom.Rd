@@ -33,6 +33,7 @@ i <- convert_anidom(d$displacements) # Equivalent
 
 # Use aniDom functions:
 
+\dontrun{
 library(aniDom)
 
 # Calculate elo_scores
@@ -41,6 +42,8 @@ s <- elo_scores(winners = i$winner, losers = i$loser)
 # Estimate repeatability
 r1 <- estimate_uncertainty_by_repeatability(winners = i$winner, losers = i$loser)
 r2 <- estimate_uncertainty_by_splitting(winners = i$winner, losers = i$loser, randomise = TRUE)
+
+}
 
 }
 \seealso{
