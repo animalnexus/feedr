@@ -457,10 +457,20 @@ presence_single <- function(v1, bw = bw){
 #'
 #' For an entire \code{visits} data frame, identifies displacement events.
 #' Displacements are events when one animal leaves the logger right before the
-#' arrival of another. In some species this can be used to infer dominance.
+#' arrival of another.
 #'
 #' The first and last visits on the record are automatically assumed to be
 #' non-displacer and non-displacee, respectively.
+#'
+#' In some species displacements can be used to infer dominance. Displacements
+#' can be passed to the \code{feedr} function \code{\link{dom}} to calculate
+#' dominance matrices. Alternatively, the interaction data frame returned can be
+#' passed directly to the \code{\link[Perc]{as.conflictmat}} function of the
+#' \link{Perc} package to be transformed into a conflict matrix, ready for
+#' analysis of dominance using percolation and conductance. Finally, the
+#' displacements data frame can also be converted using the
+#' \code{\link{convert_anidom}} function to a data frame for use by the
+#' \link{aniDom} package's \link[aniDom]{elo_scores} function.
 #'
 #' @param v Dataframe. A visits data frame containing \strong{all} visits from
 #'   \strong{all} animals. From the output of \code{visits}. Must contain columns
