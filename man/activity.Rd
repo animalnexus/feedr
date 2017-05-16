@@ -63,4 +63,3 @@ a <- activity(p, res = 1, by_logger = TRUE)
 }
 
 }
-

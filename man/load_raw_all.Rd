@@ -80,4 +80,3 @@ file, the lat/lon information is on the second line, in the format of
 "latitude, longitude" both in decimal format (spacing doesn't matter, but the
 comma does).
 }
-

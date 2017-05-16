@@ -24,4 +24,3 @@ map_animate_indiv(visits(finches))
 }
 
 }
-

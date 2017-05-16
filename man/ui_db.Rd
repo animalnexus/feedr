@@ -28,4 +28,3 @@ function for a non-interactive method.
 \seealso{
 \code{\link{dl_data}}
 }
-

@@ -65,4 +65,3 @@ v <- chickadees \%>\%
   do(visits(.))
 
 }
-

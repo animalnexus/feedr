@@ -17,4 +17,3 @@ of sun rise/set}
 \description{
 Calculate times of sunrise and sunset depending on the location and the date.
 }
-

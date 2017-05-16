@@ -21,4 +21,3 @@ A dataset containing raw reads of black-capped chickadees visiting
 RFID-enabled feeders (loggers) in Prince George, BC, Canada
 }
 \keyword{datasets}
-
