@@ -1,7 +1,7 @@
 context("map_leaflet Visualizations")
 
 test_that("maps_leaflet_base return maps", {
-  expect_error(map <- map_leaflet_base(locs = unique(finches[, c("logger_id", "lat", "lon")])), NA)
+  expect_silent(map <- map_leaflet_base(locs = unique(finches[, c("logger_id", "lat", "lon")])))
   expect_is(map, c("leaflet", "htmlwidget"))
   expect_true(all(attr(map$x, "leafletData") == unique(finches[, c("logger_id", "lat", "lon")])))
   expect_equal_to_reference(map, "leaflet_base_map.rds")
