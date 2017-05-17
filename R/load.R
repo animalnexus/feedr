@@ -88,7 +88,7 @@ load_raw <- function(r_file,
   if(!is.character(r_file)) stop("r_file must be character")
   if(!(details %in% 0:2)) stop("'details' must be one of 0, 1, or 2.")
 
-  # Check depreciated arguments
+  # Check deprecated arguments
   if (!missing(feeder_pattern)) {
     warning("Argument feeder_pattern is deprecated; please use logger_pattern instead.",
             call. = FALSE)
