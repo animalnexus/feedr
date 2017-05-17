@@ -19,6 +19,8 @@ shiny_test_startup <- function(f = NULL, appURL, args = NULL,
   system("(java -jar ~/R/x86_64-pc-linux-gnu-library/3.3/RSelenium/bin/selenium-server-standalone.jar &)",
          ignore.stdout = TRUE, ignore.stderr = TRUE)
 
+  Sys.sleep(2)
+
   if(type == "local"){
     start_shiny(f, args)
   }
@@ -30,6 +32,7 @@ shiny_test_startup <- function(f = NULL, appURL, args = NULL,
   remDr$open(silent = TRUE)
   remDr$setImplicitWaitTimeout(milliseconds = 1000) #Wait 1s for elements to load
   remDr$navigate(appURL)
+  page_loaded(remDr) #wait until page started to load
   ui_loaded(remDr) #wait until loaded
   expect_false(test_error(remDr)) #make sure no errors off the bat
   return(remDr)
@@ -50,6 +53,23 @@ shiny_test_cleanup <- function(remDr, f = NULL, type = "local"){
 app_loaded <- function(remDr) {
   msg <- remDr$findElement(using = "css selector", value = "[id = 'loading_app']")
   !unlist(msg$isElementDisplayed())
+}
+
+page_loaded <- function(remDr) {
+ ready <- FALSE
+ start <- Sys.time()
+
+ while(!ready){
+   message("Wait for page...")
+   if(as.numeric(difftime(Sys.time(), start, units = "sec")) > 30) {
+     message("breaking")
+     break
+   }
+   s <- remDr$findElements("css", value = "[class ^= 'shiny']")
+   ready <- length(s) > 0
+   if(!ready) Sys.sleep(1)
+ }
+ return(ready)
 }
 
 ui_loaded <- function(remDr) {
@@ -423,7 +443,7 @@ test_time_formats <- function(f, file, format = "ymd") {
       remDr$findElement("css", "[data-value $= 'HMS']")$clickElement()
       Sys.sleep(0.5)
       remDr$findElement("css", paste0("[data-value = '", h, " HMS']"))$clickElement()
-      Sys.sleep(0.5)
+      Sys.sleep(1)
 
       if(format == h) {
         expect_null(test_msg(remDr))
