@@ -126,6 +126,27 @@ test_that("Import multiple logger files", {
   shiny_test_cleanup(remDr, f_import)
 })
 
+# Import multiple files contrasting types --------------------------------------------
+test_that("Import multiple files contrasting types", {
+  remDr <- shiny_test_startup(f_import, appURL, browserName = "chrome")
+
+  # Select files
+  select_files(remDr, c(d_logger[1], d_preformat[1]))
+
+  # Expect error message
+  expect_match(test_msg(remDr), "Cannot proceed: Some or all of your logger ids are missing \\(i.e. NA\\)")
+
+  # Click on logger format
+  remDr$findElement("css", "[type = 'radio'][value = 'logger']")$clickElement()
+  Sys.sleep(0.5)
+
+  # Expect error message
+  expect_match(test_msg(remDr), "Cannot proceed: NA times detected, check your time format")
+
+    # Clean up
+  shiny_test_cleanup(remDr, f_import)
+})
+
 # Preformat - Fix some column names ---------------------------------------
 test_that("Preformat - Fix column names", {
   remDr <- shiny_test_startup(f_import, appURL, browserName = "chrome")
