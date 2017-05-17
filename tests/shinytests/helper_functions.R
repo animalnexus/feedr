@@ -291,7 +291,8 @@ msg_table <- function(t){
 
 select_files <- function(remDr, files){
   e <- remDr$findElement("css", "[id $= 'file1']")
-  for(f in files) e$sendKeysToElement(list(f))
+  #for(f in files) e$sendKeysToElement(list(f))
+  e$sendKeysToElement(list(paste0(files, collapse = "\n")))
   data_loaded(remDr)
   Sys.sleep(0.5)
   expect_false(test_error(remDr))
@@ -305,13 +306,13 @@ download_files <- function(remDr, files, preview = NULL, type = "preformat", tim
 
   # Compare to expected
   if(type == "preformat") {
-    suppressWarnings(i1 <- load_format(dplyr::bind_rows(lapply(files, function(x) load_format(utils::read.csv(x), time_format = time_format)))))
-    if(!is.null(preview)) ip <- load_format(utils::read.csv(files[1]), time_format = time_format)
+    suppressWarnings(i1 <- load_format(dplyr::bind_rows(lapply(files, function(x) load_format(utils::read.csv(x), time_format = time_format, verbose = FALSE))), verbose = FALSE))
+    if(!is.null(preview)) ip <- load_format(utils::read.csv(files[1]), time_format = time_format, verbose = FALSE)
   } else if (type == "logger") {
-    suppressWarnings(i1 <- load_format(dplyr::bind_rows(lapply(files, load_raw, logger_pattern = NA, time_format = time_format))))
-    if(!is.null(preview)) ip <- load_format(load_raw(files[1], logger_pattern = NA, time_format = time_format))
+    suppressWarnings(i1 <- load_format(dplyr::bind_rows(lapply(files, load_raw, logger_pattern = NA, time_format = time_format)), verbose = FALSE))
+    if(!is.null(preview)) ip <- load_format(load_raw(files[1], logger_pattern = NA, time_format = time_format), verbose = FALSE)
   }
-  i2 <- load_format(utils::read.csv(paste0(test_dir, "/downloads/output.csv")))
+  i2 <- load_format(utils::read.csv(paste0(test_dir, "/downloads/output.csv")), verbose = FALSE)
   expect_equivalent(i1, i2, info = paste0("Comparing: ", paste0(files, collapse = "\n")))
 
   # Compare to preview
@@ -405,7 +406,7 @@ compare_screenshot <- function(file){
 
 test_time_formats <- function(f, file, format = "ymd") {
   test_that(paste0("Date/Time format - ", format, " (", file, ")"), {
-    remDr <- shiny_test_startup(f, appURL)
+    remDr <- shiny_test_startup(f, appURL, browserName = "chrome")
 
     # Select file
     select_files(remDr, file)

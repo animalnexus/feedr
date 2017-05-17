@@ -36,7 +36,8 @@ d_preformat <- c(system.file("extdata", "chickadees.csv", package = "feedr"),
                  system.file("extdata", "finches.csv", package = "feedr"))
 
 d_preformat_errors <- c(system.file("extdata", "import_tests", "finches_colnames.csv", package = "feedr"),
-                        system.file("extdata", "import_tests", "finches_cols.csv", package = "feedr"))
+                        system.file("extdata", "import_tests", "finches_cols.csv", package = "feedr"),
+                        system.file("extdata", "import_tests", "finches_colnames2.csv", package = "feedr"))
 
 d_preformat_dmy <- c(system.file("extdata", "import_tests", "finches_dmy1.csv", package = "feedr"),
                      system.file("extdata", "import_tests", "finches_dmy2.csv", package = "feedr"),
@@ -64,3 +65,8 @@ d_logger_inline <- c(system.file("extdata", "import_tests", "logger_inline.TXT",
 
 d_logger_index <- c(system.file("shiny-examples", "app_files", "logger_example1.txt", package = "feedr"),
                     system.file("shiny-examples", "app_files", "logger_index_example.csv", package = "feedr"))
+
+# finches %>%
+#   dplyr::rename(Animal_ID = animal_id, TIME = time, feeder_id = logger_id, LON = lon, LATITUDE = lat) %>%
+#   write.csv("./inst/extdata/import_tests/finches_colnames2.csv", row.names = FALSE)
+
