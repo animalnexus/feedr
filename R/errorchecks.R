@@ -47,5 +47,36 @@ check_format <- function(d, map = FALSE, disp = FALSE) {
   if("animal_id" %in% names(d)) if(any(stringr::str_count(d$animal_id, "_") > 0)) message(msg_a)
 }
 
+#' @import magrittr
+check_input <- function(d, input = "lon", options = c("lon", "longitude", "long"), verbose = TRUE) {
+  opts_string <- paste0("(^", paste0(options, collapse = "$)|(^"), "$)")
+  n <- which(stringr::str_detect(names(d), stringr::regex(opts_string, ignore_case = TRUE)))
+
+  # Check if any columns
+  if(length(n) > 0){
+    # Check if more than two columns for the input
+    if(length(n) > 1) {
+      c <- combn(n, 2)
+      if(ncol(c) < 10) {
+        for(i in 1:ncol(c)) {
+          if(!isTRUE(all.equal(d[, c[1, i]], d[, c[2, i]]))) {
+            stop("There are multiple ", input, " columns which are not equivalent\n(expects ", input, " to be one of ", paste0(options, collapse = ", "), ", but ignores case")
+          }
+        }
+      } else {
+        stop("There are too many duplicate ", input, " columns\n(expects ", input, " to be one of ", paste0(options, collapse = ", "), ", but ignores case")
+      }
+      # Omit extra columns if duplicates
+      if(verbose) message("Omitting duplicate columns for ", input)
+      d <- d[, -n[2:length(n)]]
+      n <- n[1]
+    }
+    if(any(names(d)[n] != input)) {
+      if(verbose) message("Renaming column '", names(d)[n], "' to '", input, "'")
+      names(d)[n] <- input
+    }
+  }
+  return(d)
+}
 
 

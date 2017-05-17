@@ -147,6 +147,7 @@ load_raw <- function(r_file,
       # Convert times
       r$time <- lubridate::parse_date_time(paste(r$date, r$time), orders = time_format, tz = tz)
       if(tz_disp != tz) r$time <- lubridate::with_tz(r$time, tz_disp)
+      r$date <- as.Date(r$time)
 
       # Reorder columns
       cols <- names(r)[names(r) %in% c("animal_id", "time", "logger_id", "lat", "lon")]
@@ -406,21 +407,19 @@ dl_data <- function(start = NULL,
 
   l <- RCurl::getForm(url_loggers, key = check_db()) %>%
     utils::read.csv(text = ., strip.white = TRUE, colClasses = "character") %>%
-    dplyr::rename(logger_id = feeder_id) %>%
-    load_format() %>%
+    load_format(verbose = FALSE) %>%
     dplyr::mutate(logger_id = as.character(logger_id),
                   site_name = as.character(site_name))
 
   r <- load_format(utils::read.csv(text = g, strip.white = TRUE, colClasses = "character"),
-                   tz = "UTC",
-                   tz_disp = tz_disp) %>%
+                   tz = "UTC", tz_disp = tz_disp, verbose = FALSE) %>%
     dplyr::rename(species = engl_name) %>%
     dplyr::select(-site_id) %>%
     dplyr::arrange(time) %>%
     dplyr::mutate(logger_id = as.character(logger_id),
                   site_name = as.character(site_name)) %>%
     dplyr::left_join(l, by = c("logger_id", "site_name")) %>%
-    load_format(tz = tz_disp)
+    load_format(tz = tz_disp, verbose = FALSE)
 
   return(r)
 }
@@ -446,11 +445,13 @@ dl_data <- function(start = NULL,
 #'   to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
 #'   function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
 #'   etc.).
+#' @param verbose Logical. Whether or not to print messages when renaming
+#'   columns.
 #'
 #' @export
-load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE, time_format = "ymd HMS"){
+load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE, time_format = "ymd HMS", verbose = TRUE){
 
-  # Checks
+  # Check timezones
   tz <- check_tz(tz)
   if(is.null(tz_disp)) tz_disp <- tz else tz_disp <- check_tz(tz_disp)
   if(!dst) tz <- tz_offset(tz, tz_name = TRUE)
@@ -459,36 +460,36 @@ load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE, tim
   # Trim leading or trailing whitespace
   r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
 
+  # If locs combined, split apart
+  if("loc" %in% names(r)) {
+    r$lon <- as.numeric(gsub("\\(([-0-9.]+),[-0-9.]+\\)", "\\1", r$loc))
+    r$lat <- as.numeric(gsub("\\([-0-9.]+,([-0-9.]+)\\)", "\\1", r$loc))
+    r <- r[, names(r) != "loc",]
+  }
+
+  # Check input names
+  r <- check_input(r, input = "animal_id", options = c("animal_id", "bird_id"), verbose = verbose)
+  r <- check_input(r, input = "logger_id", options = c("logger_id", "feeder_id"), verbose = verbose)
+  r <- check_input(r, input = "lon", options = c("lon", "longitude", "long"), verbose = verbose)
+  r <- check_input(r, input = "lat", options = c("lat", "latitude"), verbose = verbose)
+  r <- check_input(r, input = "time", options = "time", verbose = verbose)
+  r <- check_input(r, input = "date", options = "date", verbose = verbose)
+
   # Extract Proper Date and Times
-  if("timezone" %in% names(r)) names(r)[names(r) == "timezone"] <- "time"
-  if("time" %in% names(r)) r$time <- lubridate::parse_date_time(r$time, orders = time_format, tz = tz, truncated = 1)
-  if(tz != tz_disp) r$time <- lubridate::with_tz(r$time, tz_disp)
-  if("date" %in% names(r)) r$date <- as.Date(r$date)
+  if("time" %in% names(r)) {
+    r$time <- lubridate::parse_date_time(r$time, orders = time_format, tz = tz, truncated = 1)
+    if(tz != tz_disp) r$time <- lubridate::with_tz(r$time, tz_disp)
+    r$date <- as.Date(r$time)
+  }
 
   # Make sure all factors are factors:
-  if(any(names(r) == "bird_id")) {
-    r <- dplyr::rename(r, animal_id = bird_id)
-    message("Renaming 'bird_id' to 'animal_id'. Use of 'bird_id' is now deprecated.")
-  }
-  if(any(names(r) == "feeder_id")) {
-    r <- dplyr::rename(r, logger_id = feeder_id)
-    message("Renaming 'feeder_id' to 'logger_id'. Use of 'feeder_id' is now deprecated.")
-  }
   if(any(names(r) == "animal_id")) r$animal_id <- as.factor(r$animal_id)
   if(any(names(r) == "logger_id")) r$logger_id <- as.factor(r$logger_id)
-
 
   # If locs already present, convert to numeric
   if(all(c("lat", "lon") %in% names(r))) {
     r$lon <- as.numeric(as.character(r$lon))
     r$lat <- as.numeric(as.character(r$lat))
-  }
-
-  # If locs combined convert now
-  if("loc" %in% names(r)) {
-    r$lon <- as.numeric(gsub("\\(([-0-9.]+),[-0-9.]+\\)", "\\1", r$loc))
-    r$lat <- as.numeric(gsub("\\([-0-9.]+,([-0-9.]+)\\)", "\\1", r$loc))
-    r <- r[, names(r) != "loc",]
   }
 
   # Reorder columns

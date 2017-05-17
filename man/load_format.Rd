@@ -5,7 +5,7 @@
 \title{Format data}
 \usage{
 load_format(r, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE,
-  time_format = "ymd HMS")
+  time_format = "ymd HMS", verbose = TRUE)
 }
 \arguments{
 \item{r}{Data frame. Data frame to format.}
@@ -29,6 +29,9 @@ DST).}
 to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
 function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
 etc.).}
+
+\item{verbose}{Logical. Whether or not to print messages when renaming
+columns.}
 }
 \description{
 Formats manually loaded data. Not necessary if using any of the helper loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, or \code{data_dl()}.

@@ -1,14 +1,15 @@
 library(feedr)
 context("Internal formating and error checks")
 
-# check_name()
+
+# check_name --------------------------------------------------------------
 test_that("check_name returns error if name missing", {
   d <- data.frame(animal_id = NA, logger_id = NA, start = 2, end = 2)
   expect_error(check_name(d, c("animal_ID", "logGer_id")))
   expect_silent(check_name(d, c("animal_id", "logger_id")))
 })
 
-# check_time()
+# check_time --------------------------------------------------------------
 test_that("check_time returns error if col not time", {
   d <- data.frame(animal_id = NA, logger_id = NA, start = as.POSIXct("2015-01-01 12:34:00"), end = 54)
   expect_error(check_time(d, c("start", "end")))
@@ -18,7 +19,7 @@ test_that("check_time returns error if col not time", {
   expect_error(check_time(d, c("start", "end"), internal = FALSE), "Consider using as.POSIXct()")
 })
 
-# check_tz()
+# check_tz --------------------------------------------------------------
 test_that("check_tz returns UTC if problems", {
   tz1 <- "America/Vancouver"
   tz2 <- "UTC"
@@ -41,7 +42,7 @@ test_that("check_tz returns UTC if problems", {
   expect_message(expect_equal(check_tz(""), "UTC"), "Cannot set timezone, defaulting to UTC")
 })
 
-# check_indiv()
+# check_indiv --------------------------------------------------------------
 test_that("check_indiv returns error if more than one animal_id", {
   d <- data.frame(animal_id = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514"),
                   logger_id = NA)
@@ -49,7 +50,7 @@ test_that("check_indiv returns error if more than one animal_id", {
   expect_silent(check_indiv(data.frame(animal_id = rep("041868D396", 3), logger_id = 45)))
 })
 
-# check_format()
+# check_format --------------------------------------------------------------
 test_that("check_format returns error if '_' in column values", {
   d <- data.frame(animal_id = c("041868D396", "041868D861", "041868FF93", "062000__043E", "0620__0004F8", "0620000514"),
                   logger_id = c("456", "5678", "TR_567", "GH_563", "YU848", "56_67"))
@@ -61,4 +62,125 @@ test_that("check_format returns error if '_' in column values", {
 
   expect_message(check_format(d, disp = TRUE), regexp = "Using '_' in logger_id values conflicts with the mapping functions. You should remove any '_'s if you plan to use these functions.\n$")
   expect_message(check_format(d, disp = TRUE), regexp = "Using '_' in animal_id values conflicts with the displacement/dominance functions.\n")
+})
+
+
+# check_input -------------------------------------------------------------
+
+test_that("check_input renames columns (lat/lon)", {
+
+  # Rename columns
+  for(i in c("longitude", "LonGiTude", "long", "Long")){
+    r <- finches %>%
+      dplyr::rename_(.dots = setNames("lon", i))
+
+    expect_message(r2 <- check_input(r), paste0("Renaming column '", i, "' to 'lon'"))
+    expect_is(r2, "data.frame")
+    expect_equal(finches, r2)
+  }
+
+  for(i in c("latitude", "LatItuDE")){
+    r <- finches %>%
+      dplyr::rename_(.dots = setNames("lat", i))
+
+    expect_message(r2 <- check_input(r, input = "lat", options = c("lat", "latitude")),
+                   paste0("Renaming column '", i, "' to 'lat'"))
+    expect_is(r2, "data.frame")
+    expect_equal(finches, r2)
+  }
+})
+
+test_that("check_input renames columns (regular)", {
+
+  # Rename columns
+  r1 <- finches %>%
+    dplyr::rename(Animal_ID = animal_id, TIME = time, feeder_id = logger_id)
+
+  expect_message(r2 <- check_input(r1, input = "animal_id", options = c("animal_id", "bird_id")), "Renaming column 'Animal_ID' to 'animal_id'")
+  expect_is(r2, "data.frame")
+  expect_named(r2, c("animal_id", "TIME", "feeder_id", "species", "sex", "lon", "lat"))
+
+  expect_message(r3 <- check_input(r2, input = "time", options = "time"), "Renaming column 'TIME' to 'time'")
+  expect_is(r3, "data.frame")
+  expect_named(r3, c("animal_id", "time", "feeder_id", "species", "sex", "lon", "lat"))
+
+  expect_message(r4 <- check_input(r3, input = "logger_id", options = c("feeder_id", "logger_id")), "Renaming column 'feeder_id' to 'logger_id'")
+  expect_is(r4, "data.frame")
+  expect_named(r4, c("animal_id", "time", "logger_id", "species", "sex", "lon", "lat"))
+
+  expect_equal(r4, finches)
+})
+
+test_that("check_input omits duplicate columns", {
+
+  for(i in list(c("longitude", "lon"),
+                c("LonGiTUDE", "long"),
+                c("lon", "long", "longitude"))){
+    r <- finches %>%
+      dplyr::rename_(.dots = setNames("lon", i[1])) %>%
+      dplyr::mutate_(.dots = setNames(list(i[1]), i[2]))
+    expect_message(r2 <- check_input(r), "Omitting duplicate columns for lon")
+    expect_is(r2, "data.frame")
+    expect_equivalent(finches, r2)
+  }
+
+  for(i in list(c("latitude", "lat"),
+                c("LaTITUDE", "Lat"),
+                c("lat", "LAT", "Lat"))){
+    r <- finches %>%
+      dplyr::rename_(.dots = setNames("lat", i[1])) %>%
+      dplyr::mutate_(.dots = setNames(list(i[1]), i[2]))
+    expect_message(r2 <- check_input(r, input = "lat", options = c("lat", "latitude")),
+                   "Omitting duplicate columns for lat")
+    expect_is(r2, "data.frame")
+    expect_equivalent(finches, r2)
+  }
+})
+
+test_that("check_input renames AND omits duplicates", {
+  r <- finches %>%
+    dplyr::rename(Lon = lon) %>%
+    dplyr::mutate(Longitude = Lon)
+  expect_message(r2 <- check_input(r), "Omitting duplicate columns for lon")
+  expect_message(r2 <- check_input(r), "Renaming column 'Lon' to 'lon'")
+  expect_is(r2, "data.frame")
+  expect_equivalent(finches, r2)
+
+  r <- finches %>%
+    dplyr::rename(Lat = lat) %>%
+    dplyr::mutate(Latitude = Lat)
+  expect_message(r2 <- check_input(r, input = "lat", options = c("lat", "latitude")),
+                 "Omitting duplicate columns for lat")
+  expect_message(r2 <- check_input(r, input = "lat", options = c("lat", "latitude")),
+                 "Renaming column 'Lat' to 'lat'")
+  expect_is(r2, "data.frame")
+  expect_equivalent(finches, r2)
+
+})
+
+test_that("check_input returns error if ambiguous", {
+  r <- finches %>%
+    dplyr::mutate(Lon = lon + 1)
+  expect_error(check_input(r), "There are multiple lon columns which are not equivalent")
+  r <- finches %>%
+    dplyr::mutate(Lat = lat + 1)
+  expect_error(check_input(r, input = "lat", options = c("lat", "latitude")), "There are multiple lat columns which are not equivalent")
+
+  r <- finches %>%
+    dplyr::mutate(Lon = lon + 1,
+                  long = Lon + 0.2,
+                  LonGiTude = long - 0.46,
+                  LON = lon -0.49)
+  expect_error(check_input(r), "There are too many duplicate lon columns")
+  r <- finches %>%
+    dplyr::mutate(Lat = lat + 1,
+                  laT = Lat + 0.2,
+                  LATITUDE = lat - 0.46,
+                  LAT = lat -0.49)
+  expect_error(check_input(r, input = "lat", options = c("lat", "latitude")), "There are too many duplicate lat columns")
+})
+
+test_that("check_input returns unchanged data frame if col doesn't exist", {
+  expect_silent(r1 <- check_input(finches, input = "site_name", options = c("site_name", "site_id")))
+  expect_equal(r1, finches)
 })
