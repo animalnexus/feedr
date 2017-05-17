@@ -152,8 +152,8 @@ mod_data_import <- function(input, output, session, type = NULL) {
     vars$get_data <- FALSE
 
     ## Import previews
-    if(input$format == "logger") d <- import_logger(path()[1], logger(), tz(), input)
-    if(input$format == "all") d <- import_all(path()[1], tz(), input, nrows = 40)
+    if(input$format == "logger") d <- import_logger(path(), logger(), tz(), input)
+    if(input$format == "all") d <- import_all(path(), tz(), input)
 
     ## Check validations
     check_data(d)
@@ -197,8 +197,10 @@ mod_data_import <- function(input, output, session, type = NULL) {
     req(preview_data(), vars$get_data)
 
     withProgress({
-      if(input$format == "logger") vars$pre_data <- import_logger(path(), logger(), tz(), input)
-      if(input$format == "all") vars$pre_data <- import_all(path(), tz(), input)
+      #if(input$format == "logger") vars$pre_data <- import_logger(path(), logger(), tz(), input)
+      #if(input$format == "all") vars$pre_data <- import_all(path(), tz(), input)
+      if(input$format == "logger") vars$pre_data <- preview_data()
+      if(input$format == "all") vars$pre_data <- preview_data()
     }, message = "Importing...")
   })
 
@@ -343,28 +345,30 @@ import_logger <- function(path, logger, tz, input) {
   return(d)
 }
 
+#' @import magrittr
 import_all <- function(path, tz, input, nrows = -1) {
   req(!is.null(input$sep), !is.null(input$skip))
 
   d <- try({
-    temp <- dplyr::bind_rows(lapply(path, utils::read.csv,
-                                    colClasses = "character",
-                                    sep = input$sep,
-                                    skip = input$skip,
-                                    nrows = nrows))
-    load_format(temp, tz = tz, dst = as.logical(input$dst),
-                time_format = input$time)
-    }, silent = TRUE)
+    dplyr::bind_rows(lapply(path, utils::read.csv,
+                            colClasses = "character",
+                            sep = input$sep,
+                            skip = input$skip,
+                            nrows = nrows)) %>%
+      load_format(tz = tz, dst = as.logical(input$dst),
+                  time_format = input$time, verbose = FALSE)
+  }, silent = TRUE)
 
  return(d)
 }
 
 check_data <- function(d) {
-  validate(need(class(d) != "try-error", "Error importing data, try a different format or settings."))
+  #validate(need(class(d) != "try-error", "Error importing data, try a different format or settings."))
+  validate(need(is.data.frame(d), "Error importing data, try a different format or settings."))
   validate(need(sum(names(d) %in% c("time", "bird_id", "feeder_id")) == 3 |
                 sum(names(d) %in% c("time", "animal_id", "logger_id")) == 3,
-                "Error importing data, try a different format."))
-  validate(need(all(!is.na(d$logger_id)), "Cannot proceed: Some or all of your logger ids are missing"))
+                "Cannot proceed: Required columns aren't present (require 'animal_id', 'logger_id', and 'time'). Try a different format or modify your column names."))
+  validate(need(all(!is.na(d$logger_id)), "Cannot proceed: Some or all of your logger ids are missing (i.e. NA)"))
   validate(need(all(!is.na(d$time)), "Cannot proceed: NA times detected, check your time format"))
 }
 
