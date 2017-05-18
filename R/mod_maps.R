@@ -205,7 +205,8 @@ mod_maps_controls <- function(input, output, session, times, debounce_int, verbo
 
   breaks <- reactive({
     req(interval_selection(data_range()) <= interval())
-    req(lubridate::interval(time_range()[1], time_range()[2]) %within% lubridate::interval(t()$start, t()$end)) #Make sure time range of data matches UIs (when switching datasets)
+
+    req(lubridate::interval(time_range()[1] + interval()*60, time_range()[2] - interval()*60) %within% lubridate::interval(t()$start, t()$end)) #Make sure time range of data matches UIs (for when switching datasets) within the interval range
 
     if(verbose) cat("  Breaks\n")
 
