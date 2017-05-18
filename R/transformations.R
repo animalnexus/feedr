@@ -113,10 +113,10 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
         dplyr::select(animal_id, time, logger_id)
 
       rows <- nrow(impos)
-      if(nrow(impos) > 5) {
-        rows <- 5
+      if(nrow(impos) > 6) {
+        rows <- 6
       }
-      stop("Impossible visits found, no specification for how to handle:\n\nIndividual(s) detected at 2+ loggers within ", bw_imp, "s.\nDecrease the `bw_imp` argument, remove these reads, or\nallow impossible visits (allow_imp = TRUE) and try again.\n\n", paste0(utils::capture.output(impos[1:rows, ]), collapse = "\n"))
+      stop("Impossible visits found (n = ", nrow(impos), "), no specification for how to handle:\n\nIndividual(s) detected at 2+ loggers within ", bw_imp, "s.\nDecrease the `bw_imp` argument, remove these reads, or\nallow impossible visits (allow_imp = TRUE) and try again.\n\nFirst 6 impossible visits:\n", paste0(utils::capture.output(as.data.frame(impos[1:rows, ])), collapse = "\n"), call. = FALSE)
     }
   }
 

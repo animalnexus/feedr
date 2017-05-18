@@ -57,7 +57,7 @@ test_that("visits() returns correct data", {
 
 test_that("visits() allow_imp", {
   f <- rbind(finches, finches[1:5,] %>% dplyr::mutate(logger_id = "2400"))
-  expect_error(visits(f), "Impossible")
+  expect_error(visits(f), "Impossible visits found \\(n = 10\\)")
   expect_silent(visits(f, allow_imp = TRUE))
 })
 
