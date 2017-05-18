@@ -101,6 +101,7 @@ load_raw <- function(r_file,
 
   skip <- details + skip
 
+  # Load data
   if(verbose) message("Loading file ", r_file, "...")
   r <- tryCatch(utils::read.table(r_file,
                                   col.names = c("animal_id","date","time"),
@@ -122,9 +123,11 @@ load_raw <- function(r_file,
       if(details == 0) { # Match patterns in file name
         if(is.na(logger_pattern)) r$logger_id <- stringr::str_extract(basename(r_file), "^[^.]*")
         if(!is.na(logger_pattern)) r$logger_id <- stringr::str_extract(r_file, logger_pattern)
+        if(any(is.na(r$logger_id))) stop("logger_id not detected in file name", call. = FALSE)
       } else if (details > 0) { # Get logger id from first line
         if(is.na(logger_pattern)) r$logger_id <- readLines(r_file, n = 1)
         if(!is.na(logger_pattern)) r$logger_id <- stringr::str_extract(readLines(r_file, n = 1), logger_pattern)
+        if(any(is.na(r$logger_id))) stop("logger_id not detected from first line of file", call. = FALSE)
       }
 
       # Get lat, lon
@@ -134,7 +137,7 @@ load_raw <- function(r_file,
           unlist() %>%
           trimws()
         locs <- suppressWarnings(try(as.numeric(locs), silent = TRUE))
-        if(class(locs) == "try-error" || is.na(locs) || length(locs) != 2) stop("Expecting one pair of lat/lon on second line of the file(s). Check format or change 'details' (Format should be e.g.,  53.91448, -122.76925).")
+        if(class(locs) == "try-error" || is.na(locs) || length(locs) != 2) stop("Expecting one pair of lat/lon on second line of the file. Check format or change 'details'\n(Format should be e.g.,  53.91448, -122.76925).", call. = FALSE)
         r$lat <- locs[1]
         r$lon <- locs[2]
       }

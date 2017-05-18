@@ -101,6 +101,24 @@ test_that("load_raw handles empty files gracefully", {
   expect_null(r, NULL)
 })
 
+test_that("load_raw stops if can't get logger_id", {
+
+  # Not in title as should be
+  f <- system.file("extdata", "import_tests", "logger_inline.TXT", package = "feedr")
+  expect_message(expect_error(r <- load_raw(r_file = f, skip = 2, details = 0), "logger_id not detected in file name"), "Loading file")
+  expect_silent(expect_error(r <- load_raw(r_file = f, skip = 2, details = 0, verbose = FALSE), "logger_id not detected in file name"))
+
+  # Not in body as should be
+  f <- system.file("extdata", "import_tests", "logger_inname_GR10DATA.TXT", package = "feedr")
+  expect_message(expect_error(r <- load_raw(r_file = f, details = 1), "logger_id not detected from first line of file"), "Loading file")
+  expect_silent(expect_error(r <- load_raw(r_file = f, details = 1, verbose = FALSE), "logger_id not detected from first line of file"))
+
+  # No Lat/Lon in body as should be
+  f <- system.file("extdata", "raw", "exp2", "GR10DATA_2016_01_16.TXT", package = "feedr")
+  expect_message(expect_error(r <- load_raw(r_file = f, details = 2), "Expecting one pair of lat/lon on second line of the file"), "Loading file")
+  expect_silent(expect_error(r <- load_raw(r_file = f, details = 2, verbose = FALSE), "Expecting one pair of lat/lon on second line of the file"))
+})
+
 
 # load_raw_all ------------------------------------------------------------
 test_that("load_raw_all loads and formats data correctly", {
