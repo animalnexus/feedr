@@ -110,8 +110,8 @@ mod_maps_controls <- function(input, output, session, times, debounce_int, verbo
   output$UI_time_range <- renderUI({
     if(verbose) cat("  UI - Time range\n")
     x <- difftime(t()$end, t()$start)
-    if(units(x) == "hours") s <- 60*60
-    if(units(x) == "days") s <- 60*60*24
+    if(units(x) == "hours" | (units(x) == "days" && x <= 7)) s <- 60*60
+    if(units(x) == "days" && x > 7) s <- 60*60*24
 
     sliderInput(ns("time_range"), "Time Range",
                 min = t()$start,
