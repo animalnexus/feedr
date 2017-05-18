@@ -12,6 +12,7 @@
     - will accept animal_id or bird_id, and logger_id or feeder_id
     - will rename all to be consistent: animal_id, logger_id, time, lon, lat
 - `load_format()` has new `verbose` argument to allow/prevent messages about renaming
+- `load_raw()` and `load_raw_all()` have new `verbose` argument to allow/prevent progress messages
 
 ## Other
 - Internal changes to include more testing

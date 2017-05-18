@@ -7,7 +7,7 @@
 load_raw(r_file, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE,
   details = 1, logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
   time_format = "mdy HMS", extra_pattern = NULL, extra_name = NULL,
-  sep = "", skip = 0, feeder_pattern)
+  sep = "", skip = 0, verbose = TRUE, feeder_pattern)
 }
 \arguments{
 \item{r_file}{Character. The location of a single file to load.}
@@ -53,6 +53,8 @@ more details).}
 
 \item{skip}{Character. Extra lines to skip in addition to the lines specified
 by details.}
+
+\item{verbose}{Logical. Whether to include progress messages or not.}
 
 \item{feeder_pattern}{Deprecated. Use logger_pattern.}
 }

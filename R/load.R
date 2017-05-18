@@ -48,6 +48,7 @@
 #'   more details).
 #' @param skip Character. Extra lines to skip in addition to the lines specified
 #'   by details.
+#' @param verbose Logical. Whether to include progress messages or not.
 #'
 #' @examples
 #' \dontrun{
@@ -71,21 +72,17 @@
 #' }
 #' @export
 load_raw <- function(r_file,
-                     tz = Sys.timezone(),
-                     tz_disp = NULL,
-                     dst = FALSE,
-                     details = 1,
-                     logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
+                     tz = Sys.timezone(), tz_disp = NULL, dst = FALSE,
+                     details = 1, logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
                      time_format = "mdy HMS",
-                     extra_pattern = NULL,
-                     extra_name = NULL,
-                     sep = "",
-                     skip = 0,
+                     extra_pattern = NULL, extra_name = NULL,
+                     sep = "", skip = 0, verbose = TRUE,
                      feeder_pattern) {
 
   # Error Checks
+  r_file <- try(as.character(r_file), silent = TRUE)
+  if(class(r_file) != "character") stop("r_file must coercible to character")
   if(length(r_file) > 1) stop("r_file can only be length 1, the file name.")
-  if(!is.character(r_file)) stop("r_file must be character")
   if(!(details %in% 0:2)) stop("'details' must be one of 0, 1, or 2.")
 
   # Check deprecated arguments
@@ -104,6 +101,7 @@ load_raw <- function(r_file,
 
   skip <- details + skip
 
+  if(verbose) message("Loading file ", r_file, "...")
   r <- tryCatch(utils::read.table(r_file,
                                   col.names = c("animal_id","date","time"),
                                   colClasses = "character",
@@ -161,7 +159,7 @@ load_raw <- function(r_file,
       } else if(!is.null(extra_name)) stop("You have specified names for extra columns, but you have not specified what pattern to match for filling ('extra_pattern').")
 
       return(r)
-    } else message("Empty file skipped: ", r_file)
+    } else if(verbose) message("Empty file skipped: ", r_file)
 }
 
 #' Load and combine raw data files
@@ -219,21 +217,15 @@ load_raw <- function(r_file,
 #'   more details).
 #' @param skip Character. Extra lines to skip in addition to the lines specified
 #'   by details.
+##' @param verbose Logical. Whether to include progress messages or not.
 #'
 #' @export
-load_raw_all <- function(r_dir,
-                         r_list,
-                         pattern = "DATA",
-                         tz = Sys.timezone(),
-                         tz_disp = NULL,
-                         dst = FALSE,
-                         details = 1,
-                         logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
+load_raw_all <- function(r_dir, r_list, pattern = "DATA",
+                         tz = Sys.timezone(), tz_disp = NULL, dst = FALSE,
+                         details = 1, logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
                          time_format = "mdy HMS",
-                         extra_pattern = NULL,
-                         extra_name = NULL,
-                         sep = "",
-                         skip = 0,
+                         extra_pattern = NULL, extra_name = NULL,
+                         sep = "", skip = 0, verbose = TRUE,
                          feeder_pattern) {
 
   if (!missing(feeder_pattern)) {
@@ -258,7 +250,7 @@ load_raw_all <- function(r_dir,
                                time_format = time_format,
                                extra_pattern = extra_pattern,
                                extra_name = extra_name,
-                               sep = sep, skip = skip))
+                               sep = sep, skip = skip, verbose = verbose))
   r <- load_format(r, tz = tz, tz_disp = tz_disp)
   return(r)
 }

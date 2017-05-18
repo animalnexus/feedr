@@ -1,4 +1,3 @@
-library(feedr)
 library(magrittr)
 context("Loading files")
 
@@ -59,7 +58,10 @@ test_that("load_format fixes names", {
 # load_raw ----------------------------------------------------------------
 test_that("load_raw loads and formats data correctly - logger id from file name", {
   f <- system.file("extdata", "raw", "exp2", "GR10DATA_2016_01_16.TXT", package = "feedr")
-  expect_is(r <- load_raw(r_file = f), "data.frame")
+  expect_message(load_raw(r_file = f), "Loading file")
+  expect_silent(r <- load_raw(r_file = f, verbose = FALSE))
+  expect_is(r, "data.frame")
+
   expect_match(names(r)[1:3], "^animal_id$|^time$|^logger_id$")
   expect_is(r$animal_id, "character")
   expect_is(r$logger_id, "character")
@@ -103,8 +105,12 @@ test_that("load_raw handles empty files gracefully", {
 # load_raw_all ------------------------------------------------------------
 test_that("load_raw_all loads and formats data correctly", {
   d <- system.file("extdata", "raw", package = "feedr")
-  expect_message(expect_error(load <- load_raw_all(r_dir = d, extra_pattern = "exp[0-9]{1,2}", extra_name = "Experiment", tz = "America/Vancouver"), NA), "Empty file skipped")
-  expect_message(expect_error(load2 <- load_raw_all(r_dir = d, extra_pattern = "exp[0-9]{1,2}", extra_name = "Experiment", tz = "America/Vancouver", tz_disp = "America/Toronto"), NA), "Empty file skipped")
+  expect_message(expect_error(load_raw_all(r_dir = d, extra_pattern = "exp[0-9]{1,2}", extra_name = "Experiment", tz = "America/Vancouver"), NA), "Empty file skipped")
+  expect_silent(load <- load_raw_all(r_dir = d, extra_pattern = "exp[0-9]{1,2}", extra_name = "Experiment", tz = "America/Vancouver", verbose = FALSE))
+
+  expect_message(expect_error(load_raw_all(r_dir = d, extra_pattern = "exp[0-9]{1,2}", extra_name = "Experiment", tz = "America/Vancouver", tz_disp = "America/Toronto"), NA), "Empty file skipped")
+  expect_silent(load2 <- load_raw_all(r_dir = d, extra_pattern = "exp[0-9]{1,2}", extra_name = "Experiment", tz = "America/Vancouver", tz_disp = "America/Toronto", verbose = FALSE))
+
   expect_is(load, "data.frame")
   expect_match(names(load)[1:3], "^animal_id$|^time$|^logger_id$")
   expect_is(load$animal_id, "factor")
