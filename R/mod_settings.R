@@ -161,7 +161,7 @@ mod_settings <- function(input, output, session, verbose = FALSE) {
   observe({
     req(values$settings, settings())
 
-    shinyjs::toggleState("settings_get", condition = any(settings() != values$settings))
+    shinyjs::toggleState("settings_get", condition = any(settings() != values$settings) & all(settings() != ""))
     shinyjs::toggleCssClass("settings_get", class = "btn-success", condition = any(settings() != values$settings))
     shinyjs::toggleCssClass("settings_get", class = "btn-default", condition = all(settings() == values$settings))
   })
