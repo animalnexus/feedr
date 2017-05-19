@@ -42,21 +42,49 @@ test_that("visits() jumps over obs of diff animals at diff loggers", {
   expect_equal(nrow(visits(finches[40:75,], bw = 6000)), 5)
 
   # Expect no two rows to have the same animal_id UNLESS the logger_id is different
-
   for(r in list(finches, finches_lg, chickadees)) {
     v <- visits(r, bw = 10000000000000000000) %>%
       dplyr::arrange(start) %>%
       dplyr::mutate(okay = (animal_id != dplyr::lead(animal_id)) |
                       (animal_id == dplyr::lead(animal_id) & logger_id != dplyr::lead(logger_id)))
+    expect_true(sum(!v$okay, na.rm = TRUE) == 0)
+  }
 
+  # Expect no two visits at the same logger to overlap
 
-    for(i in 1:(nrow(v)-1)){
-      er <- v[v$animal_id[i] != v$animal_id[i+1] | (v$animal_id[i] == v$animal_id[i+1] & v$logger_id[i] != v$logger_id[i+1]),]
-      if(nrow(er) > 0) {print(i); print(er)}
-      expect_true(nrow(er) == 0)
+  library(lubridate)
+
+  error <- data.frame()
+
+  for(q in c("finches", "finches_lg")) {
+    r <- get(q)
+    if(q == "chickadees") r <- dplyr::filter(r, experiment == "exp2")
+    v <- visits(r, bw = 100000000000000000000) %>%
+      dplyr::arrange(start) %>%
+      dplyr::mutate(visits = lubridate::interval(start, end))
+
+    # Expect no two visits at the same logger to overlap
+    for(l in unique(v$logger_id)){
+     # message(q, ": ", l)
+      for(i in 1:length(v$visits[v$logger_id == l])){
+        if(any(v$visits[v$logger_id == l][i] %within% v$visits[v$logger_id == l][-i])) {
+          error <- rbind(error, data.frame(data = q, type = "logger", visits = v$visits[v$logger_id == l][i], id = l))
+        }
+      }
+    }
+
+    # Expect no two visits by the same individual to overlap
+    for(a in unique(v$animal_id)){
+    # message(q, ": ", a)
+      for(i in 1:length(v$visits[v$logger_id == l])){
+        if(any(v$visits[v$logger_id == l][i] %within% v$visits[v$logger_id == l][-i])) {
+          error <- rbind(error, data.frame(data = q, type = "animal_id", visits = v$visits[v$logger_id == l][i], id = l))
+        }
+      }
     }
   }
 
+  expect_true(nrow(error) == 0, info = "At least one animal_id or logger_id has overlapping visits")
 
 })
 

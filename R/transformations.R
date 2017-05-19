@@ -74,10 +74,10 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
   }
 
   ## Make factors and get date
-  r <- dplyr::mutate(r,
-                     date = as.Date(time),
-                     logger_id = factor(logger_id),
-                     animal_id = factor(animal_id))
+  # r <- dplyr::mutate(r,
+  #                    #date = as.Date(time),
+  #                    logger_id = factor(logger_id),
+  #                    animal_id = factor(animal_id))
 
   # Grab unique extra cols
   if(pass == TRUE) extra <- keep_extra(r, n = "time")
@@ -93,7 +93,9 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
 
   v <- r %>%
     dplyr::arrange(time) %>%
-    dplyr::mutate(diff_animal = dplyr::lead(logger_id) == logger_id & dplyr::lead(animal_id) != animal_id) %>%
+    dplyr::group_by(logger_id) %>%
+    #dplyr::mutate(diff_animal = dplyr::lead(logger_id) == logger_id & dplyr::lead(animal_id) != animal_id) %>%
+    dplyr::mutate(diff_animal = dplyr::lead(animal_id) != animal_id) %>%
     dplyr::group_by(animal_id) %>%
     dplyr::mutate(diff_time = difftime(dplyr::lead(time), time, units = "sec") > bw,
                   diff_logger = dplyr::lead(logger_id) != logger_id)
