@@ -87,4 +87,3 @@ m_indiv <- m \%>\%
 map_ggmap(p = p_indiv, m = m_indiv)
 
 }
-

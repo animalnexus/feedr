@@ -25,4 +25,3 @@ plotting, omit the date part of the label to accurately portray time only.
 Resolution of the data is automatically detected as the same as that
 specified in \code{activity()}.
 }
-

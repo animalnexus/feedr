@@ -93,4 +93,3 @@ r <- load_raw("2300.csv", extra_pattern = "exp[0-9]{1}", extra_name = experiment
 
 }
 }
-

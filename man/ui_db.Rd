@@ -4,7 +4,7 @@
 \alias{ui_db}
 \title{User-interface for downloading from the animalnexus database}
 \usage{
-ui_db(verbose = FALSE, diagnostic = FALSE)
+ui_db(verbose = FALSE)
 }
 \arguments{
 \item{verbose}{Logical. Print log events to console.}
@@ -30,4 +30,3 @@ function for a non-interactive method.
 \seealso{
 \code{\link{dl_data}}
 }
-

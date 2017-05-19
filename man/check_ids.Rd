@@ -47,4 +47,3 @@ index <- read.csv("animal_index.csv")
 r <- check_ids(finches, ids = index)
 }
 }
-

@@ -85,4 +85,3 @@ d[["data"]][[2]]$displacements #or
 d$data[[2]]$displacements
 
 }
-

@@ -33,4 +33,3 @@ etc.).}
 \description{
 Formats manually loaded data. Not necessary if using any of the helper loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, or \code{data_dl()}.
 }
-

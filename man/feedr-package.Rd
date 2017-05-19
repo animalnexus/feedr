@@ -2,9 +2,9 @@
 % Please edit documentation in R/feedr.R
 \docType{package}
 \name{feedr-package}
-\alias{animalnexus-package}
-\alias{feedr}
 \alias{feedr-package}
+\alias{feedr}
+\alias{animalnexus-package}
 \title{Transforming Raw RFID Data}
 \description{
 Load, clean, transform, and visualize raw RFID data for looking at a variety
@@ -13,4 +13,3 @@ of biological questions.
 \references{
 animalnexus \url{http://animalnexus.ca}.
 }
-

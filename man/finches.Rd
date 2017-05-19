@@ -21,4 +21,3 @@ A small dataset containing raw reads of finches visiting feeders (RFID
 loggers) on Thompson Rivers University campus in Kamloops, BC, Canada
 }
 \keyword{datasets}
-

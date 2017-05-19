@@ -17,4 +17,3 @@ just the offset in hours.}
 \description{
 Get timezone offset from UTC
 }
-

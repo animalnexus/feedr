@@ -26,4 +26,3 @@ animalnexus app through \code{\link{animalnexus}}. Users can also import data by
 \seealso{
 \code{\link{load_format}}, \code{\link{load_raw}}, \code{\link{load_raw_all}}
 }
-

@@ -12,4 +12,3 @@ figures(r)
 \description{
 Create figures
 }
-

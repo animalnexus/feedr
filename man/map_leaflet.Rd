@@ -76,4 +76,3 @@ m_indiv <- m \%>\%
 map_leaflet(p = p_indiv, m = m_indiv)
 
 }
-
