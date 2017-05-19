@@ -18,6 +18,12 @@
 ## Other
 - Internal changes to include more testing
 
+# feedr 0.8.2.1
+
+## Bug fixes
+
+- Fix bug in `visits()` where some visits were allowed to overlap (in only very specific circumstances, related to previous bug fix)
+
 # feedr 0.8.2
 
 ## Changes

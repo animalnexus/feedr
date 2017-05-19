@@ -1,10 +1,10 @@
 Package: feedr
 Type: Package
 Title: Transforming Raw RFID Data
-Version: 0.8.2.9999
+Version: 0.8.2.1.9999
 Date: 2017-03-16
-Authors@R: person("LaZerte", "Stefanie E.", email = "steffi@steffi.ca", role = c("aut","cre"))
-URL: https://github.com/steffilazerte/feedr
+Authors@R: person("LaZerte", "Stefanie E", email = "steffi@steffi.ca", role = c("aut","cre"))
+URL: https://github.com/animalnexus/feedr
 Description: Load, clean, transform, and visualize raw RFID data for looking at a variety of
     biological questions.
 License: GPL-3
