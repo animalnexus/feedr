@@ -69,6 +69,9 @@ if(getRversion() >= "2.15.1")
       # Shiny Modules
       "site_name", "dataaccess", "count", "start", "x", "fill", "facet", "end", "y", "counts_sum", "temp", "engl_name", "val", "id", "f", "arg", "title", "lab", "site_id",
 
+      # Convert functions
+      "item.number",
+
       # piping requires '.' at times
       ".")
 

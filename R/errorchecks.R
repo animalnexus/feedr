@@ -56,7 +56,7 @@ check_input <- function(d, input = "lon", options = c("lon", "longitude", "long"
   if(length(n) > 0){
     # Check if more than two columns for the input
     if(length(n) > 1) {
-      c <- combn(n, 2)
+      c <- utils::combn(n, 2)
       if(ncol(c) < 10) {
         for(i in 1:ncol(c)) {
           if(!isTRUE(all.equal(d[, c[1, i]], d[, c[2, i]]))) {
