@@ -13,7 +13,7 @@ expect_equal_to_ggplot_reference <- function(object, file, info = NULL) {
     if(length(reference) == length(object)) {
       diff <- 100 * sum(object == reference) / length(reference)
     } else diff <- 0
-    expect_gt(diff, 99, "Figures not equal")
+    expect_gt(diff, 98, "Figures not equal")
     file.remove("temp.png")
   }
   invisible(object)
