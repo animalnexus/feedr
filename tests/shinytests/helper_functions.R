@@ -10,7 +10,7 @@ stop_shiny <- function(f){
 }
 
 shiny_test_startup <- function(f = NULL, appURL, args = NULL,
-                               browserName = "firefox", extra = NULL, type = "local") {
+                               browserName = "chrome", extra = NULL, type = "local") {
   #skip_on_cran()
   skip_on_travis()
   skip_on_appveyor()
@@ -342,8 +342,9 @@ download_files <- function(remDr, files, preview = NULL, type = "preformat", tim
 test_db_site <- function(remDr, site = "Kamloops, BC") {
   # Select Site
   remDr$findElement("css selector", "[class = 'selectize-control single']")$clickElement()
-  Sys.sleep(0.25)
+  Sys.sleep(0.5)
   remDr$findElement("css selector", paste0("[data-value = '", site, "']"))$clickElement()
+  Sys.sleep(0.5)
   expect_false(test_error(remDr))
 }
 
@@ -354,9 +355,11 @@ test_db_dates <- function(remDr, dates = NULL){
     e[[1]]$clickElement()
     e[[1]]$sendKeysToElement(list(dates[1]))
     e[[1]]$sendKeysToElement(list("", key = "escape"))
+    Sys.sleep(0.25)
     e[[2]]$clickElement()
     e[[2]]$sendKeysToElement(list(dates[2]))
     e[[2]]$sendKeysToElement(list("", key = "escape"))
+    Sys.sleep(1)
     expect_false(test_error(remDr))
 }
 
@@ -382,6 +385,7 @@ test_db_n <- function(remDr, species, n){
   t <- remDr$findElements(using = 'css selector', value = "[id $= 'data_selection'] * td")
   t <- unlist(sapply(t, function(x) x$getElementText()))
   t <- data.frame(species = t[seq(1, length(t), 2)], n = t[seq(2, length(t), 2)])
+  t <- t[t$n != 0,]
   expect_equal(nrow(t), length(species), info = "No. species match")
   expect_true(setequal(t$species, species), info = paste0(species, " present"))
   expect_true(setequal(t$n, n), info = paste0(paste0(species, "; n = ", n), collapse = "\n"))
@@ -408,11 +412,13 @@ test_msg <- function(remDr){
   return(unlist(lapply(e, function(x) x$getElementText())))
 }
 
-take_screenshot <- function(remDr, file, ref = FALSE){
+take_screenshot <- function(remDr, file){
   # Take screenshot
-  if(!ref) file <- paste0(file, Sys.Date(), ".png") else file <- paste0(file, "ref.png")
-  remDr$maxWindowSize(); Sys.sleep(1)
+  ref <- paste0(file, "ref.png")
+  file <- paste0(file, Sys.Date(), ".png")
+  remDr$maxWindowSize(); Sys.sleep(2)
   remDr$screenshot(file = file)
+  if(!file.exists(ref)) file.copy(file, ref)
 }
 
 compare_screenshot <- function(file){
@@ -420,7 +426,7 @@ compare_screenshot <- function(file){
   ref <- png::readPNG(paste0(file, "ref.png"))
   if(length(current) == length(ref)) {
     diff <- 100 * sum(current == ref) / length(ref)
-  }
+  } else return(0)
   return(diff)
 }
 

@@ -15,23 +15,25 @@ test_that("Select Kamloops data", {
   test_db_species(remDr, species = c("House Finch"))
   test_db_n(remDr, species = "House Finch", n = 29978)
 
-  # test_db_species(remDr, species = c("Dark-eyed Junco"))
-  # test_db_n(remDr, species = "Dark-eyed Junco", n = 0)
-  # expect_false(test_error(remDr))
+  test_db_species(remDr, species = c("Dark-eyed Junco"))
+  expect_false(test_error(remDr))
 
   # Test empty data range
-  #test_db_site(remDr, site = "Kamloops, BC")
-  #test_db_dates(remDr, dates = c("2017-01-01", "2017-02-02"))
-  #test_db_species(remDr, species = c("Dark-eyed Junco"))
+  test_db_site(remDr, site = "Kamloops, BC")
+  test_db_dates(remDr, dates = c("2017-01-01", "2017-02-02"))
+  test_db_species(remDr, species = c("Dark-eyed Junco"))
 
-  #expect_false(test_error(remDr))
+  expect_false(test_error(remDr))
+
+  test_db_site(remDr, site = "Kamloops, BC")
+  test_db_species(remDr, species = c("House Finch"))
 
   # Check Data access message
   a <- remDr$findElement(using = "css selector", value = "[id $= 'data_access']")
   expect_equivalent(a$getElementText(), "Fully Public")
 
   # Take and compare screenshots
-  #take_screenshot(remDr, file = paste0(test_dir, "/screenshots/db_kam_"), ref = TRUE)
+  Sys.sleep(1)
   take_screenshot(remDr, file = paste0(test_dir, "/screenshots/db_kam_"))
   expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/db_kam_")))
 
@@ -49,17 +51,21 @@ test_that("Select Costa Rican Data", {
   test_db_species(remDr, species = c("Green Hermit"))
   expect_false(test_error(remDr))
 
-  # Test empty data range
-  # test_db_site(remDr, site = "Costa Rica")
-  # test_db_dates(remDr, dates = c("2015-04-01", "2015-05-02"))
-  # expect_false(test_error(remDr))
-
   # Check Data access message
   a <- remDr$findElement(using = "css selector", value = "[id $= 'data_access'")
   expect_equivalent(a$getElementText(), "Visualizations Only")
 
+  # Test empty data range
+  test_db_site(remDr, site = "Costa Rica")
+  test_db_dates(remDr, dates = c("2015-04-01", "2015-05-02"))
+  expect_false(test_error(remDr))
+
+  # Check Data access message
+  a <- remDr$findElement(using = "css selector", value = "[id $= 'data_access'")
+  expect_equivalent(a$getElementText(), "No selection")
+
   # Take and compare screenshots
-  #take_screenshot(remDr, file = paste0(test_dir, "/screenshots/db_cr_"), ref = TRUE)
+  test_db_dates(remDr, dates = c("2013-04-01", "2013-05-02"))
   take_screenshot(remDr, file = paste0(test_dir, "/screenshots/db_cr_"))
   expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/db_cr_")))
 
@@ -306,7 +312,7 @@ test_that("Update map", {
 
   # Get initial (reference) shot
   test_db_site(remDr, site = "Kamloops, BC")
-  take_screenshot(remDr, paste0(test_dir, "/screenshots/db_map_"), ref = TRUE)
+  take_screenshot(remDr, paste0(test_dir, "/screenshots/db_map_"))
 
   test_db_dates(remDr, dates = c("2017-01-01", "2017-03-02"))
   test_db_species(remDr, species = c("Mountain Chickadee"))
@@ -321,6 +327,8 @@ test_that("Update map", {
   # Expected bigger change with update map
   take_screenshot(remDr, paste0(test_dir, "/screenshots/db_map_"))
   expect_gt(90, compare_screenshot(paste0(test_dir, "/screenshots/db_map_")))
+
+  file.remove(list.files(paste0(test_dir, "/screenshots/db_map_")))
 
   shiny_test_cleanup(remDr, f_db)
 })
