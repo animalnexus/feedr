@@ -737,11 +737,6 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
                                     tags$li("Refine your selection by choosing which species to include/exclude"),
                                     tags$li("The selection will update depending on your other selections (i.e. if you select a date range with no visits by a particular species, that species will be deselected"),
                                     tags$li("Numbers in brackets reflect the total number of RFID reads per species.")),
-                                  h4("Advanced Options"),
-                                  tags$ul(
-                                    tags$li("Further refine your selection by choosing which animal_ids or logger_ids to include/exclude"),
-                                    tags$li("The selection of available ids will update depending on your other selections (i.e. if you deselect a species, all animal_ids associated with that species will disappear"),
-                                    tags$li("Numbers in brackets reflect the total number of RFID reads per id.")),
                                   strong("Note:"), "If you find you have 0 observations selected, try broadening your time range."
                           )
     ))
@@ -780,8 +775,9 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
                           title = "Advanced Options",
                           easyClose = TRUE,
                           tagList(tags$ul(
-                            tags$li("Select specific animal ids or logger ids"),
-                            tags$li("Numbers in brackets indicate the total number of reads in the database for each individual or logger"))
+                            tags$li("Further refine your selection by choosing which animal_ids or logger_ids to include/exclude"),
+                            tags$li("The selection of available ids will update depending on your other selections (i.e. if you deselect a species, all animal_ids associated with that species will disappear"),
+                            tags$li("Numbers in brackets reflect the total number of RFID reads per id."))
                           )))
   })
 
