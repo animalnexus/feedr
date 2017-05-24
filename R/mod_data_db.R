@@ -355,13 +355,15 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
   counts_site <- reactive({
     req(input$data_site_name)
     if(verbose) cat("Updating counts_site()\n")
-    droplevels(counts[counts$site_name == input$data_site_name, ])
+    droplevels(counts[counts$site_name == input$data_site_name, ]) %>%
+      dplyr::mutate(species = factor(species))
   })
 
   ## Table showing current selection
   output$data_selection <- renderTable({
     req(data_selection())
     c <- get_counts(data_selection(), summarize_by = "species")
+
     if(!is.null(c)) return(dplyr::select(c, "Species" = choices, "Total" = sum))
     if(is.null(c)) return(data.frame(Species = levels(data_selection()$species), Total = 0))
   }, digits = 0, include.rownames = FALSE)
@@ -370,8 +372,13 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
     req(input$data_site_name, data_selection())
     req(input$data_site_name != "")
     da <- unique(data_selection()$dataaccess)
-    if(da == 0) return("Fully Public")
-    if(da == 1) return("Visualizations Only")
+    if(length(da) == 0) {
+      return("No selection")
+    } else if(da == 0) {
+      return("Fully Public")
+    } else if(da == 1) {
+      return("Visualizations Only")
+    }
   })
 
   # Resets ----------------------------------------------------
@@ -640,10 +647,13 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
           addCircleMarkers(data = s, lng = ~lon, lat = ~lat, group = "Points",
                            radius = ~scale_area(sum, val_min = 0),
                            fillOpacity = 0.7,
-                           fillColor = "orange")
+                           fillColor = "orange") %>%
+          clearGroup(group = "Sites") %>%
+          addMarkers(data = s, lng = ~lon, lat = ~lat, group = "Sites", popup = ~htmltools::htmlEscape(choices))
       } else {
         leafletProxy(ns("map_data")) %>%
-          clearGroup(group = "Points")
+          clearGroup(group = "Points") %>%
+          clearGroup(group = "Sites")
       }
     })
   }, priority = 50)
@@ -661,6 +671,8 @@ mod_data_db <- function(input, output, session, verbose = TRUE) {
       i <- values$input_selection
 
       date <- c(min(i$date), max(i$date))
+
+      validate(need(lubridate::is.Date(date) & all(!is.na(date)), "Invalide Date format"))
       total <- counts_site() %>%
         dplyr::mutate(selected = factor("unselected", levels = c("unselected", "selected")),
                       selected = replace(selected,
