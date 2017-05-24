@@ -200,4 +200,5 @@ test_that("convert_dominance runs Dominance Sociogram functions as expected", {
                                           actions = i$actions, bits = i$bytes))
   expect_is(s, "list")
   expect_named(s, c("sociogram", "counts_circles", "count_interactions", "line_size"))
+  file.remove("Rplots.pdf")
 })
