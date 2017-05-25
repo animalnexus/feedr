@@ -120,3 +120,18 @@ test_that("visits() pass", {
   expect_length(visits(finches, pass = FALSE), 7)
   expect_length(visits(finches, pass = TRUE), 11)
 })
+
+test_that("visits() with group_by", {
+  coords <- read.csv(system.file("extdata", "chickadees_logger_index.csv", package = "feedr")) %>%
+    dplyr::mutate(logger_id = paste0(experiment, "-", logger_name))
+
+  c <- load_raw_all(system.file("extdata", "raw", package = "feedr"),
+                    extra_pattern = "exp[0-9]{1,2}",
+                    extra_name = "experiment", tz = "America/Vancouver") %>%
+    dplyr::mutate(logger_id = paste0(experiment, "-", logger_id)) %>%
+    dplyr::left_join(coords, by = c("logger_id", "experiment"))
+
+  expect_silent(visits(c))
+  expect_silent(dplyr::group_by(c, experiment) %>% dplyr::do(visits(., bw = 3, allow_imp = TRUE)))
+
+})
