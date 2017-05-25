@@ -149,7 +149,7 @@ load_raw <- function(r_file,
       if(tz_disp != tz) r$time <- lubridate::with_tz(r$time, tz_disp)
 
       # Reorder columns
-      cols <- names(r)[names(r) %in% c("animal_id", "time", "logger_id", "lat", "lon")]
+      cols <- names(r)[names(r) %in% c("animal_id", "date", "time", "logger_id", "lat", "lon")]
       r <- dplyr::select_(r, .dots = cols) %>%
         dplyr::arrange(time, animal_id)
 
