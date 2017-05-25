@@ -617,8 +617,8 @@ disp <- function(v, bw = 5, pass = TRUE){
 
 #' Dominance
 #'
-#' Takes output from \code{disp()} and calculates dominance hierarchies. Should
-#' be considered experimental.
+#' Takes output from \code{disp()} and calculates linear dominance hierarchies. Should
+#' be considered a starting point only.
 #'
 #' @param d Data frame or List. Either the interactions data frame which is
 #'   returned as a list item from \code{disp()}, or the whole displacements list
@@ -627,15 +627,22 @@ disp <- function(v, bw = 5, pass = TRUE){
 #' @param omit_cutoff Numeric. Minimum number of interactions (sum of wins and
 #'   losses) individuals must have (omitted otherwise).
 #'
-#' @return The best guess dominance hierarchies (there may be more than one).
+#' @details These are linear heirarchies based on those commonly calculated in chickadee dominance studies (see References). They are linear and based on the number of wins vs. losses for each individual. The algorithm starts by ranking individuals from the highest proportion of wins to the lowest proportion. Then it checks for reversals (when an higher individual actually lost more against a lower ranking individual). Individuals are switched in and out until ideally, a dominance hierarchy is establed in which each individual won more interactions against all individuals ranked lower, and lost more interactions against all individuals ranked higher. The algorithm is not exhaustive, so may not find the heirarchy and should be thus considered a good starting point.
 #'
-#' A list with the following named items:
+#' See also the \code{\link[Perc]{as.conflictmat}} function of the \link{Perc}
+#' package to transform \code{disp} data into a conflict matrix, ready for
+#' analysis of dominance using percolation and conductance. \code{disp} data can
+#' also be converted using the \code{\link{convert_anidom}} function to a data
+#' frame for use by the \link{aniDom} package's \link[aniDom]{elo_scores}
+#' function.
+#'
+#' @return A list with the following named items:
 #' \enumerate{
 #'   \item \code{dominance}: A best guess at the dominance hierarchy (most to
 #' least dominant) (one vector per 'best guess')
 #'
-#'   \item \code{reversals}: Which individuals show reversals (and with whom)? (i.e. A > B, B >
-#'   C but C > A) (one data frame per 'best guess')
+#'   \item \code{reversals}: Which individuals show reversals (and with whom)?
+#'   (one data frame per 'best guess')
 #'
 #'   \item \code{interactions}: A matrix of dominance interactions. Displacers
 #'   across the top, displacees down the side. Values are the numbers of wins
@@ -643,6 +650,14 @@ disp <- function(v, bw = 5, pass = TRUE){
 #'   individual. (one matrix per 'best guess')
 #'
 #'   }
+#'
+#' @references
+#'
+#' Otter K, McGregor PK, Terry AMR, Burford FRL, Peake TM, Dabelsteen T. 1999. Do female great tits (Parus major) assess males by eavesdropping? A field study using interactive song playback. Proceedings of the Royal Society of London. Series B: Biological Sciences 266:1305–1309.
+#'
+#' Smith SM. 1976. Ecological aspects of dominance hierarchies in Black-capped Chickadees. The Auk 93:95–107.
+
+
 #'
 #' @examples
 #'
@@ -740,7 +755,7 @@ dom <- function(d, tries = 50, omit_cutoff = 3){
         ## Sort matrix by dominance hierarchy (new_o)
         temp <- temp[order(match(rownames(temp), new_o)), order(match(colnames(temp), new_o))]
 
-        ## CHECK (TODO set to stop script if this doesn't work)
+        ##
         all(is.na(diag(temp)))
         all(dimnames(temp)[[1]] == dimnames(temp)[[2]])
 
