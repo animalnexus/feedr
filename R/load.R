@@ -147,6 +147,7 @@ load_raw <- function(r_file,
       # Convert times
       r$time <- lubridate::parse_date_time(paste(r$date, r$time), orders = time_format, tz = tz)
       if(tz_disp != tz) r$time <- lubridate::with_tz(r$time, tz_disp)
+      r$date <- as.Date(r$time)
 
       # Reorder columns
       cols <- names(r)[names(r) %in% c("animal_id", "date", "time", "logger_id", "lat", "lon")]
