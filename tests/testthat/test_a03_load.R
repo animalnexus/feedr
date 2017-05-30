@@ -68,7 +68,7 @@ test_that("load_raw loads and formats data correctly - logger id from file name"
   expect_is(r$time, "POSIXct")
 
   expect_equal(r$animal_id[2], "062000038F")
-  expect_equal(r$logger_id[2], "GR10")
+  expect_equal(r$logger_id[2], "GR10DATA")
 
   # No dst
   expect_equal(load_raw(f)$time[2], as.POSIXct("2016-01-11 10:48:50", tz = tz_offset(check_tz(Sys.timezone()), tz_name = TRUE)))
@@ -84,13 +84,15 @@ test_that("load_raw loads and formats data correctly - logger id from file name"
 test_that("load_raw loads and formats data correctly - logger id from first line", {
   f <- system.file("extdata", "raw", "exp2", "GR10DATA_2016_01_16.TXT", package = "feedr")
   expect_is(r <- load_raw(r_file = f, details = 1, tz = "America/Vancouver"), "data.frame")
+  expect_is(r2 <- load_raw(r_file = f, details = 1, tz = "America/Vancouver", logger_pattern = "[GPR]{2,3}[0-9]{1,2}"), "data.frame")
   expect_match(names(r)[1:3], "^animal_id$|^time$|^logger_id$")
   expect_is(r$animal_id, "character")
   expect_is(r$logger_id, "character")
   expect_is(r$time, "POSIXct")
 
   expect_equal(r$animal_id[2], "062000038F")
-  expect_equal(r$logger_id[2], "GR10")
+  expect_true(all(r$logger_id == "GR10DATA"))
+  expect_true(all(r2$logger_id == "GR10"))
   expect_equal(r$time[2], as.POSIXct("2016-01-11 10:48:50", tz = "Etc/GMT+8"))
   expect_equal(load_raw(f, details = 1, tz = "America/Vancouver", tz_disp = "America/Toronto")$time[2], as.POSIXct("2016-01-11 13:48:50", tz = "Etc/GMT+5"))
 })
@@ -101,17 +103,22 @@ test_that("load_raw handles empty files gracefully", {
   expect_null(r, NULL)
 })
 
-test_that("load_raw stops if can't get logger_id", {
+test_that("load_raw stops/warns if can't get logger_id", {
 
   # Not in title as should be
   f <- system.file("extdata", "import_tests", "logger_inline.TXT", package = "feedr")
-  expect_message(expect_error(r <- load_raw(r_file = f, skip = 2, details = 0), "logger_id not detected in file name"), "Loading file")
-  expect_silent(expect_error(r <- load_raw(r_file = f, skip = 2, details = 0, verbose = FALSE), "logger_id not detected in file name"))
+  expect_message(expect_error(r <- load_raw(r_file = f, skip = 2, details = 0,
+                                            logger_pattern = "[GPR]{2,3}[0-9]{1,2}"),
+                              "logger_id not detected in file name"), "Loading file")
+  expect_silent(expect_error(r <- load_raw(r_file = f, skip = 2, details = 0, verbose = FALSE,
+                                           logger_pattern = "[GPR]{2,3}[0-9]{1,2}"),
+                             "logger_id not detected in file name"))
 
   # Not in body as should be
   f <- system.file("extdata", "import_tests", "logger_inname_GR10DATA.TXT", package = "feedr")
-  expect_message(expect_error(r <- load_raw(r_file = f, details = 1), "logger_id not detected from first line of file"), "Loading file")
-  expect_silent(expect_error(r <- load_raw(r_file = f, details = 1, verbose = FALSE), "logger_id not detected from first line of file"))
+  expect_message(expect_warning(expect_error(r <- load_raw(r_file = f, details = 1), NA), "logger_id extracted from first line of the file as '06200004BF 15/01/2016 10:48:49', this seems odd"), "Loading file")
+  expect_equivalent(r$logger_id[1], "06200004BF 15/01/2016 10:48:49")
+  expect_silent(expect_warning(expect_error(r <- load_raw(r_file = f, details = 1, verbose = FALSE), NA), "logger_id extracted from first line of the file as '06200004BF 15/01/2016 10:48:49', this seems odd"))
 
   # No Lat/Lon in body as should be
   f <- system.file("extdata", "raw", "exp2", "GR10DATA_2016_01_16.TXT", package = "feedr")
@@ -136,7 +143,7 @@ test_that("load_raw_all loads and formats data correctly", {
   expect_is(load$time, "POSIXct")
 
   expect_equal(load$animal_id[1], factor("06200004BF", levels =  c("0000000000", "011017A536", "011017A605", "03000314F9", "0620000062", "062000014F", "06200001F0", "06200002E7", "0620000380", "062000038D", "062000038F", "0620000392", "06200003A7", "06200003B4", "06200003C3", "06200003F3", "0620000400", "0620000418", "06200004A9", "06200004BB", "06200004BE", "06200004BF", "06200004E4", "0620000525", "07008D9E08", "0700ED9E0E", "0700EDAB15", "0700EDF012", "0700EDF015", "0700EE022B", "0700EE0E42", "0700EE1461", "0700EE1467", "0700EE147F", "0700EE1504", "0700EE19CE", "0700EE2B10", "0700EE2B11")))
-  expect_equal(load$logger_id[1], factor("GR10", levels = c("GR10", "GR11", "GR12", "GR13")))
+  expect_equal(load$logger_id[1], factor("GR10DATA", levels = c("GR10DATA", "GR11DATA", "GR12DATA", "GR13DATA")))
   expect_equal(load$time[1], as.POSIXct("2016-01-11 10:48:49", tz = "Etc/GMT+8"))
   expect_equal(load2$time[1], as.POSIXct("2016-01-11 13:48:49", tz = "Etc/GMT+5"))
 })

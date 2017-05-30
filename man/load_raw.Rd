@@ -33,7 +33,7 @@ DST).}
 \item{logger_pattern}{Character. A regular expression matching the logger id
 in the file name. NA (default) matches file name (extension omitted) or
 first line of the file (See the \code{details} argument). Alternatively,
-"[GPR]{2,3}[0-9]{1,2}" would match the names of TRU loggers.}
+"[GPR]\{2,3\}[0-9]\{1,2\}" would match the names of TRU loggers.}
 
 \item{time_format}{Character. The date/time format of the 'date' and 'time'
 columns combined. Defaults to "mdy HMS". Should be in formats usable by the
@@ -95,10 +95,13 @@ comma does).
 }
 \examples{
 \dontrun{
-# Load a single raw file: r <- load_raw("GPR13DATA_2015_12_01.csv")
+# Load a single raw file:
+r <- load_raw("GPR13DATA_2015_12_01.csv")
 
-# Load a single raw file where the logger id is not the default, and is
-rather something like: 2300, 2500, 2550
+# Modify logger pattern (match only "GPR13")
+r <- load_raw("GPR13DATA_2015_12_01.csv", logger_pattern = "[GPR]{2,3}[0-9]{1,2}")
+
+# Modify logger pattern (match ids like: 2300, 2500, 2550)
 r <- load_raw("2300.csv", logger_pattern = "[0-9]{4}")
 
 # Load a file where the logger id is detected as the first line in the file,

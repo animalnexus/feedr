@@ -52,7 +52,7 @@
 #' @param logger_pattern Character. A regular expression matching the logger id
 #'   in the file name. NA (default) matches file name (extension omitted) or
 #'   first line of the file (See the \code{details} argument). Alternatively,
-#'   "[GPR]{2,3}[0-9]{1,2}" would match the names of TRU loggers.
+#'   "[GPR]\{2,3\}[0-9]\{1,2\}" would match the names of TRU loggers.
 #' @param feeder_pattern Deprecated. Use logger_pattern.
 #' @param time_format Character. The date/time format of the 'date' and 'time'
 #'   columns combined. Defaults to "mdy HMS". Should be in formats usable by the
@@ -72,10 +72,13 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Load a single raw file: r <- load_raw("GPR13DATA_2015_12_01.csv")
+#' # Load a single raw file:
+#' r <- load_raw("GPR13DATA_2015_12_01.csv")
 #'
-#' # Load a single raw file where the logger id is not the default, and is
-#' rather something like: 2300, 2500, 2550
+#' # Modify logger pattern (match only "GPR13")
+#' r <- load_raw("GPR13DATA_2015_12_01.csv", logger_pattern = "[GPR]{2,3}[0-9]{1,2}")
+#'
+#' # Modify logger pattern (match ids like: 2300, 2500, 2550)
 #' r <- load_raw("2300.csv", logger_pattern = "[0-9]{4}")
 #'
 #' # Load a file where the logger id is detected as the first line in the file,
@@ -148,6 +151,7 @@ load_raw <- function(r_file,
         if(is.na(logger_pattern)) r$logger_id <- readLines(r_file, n = 1)
         if(!is.na(logger_pattern)) r$logger_id <- stringr::str_extract(readLines(r_file, n = 1), logger_pattern)
         if(any(is.na(r$logger_id))) stop("logger_id not detected from first line of file", call. = FALSE)
+        if(nchar(r$logger_id[1]) == nchar(paste(r$animal_id[1], r$date[1], r$time[1]))) warning("logger_id extracted from first line of the file as '",r$logger_id[1], "', this seems odd", call. = FALSE)
       }
 
       # Get lat, lon
@@ -248,7 +252,7 @@ load_raw <- function(r_file,
 #' @param logger_pattern Character. A regular expression matching the logger id
 #'   in the file name. NA (default) matches file name (extension omitted) or
 #'   first line of the file (See the \code{details} argument). Alternatively,
-#'   "[GPR]{2,3}[0-9]{1,2}" would match the names of TRU loggers.
+#'   "[GPR]\{2,3\}[0-9]\{1,2\}" would match the names of TRU loggers.
 #' @param time_format Character. The date/time format of the 'date' and 'time'
 #'   columns combined. Defaults to "mdy HMS". Should be in formats usable by the
 #'   \code{parse_date_time()} function from the lubridate package (e.g., "ymd

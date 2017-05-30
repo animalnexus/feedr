@@ -40,7 +40,7 @@ DST).}
 \item{logger_pattern}{Character. A regular expression matching the logger id
 in the file name. NA (default) matches file name (extension omitted) or
 first line of the file (See the \code{details} argument). Alternatively,
-"[GPR]{2,3}[0-9]{1,2}" would match the names of TRU loggers.}
+"[GPR]\{2,3\}[0-9]\{1,2\}" would match the names of TRU loggers.}
 
 \item{time_format}{Character. The date/time format of the 'date' and 'time'
 columns combined. Defaults to "mdy HMS". Should be in formats usable by the
