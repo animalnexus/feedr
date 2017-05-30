@@ -5,9 +5,9 @@
 \title{Load raw read data}
 \usage{
 load_raw(r_file, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE,
-  details = 1, logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
-  time_format = "mdy HMS", extra_pattern = NULL, extra_name = NULL,
-  sep = "", skip = 0, verbose = TRUE, feeder_pattern)
+  details = 1, logger_pattern = NA, time_format = "mdy HMS",
+  extra_pattern = NULL, extra_name = NULL, sep = "", skip = 0,
+  verbose = TRUE, feeder_pattern)
 }
 \arguments{
 \item{r_file}{Character. The location of a single file to load.}
@@ -30,15 +30,15 @@ DST).}
 \item{details}{Numeric. Where to find logger details, either 0 (file name),
 1 (first line) or 2 (first two lines). See 'details'.}
 
-\item{logger_pattern}{Character. A regular expression matching the logger_id
-in the file name or from the first line of the file. An NA value matches file name
-(extension omitted) or first line of the file. See \code{details}
-parameter.}
+\item{logger_pattern}{Character. A regular expression matching the logger id
+in the file name. NA (default) matches file name (extension omitted) or
+first line of the file (See the \code{details} argument). Alternatively,
+"[GPR]{2,3}[0-9]{1,2}" would match the names of TRU loggers.}
 
-\item{time_format}{Character. The time format of the 'time' column. Defaults
-to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
-function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
-etc.).}
+\item{time_format}{Character. The date/time format of the 'date' and 'time'
+columns combined. Defaults to "mdy HMS". Should be in formats usable by the
+\code{parse_date_time()} function from the lubridate package (e.g., "ymd
+HMS", "mdy HMS", "dmy HMS", etc.). See details for more information.}
 
 \item{extra_pattern}{Character vector. A vector of regular expressions
 matching any extra information in the file or directory names or in the
@@ -65,6 +65,25 @@ It's utility depends on how standardized your data is, and whether you have
 extra details you need to address.
 }
 \details{
+Data is assumed to contain three columns (without column names) corresponding
+to \code{animal_id}, \code{date} and \code{time} (without date). By default
+they are expected to be separated by white space, but the \code{sep} argument
+can be modified to reflect other separators, such as comma- or tab-separated
+data.
+
+The columns \code{date} and \code{time} will be combined to extract the
+date/time of each event. Thus, the \code{time_format} argument specifies the
+order of the combined date and time columns and should be in formats usable
+by the \code{\link[lubridate]{parse_date_time()}} function from the
+\link{lubridate} package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.). For
+example, the default "mdy HMS" expects a date column in the format of
+month/day/year and a time column in the format of H:M:S (note that separators
+and leading zeros are ignored, thus month-day-year is equivalent to
+month/day/year, see the \code{order} argument of the
+\link[lubridate]{parse_date_time} function for more information. More complex
+formats can also be specified:  For example, 09/30/16 2:00 pm can be
+specified by time_format = "mdy HM p".
+
 Logger details are the logger_id and the lat/lon for the logger. A value of 0
 reflects that the logger_id is in the file name, defined by the pattern
 logger_pattern. A value of 1 reflects that the logger_id is in the first line

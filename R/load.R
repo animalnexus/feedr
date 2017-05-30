@@ -5,6 +5,26 @@
 #' It's utility depends on how standardized your data is, and whether you have
 #' extra details you need to address.
 #'
+#' @details
+#' Data is assumed to contain three columns (without column names) corresponding
+#' to \code{animal_id}, \code{date} and \code{time} (without date). By default
+#' they are expected to be separated by white space, but the \code{sep} argument
+#' can be modified to reflect other separators, such as comma- or tab-separated
+#' data.
+#'
+#' The columns \code{date} and \code{time} will be combined to extract the
+#' date/time of each event. Thus, the \code{time_format} argument specifies the
+#' order of the combined date and time columns and should be in formats usable
+#' by the \code{\link[lubridate]{parse_date_time()}} function from the
+#' \link{lubridate} package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.). For
+#' example, the default "mdy HMS" expects a date column in the format of
+#' month/day/year and a time column in the format of H:M:S (note that separators
+#' and leading zeros are ignored, thus month-day-year is equivalent to
+#' month/day/year, see the \code{order} argument of the
+#' \link[lubridate]{parse_date_time} function for more information. More complex
+#' formats can also be specified:  For example, 09/30/16 2:00 pm can be
+#' specified by time_format = "mdy HM p".
+#'
 #' Logger details are the logger_id and the lat/lon for the logger. A value of 0
 #' reflects that the logger_id is in the file name, defined by the pattern
 #' logger_pattern. A value of 1 reflects that the logger_id is in the first line
@@ -29,15 +49,15 @@
 #'   DST).
 #' @param details Numeric. Where to find logger details, either 0 (file name),
 #'   1 (first line) or 2 (first two lines). See 'details'.
-#' @param logger_pattern Character. A regular expression matching the logger_id
-#'   in the file name or from the first line of the file. An NA value matches file name
-#'   (extension omitted) or first line of the file. See \code{details}
-#'   parameter.
+#' @param logger_pattern Character. A regular expression matching the logger id
+#'   in the file name. NA (default) matches file name (extension omitted) or
+#'   first line of the file (See the \code{details} argument). Alternatively,
+#'   "[GPR]{2,3}[0-9]{1,2}" would match the names of TRU loggers.
 #' @param feeder_pattern Deprecated. Use logger_pattern.
-#' @param time_format Character. The time format of the 'time' column. Defaults
-#'   to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
-#'   function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
-#'   etc.).
+#' @param time_format Character. The date/time format of the 'date' and 'time'
+#'   columns combined. Defaults to "mdy HMS". Should be in formats usable by the
+#'   \code{parse_date_time()} function from the lubridate package (e.g., "ymd
+#'   HMS", "mdy HMS", "dmy HMS", etc.). See details for more information.
 #' @param extra_pattern Character vector. A vector of regular expressions
 #'   matching any extra information in the file or directory names or in the
 #'   first line of the file.
@@ -73,7 +93,7 @@
 #' @export
 load_raw <- function(r_file,
                      tz = Sys.timezone(), tz_disp = NULL, dst = FALSE,
-                     details = 1, logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
+                     details = 1, logger_pattern = NA,
                      time_format = "mdy HMS",
                      extra_pattern = NULL, extra_name = NULL,
                      sep = "", skip = 0, verbose = TRUE,
@@ -172,8 +192,29 @@ load_raw <- function(r_file,
 #' folders, if \code{r_list} is specified it includes only the list of files
 #' specified.
 #'
+#' @details
+#'
 #' Note that if both \code{r_dir} and \code{r_list} are specified, the directory
 #' overrides the file list.
+#'
+#' Each data file is assumed to contain three columns (without column names)
+#' corresponding to \code{animal_id}, \code{date} and \code{time} (without
+#' date). By default they are expected to be separated by white space, but the
+#' \code{sep} argument can be modified to reflect other separators, such as
+#' comma- or tab-separated data.
+#'
+#' The columns \code{date} and \code{time} will be combined to extract the
+#' date/time of each event. Thus, the \code{time_format} argument specifies the
+#' order of the combined date and time columns and should be in formats usable
+#' by the \code{\link[lubridate]{parse_date_time()}} function from the
+#' \link{lubridate} package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.). For
+#' example, the default "mdy HMS" expects a date column in the format of
+#' month/day/year and a time column in the format of H:M:S (note that separators
+#' and leading zeros are ignored, thus month-day-year is equivalent to
+#' month/day/year, see the \code{order} argument of the
+#' \link[lubridate]{parse_date_time} function for more information. More complex
+#' formats can also be specified:  For example, 09/30/16 2:00 pm can be
+#' specified by time_format = "mdy HM p".
 #'
 #' Logger details are the logger_id and the lat/lon for the logger. A value of 0
 #' reflects that the logger_id is in the file name, defined by the pattern
@@ -205,12 +246,13 @@ load_raw <- function(r_file,
 #' @param details Numeric. Where to find logger details, either 0 (file name),
 #'   1 (first line) or 2 (first two lines). See 'details'.
 #' @param logger_pattern Character. A regular expression matching the logger id
-#'   in the file name.
-#' @param feeder_pattern Deprecated. Use logger_pattern instead.
-#' @param time_format Character. The time format of the 'time' column. Defaults
-#'   to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
-#'   function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
-#'   etc.).
+#'   in the file name. NA (default) matches file name (extension omitted) or
+#'   first line of the file (See the \code{details} argument). Alternatively,
+#'   "[GPR]{2,3}[0-9]{1,2}" would match the names of TRU loggers.
+#' @param time_format Character. The date/time format of the 'date' and 'time'
+#'   columns combined. Defaults to "mdy HMS". Should be in formats usable by the
+#'   \code{parse_date_time()} function from the lubridate package (e.g., "ymd
+#'   HMS", "mdy HMS", "dmy HMS", etc.). See details for more information.
 #' @param extra_pattern Character vector. A vector of regular expressions
 #'   matching any extra information in the file or directory names.
 #' @param extra_name Character vector. A vector of column names matching the
@@ -220,12 +262,13 @@ load_raw <- function(r_file,
 #'   more details).
 #' @param skip Character. Extra lines to skip in addition to the lines specified
 #'   by details.
-##' @param verbose Logical. Whether to include progress messages or not.
+#' @param verbose Logical. Whether to include progress messages or not.
+#' @param feeder_pattern Deprecated. Use logger_pattern instead.
 #'
 #' @export
 load_raw_all <- function(r_dir, r_list, pattern = "DATA",
                          tz = Sys.timezone(), tz_disp = NULL, dst = FALSE,
-                         details = 1, logger_pattern = "[GPR]{2,3}[0-9]{1,2}",
+                         details = 1, logger_pattern = NA,
                          time_format = "mdy HMS",
                          extra_pattern = NULL, extra_name = NULL,
                          sep = "", skip = 0, verbose = TRUE,
@@ -423,6 +466,19 @@ dl_data <- function(start = NULL,
 #'
 #' Formats manually loaded data. Not necessary if using any of the helper loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, or \code{data_dl()}.
 #'
+#' @details
+#' Expects at least three named columns in the data: \code{animal_id},
+#' \code{logger_id}, \code{time}. Will rename to all lower case as required.
+#' Also handles columns \code{lat} and \code{lon} (accepts latitude, longitude,
+#' and long, but will be renamed to lat and lon).
+#'
+#' \code{time} should be a character or factor in date/time format , e.g.
+#' 2016-09-30 14:00:00. The exact format of the date/time can be supplied using
+#' the \code{time_format} argument and should represent a format usable by the
+#' \code{\link[lubridate]{parse_date_time()}} function from the \link{lubridate}
+#' package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.). For example, 09/30/16
+#' 2:00 pm can be specified by time_format = "mdy HM p".
+#'
 #' @param r Data frame. Data frame to format.
 #' @param tz Character. The time zone the date/times are in (should match one of
 #'   the zones produced by \code{OlsonNames())}. Attempts to use user's system
@@ -436,7 +492,7 @@ dl_data <- function(start = NULL,
 #'   of America/Vancouver, which would normally include DST in the summer, will
 #'   be transformed to a timezone with the same GMT offset, but not including
 #'   DST).
-#' @param time_format Character. The time format of the 'time' column. Defaults
+#' @param time_format Character. The date/time format of the 'time' column. Defaults
 #'   to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
 #'   function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
 #'   etc.).
