@@ -46,8 +46,7 @@ The first and last visits on the record are automatically assumed to be
 non-displacer and non-displacee, respectively.
 
 In some species displacements can be used to infer dominance. Displacements
-can be passed to the \code{feedr} function \code{\link{dom}} to calculate
-dominance matrices. Alternatively, the interaction data frame returned can be
+The interactions data frame returned by the \code{disp()} function can be
 passed directly to the \code{\link[Perc]{as.conflictmat}} function of the
 \link{Perc} package to be transformed into a conflict matrix, ready for
 analysis of dominance using percolation and conductance. Finally, the
@@ -94,4 +93,7 @@ d$data[d$experiment == "exp3"][[1]]$displacements #or
 d[["data"]][[2]]$displacements #or
 d$data[[2]]$displacements
 
+}
+\seealso{
+\link{Perc}, \link{aniDom}, \link{Dominance}
 }

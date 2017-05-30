@@ -4,7 +4,7 @@ ui_settings <- function(verbose = FALSE){
 }
 
 settings_preamble <- function(){
-  settings_functions <- c("visits", "move", "presence", "disp", "dom", "activity", "daily")
+  settings_functions <- c("visits", "move", "presence", "disp", "activity", "daily")
 
   return(man %>%
            dplyr::filter(f %in% settings_functions,

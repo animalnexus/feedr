@@ -234,16 +234,13 @@ get_trans <- function(s) {
   p <- try(presence(v, bw = s[['set_presence_bw']]), silent = TRUE)
   m <- try(move(v, all = s[['set_move_all']]), silent = TRUE)
   disp <- try(disp(v, bw = s[['set_disp_bw']]), silent = TRUE)
-  dom <- try(dom(disp,
-                 tries = s[['set_dom_tries']],
-                 omit_cutoff = s[['set_dom_omit_cutoff']]), silent = TRUE)
   a <- try(activity(p,
                     res = s[['set_activity_res']],
                     by_logger = s[['set_activity_by_logger']],
                     sun = s[['set_activity_sun']],
                     keep_all = s[['set_activity_keep_all']]), silent = TRUE)
   da <- try(daily(a), silent = TRUE)
-  return(list("visits" = v, "presence" = p, "movements" = m, "displacements" = disp, "dominance" = dom, "activity" = a, "daily" = da))
+  return(list("visits" = v, "presence" = p, "movements" = m, "displacements" = disp, "activity" = a, "daily" = da))
 }
 
 
@@ -256,13 +253,6 @@ test_tables <- function(remDr, trans = "Raw", data, n = 20){
   expect_false(test_error(remDr))
 
   if(trans == "Displacements") data <- data$displacements
-  if(trans == "Dominance") {
-    if(class(data) != "try-error" && length(data$matrices) > 0) {
-      data <- data[['matrices']][[1]]
-      data <- as.data.frame(data, optional = TRUE)
-      data <- cbind(row.names(data), data)
-    } else data <- NULL
-  }
 
   # First make sure data is present:
   e <- remDr$findElements("css", "[class ~= 'shiny-output-error-validation']")

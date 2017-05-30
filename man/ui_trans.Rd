@@ -19,7 +19,7 @@ An interactive shiny app for transforming data. Also available online at <http:/
 by launching the local animalnexus app through \code{animalnexus()}.
 }
 \details{
-See indivdial data transformations for more details: \code{visits()}, \code{presence()}, \code{move()}, \code{disp()}, \code{dom()}, \code{activity()}, and \code{daily()}.
+See individual data transformations for more details: \code{visits()}, \code{presence()}, \code{move()}, \code{disp()}, \code{activity()}, and \code{daily()}.
 }
 \examples{
 \dontrun{

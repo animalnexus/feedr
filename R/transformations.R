@@ -465,8 +465,7 @@ presence_single <- function(v1, bw = bw){
 #' non-displacer and non-displacee, respectively.
 #'
 #' In some species displacements can be used to infer dominance. Displacements
-#' can be passed to the \code{feedr} function \code{\link{dom}} to calculate
-#' dominance matrices. Alternatively, the interaction data frame returned can be
+#' The interactions data frame returned by the \code{disp()} function can be
 #' passed directly to the \code{\link[Perc]{as.conflictmat}} function of the
 #' \link{Perc} package to be transformed into a conflict matrix, ready for
 #' analysis of dominance using percolation and conductance. Finally, the
@@ -499,6 +498,8 @@ presence_single <- function(v1, bw = bw){
 #'   following columns: \itemize{ \item ID of the displacee (\code{displacee})
 #'   \item ID of the displacer (\code{displacer}) \item No. of times this
 #'   interaction occurred (\code{n}) } }
+#'
+#' @seealso \link{Perc}, \link{aniDom}, \link{Dominance}
 #'
 #' @examples
 #'
@@ -615,206 +616,6 @@ disp <- function(v, bw = 5, pass = TRUE){
   }
 }
 
-#' Dominance
-#'
-#' Takes output from \code{disp()} and calculates linear dominance hierarchies. Should
-#' be considered a starting point only.
-#'
-#' @param d Data frame or List. Either the interactions data frame which is
-#'   returned as a list item from \code{disp()}, or the whole displacements list
-#'   returned by \code{disp()}.
-#' @param tries Numeric. The maximum number of iterations to find the 'best guess'
-#' @param omit_cutoff Numeric. Minimum number of interactions (sum of wins and
-#'   losses) individuals must have (omitted otherwise).
-#'
-#' @details These are linear heirarchies based on those commonly calculated in chickadee dominance studies (see References). They are linear and based on the number of wins vs. losses for each individual. The algorithm starts by ranking individuals from the highest proportion of wins to the lowest proportion. Then it checks for reversals (when an higher individual actually lost more against a lower ranking individual). Individuals are switched in and out until ideally, a dominance hierarchy is establed in which each individual won more interactions against all individuals ranked lower, and lost more interactions against all individuals ranked higher. The algorithm is not exhaustive, so may not find the heirarchy and should be thus considered a good starting point.
-#'
-#' See also the \code{\link[Perc]{as.conflictmat}} function of the \link{Perc}
-#' package to transform \code{disp} data into a conflict matrix, ready for
-#' analysis of dominance using percolation and conductance. \code{disp} data can
-#' also be converted using the \code{\link{convert_anidom}} function to a data
-#' frame for use by the \link{aniDom} package's \link[aniDom]{elo_scores}
-#' function.
-#'
-#' @return A list with the following named items:
-#' \enumerate{
-#'   \item \code{dominance}: A best guess at the dominance hierarchy (most to
-#' least dominant) (one vector per 'best guess')
-#'
-#'   \item \code{reversals}: Which individuals show reversals (and with whom)?
-#'   (one data frame per 'best guess')
-#'
-#'   \item \code{interactions}: A matrix of dominance interactions. Displacers
-#'   across the top, displacees down the side. Values are the numbers of wins
-#'   (upper triangle) or losses (lower triangle) against the opposing
-#'   individual. (one matrix per 'best guess')
-#'
-#'   }
-#'
-#' @references
-#'
-#' Otter K, McGregor PK, Terry AMR, Burford FRL, Peake TM, Dabelsteen T. 1999. Do female great tits (Parus major) assess males by eavesdropping? A field study using interactive song playback. Proceedings of the Royal Society of London. Series B: Biological Sciences 266:1305–1309.
-#'
-#' Smith SM. 1976. Ecological aspects of dominance hierarchies in Black-capped Chickadees. The Auk 93:95–107.
-
-
-#'
-#' @examples
-#'
-#'  # Look at dominance for chickadees in experiment 2
-#'  v <- visits(chickadees[chickadees$experiment == "exp2",])
-#'  d <- disp(v)
-#'  dm <- dom(d$interactions)
-#'
-#'  # But not necessary to specify interactions:
-#'  dm <- dom(d)
-#'
-#'  # Calculate across different experiments (expect warnings about unequal factor levels):
-#' library(dplyr)
-#'
-#' v <- chickadees %>%
-#'   group_by(experiment) %>%
-#'   do(visits(.))
-#'
-#' d <- v %>%
-#'   group_by(experiment) %>%
-#'   do(data = disp(.))
-#'
-#' dm <- d %>%
-#'   group_by(experiment) %>%
-#'   do(data = dom(.$data[[1]]))
-#'
-#' # Look at the dominance data stored in the 2nd experiment:
-#' dm$data[dm$experiment == "exp2"][[1]] #or
-#' dm[["data"]][[1]] #or
-#' dm$data[[1]]
-#'
-#' # Look at the dominance matrices from 3nd experiment:
-#' dm$data[dm$experiment == "exp3"][[1]]$matrices #or
-#' dm[["data"]][[2]]$matrices #or
-#' dm$data[[2]]$matrices
-#'
-#'
-#' @export
-dom <- function(d, tries = 50, omit_cutoff = 3){
-
-  # Function takes either the whole output of disp() or just the dominance table
-  if(!is.data.frame(d)) d <- d$interactions
-
-  # Check for Correct formating
-  check_name(d, c("displacer","displacee","n"), type = "displacement")
-  check_format(d)
-
-  # Start with best order
-  o <- dplyr::left_join(dplyr::group_by(d, displacer) %>% dplyr::summarize(win = sum(n)),
-                        dplyr::group_by(d, displacee) %>% dplyr::summarize(loss = sum(n)),
-                        by = c("displacer" = "displacee")) %>%
-    dplyr::mutate(win = replace(win, is.na(win), 0),
-                  loss = replace(loss, is.na(loss), 0),
-                  n = win + loss,
-                  p_win = win / n) %>%
-    dplyr::arrange(desc(p_win))
-
-  # Check sample sizes and warn if low
-
-  if(omit_cutoff > 0) {
-    omit <- o$displacer[(o$win + o$loss) < omit_cutoff]
-    o <- o[!(o$displacer %in% omit), ]
-    d <- d[!(d$displacee %in% omit) & !(d$displacer %in% omit), ]
-    if(length(omit) > 0) message("animal_ids with fewer than ", omit_cutoff, " interactions have been omitted: ", paste0(omit, collapse = ", "))
-  }
-
-  if((nrow(o) == 0 | nrow(d) == 0)) { # No individuals, return empty lists/dataframes
-    message("No individuals remaining.")
-    r <- list()
-    m <- list()
-    o_l <- vector()
-  } else {
-
-    o <- list(as.character(unique(o$displacer)))
-
-    ## Setup the matrix
-    dm <- tidyr::spread(d, displacee, n)
-    dm <- as.matrix(dm[, -grep("^displacer$", names(dm))])
-    rownames(dm) <- colnames(dm)
-
-    ## Setup Loop
-    try <- 0
-    o_l <- o
-    rev <- list()
-    done <- FALSE  ## Are we done this iteration?
-    prev <- vector()
-
-    while(done == FALSE & try < tries){
-
-      ## For each alternative dominance ranking (o_l)
-      for(i in 1:length(o_l)){
-        new_o <- o_l[[i]]
-        temp <- dm
-
-        ## Sort matrix by dominance hierarchy (new_o)
-        temp <- temp[order(match(rownames(temp), new_o)), order(match(colnames(temp), new_o))]
-
-        ##
-        all(is.na(diag(temp)))
-        all(dimnames(temp)[[1]] == dimnames(temp)[[2]])
-
-        ## Get upper and lower to compare
-        upper <- temp
-        upper[lower.tri(upper, diag = TRUE)] <- NA
-        lower <- t(temp)
-        lower[lower.tri(lower, diag = TRUE)] <- NA
-
-        ## Get reversals
-        if(length(which(upper < lower, arr.ind = TRUE)) > 0){
-          rev[[length(rev) + 1]] <- which(upper < lower, arr.ind = TRUE)
-        }
-      }
-
-      ## Keep only the orders with the fewest reversals
-      if(length(rev) > 0){
-        n <- sapply(rev, nrow)
-        rev <- rev[n == min(n)]
-        o_l <- o_l[n == min(n)]
-      }
-
-      # Compare with previous matrix, if the same, we're done
-      if(identical(prev, o_l)) done <- TRUE else prev <- o_l
-
-      if(length(rev) > 0 && length(rev[[1]]) > 0 && done == FALSE){
-        ## Add the new reversal switches to our list of options and try again
-        for(j in 1:length(rev)){
-          for(i in 1:nrow(rev[[j]])){
-            a <- rev[[j]][i,2]  ## Which individuals to move up
-            b <- rev[[j]][i,1]  ## Where to move it
-            o_l[[length(o_l) + 1]] <- c(new_o[1:(b - 1)], new_o[a], new_o[-c(1:(b - 1), a)])
-          }
-        }
-      } else {
-        done <- TRUE
-        try <- try + 1
-      }
-
-      ## Loop controls
-      if(done == FALSE){
-        try <- try + 1
-        o_l <- unique(o_l)
-        rev <- list()
-      }
-    }
-
-    message(paste0("Tried ",try," times. Found ",length(o_l), " 'best' matrix(ces), each with ",if(length(rev) > 0) nrow(rev[[1]]) else 0," reversal(s)"))
-
-    m <- list()
-    r <- list()
-    for(i in 1:length(o_l)) {
-      m[[length(m) + 1]] <- dm[order(match(rownames(dm), o_l[[i]])), order(match(colnames(dm), o_l[[i]]))]
-      if(length(rev) > 0 && length(rev[[i]]) > 0) r[[length(r)+1]] <- data.frame(animal_id1 = o_l[[i]][rev[[i]][, 1]], animal_id2 = o_l[[i]][rev[[i]][, 2]])
-    }
-  }
-
-  return(list(dominance = o_l, reversals = r, matrices = m))
-}
 
 #' Activity
 #'

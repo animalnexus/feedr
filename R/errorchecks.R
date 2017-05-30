@@ -38,7 +38,7 @@ check_indiv <- function(d) {
 
 check_format <- function(d, map = FALSE, disp = FALSE) {
   msg_l <- "Using '_' in logger_id values conflicts with the mapping functions."
-  msg_a <- "Using '_' in animal_id values conflicts with the displacement/dominance functions."
+  msg_a <- "Using '_' in animal_id values conflicts with the displacement function (disp())."
 
   if(!map) msg_l <- paste0(msg_l, " You should remove any '_'s if you plan to use these functions.")
   if(!disp) msg_a <- paste0(msg_a, " You should remove any '_'s if you plan to use these functions.")

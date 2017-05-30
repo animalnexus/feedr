@@ -3,7 +3,7 @@
 #' An interactive shiny app for transforming data. Also available online at <http://animalnexus.ca> or
 #' by launching the local animalnexus app through \code{animalnexus()}.
 #'
-#' See indivdial data transformations for more details: \code{visits()}, \code{presence()}, \code{move()}, \code{disp()}, \code{dom()}, \code{activity()}, and \code{daily()}.
+#' See individual data transformations for more details: \code{visits()}, \code{presence()}, \code{move()}, \code{disp()}, \code{activity()}, and \code{daily()}.
 #'
 #' @param r Data frame. Raw RFID data to transform
 #' @param verbose Logical. Print log events to console.
@@ -43,7 +43,7 @@ ui_trans <- function(r, verbose = FALSE) {
 }
 
 trans_preamble <- function(args = TRUE) {
-  trans_functions <- c("raw", "visits", "move", "presence", "disp", "dom", "activity", "daily")
+  trans_functions <- c("raw", "visits", "move", "presence", "disp", "activity", "daily")
 
   manual <- man %>%
     dplyr::right_join(
@@ -56,7 +56,6 @@ trans_preamble <- function(args = TRUE) {
                     "<h3>Presence</h3> <p>Each row corresponds to a single 'presence event' at the reader if the reader is a logger, or a period of time spent near the reader otherwise. These are defined as a series of visits at a single logger separated by no more than 15min. See the presence() function in the feedr package for R to fine tune these settings.</p><p>Start and End reflect the start and end of the time present and length refers to the length in minutes.</p><p>Animal N and Logger N refer to the total number of individuals and readers in the data, respectively.</p>",
                     "<h3>Movements</h3> <p>Each two rows correspond to a single 'movement' from one reader to another. A movement is defined as the last and first consecutive visits made by an individual to two different readers.</p><p>Move Id refers to the unique identifier of each movement made by an individual. Move Path reflects the unique path between readers (without accounting for direction) whereas Move Dir reflect s the unique path between readers, including direction. Strength is a measure of how connected two readers are and is calculated as the inverse of time taken to move between the readers.</p>",
                     "<h3>Displacements</h3> <p>Each row corresponds to a single displacement event recorded at a particular RFID logger. Displacements are events when one animal leaves the logger within 5s of the arrival of another. In some species this can be used to infer dominance.</p>",
-                    "<h3>Dominance</h3> <p>Assuming that displacements reflect dominance, calculate a dominance matrix. The function attempts to determine dominance rank for all individuals by order individuals based individual win/loss interactions and minimizing reversals (situations in which A beats B, B beats C, and C beats A). This matrix reflects a starting point and may require more work by the research. Displacers are across the top, displacees down the side. Values reflect wins in the upper triangle, losses in the lower triangle.</p>",
                     "<h3>Activity</h3> <p>Each row corresponds to a 15-min time period and is scored as active or inactive (activity_c) or 1 or 0 (activity). Activity is definied by whether or not the individual had a 'presence' bout (at any logger) which overlapped the 15-min time slot. Rise and set reflect the time of sunrise and sun set based on the lat/lon of the logger.</p>",
                     "<h3>Daily Activity</h3> <p>Each row corresponds to an average activity score for that 15-min period calculated across all days included in the activity dataset. Rise and set reflect the time of sunrise and sun set based on the lat/lon of the logger.</p>
                     <p> Note that as this represents an average 24-hr activity cycle, output dates are irrelevant, as the data is tied to times, not dates. Therefore the dates are all assigned to 1970-01-01.</p>")),
@@ -127,7 +126,6 @@ mod_trans <- function(input, output, session, r, settings, verbose = FALSE) {
           setProgress(detail = x$title, value = x$p)
           sink(con <- textConnection("temp","w"), type = "message")
           if(is.null(trans[[x$req]])) message(paste0("No ", types$title[types$f == x$req], " data"))
-          if(x$f == "dom") message("Note that only first matrix returned (there may be alternatives)")
           trans[[x$f]] <- switch(x$f,
                                  "visits" = try(visits(all$raw,
                                                   bw = as.numeric(settings()$set_visits_bw),
@@ -137,9 +135,6 @@ mod_trans <- function(input, output, session, r, settings, verbose = FALSE) {
                                  "move" = try(move(trans$visits, all = as.logical(settings()$set_move_all))),
                                  "presence" = try(presence(trans$visits, bw = as.numeric(settings()$set_presence_bw))),
                                  "disp" = try(disp(trans$visits, bw = as.numeric(settings()$set_disp_bw))$displacements),
-                                 "dom" = try(dom(disp(trans$visits, bw = as.numeric(settings()$set_disp_bw)),
-                                                 omit_cutoff = as.numeric(settings()$set_dom_omit_cutoff),
-                                                 tries = as.numeric(settings()$set_dom_tries))$matrices[[1]]),
                                  "activity" = try(activity(trans$presence,
                                                     res = as.numeric(settings()$set_activity_res),
                                                     by_logger = as.logical(settings()$set_activity_by_logger),
@@ -200,11 +195,6 @@ mod_trans <- function(input, output, session, r, settings, verbose = FALSE) {
           validate(need(!is.null(all$raw) && !is.null(trans$raw) && nrow(trans$raw) > 0, msg_private))
           validate(need(nrow(temp) > 0, msg_error))
 
-          if(x == "dom"){
-            DT::datatable(temp, filter = "none",
-                          options = list(ordering = FALSE,
-                                         pageLength = 100))
-          } else {
             t <- names(which(sapply(temp, lubridate::is.POSIXct)))
             for(i in t) temp[, i] <- as.character(temp[, i])
             DT::datatable(temp,
@@ -212,7 +202,6 @@ mod_trans <- function(input, output, session, r, settings, verbose = FALSE) {
                           options = list(pageLength = 100),
                           rownames = FALSE,
                           colnames = gsub("_", " ", names(temp)) %>% gsub("\\b(\\w)", "\\U\\1", ., perl=TRUE))
-          }
         })
       })
     })

@@ -10,11 +10,11 @@ test_that("Initial loading: Finches dataset", {
   b <- remDr$findElements("css selector", "a[id *= 'data_dl']")
   expect_equivalent(sapply(b, function(x) unlist(x$getElementText())),
                     c("All", "Raw", "Visits", "Movements", "Presence", "Displacements",
-                      "Dominance", "Activity", "Daily activity", "Log"))
+                      "Activity", "Daily activity", "Log"))
 
   bd <- remDr$findElements("css selector", "a[id *= 'data_dl'][disabled]")
   expect_equivalent(sapply(bd, function(x) unlist(x$getElementText())),
-                    c("Displacements", "Dominance"))
+                    c("Displacements"))
 
   # Test table values
   test_tables(remDr, trans = "Raw", data = finches)
@@ -22,7 +22,6 @@ test_that("Initial loading: Finches dataset", {
   test_tables(remDr, trans = "Movements", data = (m <- move(v)))
   test_tables(remDr, trans = "Presence", data = (p <- presence(v)))
   test_tables(remDr, trans = "Displacements", data = try(d <- disp(v), silent = TRUE))
-  test_tables(remDr, trans = "Dominance", data = try(dm <- dom(d), silent = TRUE))
   test_tables(remDr, trans = "Activity", data = (act <- activity(p)))
   test_tables(remDr, trans = "Daily activity", data = daily(act))
 
@@ -181,8 +180,6 @@ test_that("Test Random Settings", {
                 data = t[['presence']])
     test_tables(remDr, trans = "Displacements",
                 data = t[['displacements']])
-    test_tables(remDr, trans = "Dominance",
-                data = t[['dominance']])
     test_tables(remDr, trans = "Activity",
                 data = t[['activity']])
     test_tables(remDr, trans = "Daily activity",
@@ -221,7 +218,6 @@ test_that("All data download to csv", {
     d <- t[[x]]
     trans <- names(t)[x]
     if(trans == "displacements") d <- d$displacements
-    if(trans == "dominance" && class(d) != "try-error") d <- data$matrices
 
     if(any(class(d) == "try-error") ||
        length(d) == 0 ||
