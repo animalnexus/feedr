@@ -18,3 +18,29 @@ expect_equal_to_ggplot_reference <- function(object, file, info = NULL) {
   }
   invisible(object)
 }
+
+expect_equal_to_leaflet_reference <- function(object, file, info = NULL) {
+
+  if (!file.exists(file)) {
+    saveRDS(objct, file)
+    testthat::succeed()
+  }
+  else {
+    ref <- readRDS(file)
+
+    ref$dependencies <- NA
+    object$dependencies <- NA
+
+    ref$x$calls[[1]]$args[[1]] <- NA
+    object$x$calls[[1]]$args[[1]] <- NA
+
+    ref$x$calls[[1]]$args[[4]]$attribution <- NA
+    object$x$calls[[1]]$args[[4]]$attribution <- NA
+
+    comp <- compare(object, ref)
+    expect(comp$equal, sprintf("Object not equal to reference.\n%s",
+                               comp$message), info = info)
+
+  }
+  invisible(object)
+}
