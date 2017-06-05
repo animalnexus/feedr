@@ -90,7 +90,7 @@ test_that("convert_asnipe data runs in asnipe get_associations_points_tw functio
 })
 
 test_that("convert_anidom converts as expected", {
-  d <- disp(visits(finches_lg))
+  d <- disp(visits(finches_lg), bw = 5)
 
   expect_silent(a <- convert_anidom(d$displacements))
   expect_silent(a2 <- convert_anidom(d))
@@ -106,7 +106,7 @@ test_that("convert_anidom converts as expected", {
 
 test_that("convert_anidom runs aniDom functions as expected", {
 
-  d <- disp(visits(finches_lg))
+  d <- disp(visits(finches_lg), bw = 5)
   i <- convert_anidom(d)
 
   # Elo_scores
@@ -123,7 +123,7 @@ test_that("convert_anidom runs aniDom functions as expected", {
 })
 
 test_that("convert_dominance converts as expected", {
-  d <- disp(visits(finches_lg))
+  d <- disp(visits(finches_lg), bw = 5)
   expect_silent(a <- convert_dominance(d$displacements))
   expect_silent(a2 <- convert_dominance(d))
   expect_equivalent(a, a2)
@@ -162,7 +162,7 @@ test_that("convert_dominance runs Dominance ADI functions as expected", {
   skip_on_travis()
   skip_on_appveyor()
 
-  d <- disp(visits(finches_lg))
+  d <- disp(visits(finches_lg), bw = 5)
   i <- convert_dominance(d)
 
   # ADI
@@ -265,3 +265,4 @@ test_that("convert_activity runs activity functions as expected", {
   expect_silent(a <- activity::fitact(i[["06200003AA"]], sample = "none"))
   expect_is(a, "actmod")
   expect_silent(activity::plot(a))
+})

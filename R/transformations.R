@@ -542,7 +542,7 @@ presence_single <- function(v1, bw = bw){
 #'
 #' @import magrittr
 #' @export
-disp <- function(v, bw = 5, pass = TRUE){
+disp <- function(v, bw = 2, pass = TRUE){
 
   ## Check for correct formatting
   check_name(v, c("animal_id", "logger_id", "date", "start", "end"))

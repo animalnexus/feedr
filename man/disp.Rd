@@ -4,7 +4,7 @@
 \alias{disp}
 \title{Displacements}
 \usage{
-disp(v, bw = 5, pass = TRUE)
+disp(v, bw = 2, pass = TRUE)
 }
 \arguments{
 \item{v}{Dataframe. A visits data frame containing \strong{all} visits from
