@@ -2,7 +2,7 @@
 
 ## Major Changes
 - animalnexus.ca now includes 'Settings' tab to change function arguments
-- New 'convert' functions: convert_asnipe, convert_anidom, convert_dominance to convert data for use by other packages (namely [asnipe](https://cran.r-project.org/package=asnipe), [aniDom](https://cran.r-project.org/package=aniDom) and [Dominance](https://cran.r-project.org/package=Dominance))
+- New 'convert' functions: convert_asnipe, convert_anidom, convert_dominance, convert_perc, convert_activity to convert data for use by other packages (namely [asnipe](https://cran.r-project.org/package=asnipe), [aniDom](https://cran.r-project.org/package=aniDom),  [Dominance](https://cran.r-project.org/package=Dominance), [Perc](https://cran.r-project.org/package=Perc), [activity](https://CRAN.R-project.org/package=activity))
 - New summary options for map_leaflet() and map_ggmap(). These arguments perform common data summarizations before plotting, so users have the option of passing unsummarized movement and presence data.
 - Removed the `dom()` function in favour of conversion functions. Dominance can be calculated by other packages.
 

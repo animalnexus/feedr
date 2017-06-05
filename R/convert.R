@@ -3,7 +3,7 @@
 #' Converts raw RFID data into a format for easy use by either the
 #' \code{\link[asnipe]{gmmevents}} or the
 #' \code{\link[asnipe]{get_associations_points_tw}} functions included in the
-#' \link{asnipe} package.
+#' \link{asnipe} package for calculating group membership.
 #'
 #' @param r Dataframe. Raw RFID dataset. Must have at least columns
 #'   \code{animal_id}, \code{logger_id} and \code{time}. The column time should
@@ -81,7 +81,9 @@ convert_asnipe <- function(r, fun = "gmmevents", by_day = TRUE, time_scale = "se
 #' \code{\link[aniDom]{elo_scores}}, the
 #' \code{\link[aniDom]{estimate_uncertainty_by_repeatability}}, or the
 #' \code{\link[aniDom]{estimate_uncertainty_by_splitting}} functions included in
-#' the \link{aniDom} package.
+#' the \link{aniDom} package for calculating dominance hierarchies from
+#' Elo scores and assessing their robustness. Only includes individuals that
+#' participated in at least one interaction.
 #'
 #' @param d Data frame or List. Either the specific displacements data frame which is
 #'   returned as a list item from \code{disp()}, or the whole displacements list
@@ -141,8 +143,10 @@ convert_anidom <- function(d){
 #' Convert displacements for use by functions from the Dominance package
 #'
 #' Converts displacements RFID data into a format for easy use by either the
-#' \code{\link[Dominance]{ADI}} or the \code{\link[asnipe]{Sociogram}} functions
-#' included in the \link{Dominance} package.
+#' \code{\link[Dominance]{ADI}} or the \code{\link[Dominance]{Sociogram}}
+#' functions included in the \link{Dominance} package for calculating average
+#' dominance indices and drawing sociograms. Only includes individuals that
+#' participated in at least one interaction.
 #'
 #' @param d Data frame or List. Either the specific displacements data frame which is
 #'   returned as a list item from \code{disp()}, or the whole displacements list
@@ -217,5 +221,115 @@ convert_dominance <- function(d) {
   return(list(data_sheet = data_sheet, items = items, actions = actions, bytes = bytes))
 }
 
+#' Convert displacements for use by the Perc package
+#'
+#' Converts displacements RFID data into a format for easy use by the
+#' \code{\link[Perc]{as.conflictmat}} function included in the \link{Perc}
+#' package. Can then be applied to internal Perc functions for calculating
+#' dominance from perculation and conductance. Only includes individuals that
+#' participated in at least one interaction.
+#'
+#' @param d Data frame or List. Either the specific interactions data frame which is
+#'   returned as a list item from \code{disp()}, or the whole displacements list
+#'   returned by \code{disp()}.
+#'
+#' @return A data frame of interactions for input into
+#'   \code\link[Perc]{as.conflicmat}. See examples for specific application.
+#'
+#' @seealso \link{Perc} package and it's function \link[Perc]{as.conflictmat} .
+#'   \url{https://cran.r-project.org/package=Perc}
+#'
+#' @examples
+#' # Calculate displacements
+#' d <- disp(visits(finches_lg))
+#'
+#' # Format for use by Perc package
+#' i <- convert_perc(d)
+#' i <- convert_perc(d$interactions) # Equivalent
+#'
+#' \dontrun{
+#' # Use Perc package:
+#' library(Perc)
+#'
+#' # Calculate ranks (adapted from Perc examples)
+#' conflict_mat <- as.conflictmat(i, weighted = TRUE)
+#' perm <- conductance(conflict_mat, 2)
+#' simRankOrder(perm$p.hat, num = 10, kmax = 1000)
+#'
+#' }
+#'
+#' @import magrittr
+#' @export
+convert_perc <- function(d){
 
+  # Function takes either the whole output of disp() or just the displacements
+  if(!is.data.frame(d)) d <- d$interactions
 
+  # Check for Correct formating
+  check_name(d, c("displacer", "displacee","n"), type = "displacement")
+  check_format(d)
+
+  d %>%
+    dplyr::filter(n != 0) %>%
+    dplyr::mutate(displacer = as.character(displacer), displacee = as.character(displacee)) %>%
+    dplyr::rename(Initiator1 = displacer, Recipient1 = displacee, Freq = n) %>%
+    as.data.frame()
+}
+
+#' Convert data for use by the activity package
+#'
+#' Converts raw RFID data into a format for easy use by the
+#' \code{\link[activity]{fitact}} function included in the \link{activity}
+#' package for modelling activity levels and daily activity patterns.
+#'
+#' @param r Dataframe. Raw RFID dataset. Must have at least columns
+#'   \code{animal_id}, \code{logger_id} and \code{time}. The column time should
+#'   be formated as POSIXct (data/time). (Consider using
+#'   \code{\link{load_format}} to format your dataframe)
+#'
+#' @return A list of vectors corresponding to each individual. See examples for
+#'   specific application.
+#'
+#' @seealso \link{activity} package and it's function \link[activity]{fitact}.
+#'   \url{https://cran.r-project.org/package=activity}
+#'
+#' @examples
+#'
+#' # Format for use by activity package
+#' i <- convert_activity(finches_lg)
+#'
+#' \dontrun{
+#' # Use activity package:
+#' library(activity)
+#'
+#' # Calculate daily activity pattern for a single individual
+#' a <- fitact(i[[1]], sample = "none")
+#' plot(a)
+#'
+#' # Calculate daily activity pattern for all individuals
+#' a <- lapply(i, fitact, sample = "none")
+#' plot(a[[3]])
+#' plot(a[["06200004F8"]])
+#' # etc.
+#' }
+#'
+#' @import magrittr
+#' @export
+convert_activity <- function(r){
+  # Check for Correct formating
+  check_name(r, n = c('animal_id', 'logger_id', 'time'))
+  check_time(r, n = "time", internal = FALSE)
+
+  t <- r %>%
+    dplyr::mutate(midnight = lubridate::floor_date(time, "day"),
+                  time_sec = as.numeric(difftime(time, midnight, units = "sec")),
+                  time_sec = time_sec / (60*60*24),
+                  time_rad = 2 * pi * time_sec) %>%
+    dplyr::select(animal_id, time_rad) %>%
+    tidyr::nest(time_rad) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(data = as.list(data))
+  t2 <- as.list(t$data)
+  names(t2) <- t$animal_id
+  return(t2)
+}

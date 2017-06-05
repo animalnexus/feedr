@@ -192,7 +192,7 @@ test_that("convert_dominance runs Dominance Sociogram functions as expected", {
   skip_on_travis()
   skip_on_appveyor()
 
-  d <- disp(visits(finches_lg))
+  d <- disp(visits(finches_lg), bw = 5)
   i <- convert_dominance(d)
 
   # Sociogram
@@ -202,3 +202,66 @@ test_that("convert_dominance runs Dominance Sociogram functions as expected", {
   expect_named(s, c("sociogram", "counts_circles", "count_interactions", "line_size"))
   file.remove("Rplots.pdf")
 })
+
+test_that("convert_perc converts as expected", {
+  d <- disp(visits(finches_lg), bw = 5)
+
+  expect_silent(a <- convert_perc(d$interactions))
+  expect_silent(a2 <- convert_perc(d))
+  expect_equivalent(a, a2)
+  expect_is(a, "data.frame")
+  expect_equal(sum(a$Freq), sum(d$interactions$n))
+  expect_named(a, c("Initiator1", "Recipient1", "Freq"))
+  expect_is(a$Initiator1, "character")
+  expect_is(a$Recipient1, "character")
+  expect_is(a$Freq, "numeric")
+  expect_equivalent(a[1,], data.frame(Initiator1 = "0620000500", Recipient1 = "06200003AA", Freq = 1, stringsAsFactors = FALSE))
+  expect_equivalent(a[nrow(a),], data.frame(Initiator1 = "0620000477", Recipient1 = "0620000500", Freq = 1, stringsAsFactors = FALSE))
+})
+
+test_that("convert_perc runs Perc functions as expected", {
+
+  d <- disp(visits(finches_lg), bw = 5)
+  i <- convert_perc(d)
+
+  # as.conflictmat
+  expect_silent(s <- Perc::as.conflictmat(i, weighted = TRUE))
+  expect_equal(dimnames(s), list(sort(unique(c(i$Initiator1, i$Recipient1))),
+                                 sort(unique(c(i$Initiator1, i$Recipient1)))))
+
+  # conductance
+  expect_silent(c <- Perc::conductance(s, 2))
+  expect_named(c, c("imputed.conf", "p.hat"))
+  expect_is(c$imputed.conf, "matrix")
+  expect_is(c$p.hat, "matrix")
+
+  # simRankOrder
+  set.seed(111)
+  expect_silent(r <- Perc::simRankOrder(c$p.hat, num = 10, kmax = 100))
+  expect_named(r, c("BestSimulatedRankOrder", "Costs", "AllSimulatedRankOrder"))
+  expect_is(r$BestSimulatedRankOrder, "data.frame")
+  expect_is(r$Cost, "data.frame")
+  expect_is(r$AllSimulatedRankOrder, "data.frame")
+  expect_equal(r$BestSimulatedRankOrder, data.frame(ID = c("0620000500", "06200004F8", "06200003AA", "0620000477", "0620000400"), ranking = 1:5))
+})
+
+test_that("convert_activity converts as expected", {
+  r <- finches_lg
+
+  expect_silent(i <- convert_activity(r))
+  expect_is(i, "list")
+  expect_named(i, as.character(sort(unique(r$animal_id))))
+  expect_is(i[[1]], "numeric")
+  expect_equal(i[["062000043E"]], c(3.067125, 3.067271), tolerance = 0.0000001)
+})
+
+test_that("convert_activity runs activity functions as expected", {
+  r <- finches_lg
+  i <- convert_activity(r)
+
+  # a <- lapply(i, fitact, sample = "none")
+  #' plot(a[[3]])
+  #' plot(a[["06200004F8"]])
+  expect_silent(a <- activity::fitact(i[["06200003AA"]], sample = "none"))
+  expect_is(a, "actmod")
+  expect_silent(activity::plot(a))
