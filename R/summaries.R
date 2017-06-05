@@ -1,5 +1,7 @@
 # Summaries
 summaries <- function(d, summary = "sum_indiv") {
+
+  if(!(summary %in% c("sum", "sum_indiv", "indiv"))) stop("Summary type not valid, must be one of 'sum', 'sum_indiv', or 'indiv'", call. = FALSE)
   # Grouping
   g <- c("logger_id", "lat", "lon")
   if("move_path" %in% names(d)) g <- c("move_path", g)
