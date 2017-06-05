@@ -44,13 +44,12 @@ ui_trans <- function(r, verbose = FALSE) {
 
 trans_preamble <- function(args = TRUE) {
   trans_functions <- c("raw", "visits", "move", "presence", "disp", "activity", "daily")
-
   manual <- man %>%
     dplyr::right_join(
       tibble::tibble(
         f = trans_functions,
-        req = c(NA, "raw", "visits", "visits", "visits", "disp", "presence", "activity"),
-        p = round(seq(0, 1, length.out = 8), 2),
+        req = c(NA, "raw", "visits", "visits", "visits", "presence", "activity"),
+        p = round(seq(0, 1, length.out = 7), 2),
         details = c("<h3>Raw RFID data</h3> <p>Each row corresponds to an RFID 'read' event.</p>",
                     "<h3>Visits</h3> <p>Each row corresponds to a single 'visit' to the reader. Visits are defined as a series of consecutive RFID reads, with each read occurring within 3s of the next. See the visits() function in the feedr package for R to fine tune these settings.</p><p>Animal N and Logger N refer to the total number of individuals and readers in the data, respectively.</p>",
                     "<h3>Presence</h3> <p>Each row corresponds to a single 'presence event' at the reader if the reader is a logger, or a period of time spent near the reader otherwise. These are defined as a series of visits at a single logger separated by no more than 15min. See the presence() function in the feedr package for R to fine tune these settings.</p><p>Start and End reflect the start and end of the time present and length refers to the length in minutes.</p><p>Animal N and Logger N refer to the total number of individuals and readers in the data, respectively.</p>",
