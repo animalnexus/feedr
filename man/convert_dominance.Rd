@@ -26,8 +26,10 @@ List of data frames to use in functions from the \link{Dominance}
 }
 \description{
 Converts displacements RFID data into a format for easy use by either the
-\code{\link[Dominance]{ADI}} or the \code{\link[asnipe]{Sociogram}} functions
-included in the \link{Dominance} package.
+\code{\link[Dominance]{ADI}} or the \code{\link[Dominance]{Sociogram}}
+functions included in the \link{Dominance} package for calculating average
+dominance indices and drawing sociograms. Only includes individuals that
+participated in at least one interaction.
 }
 \examples{
 # Calculate displacements

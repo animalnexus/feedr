@@ -42,7 +42,7 @@ If \code{fun = "get_associations_points_tw"}, a data frame with four columns: \c
 Converts raw RFID data into a format for easy use by either the
 \code{\link[asnipe]{gmmevents}} or the
 \code{\link[asnipe]{get_associations_points_tw}} functions included in the
-\link{asnipe} package.
+\link{asnipe} package for calculating group membership.
 }
 \examples{
 

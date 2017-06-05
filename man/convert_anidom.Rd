@@ -20,7 +20,9 @@ Converts displacements data into a format for easy use by either the
 \code{\link[aniDom]{elo_scores}}, the
 \code{\link[aniDom]{estimate_uncertainty_by_repeatability}}, or the
 \code{\link[aniDom]{estimate_uncertainty_by_splitting}} functions included in
-the \link{aniDom} package.
+the \link{aniDom} package for calculating dominance hierarchies from
+Elo scores and assessing their robustness. Only includes individuals that
+participated in at least one interaction.
 }
 \examples{
 
