@@ -64,9 +64,9 @@ test_that("Log returns correct values: Finches dataset", {
   })
 
   msgs <- c("No messages",
-            "Note that only first matrix returned (there may be alternatives)",
-            "There are no displacement events with a bw = 5",
-            "Error : You should be using 'displacement' data. Required columns aren't present. Require: 'displacer', 'displacee', 'n'",
+            "No messages",
+            "No messages",
+            "There are no displacement events with a bw = 2",
             "041868D396: Skipping. Individual has less than 24hrs of data",
             "041868D861: Skipping. Individual has less than 24hrs of data",
             "062000043E: Skipping. Individual has less than 24hrs of data",

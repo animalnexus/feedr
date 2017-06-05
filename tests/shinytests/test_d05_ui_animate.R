@@ -21,7 +21,6 @@ test_that("Options set", {
 
   for(i in 1:length(s)) {
     if(s[[i]][1] != "") for(a in s[[i]]) click_setting(remDr, paste0("[value = '", a, "']"))
-    #take_screenshot(remDr, file = paste0(test_dir, "/screenshots/anim_kam_", i), ref = TRUE)
     take_screenshot(remDr, file = paste0(test_dir, "/screenshots/anim_kam_", i))
     expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/anim_kam_", i)))
   }

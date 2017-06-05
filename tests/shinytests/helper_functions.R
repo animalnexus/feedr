@@ -147,7 +147,7 @@ nav_tab <- function(remDr, tab){
 
 change_settings <- function(remDr, setting, value){
   e <- remDr$findElement(using = "css selector", value = paste0("[id $= '", setting, "']"))
-
+  remDr$mouseMoveToLocation(webElement = e)
   if(is.logical(value)){
     for(i in 1:2){
       c <- e$findChildElement(using = "css selector",
@@ -188,6 +188,10 @@ random_settings <- function(m){
     return(y)
   })
   names(s) <- m$id
+  s <- s[c("set_visits_allow_imp", "set_visits_na_rm",
+           "set_visits_bw", "set_visits_bw_imp", "set_move_all",
+           "set_presence_bw", "set_disp_bw", "set_activity_by_logger",
+           "set_activity_sun", "set_activity_keep_all", "set_activity_res")]
   return(s)
 }
 
@@ -196,8 +200,16 @@ reg_escape <- function(string) {
 }
 
 click_button <- function(remDr, id, type = "button") {
-  remDr$findElement(using = "css",
-                    value = paste0(type, "[id $= '", id, "']"))$clickElement()
+  e <- remDr$findElement(using = "css",
+                    value = paste0(type, "[id $= '", id, "']"))
+  remDr$mouseMoveToLocation(webElement = e)
+  if(id %in% c("settings_get", "settings_save", "import_reveal")) { # won't be visible otherwise
+    webElem <- remDr$findElement("css", "body")
+    webElem$sendKeysToElement(list(key = "home"))
+
+  }
+  Sys.sleep(0.5)
+  e$clickElement()
   Sys.sleep(0.5)
 }
 
