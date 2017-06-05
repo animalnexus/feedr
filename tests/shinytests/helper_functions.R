@@ -19,7 +19,7 @@ shiny_test_startup <- function(f = NULL, appURL, args = NULL,
   system("(java -jar ~/R/x86_64-pc-linux-gnu-library/3.3/RSelenium/bin/selenium-server-standalone.jar &)",
          ignore.stdout = TRUE, ignore.stderr = TRUE)
 
-  Sys.sleep(2)
+  Sys.sleep(3)
 
   if(type == "local"){
     start_shiny(f, args)
