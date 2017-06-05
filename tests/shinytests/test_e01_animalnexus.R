@@ -11,8 +11,8 @@ test_that("Connect to animalnexus", {
                      state = unlist(sapply(tabs, function(x) x$isElementDisplayed())))
 
   expect_true(all(c("Home", "Database", "Import", "Visualizations", "Individuals",
-                    "Transformations", "Settings", "Help") %in% tabs$names))
-  expect_true(all(tabs$state[tabs$names %in% c("Home", "Database", "Import", "Help")]))
+                    "Transformations", "Settings") %in% tabs$names))
+  expect_true(all(tabs$state[tabs$names %in% c("Home", "Database", "Import")]))
 
   # Active data set message
   v <- remDr$findElement(using = "css", value = "[id = 'package_version']")
