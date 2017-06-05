@@ -234,9 +234,9 @@ convert_dominance <- function(d) {
 #'   returned by \code{disp()}.
 #'
 #' @return A data frame of interactions for input into
-#'   \code\link[Perc]{as.conflicmat}. See examples for specific application.
+#'   \code{\link[Perc]{as.conflicmat}}. See examples for specific application.
 #'
-#' @seealso \link{Perc} package and it's function \link[Perc]{as.conflictmat} .
+#' @seealso \link{Perc} package and it's function \link[Perc]{as.conflictmat}.
 #'   \url{https://cran.r-project.org/package=Perc}
 #'
 #' @examples

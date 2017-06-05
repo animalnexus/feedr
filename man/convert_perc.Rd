@@ -13,7 +13,7 @@ returned by \code{disp()}.}
 }
 \value{
 A data frame of interactions for input into
-  \code\link[Perc]{as.conflicmat}. See examples for specific application.
+  \code{\link[Perc]{as.conflicmat}}. See examples for specific application.
 }
 \description{
 Converts displacements RFID data into a format for easy use by the
@@ -43,6 +43,6 @@ simRankOrder(perm$p.hat, num = 10, kmax = 1000)
 
 }
 \seealso{
-\link{Perc} package and it's function \link[Perc]{as.conflictmat} .
+\link{Perc} package and it's function \link[Perc]{as.conflictmat}.
   \url{https://cran.r-project.org/package=Perc}
 }
