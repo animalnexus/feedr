@@ -35,8 +35,10 @@ Imports:
 Suggests:
     aniDom,
     asnipe,
+    Dominance,
     knitr,
     lazyeval,
+    Perc,
     rmarkdown,
     sp,
     testthat
