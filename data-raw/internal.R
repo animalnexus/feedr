@@ -99,6 +99,9 @@ labs <- data.frame(
 man <- get_manual() %>%
   dplyr::left_join(labs, by = c("f", "arg"))
 
+# allow_imp set true by default for shiny apps
+man$value[man$f == "visits" & man$arg == "allow_imp"] <- TRUE
+
 ############################################################################
 url <- "http://gaia.tru.ca/birdMOVES/rscripts/anquery.csv"
 url_count <- "http://gaia.tru.ca/birdMOVES/rscripts/anInit.csv"
