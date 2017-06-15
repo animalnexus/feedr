@@ -140,7 +140,7 @@ load_raw <- function(r_file,
 
     if(nrow(r) > 0){
       # Trim leading or trailing whitespace
-      r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
+      r <- dplyr::mutate_all(r, trimws)
 
       # Get logger ids
       if(details == 0) { # Match patterns in file name
@@ -513,7 +513,7 @@ load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE, tim
   if(!dst) tz_disp <- tz_offset(tz_disp, tz_name = TRUE)
 
   # Trim leading or trailing whitespace
-  r <- dplyr::mutate_each(r, funs = dplyr::funs(trimws))
+  r <- dplyr::mutate_all(r, trimws)
 
   # If locs combined, split apart
   if("loc" %in% names(r)) {
