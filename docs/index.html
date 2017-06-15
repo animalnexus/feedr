@@ -4,7 +4,7 @@
 
 <head>
 
-<meta charset="utf-8">
+<meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
@@ -339,42 +339,28 @@ Static or interactive maps produced by the mapping functions which visualize mov
 <p>There are also three ‘user-interface’ (UI) functions that can be used to simplify the use of these functions (see below).</p>
 <p>In the normal order of operations, several functions depend on the output of other functions.</p>
 <p>For example, to get daily activity patterns, you could get your data from the animalnexus database with <code>dl_data()</code>, turn this raw data to visits data with <code>visits()</code>, turn visits data to activity data with <code>activity()</code> and finally, turn activity data into daily activity patterns with <code>daily()</code>.</p>
-<div id="htmlwidget-3f1d2077587828a94503" style="width:500px;height:480px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-3f1d2077587828a94503">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nload[label = \"{Loading/Importing Data | {load_raw_all() | load_web() | dl_data()}}\"]\n\nhk[label = \"{Housekeeping (Optional) | {check_ids() | check_problems()}}\", width = 3]\n\nload -> hk\nhk -> visits\nload -> visits\n\nvisits[label = \"visits()\"]\ndisp[label = \"disp()\"]\ndom[label = \"dom()\"]\nmove[label = \"move()\"]\npresence[label = \"presence()\"]\nact[label = \"activity()\"]\ndaily[label = \"daily()\"]\n\nvisits-> {disp, move, presence}\npresence -> act\ndisp -> dom\nact -> daily\n\nmap[label = \"{Visualizations | {map_ggmap() | map_leaflet()}}\"]\n\n{presence; move} -> map\n\n#A -> e [ltail = cluster0, lhead = cluster1]\n#f -> \"visits()\" [ltail = cluster1, lhead = cluster2]\n#\"move()\" -> \"map_leaflet()\" [ltail = cluster2, lhead = cluster3]\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-10cd4d1ad2405ab7fc39" style="width:500px;height:480px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-10cd4d1ad2405ab7fc39">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nload[label = \"{Loading/Importing Data | {load_raw_all() | load_web() | dl_data()}}\"]\n\nhk[label = \"{Housekeeping (Optional) | {check_ids() | check_problems()}}\", width = 3]\n\nload -> hk\nhk -> visits\nload -> visits\n\nvisits[label = \"visits()\"]\ndisp[label = \"disp()\"]\ndom[label = \"dom()\"]\nmove[label = \"move()\"]\npresence[label = \"presence()\"]\nact[label = \"activity()\"]\ndaily[label = \"daily()\"]\n\nvisits-> {disp, move, presence}\npresence -> act\ndisp -> dom\nact -> daily\n\nmap[label = \"{Visualizations | {map_ggmap() | map_leaflet()}}\"]\n\n{presence; move} -> map\n\n#A -> e [ltail = cluster0, lhead = cluster1]\n#f -> \"visits()\" [ltail = cluster1, lhead = cluster2]\n#\"move()\" -> \"map_leaflet()\" [ltail = cluster2, lhead = cluster3]\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="tutorial-data" class="section level2">
 <h2>Tutorial Data</h2>
 <p>Two data frames, <code>finches</code> and <code>chickadees</code> are included in the <code>feedr</code> package for the purpose of demonstration.</p>
 <pre class="r"><code>head(finches)</code></pre>
-<pre><code>##    animal_id                time logger_id     species sex       lon
-## 1 0620000514 2016-01-28 12:34:25      2200 House Finch   F -120.3612
-## 2 0620000514 2016-01-28 12:34:28      2200 House Finch   F -120.3612
-## 3 041868D861 2016-01-28 12:35:41      2200 House Finch   M -120.3612
-## 4 06200004F8 2016-01-28 12:35:52      2200 House Finch   F -120.3612
-## 5 06200004F8 2016-01-28 12:35:59      2200 House Finch   F -120.3612
-## 6 06200004F8 2016-01-28 12:36:02      2200 House Finch   F -120.3612
-##        lat
-## 1 50.66778
-## 2 50.66778
-## 3 50.66778
-## 4 50.66778
-## 5 50.66778
-## 6 50.66778</code></pre>
+<pre><code>##    animal_id                time logger_id     species sex       lon      lat
+## 1 0620000514 2016-01-28 12:34:25      2200 House Finch   F -120.3612 50.66778
+## 2 0620000514 2016-01-28 12:34:28      2200 House Finch   F -120.3612 50.66778
+## 3 041868D861 2016-01-28 12:35:41      2200 House Finch   M -120.3612 50.66778
+## 4 06200004F8 2016-01-28 12:35:52      2200 House Finch   F -120.3612 50.66778
+## 5 06200004F8 2016-01-28 12:35:59      2200 House Finch   F -120.3612 50.66778
+## 6 06200004F8 2016-01-28 12:36:02      2200 House Finch   F -120.3612 50.66778</code></pre>
 <pre class="r"><code>head(chickadees)</code></pre>
-<pre><code>##    animal_id                time logger_id experiment       date      lat
-## 1 06200004BF 2016-01-11 10:48:49 exp2-GR10       exp2 2016-01-11 53.89086
-## 2 062000038F 2016-01-11 10:48:50 exp2-GR10       exp2 2016-01-11 53.89086
-## 3 06200004E4 2016-01-11 10:48:55 exp2-GR10       exp2 2016-01-11 53.89086
-## 4 06200004BF 2016-01-11 10:50:02 exp2-GR10       exp2 2016-01-11 53.89086
-## 5 06200004E4 2016-01-11 10:51:07 exp2-GR10       exp2 2016-01-11 53.89086
-## 6 06200004BE 2016-01-11 10:51:51 exp2-GR10       exp2 2016-01-11 53.89086
-##         lon
-## 1 -122.8193
-## 2 -122.8193
-## 3 -122.8193
-## 4 -122.8193
-## 5 -122.8193
-## 6 -122.8193</code></pre>
+<pre><code>##    animal_id                time logger_id experiment       date      lat       lon
+## 1 06200004BF 2016-01-11 10:48:49 exp2-GR10       exp2 2016-01-11 53.89086 -122.8193
+## 2 062000038F 2016-01-11 10:48:50 exp2-GR10       exp2 2016-01-11 53.89086 -122.8193
+## 3 06200004E4 2016-01-11 10:48:55 exp2-GR10       exp2 2016-01-11 53.89086 -122.8193
+## 4 06200004BF 2016-01-11 10:50:02 exp2-GR10       exp2 2016-01-11 53.89086 -122.8193
+## 5 06200004E4 2016-01-11 10:51:07 exp2-GR10       exp2 2016-01-11 53.89086 -122.8193
+## 6 06200004BE 2016-01-11 10:51:51 exp2-GR10       exp2 2016-01-11 53.89086 -122.8193</code></pre>
 </div>
 <div id="function-index" class="section level2">
 <h2>Function Index</h2>
@@ -449,7 +435,7 @@ $(document).ready(function () {
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>

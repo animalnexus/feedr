@@ -19,3 +19,5 @@ pre {
 .section h3 {
   margin-top: 10px;
 }
+
+pre, code {white-space:pre !important; overflow-x:scroll !important}

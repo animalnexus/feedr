@@ -12,7 +12,7 @@ Here we will go over visualizing your data with maps. `feedr` includes two wrapp
 
  `feedr` also includes a stand-alone shiny app (launched with `ui_animate()`) that can be used to create simple animations of your data, this is a simple process as it does not require summarized data, but is also less flexible (see [animations](#animations) below).
 
-## Summarizing
+## Built-in Summaries
 
 Let's start by calculating presence and movements:
 
@@ -22,15 +22,105 @@ p <- presence(v)
 m <- move(v)
 ```
 
-There are many ways we can summarize the data:
+There are many ways we can summarize the data. The following options are available through the `summary` argument of the mapping functions:
 
-- by population
 - by individual
 - totals (sums)
-- means
-- totals corrected for number of individuals 
+- totals corrected for number of individuals
 
-### By Population
+<a id = "leaflet"></a>
+
+## `map_leaflet()`
+
+This function creates an interactive html map using leaflet for R (package `leaflet`). 
+
+```{r}
+map_leaflet(p = p, m = m, summary = "sum_indiv")
+```
+
+The map is interactive in that it can be zoomed, the tiles changed, and different elements added or removed. loggers (white-outlined black dots) can also be clicked on to reveal ids and circles and paths can clicked on to reveal their actual numbers.
+
+You can also adjust some of the cosmetic details:
+
+```{r}
+map_leaflet(p = p, m = m, summary = "sum_indiv",
+            p_scale = 0.5, m_scale = 0.5,
+            p_title = "Presence (min)", m_title = "Paths (Total use)",
+            p_pal = c("blue","white"), m_pal = c("black","red"))
+```
+
+To plot by individual, simply use individual summaries:
+
+```{r}
+map_leaflet(p = p, m = m, summary = "indiv")
+```
+
+Note, however, that for leaflet maps, the individual lines are stacked in order of magnitude and visualizations like this may not be very useful for large numbers of individuals.
+
+To save this map, you can zoom and set it up as you like and use the "Export > Save as image" button in RStudio. 
+
+Alternatively, you can use the `map_ggmap()` function to visualize a static map.
+
+--------------------
+Back to [top](#top) 
+--------------------
+
+<a id = "ggmap"></a>
+
+## `map_ggmap()`
+
+This creates static maps using the package `ggmap`. This map may take longer to create as it downloads background images from Google Maps (but you can also specify the source, see below).
+
+```{r}
+map_ggmap(p = p, m = m, summary = "sum_indiv")
+```
+
+Getting the zoom level often requires some trial and error (default = 17). If you see a warning about rows with missing values omitted, this means that not all your data could fit on the map, consider using a different zoom:
+
+```{r}
+map_ggmap(p = p, m = m, summary = "sum_indiv", zoom = 16)
+```
+
+```{r}
+map_ggmap(p = p, m = m, summary = "sum_indiv",
+          zoom = 16, p_scale = 0.7)
+```
+
+We can adjust the map type:
+
+```{r}
+map_ggmap(p = p, m = m, summary = "sum_indiv", maptype = "terrain")
+```
+
+```{r}
+map_ggmap(p = p, m = m, summary = "sum_indiv", maptype = "roadmap")
+```
+
+For individuals:
+
+```{r, error = TRUE}
+map_ggmap(p = p, m = m, summary = "indiv")
+```
+
+Okay, let's try with fewer individuals
+
+```{r, fig.width = 10, fig.height = 4}
+map_ggmap(p = p, m = m, summary = "indiv",
+          which = c("041868E9A8", "06200003AA"))
+```
+
+Let's look at all the birds for which we have movements
+
+```{r, fig.width = 10, fig.height = 10}
+
+ids <- unique(m$animal_id)
+
+map_ggmap(p = p, m = m, summary = "indiv",
+          which = ids)
+```
+
+
+## Custom Summaries
 
 Calculate total time present at each logger, corrected for the number of individuals total
 
@@ -60,7 +150,12 @@ m_pop
 
 __Note:__ The new summary data set must have the column `path_use`, regardless of how it is calculated. The mapping functions will look for that column name.
 
-### By Individual
+Specify `summary = none` when the data is already summarized:
+
+```{r}
+map_leaflet(p = p_pop, m = m_pop, summary = "none")
+```
+
 We can also summarize data by individual for plotting of individual maps.
 
 This is virtually identical to what we did above, except that we add one more variable to group by and we don't correct for the number of individuals:
@@ -79,115 +174,12 @@ m_indiv
 
 ### Recap:
 
-To create maps you need the following:
+To create maps you need to define a summary OR create custom summaries with the following:
 
 - presence summary with a columns: `logger_id` and `amount`
 - movement summary with a columns: `logger_id`, `move_path`, `path_use`, `lat`, and `lon`
 
 If you want to look at individual data, add `animal_id` to the groupings.
-
-
-## Mapping
-
-<a id = "leaflet"></a>
-
-## `map_leaflet()`
-
-This function creates an interactive html map using leaflet for R (package `leaflet`). 
-
-```{r}
-map_leaflet(p = p_pop, m = m_pop)
-```
-
-The map is interactive in that it can be zoomed, the tiles changed, and different elements added or removed. loggers (white-outlined black dots) can also be clicked on to reveal ids and circles and paths can clicked on to reveal their actual numbers.
-
-You can also adjust some of the cosmetic details:
-
-```{r}
-map_leaflet(p = p_pop, m = m_pop,
-            p_scale = 0.5, m_scale = 0.5,
-            p_title = "Presence (min)", m_title = "Paths (Total use)",
-            p_pal = c("blue","white"), m_pal = c("black","red"))
-```
-
-To plot by individual, simply use individually summarized data sets:
-
-```{r}
-map_leaflet(p = p_indiv, m = m_indiv)
-```
-
-Note, however, that for leaflet maps, the individual lines are stacked in order of magnitude and visualizations like this may not be very useful for large numbers of individuals.
-
-To save this map, you can zoom and set it up as you like and use the "Export > Save as image" button in RStudio. 
-
-Alternatively, you can use the `map_ggmap()` function to visualize a static map.
-
---------------------
-Back to [top](#top) 
---------------------
-
-<a id = "ggmap"></a>
-
-## `map_ggmap()`
-
-This creates static maps using the package `ggmap`. This map may take longer to create as it downloads background images from Google Maps (but you can also specify the source, see below).
-
-```{r}
-map_ggmap(p = p_pop, m = m_pop)
-```
-
-Getting the zoom level often requires some trial and error (default = 17). If you see a warning about rows with missing values omitted, this means that not all your data could fit on the map, consider using a different zoom:
-
-```{r}
-map_ggmap(p = p_pop, m = m_pop, zoom = 16)
-```
-
-```{r}
-map_ggmap(p = p_pop, m = m_pop, 
-          zoom = 16, p_scale = 0.7)
-```
-
-We can adjust the map type:
-
-```{r}
-map_ggmap(p = p_pop, m = m_pop, maptype = "terrain")
-```
-
-```{r}
-map_ggmap(p = p_pop, m = m_pop, maptype = "roadmap")
-```
-
-For individuals:
-
-```{r, error = TRUE}
-map_ggmap(p = p_indiv, m = m_indiv)
-```
-
-Okay, let's try with fewer individuals
-
-```{r, fig.width = 10, fig.height = 4}
-map_ggmap(p = p_indiv, m = m_indiv,
-          which = c("041868E9A8", "06200003AA"))
-```
-
-Or all in two batches
-
-```{r, fig.width = 10, fig.height = 10}
-
-ids <- unique(p_indiv$animal_id) # Get a vector of animal_ids
-
-# Use only first 10 ids
-map_ggmap(p = p_indiv, m = m_indiv,
-          which = ids[1:10])
-```
-
-Note that several individuals (041869123C, 062000043E, 0620000513) were removed. If we take a closer look at those individuals  in the data frame, we see that they had no movements:
-
-```{r}
-filter(p_indiv, animal_id %in% c("041869123C", "062000043E", "0620000513"))
-filter(m_indiv, animal_id %in% c("041869123C", "062000043E", "0620000513"))
-```
-
 
 ## Animations
 

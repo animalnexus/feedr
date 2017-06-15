@@ -94,12 +94,8 @@ cat(readLines("./Data/Raw/exp2/Logger_Data.TXT", n=6), sep = '\n')
 ```
 
 Then this pattern won't work because it matches the first line, not the file name:
-```{r details0, eval = FALSE}
+```{r details0, error = TRUE}
 load_raw("./Data/Raw/exp2/Logger_Data.TXT", logger_pattern = "Logger_[0-9]{2}", details = 0, skip = 1)
-```
-
-```{r, echo = FALSE}
-load_raw("./Data/Raw/exp2/Logger_Data.TXT", logger_pattern = "Logger_[0-9]{2}", details = 0, skip = 1)[1:6,]
 ```
 
 But this pattern will work:

@@ -10,6 +10,13 @@ This section will get you started with transforming and summarizing your data fr
 
 Here we assume that you know how to [load/import](load.html) your data and that, if needed, you've cleaned up problematic `animal_id`s with the various [housekeeping](housekeeping.html) functions.
 
+Note that for several examples of summarizing, we'll be using functions from the [`tidyverse`](http://tidyverse.org/) including the magrittr pipe `%>%`, which essentially 'pipes' the output of the first line to the next line, see this [intro to the pipe](http://magrittr.tidyverse.org/articles/magrittr.html) for more details.
+
+```{r}
+library(tidyverse)
+```
+
+
 ## Functions
 
 In all cases you'll want to use the `visits()` function first, but after that it depends on what kinda of data you want to end up with.
@@ -18,9 +25,9 @@ In all cases you'll want to use the `visits()` function first, but after that it
 2. [`move()`](#movements) - Movements between loggers
 3. [`presence()`](#presence) - Presence around a logger
 4. [`disp()`](#displacements) - Displacement from a logger
-5. [`dom()`](#dominance) - Dominance matrices
-6. [`activity()`](#activity) - Activity patterns
-7. [`daily()`](#dailyactivity) - Daily activity patterns
+5. [`activity()`](#activity) - Activity patterns
+6. [`daily()`](#dailyactivity) - Daily activity patterns
+7. [Conversion functions](#conversion-functions) - Functions to convert data for use by other packages
 8. [Working with multiple groups](#multiple-groups) - Applying transformations to different data groups simultaneously
 
 Or click on the function name below to skip directly to the function tutorial:
@@ -36,7 +43,6 @@ edge[arrowhead = vee]
 
 visits[label = 'visits()', URL = '#visits', tooltip = 'Individual logger visits']
 disp[label = 'disp()', URL = '#displacements', tooltip = 'Displacements from the logger by another animal']
-dom[label = 'dom()', URL = '#dominance', tooltip = 'Dominance indicated by displacements']
 move[label = 'move()', URL = '#movements', tooltip = 'Movements between loggers']
 presence[label = 'presence()', URL = '#presence', tooltip = 'presence bouts at loggers']
 act[label = 'activity()', URL = '#acitivty', tooltip = 'Activity scored (active/inactive)']
@@ -44,7 +50,6 @@ daily[label = 'daily()', URL = '#dailyactivity', tooltip = 'Daily activity patte
 
 visits-> {disp, move, presence}
 presence -> act
-disp -> dom
 act -> daily
 
 map1[label = 'map_ggmap()', URL = '#mapggmap', tooltip = 'Visualize with a static map']
@@ -431,10 +436,10 @@ This function is designed to turn 'visit' data into 'displacements' data.
 
 __Displacements__ are events when one animal leaves the logger and is replaced by another animal within a certain, defined, time span.
 
-In theory, we assume this is due to the arrival of a more dominant animal. Displacements events might therefore lead to information on relative dominance of different individuals (see [`dom()` function](#dominance)).
+In theory, we assume this is due to the arrival of a more dominant animal. Displacements events might therefore lead to information on relative dominance of different individuals.
 
 > __Disclaimer!__  
-> It is important to ground-truth this assumption because, depending on species, displacements may not necessarily represent dominance. For example, in the case of black-capped chickadees, if the dominant male is using the logger, subsequent users of the logger may actually arrive and depart in descending order of rank. In this case, apparent 'displacements' are not displacements at all.
+> It is important to ground-truth this assumption because, depending on species, displacements may not necessarily represent dominance. For example, in the case of black-capped chickadees, if the dominant male is using the logger, subsequent users of the logger may actually arrive and depart in descending order of rank. In this case, apparent 'displacements' may not be displacements at all.
 
 ```{r disp}
 v <- visits(finches_lg, bw = 5)
@@ -476,7 +481,7 @@ The `summaries` item is a data frame summarizing the displacement events for eac
 head(d$interactions)
 ```
 
-The `interactions` item is a data frame summarizing each potential interaction event. This is what's used to create a dominance matrix (see [`dom()` function](#dom) below):
+The `interactions` item is a data frame summarizing each potential interaction event:
 
 - `displacer` is id of the animal doing the displacement
 - `displacee` is id of the animal being displaced
@@ -530,7 +535,7 @@ disp_summary <- d$displacements %>%
 
 presence_summary <- p %>%
   group_by(logger_id) %>%
-  summarize(amount = sum(length))
+  summarize(amount = sum(as.numeric(length)))
 
 full_summary <- full_join(disp_summary, presence_summary, by = "logger_id") %>%
   mutate(n = replace(n, is.na(n), 0),  # First replace the missing values of n with 0
@@ -552,97 +557,6 @@ ggplot(data = d$summaries, aes(x = animal_id, y = p_win)) +
   ylim(c(0, 1)) +
   labs(x = "Animal Id", y = "Proportion of 'wins'")
 
-```
-
---------------------
-Back to [top](#top) 
---------------------
-
-<a id = "dominance"></a>
-
-## `dom()`
-This function is designed to turn 'Displacement' data into a 'Dominance matrix'.
-
-A **Dominance matrix** is a matrix ranking individuals by wins and losses against other individuals. This matrix can be used to determine the final dominance hierarchy of a group of animals.
-
-This function produces a dominance matrix which represents a 'best guess', as opposed to a perfect final product. The function attempts to find the best ordering, with the fewest reversals. A reversal is when an individual loses or wins more against one particular individual than expected given the general pattern of dominance wins/losses (i.e., a generally dominant individual that that has many losses against a generally subdomiant individual)
-
-This matrix should not be considered a final product, but a starting point for manual manipulation, particularly if the function returns more than one 'best guess' matrix.
-
-These matrices are created by :
-
- - Ranking individuals based on their overall win rate
- - Attempting to fix 'reversals' by switching individuals around, and testing whether this reduced the total number of reversals or not.
- - After so many rounds of trying to reduce reversals, the script returns the best matrix
-
-```{r dom}
-v <- visits(finches_lg, bw = 5)
-d <- disp(v)
-dm <- dom(d)
-
-names(dm)
-```
-
-
-### Data returned
-The `dom()` function returns a list with three different types of information: `dominance`, `reversals`, and `matrices`.
-
-However, the first thing this function returns is some information on what happened when the dominance matrix was created:
-
-```{r, include = FALSE}
-msg <- testthat::capture_messages(finches_lg %>%
-  visits(bw = 5) %>%
-  disp() %>%
-  dom())
-```
-
-```{r, echo = FALSE}
-message(msg[1])
-```
-
-This message informs the user that several individuals have been omitted from the analysis because they contained fewer than 3 interactions each. This cutoff value can be customized (see `omit_cutoff` below).
-
-```{r, echo = FALSE}
-message(msg[2])
-```
-
-The next message informs the user about the number iterations the function went through and the number of potential dominance matrices and reversals per matrix. It is possible that several different dominance rankings can be obtained that are equally likely. In this case, `dom()` will return them all (`n 'best' matrix(ces)`). Matrices are considered 'better' if they have fewer reversals. Furthermore, there may be one or more reversals per matrix.
-
-```{r}
-dm$dominance
-```
-
-The `dominance` item is a vector containing the dominance hierarchy for each matrix listing all animals from most to least dominant (according to that matrix). Essentially, if the matrix is perfect, this is the dominance hierarchy you have. However, if you need to tweak your matrix, you'll come up with a different dominance hierarchy.
-
-
-```{r, message = FALSE}
-v_c <- visits(chickadees, bw = 5)
-d_c <- disp(v_c)
-dm_c <- dom(d_c)
-
-head(dm_c$reversals[[1]])
-```
-
-Our original analysis doesn't have any reversals, meaning that the matrix of interactions reflects a linear hierarchy (or individuals are tied). However, a look at dominance in our chickadee data set shows many reversals. The `reversals` item is a list containing a data frame for each matrix showing which individuals experienced reversals with whom: Pairs of individuals which could be switched either way in the hierarchy.
-
-
-```{r}
-dm$matrices[[1]]
-```
-
-The `matrix` item is a list containing each dominance matrix showing all interactions. The `displacers` are along the rows, and `displacees` along the columns. For example, `0620000500` displaced `06200004F8` 37 times, whereas `06200004F8` only displaced `0620000500` 15 times. `0620000500` displaced `0620000477` 5 times, but was only displaced in turn once.
-
-### `tries`
-
-The `tries` parameter reflect the maximum number of iterations the `dom()` function should try before returning the matrix. It defaults to 50.
-
-
-### `omit_cutoff`
-Sometimes individuals simply don't participate in enough dominance interactions for their ranking to be assessed. 
-This parameter allows you to set how many interactions an individual must have to be included in the dominance matrix. It defaults to a minimum of 3 but can be increased for a more robust matrix.
-
-```{r}
-dom(d, omit_cutoff = 10)
 ```
 
 --------------------
@@ -800,20 +714,134 @@ ggplot(data = da) +
   scale_x_datetime(date_labels = "%H:%M:%S", date_breaks = "6 hours")
 ```
 
+## Conversion functions
+
+Conversion functions permit you to format raw or transformed data for use in other packages.
+
+### `convert_anidom()`
+
+Converts the output of `disp()` for use by the package [`aniDom`](https://cran.r-project.org/package=aniDom)'s functions: `elo_scores()` and `estimate_uncertainty_by_splitting()`
+
+```{r}
+d <- disp(visits(finches_lg), bw = 5)
+i <- convert_anidom(d)
+head(i)
+```
+
+```{r}
+library(aniDom)
+
+# Calculate elo_scores
+s <- elo_scores(winners = i$winner, losers = i$loser)
+s
+
+# Estimate repeatability
+estimate_uncertainty_by_repeatability(winners = i$winner, losers = i$loser)
+estimate_uncertainty_by_splitting(winners = i$winner, losers = i$loser, 
+                                  randomise = TRUE)
+```
+
+### `convert_dominance()`
+Converts the output of `disp()` for use by the package [`Dominance`](https://cran.r-project.org/package=Dominance)'s functions: `ADI()` and `Sociogram()`
+
+```{r}
+d <- disp(visits(finches_lg), bw = 5)
+i <- convert_dominance(d)
+
+library(Dominance)
+
+# Calculate the Average Dominance Index
+ADI(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bytes = i$bytes)
+```
+
+```{r eval = FALSE}
+# Construct social network graphs
+Sociogram(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bits = i$bytes)
+```
+
+### `convert_perc()`
+Converts the output of `disp()` for use by the package [`Perc`](https://cran.r-project.org/package=Perc)
+
+```{r}
+d <- disp(visits(finches_lg), bw = 5)
+i <- convert_perc(d)
+head(i)
+```
+
+```{r}
+library(Perc)
+
+# Calculate ranks (adapted from Perc examples)
+conflict_mat <- as.conflictmat(i, weighted = TRUE)
+perm <- conductance(conflict_mat, 2)
+simRankOrder(perm$p.hat, num = 10, kmax = 1000)
+```
+
+### `convert_asnipe()`
+Converts raw RFID data into a format for easy use by either the `gmmevents()` or the `get_associations_points_tw()` functions included in the [`asnipe`](https://cran.r-project.org/package=asnipe) package for calculating group membership.
+
+For `gmmevents()`:
+```{r}
+a <- convert_asnipe(finches, fun = "gmmevents")
+head(a)
+```
+
+```{r, eval = FALSE}
+library(asnipe)
+gmmevents(a$time, a$identity, a$location)
+```
+
+For `get_associations_points_bw()`:
+```{r}
+a <- convert_asnipe(finches, fun = "get_associations_points_tw")
+head(a)
+```
+
+```{r, eval = FALSE}
+get_associations_points_tw(a)
+```
+
+
+### `convert_activity()`
+Converts raw RFID data into a format for easy use by the `fitact()` function included in the [`activity`](https://cran.r-project.org/package=activity) package for modelling activity levels and daily activity patterns.
+
+```{r}
+i <- convert_activity(finches_lg)
+```
+
+```{r}
+library(activity)
+
+# Calculate daily activity pattern for a single individual
+a <- fitact(i[[1]], sample = "none")
+plot(a)
+
+# Calculate daily activity pattern for all individuals
+a <- lapply(i, fitact, sample = "none")
+plot(a[[3]])
+plot(a[["06200004F8"]])
+```
+
+
+--------------------
+Back to [top](#top) 
+--------------------
+
+
 ## Multiple groups
 
-Sometimes you may want to perform the same data transformations multiple times, perhaps for different sites, time periods, or experiments. You could repeat yourself, but the easiest thing to do is to use the `do()` function from the `dplyr` package.
+Sometimes you may want to perform the same data transformations multiple times, perhaps for different sites, time periods, or experiments. You could repeat yourself, but the easiest thing to do is to use the `do()` function from the [`dplyr` package](http://dplyr.tidyverse.org/) or the `map()` frunction from the [`purrr` package](http://purrr.tidyverse.org/).
 
-This function allows you to apply functions to groups in your data frame. Use "." to define where the passed on data should go (in our case, this refers to the grouped data frame):
+These function allows you to apply functions to groups in your data frame.
 
-In this example we have two experiments, so we want to calculate things separately:
+In this example we have two experiments, so we want to calculate the transformations separately for each experiment:
 
 ```{r}
 library(dplyr)
 
 v_exp <- chickadees %>%
   group_by(experiment) %>%
-  do(visits(.))
+  do(visits(.))  # Use "." to define where the piped data should go 
 
 # Note that the data set retains it's grouping so we do not have to 
 # specify the grouping again until we change it:
@@ -829,7 +857,7 @@ p_avg <- p_exp %>%
   summarize(amount = sum(length)/animal_n[1])  #This is using the animal_n specific to the experiment
 
 m_avg <- m_exp %>%
-  group_by(experiment, animal_id, move_path, logger_id, lat, lon) %>%
+  group_by(experiment, move_path, logger_id, lat, lon) %>%
   summarize(path_use = length(move_path))
 
 summary(p_avg)
@@ -838,6 +866,42 @@ summary(m_avg)
 
 These data are now ready for analysis and visualizations, note that they can be applied as is to visualizing functions in the next section.
 
+
+In future versions of `dplyr` it is likely the `do()` function will be deprecated, so let's consider the `map()` function from the `purrr` package. This is also an interesting method in that all data sets can be kept together in a single object (note that each line in mutate runs sequentially, so we can create the column `visits` and then use it in the next line).
+
+```{r}
+library(dplyr)
+library(purrr)
+
+exp <- chickadees %>%
+  group_by(experiment) %>%
+  nest(.key = "raw") %>%
+  mutate(visits = map(raw, ~ visits(.x)),
+         presence = map(visits, ~ presence(.x)),
+         move = map(presence, ~ move(.x)))
+         
+exp
+```
+
+
+## Summarizing
+
+```{r}
+
+p_avg <- exp %>%
+  unnest(presence) %>%
+  group_by(experiment, logger_id) %>%
+  summarize(amount = sum(length)/animal_n[1])  
+  # This is using the animal_n specific to the experiment
+
+m_avg <- exp %>%
+  unnest(move) %>%
+  group_by(experiment, move_path, logger_id, lat, lon) %>%
+  summarize(path_use = length(move_path))
+
+summary(p_avg)
+summary(m_avg)
+```
 
 
 --------------------------

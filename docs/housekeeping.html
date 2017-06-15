@@ -4,7 +4,7 @@
 
 <head>
 
-<meta charset="utf-8">
+<meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
@@ -324,20 +324,13 @@ div.tocify {
 <p>These functions can be skipped, or used one after the other. It’s up to you. Basically, they are wrapper functions for cleaning your data while maintaining appropriate categorical (factor) levels.</p>
 <p>This tutorial assumes that you already know how to <a href="load.html">load/import</a> your data. We will be using the <code>feedr</code> package example data set: finches.</p>
 <pre class="r"><code>head(finches)</code></pre>
-<pre><code>##    animal_id                time logger_id     species sex       lon
-## 1 0620000514 2016-01-28 12:34:25      2200 House Finch   F -120.3612
-## 2 0620000514 2016-01-28 12:34:28      2200 House Finch   F -120.3612
-## 3 041868D861 2016-01-28 12:35:41      2200 House Finch   M -120.3612
-## 4 06200004F8 2016-01-28 12:35:52      2200 House Finch   F -120.3612
-## 5 06200004F8 2016-01-28 12:35:59      2200 House Finch   F -120.3612
-## 6 06200004F8 2016-01-28 12:36:02      2200 House Finch   F -120.3612
-##        lat
-## 1 50.66778
-## 2 50.66778
-## 3 50.66778
-## 4 50.66778
-## 5 50.66778
-## 6 50.66778</code></pre>
+<pre><code>##    animal_id                time logger_id     species sex       lon      lat
+## 1 0620000514 2016-01-28 12:34:25      2200 House Finch   F -120.3612 50.66778
+## 2 0620000514 2016-01-28 12:34:28      2200 House Finch   F -120.3612 50.66778
+## 3 041868D861 2016-01-28 12:35:41      2200 House Finch   M -120.3612 50.66778
+## 4 06200004F8 2016-01-28 12:35:52      2200 House Finch   F -120.3612 50.66778
+## 5 06200004F8 2016-01-28 12:35:59      2200 House Finch   F -120.3612 50.66778
+## 6 06200004F8 2016-01-28 12:36:02      2200 House Finch   F -120.3612 50.66778</code></pre>
 <p><a id = "checkids"></a></p>
 <div id="check_ids" class="section level2">
 <h2><code>check_ids()</code></h2>
@@ -357,15 +350,17 @@ animal_index</code></pre>
 ## 5 041868D396 House Finch</code></pre>
 <p>You need to give this function a data set, and it will return a cleaned data set. Here we’ll save it as r_clean:</p>
 <pre class="r"><code>r_clean &lt;- check_ids(finches, ids = animal_index)</code></pre>
-<pre><code>## All ids in your data are also in your animal_id index</code></pre>
-<pre><code>## All ids in your animal_id index are also in your data</code></pre>
-<pre><code>## No ids have been omitted</code></pre>
+<pre><code>## All animal_ids in your data are also in your animal_id index</code></pre>
+<pre><code>## All animal_ids in your animal_id index are also in your data</code></pre>
+<pre><code>## animal_id index (id) data frame doesn&#39;t contain any animal_ids to omit</code></pre>
+<pre><code>## No animal_ids have been omitted</code></pre>
 <p>This output shows that all the <code>animal_id</code>s in the data are also in the index and vice versa. Further, there were no omitted ids (error or wand ids).</p>
 <p><strong>Note</strong>: You can also skip loading the index and simply provide <code>check_ids()</code> with the location of the index file:</p>
 <pre class="r"><code>r_clean &lt;- check_ids(finches, ids = &quot;./Data/animal_index.csv&quot;)</code></pre>
-<pre><code>## All ids in your data are also in your animal_id index</code></pre>
-<pre><code>## All ids in your animal_id index are also in your data</code></pre>
-<pre><code>## No ids have been omitted</code></pre>
+<pre><code>## All animal_ids in your data are also in your animal_id index</code></pre>
+<pre><code>## All animal_ids in your animal_id index are also in your data</code></pre>
+<pre><code>## animal_id index (id) data frame doesn&#39;t contain any animal_ids to omit</code></pre>
+<pre><code>## No animal_ids have been omitted</code></pre>
 </div>
 <div id="with-errorwand-ids" class="section level3">
 <h3>With error/wand ids</h3>
@@ -378,9 +373,9 @@ animal_index</code></pre>
 ## 4 062000043E House Finch
 ## 5 041868D396 House Finch</code></pre>
 <pre class="r"><code>r_clean &lt;- check_ids(finches, ids = animal_index)</code></pre>
-<pre><code>## All ids in your data are also in your animal_id index</code></pre>
-<pre><code>## All ids in your animal_id index are also in your data</code></pre>
-<pre><code>## The following animal ids have been omitted: 0620000514, 041868D861</code></pre>
+<pre><code>## All animal_ids in your data are also in your animal_id index</code></pre>
+<pre><code>## All animal_ids in your animal_id index are also in your data</code></pre>
+<pre><code>## The following animal_ids have been omitted: 0620000514, 041868D861</code></pre>
 <p>Here we omitted two <code>animal_id</code>s, one associated with a wand (0620000514) and one with an error (041868D861).</p>
 <p>Note that nothing else changed.</p>
 </div>
@@ -393,9 +388,9 @@ animal_index</code></pre>
 ## 3 06200004F8 House Finch
 ## 4 062000043E House Finch</code></pre>
 <pre class="r"><code>r_clean &lt;- check_ids(finches, ids = animal_index)</code></pre>
-<pre><code>## Some ids present in your data do not exist in the animal_id index: 041868D396</code></pre>
-<pre><code>## All ids in your animal_id index are also in your data</code></pre>
-<pre><code>## The following animal ids have been omitted: 0620000514, 041868D861</code></pre>
+<pre><code>## Some animal_ids present in your data do not exist in the animal_id index: 041868D396</code></pre>
+<pre><code>## All animal_ids in your animal_id index are also in your data</code></pre>
+<pre><code>## The following animal_ids have been omitted: 0620000514, 041868D861</code></pre>
 <p><a id = "checkproblems"></a></p>
 </div>
 </div>
@@ -452,7 +447,7 @@ $(document).ready(function () {
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>
