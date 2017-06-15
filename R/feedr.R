@@ -3,6 +3,9 @@
 #' Load, clean, transform, and visualize raw RFID data for looking at a variety
 #' of biological questions.
 #'
+#' In-depth turorials available online:
+#' \url{https://animalnexus.github.io/feedr/}
+#'
 #' @references animalnexus \url{http://animalnexus.ca}.
 #' @docType package
 #' @name feedr-package
