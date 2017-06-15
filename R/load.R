@@ -417,13 +417,14 @@ dl_data <- function(start = NULL,
     if(is.na(t_start)) stop("Your start time is ambiguous. Format should be YYYY-MM-DD (HH:MM:SS is optional)")
     if(format(t_start, "%H:%M:%S") == "00:00:00") t_start <- as.Date(t_start)
     t_start <- lubridate::with_tz(t_start, tz = "UTC")
-  }
+  } else t_start <- as.POSIXct("2015-09-02")
   if(!is.null(end)) {
     suppressWarnings(t_end <- lubridate::parse_date_time(end, orders = "ymd HMS", truncated = 5, tz = tz_disp))
     if(is.na(t_end)) stop("Your end time is ambiguous. Format should be YYYY-MM-DD (HH:MM:SS is optional)")
     if(format(t_end, "%H:%M:%S") == "00:00:00") t_end <- as.Date(t_end) + lubridate::days(1)
     t_end <- lubridate::with_tz(t_end, tz = "UTC")
-  }
+  } else t_end <- Sys.time()
+
 
   # Stop if url doesn't exist
   if(!curl::has_internet()) stop("No internet connection")
