@@ -1,10 +1,30 @@
 language: r
 sudo: false
-r:
-  - oldrel
-  - release
-  - devel
-cache: packages
+matrix:
+  include:
+    - os: linux
+      dist: precise
+      r: release
+    - os: linux
+      dist: precise
+      r: devel
+
+    - os: linux
+      dist: trusty
+      env: R_CODECOV=true
+      r: release
+    - os: linux
+      dist: trusty
+      env: R_CODECOV=true
+      r: devel
+
+    - os: osx
+      osx_image: xcode8.1
+      r: release
+
+    - os: osx
+      r: release
+
 addons:
   apt:
     packages:
