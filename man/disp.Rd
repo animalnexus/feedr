@@ -4,7 +4,7 @@
 \alias{disp}
 \title{Displacements}
 \usage{
-disp(v, bw = 5, pass = TRUE)
+disp(v, bw = 2, pass = TRUE)
 }
 \arguments{
 \item{v}{Dataframe. A visits data frame containing \strong{all} visits from
@@ -39,11 +39,20 @@ A list with the following named items: \enumerate{ \item
 \description{
 For an entire \code{visits} data frame, identifies displacement events.
 Displacements are events when one animal leaves the logger right before the
-arrival of another. In some species this can be used to infer dominance.
+arrival of another.
 }
 \details{
 The first and last visits on the record are automatically assumed to be
 non-displacer and non-displacee, respectively.
+
+In some species displacements can be used to infer dominance. Displacements
+The interactions data frame returned by the \code{disp()} function can be
+passed directly to the \code{\link[Perc]{as.conflictmat}} function of the
+\link{Perc} package to be transformed into a conflict matrix, ready for
+analysis of dominance using percolation and conductance. Finally, the
+displacements data frame can also be converted using the
+\code{\link{convert_anidom}} function to a data frame for use by the
+\link{aniDom} package's \link[aniDom]{elo_scores} function.
 }
 \examples{
 
@@ -84,4 +93,7 @@ d$data[d$experiment == "exp3"][[1]]$displacements #or
 d[["data"]][[2]]$displacements #or
 d$data[[2]]$displacements
 
+}
+\seealso{
+\link{Perc}, \link{aniDom}, \link{Dominance}
 }

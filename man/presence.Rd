@@ -2,7 +2,7 @@
 % Please edit documentation in R/transformations.R
 \name{presence}
 \alias{presence}
-\title{Presence at a logger}
+\title{Presence}
 \usage{
 presence(v, bw = 15, pass = TRUE)
 }

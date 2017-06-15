@@ -1,25 +1,4 @@
-#' @import shiny
-ui_app <- function(name, ..., diagnostic = FALSE, launch.browser = getOption("shiny.launch.browser", interactive())) {
 
-  addResourcePath("assets", system.file("shiny-examples", "app_files", package = "feedr"))
-
-  app <- shiny::shinyApp(ui = shiny::fluidPage(includeCSS(system.file("shiny-examples", "app_files", "style.css", package = "feedr")),
-                                               shinyjs::useShinyjs(),
-                                               get(paste0("mod_UI_", name))("standalone"),
-                                               mod_UI_stop("stp"),
-                                               mod_UI_pause("pause")),
-                         server = function(input, output, session) {
-                           shiny::callModule(get(paste0("mod_", name)), id = "standalone", ...)
-                           shiny::callModule(mod_stop, id = "stp")  # Add Exit Buttons
-                           shiny::callModule(mod_pause, id = "pause", diagnostic = diagnostic)  # Add Pause button if 'diagnostic == TRUE'
-                         }
-  )
-  shiny::runApp(app)
-}
-
-compare_values <- function(x, y) {
-  identical(sort(as.character(unique(x))), sort(as.character(unique(y))))
-}
 
 get_counts <- function(c, filter = NULL, summarize_by = NULL) {
 
@@ -47,8 +26,6 @@ get_counts <- function(c, filter = NULL, summarize_by = NULL) {
   }
   return(c)
 }
-
-
 
 choices <- function(s, var){
   c <- s$choices[s$variable == var]
@@ -183,4 +160,48 @@ data_tz <- function(data) {
 
 ready <- function(r){
   shiny::isTruthy(try(r, silent = TRUE))
+}
+
+# Check to see whether the database credentials exist on this system
+check_db <- function(){
+  if(file.exists("/usr/local/share/feedr/db_code.txt")) {
+    db <- readLines("/usr/local/share/feedr/db_code.txt", n = 1)
+  } else db <- NULL
+  return(db)
+}
+
+# Check class of imported settings (mod_settings)
+check_class <- function(x, class) {
+  if(class == "Numeric") t <- suppressWarnings(as.numeric(x))
+  if(class == "Logical") t <- suppressWarnings(as.logical(x))
+  return(!is.na(t))
+}
+
+check_values <- function(x, y, unique = TRUE) {
+  if(unique) return(identical(sort(as.character(unique(x))), sort(as.character(unique(y)))))
+  if(!unique) return(identical(sort(as.character(x)), sort(as.character(y))))
+}
+
+dedupe <- function(r) {
+  # From Joe Cheng: https://github.com/rstudio/shiny/issues/1484#issuecomment-262812760
+  makeReactiveBinding("val")
+  observe(val <<- r(), priority = 10)
+  reactive(val)
+}
+
+round_6 <- function(time, by = "12") {
+  h <- lubridate::hour(time)
+  d <- lubridate::date(time)
+  tz <- lubridate::tz(time)
+  if(h >= 6){
+    time <- d + lubridate::hours(6)
+    if (by != 24 & h >= 18) {
+      time <- d + lubridate::hours(18)
+    }
+  } else if (h < 6) {
+    if(by == 12) time <- d - lubridate::days(1) + lubridate::hours(18)
+    if(by == 24) time <- d - lubridate::days(1) + lubridate::hours(6)
+  }
+  time <- lubridate::force_tz(as.POSIXct(time), tz = tz)
+  return(time)
 }

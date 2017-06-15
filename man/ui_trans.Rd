@@ -4,10 +4,12 @@
 \alias{ui_trans}
 \title{User-interface for transforming data}
 \usage{
-ui_trans(r)
+ui_trans(r, verbose = FALSE)
 }
 \arguments{
 \item{r}{Data frame. Raw RFID data to transform}
+
+\item{verbose}{Logical. Print log events to console.}
 }
 \value{
 Returns nothing. Data can be saved to disk from the user-interface, but transformation are not returned to the current R session.
@@ -17,7 +19,7 @@ An interactive shiny app for transforming data. Also available online at <http:/
 by launching the local animalnexus app through \code{animalnexus()}.
 }
 \details{
-See indivdial data transformations for more details: \code{visits()}, \code{presence()}, \code{move()}, \code{disp()}, \code{dom()}, \code{activity()}, and \code{daily()}.
+See individual data transformations for more details: \code{visits()}, \code{presence()}, \code{move()}, \code{disp()}, \code{activity()}, and \code{daily()}.
 }
 \examples{
 \dontrun{

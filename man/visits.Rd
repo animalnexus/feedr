@@ -63,4 +63,5 @@ library(dplyr)
 v <- chickadees \%>\%
   group_by(experiment) \%>\%
   do(visits(.))
+
 }

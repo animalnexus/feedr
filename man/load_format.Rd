@@ -5,7 +5,7 @@
 \title{Format data}
 \usage{
 load_format(r, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE,
-  time_format = "ymd HMS")
+  time_format = "ymd HMS", verbose = TRUE)
 }
 \arguments{
 \item{r}{Data frame. Data frame to format.}
@@ -25,11 +25,27 @@ of America/Vancouver, which would normally include DST in the summer, will
 be transformed to a timezone with the same GMT offset, but not including
 DST).}
 
-\item{time_format}{Character. The time format of the 'time' column. Defaults
+\item{time_format}{Character. The date/time format of the 'time' column. Defaults
 to "ymd HMS". Should be in formats usable by the \code{parse_date_time()}
 function from the lubridate package (e.g., "ymd HMS", "mdy HMS", "dmy HMS",
 etc.).}
+
+\item{verbose}{Logical. Whether or not to print messages when renaming
+columns.}
 }
 \description{
 Formats manually loaded data. Not necessary if using any of the helper loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, or \code{data_dl()}.
+}
+\details{
+Expects at least three named columns in the data: \code{animal_id},
+\code{logger_id}, \code{time}. Will rename to all lower case as required.
+Also handles columns \code{lat} and \code{lon} (accepts latitude, longitude,
+and long, but will be renamed to lat and lon).
+
+\code{time} should be a character or factor in date/time format , e.g.
+2016-09-30 14:00:00. The exact format of the date/time can be supplied using
+the \code{time_format} argument and should represent a format usable by the
+\code{\link[lubridate]{parse_date_time()}} function from the \link{lubridate}
+package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.). For example, 09/30/16
+2:00 pm can be specified by time_format = "mdy HM p".
 }

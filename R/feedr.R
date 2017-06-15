@@ -3,6 +3,9 @@
 #' Load, clean, transform, and visualize raw RFID data for looking at a variety
 #' of biological questions.
 #'
+#' In-depth turorials available online:
+#' \url{https://animalnexus.github.io/feedr/}
+#'
 #' @references animalnexus \url{http://animalnexus.ca}.
 #' @docType package
 #' @name feedr-package
@@ -49,7 +52,7 @@ if(getRversion() >= "2.15.1")
       "animal_ids", "animals_ids",
 
       # Visits
-      "variable", "animal_n", "logger_n",
+      "variable", "animal_n", "logger_n", "diff_imp", "diff_logger", "new", "diff_time", "diff_animal",
 
       # Movements
       "direction", "move_id", "strength", "left", "arrived", "direction", "value", "type", "start", "end", "path_use", "move_path",
@@ -67,7 +70,10 @@ if(getRversion() >= "2.15.1")
       "lat", "lon", "amount2", "combo", "lon_1", "lon_2", "lat_1", "lat_2", "path_use2", "block",
 
       # Shiny Modules
-      "site_name", "dataaccess", "count", "start", "x", "fill", "facet", "end", "y", "counts_sum", "temp", "engl_name",
+      "site_name", "dataaccess", "count", "start", "x", "fill", "facet", "end", "y", "counts_sum", "temp", "engl_name", "val", "id", "f", "arg", "title", "lab", "site_id",
+
+      # Convert functions
+      "item.number",
 
       # piping requires '.' at times
       ".")

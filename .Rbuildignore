@@ -4,3 +4,4 @@
 ^docs$
 ^\.travis\.yml$
 ^appveyor\.yml$
+^.*.rds$

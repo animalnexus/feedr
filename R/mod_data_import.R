@@ -1,14 +1,8 @@
-## import module function
-
-
-
 #' User-interface for importing files
 #'
 #' Launches an interactive shiny app for importing data interactively. Also
 #' available online at \url{http://animalnexus.ca} or by launching the local
 #' animalnexus app through \code{\link{animalnexus}}. Users can also import data by hand using the R base \code{\link[utils]{read.csv}} function coupled with \code{feedr}'s \code{\link{load_format}} function. Alternatively, for raw data collected directly from data loggers, check out the \code{\link{load_raw}} and \code{\link{load_raw_all}} functions.
-#'
-#' @param diagnostic Logical. Display pause button for debugging
 #'
 #' @return An imported data frame formatted and ready to be transformed.
 #'
@@ -21,8 +15,8 @@
 #'
 #' @export
 
-ui_import <- function(diagnostic = FALSE) {
-  ui_app(name = "data_import", diagnostic = diagnostic)
+ui_import <- function() {
+  ui_app(name = "data_import")
 }
 
 ## Get current data
@@ -158,8 +152,8 @@ mod_data_import <- function(input, output, session, type = NULL) {
     vars$get_data <- FALSE
 
     ## Import previews
-    if(input$format == "logger") d <- import_logger(path()[1], logger(), tz(), input)
-    if(input$format == "all") d <- import_all(path()[1], tz(), input, nrows = 40)
+    if(input$format == "logger") d <- import_logger(path(), logger(), tz(), input)
+    if(input$format == "all") d <- import_all(path(), tz(), input)
 
     ## Check validations
     check_data(d)
@@ -203,8 +197,10 @@ mod_data_import <- function(input, output, session, type = NULL) {
     req(preview_data(), vars$get_data)
 
     withProgress({
-      if(input$format == "logger") vars$pre_data <- import_logger(path(), logger(), tz(), input)
-      if(input$format == "all") vars$pre_data <- import_all(path(), tz(), input)
+      #if(input$format == "logger") vars$pre_data <- import_logger(path(), logger(), tz(), input)
+      #if(input$format == "all") vars$pre_data <- import_all(path(), tz(), input)
+      if(input$format == "logger") vars$pre_data <- preview_data()
+      if(input$format == "all") vars$pre_data <- preview_data()
     }, message = "Importing...")
   })
 
@@ -246,6 +242,9 @@ mod_data_import <- function(input, output, session, type = NULL) {
         "This format is for data that has already been processed to some degree",
         tags$ul(
           tags$li("Expects at least 3 columns", strong("with headers"), ":", code("animal_id"),"*, ", code("logger_id"),"*, and", code("time"), "(may have more columns)"),
+          tags$li(code("lat"), " and ", code("lon"), " in decimal degrees are optional columns, but required for mapping"),
+          tags$li("If column names upper case will be renamed to lowercase"),
+          tags$li("If column names are: ", code("latitude/longditude"), " or ", code("long"), " will be renamed to ", code("lat"), " and ", code("lon")),
           tags$li("Multiple files will be joined together by column name. If a column does not not exist in one file, it will be filled with 'NA' values")),
         div(strong("Example of a", a("data file", href = "assets/preformatted_example.csv", target = "blank")), style = "text-align: center;"),
         pre(
@@ -262,11 +261,11 @@ mod_data_import <- function(input, output, session, type = NULL) {
           tags$li("Each file corresponds to a different logger, but there can be multiple files per logger"),
           tags$li("Logger ids must be provided in the first line of each data file"),
           tags$li("Each data row must contain three columns", strong("without headers"), "corresponding to", code("animal_id, date"), "and", code("time"), "separated by whitespace"),
-          tags$li("Multiple files will be joined together after adding a", code("logger_id"), "and, optionally,", code("lat"), "and", code("lon"), "columns."),
+          tags$li("Multiple files will be joined together after adding a", code("logger_id"), "and, optionally,", code("lat"), "and", code("lon"), "columns (see below)."),
           tags$li("Logger ids can be extracted following a pattern specified by", strong("Logger id pattern")),
           tags$ul(
             tags$li("'As is' returns the logger id as is (matching the first line of the file)"),
-            tags$li("'TRU loggers' retrun GPR or GP plus two digits (e.g. GPR10DATA becomes GPR10)"))),
+            tags$li("'TRU loggers' return GPR or GP plus two digits (e.g. GPR10DATA becomes GPR10)"))),
         div(strong("Example of a", a("data file", href = "assets/logger_example1.txt", target = "blank")), style = "text-align: center;"),
         pre("GR10DATA
 06200004BB 02/06/16 12:39:24
@@ -274,19 +273,20 @@ mod_data_import <- function(input, output, session, type = NULL) {
 0700EE0E42 02/06/16 12:40:52", style = "width:80%; margin: auto;"),
 
         h4("Providing Lat/Lon for each logger"),
-        strong("In a logger_index file"),
+        div(p("Lat/Lon can be provide either by supplying a logger_index file, or by placing the lat/lon of a logger directly in the data file.")),
+        strong("1) In a logger_index file"),
         tags$ul(
           tags$li("Choose 'logger_index file' under", strong("Lat/Lon Information")),
           tags$li("The file must be a comma-separated file called 'logger_index' with columns:", code("logger_id"), "*", code("lat"), "and", code("lon")),
           tags$li("Any other columns will be ignored")),
         div(strong("Example of", a("logger_index file", href = "assets/logger_index_example.csv", target = "blank")), style = "text-align: center;"),
         pre("logger_id, lat, lon
-GR10, 53.914484, -122.769248
-GR11, 53.88821,	-122.8205
-GR13, 53.88689,	-122.8208", style = "width:80%; margin: auto;"),
-        p("Note: These ids match the file ids only when", strong("Logger id pattern"), "is set to 'TRU loggers'"),
+GR10DATA, 53.914484, -122.769248
+GR11DATA, 53.88821, -122.8205
+GR13DATA, 53.88689, -122.8208", style = "width:80%; margin: auto;"),
+        p("Note: Logger ids must match between the data file and the index file (i.e. pay attention to the logger id pattern!)"),
 
-        strong("In the data file"),
+        strong("2) In the data file"),
         tags$ul(
           tags$li("Choose 'data file' under", strong("Lat/Lon Information")),
           tags$li("In addition to the logger id on the first line, the lat/lon information must be on the second line of each data file")),
@@ -308,7 +308,7 @@ GR13, 53.88689,	-122.8208", style = "width:80%; margin: auto;"),
     easyClose = TRUE,
     tagList(
       tags$ul(
-        tags$li(strong("Date/Time Format:"), "The order of Day, Month, Year in the data. The exact format doesn't matter"),
+        tags$li(strong("Date/Time Format:"), "The ", em("order"), " of Day, Month, Year in the data. The exact ", em("format"), " (i.e. 2017-01-01 vs. 17-01-01) doesn't matter"),
         tags$li(strong("Data Timezone:"),"Timezone that the data was recorded in."),
         tags$li(strong("Data DST:"), "Whether or not data includes daylight savings (assumed not)."),
         tags$li(strong("Separator:"), "For pre-formatted files, how are the columns separated?"),
@@ -349,25 +349,30 @@ import_logger <- function(path, logger, tz, input) {
   return(d)
 }
 
+#' @import magrittr
 import_all <- function(path, tz, input, nrows = -1) {
   req(!is.null(input$sep), !is.null(input$skip))
 
-  d <- try(dplyr::bind_rows(lapply(path, utils::read.csv,
-                                   colClasses = "character",
-                                   sep = input$sep,
-                                   skip = input$skip,
-                                   nrows = nrows)) %>%
-    load_format(tz = tz, dst = as.logical(input$dst), time_format = input$time), silent = TRUE)
+  d <- try({
+    dplyr::bind_rows(lapply(path, utils::read.csv,
+                            colClasses = "character",
+                            sep = input$sep,
+                            skip = input$skip,
+                            nrows = nrows)) %>%
+      load_format(tz = tz, dst = as.logical(input$dst),
+                  time_format = input$time, verbose = FALSE)
+  }, silent = TRUE)
 
  return(d)
 }
 
 check_data <- function(d) {
-  validate(need(class(d) != "try-error", "Error importing data, try a different format or settings."))
+  #validate(need(class(d) != "try-error", "Error importing data, try a different format or settings."))
+  validate(need(is.data.frame(d), "Error importing data, try a different format or settings."))
   validate(need(sum(names(d) %in% c("time", "bird_id", "feeder_id")) == 3 |
                 sum(names(d) %in% c("time", "animal_id", "logger_id")) == 3,
-                "Error importing data, try a different format."))
-  validate(need(all(!is.na(d$logger_id)), "Cannot proceed: Some or all of your logger ids are missing"))
+                "Cannot proceed: Required columns aren't present (require 'animal_id', 'logger_id', and 'time'). Try a different format or modify your column names."))
+  validate(need(all(!is.na(d$logger_id)), "Cannot proceed: Some or all of your logger ids are missing (i.e. NA)"))
   validate(need(all(!is.na(d$time)), "Cannot proceed: NA times detected, check your time format"))
 }
 

@@ -8,7 +8,6 @@
 #' @param v Data frame. Visits data frame created with the \code{\link{visits}}
 #'   function.
 #' @param verbose Logical. Print log events to console.
-#' @param diagnostic Logical. Display pause button for debugging
 #'
 #' @examples
 #'
@@ -18,13 +17,13 @@
 #'
 #' @export
 
-ui_animate <-  function(v, verbose = FALSE, diagnostic = FALSE) {
+ui_animate <-  function(v, verbose = FALSE) {
   # Check for correct formatting
   check_name(v, c("animal_id", "logger_id", "start", "end"))
   check_time(v)
   check_format(v)
 
-  ui_app(name = "map_animate", visits = reactive({v}), verbose = verbose, diagnostic = diagnostic)
+  ui_app(name = "map_animate", visits = reactive({v}), verbose = verbose)
 }
 
 

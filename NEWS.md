@@ -1,9 +1,29 @@
+# feedr 0.9.0
+
+## Major Changes
+- animalnexus.ca now includes 'Settings' tab to change function arguments
+- New 'convert' functions: convert_asnipe, convert_anidom, convert_dominance, convert_perc, convert_activity to convert data for use by other packages (namely [asnipe](https://cran.r-project.org/package=asnipe), [aniDom](https://cran.r-project.org/package=aniDom),  [Dominance](https://cran.r-project.org/package=Dominance), [Perc](https://cran.r-project.org/package=Perc), [activity](https://CRAN.R-project.org/package=activity))
+- New summary options for map_leaflet() and map_ggmap(). These arguments perform common data summarizations before plotting, so users have the option of passing unsummarized movement and presence data.
+- Removed the `dom()` function in favour of conversion functions. Dominance can be calculated by other packages.
+
+## Bug fixes/tweaks
+- `load_format()`, `ui_import()` and animalnexus Import tab are now much more forgiving for column names
+    - will ignores capitalizations
+    - will accept lon, long, and longitude, as well as lat, and latitude for coordinates
+    - will accept animal_id or bird_id, and logger_id or feeder_id
+    - will rename all to be consistent: animal_id, logger_id, time, lon, lat
+- `load_format()` has new `verbose` argument to allow/prevent messages about renaming
+- `load_raw()` and `load_raw_all()` have new `verbose` argument to allow/prevent progress messages
+- `load_raw()` and `load_raw_all()` stop if logger_ids extracted as NA
+
+## Other
+- Internal changes to include more testing
+
 # feedr 0.8.2.1
 
 ## Bug fixes
 
 - Fix bug in `visits()` where some visits were allowed to overlap (in only very specific circumstances, related to previous bug fix)
-
 
 # feedr 0.8.2
 

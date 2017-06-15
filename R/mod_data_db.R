@@ -7,7 +7,6 @@
 #' function for a non-interactive method.
 #'
 #' @param verbose Logical. Print log events to console.
-#' @param diagnostic Logical. Display pause button for debugging
 #'
 #' @return  Downloaded data frame formatted and ready to be transformed
 #'
@@ -21,10 +20,7 @@
 #'
 #' @export
 ui_db <- function(verbose = FALSE){
-  if(file.exists("/usr/local/share/feedr/db_full.R")) {
-    source("/usr/local/share/feedr/db_full.R")
-  } else db <- NULL
-  ui_app(name = "data_db", db = db, verbose = verbose)
+  ui_app(name = "data_db", verbose = verbose)
 }
 
 
@@ -96,11 +92,14 @@ mod_UI_data_db <- function(id) {
 #' @import lubridate
 #' @import RPostgreSQL
 #' @import DBI
-mod_data_db <- function(input, output, session, db, verbose = TRUE) {
+mod_data_db <- function(input, output, session, verbose = TRUE) {
 
   ns <- session$ns
 
   # Values ----------------------------------------------------
+
+  # NOTE url, url_code and url_loggers are internal variables stored in the
+  # feedr package
 
   values <- reactiveValues(
     selection_update = FALSE,   # Whether or not to update input_selection
@@ -115,9 +114,11 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   # Database and Internet ----------------------------------------------------
 
-  if(!is.null(db) && !curl::has_internet()) db <- NULL
+  # Internet?
+  net <- curl::has_internet()
 
-  if(is.null(db) && ns("") == "standalone-") {
+  # No Internet
+  if(!net && ns("") == "standalone-") {
     showModal(modalDialog(
       title = "No Database access",
       "To access the animalnexus database using `ui_db()` you must have an Internet connection as well as proper credentials stored on your computer. Otherwise visit", a("http://animalnexus.ca", href = "http://animalnexus.ca"), ".",
@@ -125,86 +126,50 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
     ))
   }
 
+  ## Get data base details provided we have an internet conncetion
+  if(net) {
+    withProgress(message = "Loading...", detail = "Connecting to database...", value = 0, {
+      suppressWarnings({
 
-  ## Get data base details
-  if(!is.null(db)) {
+        if(verbose) cat("Connecting to server...\n")
 
-    withProgress(message = "Loading...", detail = "Connecting to server...", value = 0, {
-    suppressWarnings({
-      if(verbose) cat("Connecting to server...\n")
-      con <- dbConnect(dbDriver("PostgreSQL"), host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
+        setProgress(value = 0.15, detail = "Getting sample information..")
+        if(verbose) cat("Getting sample information...\n")
 
-      setProgress(value = 0.15, detail = "Getting logger data..")
+        counts <- RCurl::getForm(url_count, key = check_db()) %>%
+          utils::read.csv(text = ., strip.white = TRUE, colClasses = "character") %>%
+          dplyr::rename(animal_id = bird_id, logger_id = feeder_id, species = engl_name) %>%
+          load_format() %>%
+          dplyr::mutate(count = as.numeric(count),
+                        date = as.Date(date))
+      })
+
+      setProgress(value = 0.30, detail = "Getting logger data..")
       if(verbose) cat("Getting logger data...\n")
-      #   incProgress(1/5)
-      loggers_all <- dbGetQuery(con, statement = paste("SELECT feeders.feeder_id, feeders.site_id, feeders.loc, fieldsites.dataaccess",
-                                                       "FROM feeders, fieldsites",
-                                                       "WHERE (fieldsites.site_id = feeders.site_id)")) %>%
-        dplyr::rename(logger_id = feeder_id, site_name = site_id) %>%
-        load_format() %>%
-        dplyr::mutate(site_name = replace(site_name, site_name == "kl", "Kamloops, BC"),
-                      site_name = replace(site_name, site_name == "cr", "Costa Rica"),
-                      site_name = factor(site_name))
+      loggers_all <- counts %>%
+        dplyr::select(site_name, logger_id, lon, lat, dataaccess) %>%
+        unique()
 
-      setProgress(value = 0.30, detail = "Getting site data..")
+      setProgress(value = 0.45, detail = "Getting site data..")
       if(verbose) cat("Getting site data...\n")
-      #    incProgress(2/5)
       sites_all <- loggers_all %>%
         dplyr::group_by(site_name) %>%
-        dplyr::summarize(lon = mean(lon), lat = mean(lat), dataaccess = unique(dataaccess)) %>%
-        dplyr::mutate(site_name = factor(site_name))
+        dplyr::summarize(lon = mean(lon), lat = mean(lat), dataaccess = unique(dataaccess))
 
-      setProgress(value = 0.45, detail = "Getting animal data..")
+      setProgress(value = 0.60, detail = "Getting animal data..")
       if(verbose) cat("Getting animal data...\n")
-      #  incProgress(3/5)
+      animals_all <- counts %>%
+        dplyr::select(animal_id, species, site_name, age, sex) %>%
+        unique()
 
-      animals_all <- dbGetQuery(con, statement = paste("SELECT birds.bird_id, species.code, species.engl_name, birds.site_id, birds.age, birds.sex, birds.tagged_on",
-                                                       "FROM birds, species",
-                                                       "WHERE (birds.species = species.code) AND (birds.species NOT IN ('XXXX'))")) %>%
-        dplyr::rename(species = engl_name,
-                      animal_id = bird_id,
-                      site_name = site_id) %>%
-        load_format() %>%
-        dplyr::mutate(species = factor(species),
-                      site_name = replace(site_name, site_name == "kl", "Kamloops, BC"),
-                      site_name = replace(site_name, site_name == "cr", "Costa Rica"),
-                      site_name = factor(site_name),
-                      animal_id = factor(animal_id))
-
-      setProgress(value = 0.60, detail = "Getting sample information..")
-      if(verbose) cat("Getting sample information...\n")
-      #    incProgress(4/5)
-      counts <- dbGetQuery(con,
-                           statement = paste0("SELECT raw.visits.bird_id, raw.visits.feeder_id, DATE(raw.visits.time), ",
-                                              "COUNT(*) ",
-                                              "FROM raw.visits ",
-                                              "GROUP BY DATE(raw.visits.time), raw.visits.feeder_id, raw.visits.bird_id"#,
-                           )) %>%
-        dplyr::rename(animal_id = bird_id, logger_id = feeder_id) %>%
-        load_format() %>%
-        dplyr::inner_join(animals_all[, c("site_name", "species", "animal_id")], by = "animal_id") %>%
-        dplyr::mutate(count = as.numeric(count),
-                      date = as.Date(date),
-                      species = factor(species, levels = sort(unique(animals_all$species))),
-                      site_name = replace(site_name, site_name == "kl", "Kamloops, BC"),
-                      site_name = replace(site_name, site_name == "cr", "Costa Rica"),
-                      site_name = factor(site_name, levels = sort(sites_all$site_name)),
-                      animal_id = factor(animal_id, levels = sort(unique(animals_all$animal_id))),
-                      logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id))))
-      dbDisconnect(con)
-    })
-
-
-    #  incProgress(5/5)
-    setProgress(value = 0.75, detail = "Summarizing samples..")
-    if(verbose) cat("Summarizing samples...\n")
-    counts_sum <- dplyr::bind_rows(
-      get_counts(counts, summarize_by = "site_name"),
-      get_counts(counts, summarize_by = "species"),
-      get_counts(counts, summarize_by = "date"),
-      get_counts(counts, summarize_by = "animal_id"),
-      get_counts(counts, summarize_by = "logger_id"))
-
+      setProgress(value = 0.75, detail = "Summarizing samples..")
+      if(verbose) cat("Summarizing samples...\n")
+      counts_sum <- dplyr::bind_rows(
+        get_counts(counts, summarize_by = "site_name"),
+        get_counts(counts, summarize_by = "species"),
+        get_counts(counts, summarize_by = "date"),
+        get_counts(counts, summarize_by = "animal_id"),
+        get_counts(counts, summarize_by = "logger_id"))
     })
   }
 
@@ -254,19 +219,19 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
     values$selection_update <- TRUE
     values$selection$date <- input$data_date
 
-    if(!compare_values(sel$species, input$data_species)) {
+    if(!check_values(sel$species, input$data_species)) {
       if(verbose) cat("  - species\n")
       values$selection$species <- unique(sel$species)
       updateCheckboxGroupInput(session, "data_species",
                                selected = unique(sel$species))
     }
-    if(!compare_values(sel$animal_id, input$data_animal_id)) {
+    if(!check_values(sel$animal_id, input$data_animal_id)) {
       if(verbose) cat("  - animal_id\n")
       values$selection$animal_id <- unique(sel$animal_id)
       updateCheckboxGroupInput(session, "data_animal_id",
                                selected = unique(sel$animal_id))
     }
-    if(!compare_values(sel$logger_id, input$data_logger_id)) {
+    if(!check_values(sel$logger_id, input$data_logger_id)) {
       if(verbose) cat("  - logger_id\n")
       values$selection$logger_id <- unique(sel$logger_id)
       updateCheckboxGroupInput(session, "data_logger_id",
@@ -285,7 +250,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
         dplyr::filter(date %within% interval(input$data_date[1], input$data_date[2]),
                       species %in% input$data_species)
 
-      req(!compare_values(values$selection$species, sel$species))
+      req(!check_values(values$selection$species, sel$species))
 
       # Save input species
       values$selection$species <- input$data_species
@@ -293,13 +258,13 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
       if(verbose) cat("Update UI selections based on species\n")
 
-      if(!compare_values(sel$animal_id, input$data_animal_id)) {
+      if(!check_values(sel$animal_id, input$data_animal_id)) {
         if(verbose) cat("  - animal_id\n")
         values$selection$animal_id <- unique(sel$animal_id)
         updateCheckboxGroupInput(session, "data_animal_id",
                                  selected = unique(sel$animal_id))
       }
-      if(!compare_values(sel$logger_id, input$data_logger_id)) {
+      if(!check_values(sel$logger_id, input$data_logger_id)) {
         if(verbose) cat("  - logger_id\n")
         values$selection$logger_id <- unique(sel$logger_id)
         updateCheckboxGroupInput(session, "data_logger_id",
@@ -318,7 +283,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
                       species %in% input$data_species,
                       animal_id %in% input$data_animal_id)
 
-      req(!compare_values(sel$animal_id, values$selection$animal_id))
+      req(!check_values(sel$animal_id, values$selection$animal_id))
       values$selection_update <- TRUE
       values$selection$animal_id <- input$data_animal_id
     })
@@ -334,7 +299,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
                       species %in% input$data_species,
                       logger_id %in% input$data_logger_id)
 
-      req(!compare_values(sel$logger_id, values$selection$logger_id))
+      req(!check_values(sel$logger_id, values$selection$logger_id))
       values$selection_update <- TRUE
       values$selection$logger_id <- input$data_logger_id
     })
@@ -343,10 +308,10 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
   observeEvent(values$selection_update, {
     req(values$selection_update == TRUE)  # Update triggered
 
-    req(any(!compare_values(values$selection$date, values$input_selection$date),
-            !compare_values(values$selection$species, values$input_selection$species),
-            !compare_values(values$selection$animal_id, values$input_selection$animal_id),
-            !compare_values(values$selection$logger_id, values$input_selection$logger_id)))
+    req(any(!check_values(values$selection$date, values$input_selection$date),
+            !check_values(values$selection$species, values$input_selection$species),
+            !check_values(values$selection$animal_id, values$input_selection$animal_id),
+            !check_values(values$selection$logger_id, values$input_selection$logger_id)))
 
     if(verbose) cat("Update input selections\n")
     values$selection_update <- FALSE
@@ -390,22 +355,30 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
   counts_site <- reactive({
     req(input$data_site_name)
     if(verbose) cat("Updating counts_site()\n")
-    droplevels(counts[counts$site_name == input$data_site_name, ])
+    droplevels(counts[counts$site_name == input$data_site_name, ]) %>%
+      dplyr::mutate(species = factor(species))
   })
 
   ## Table showing current selection
   output$data_selection <- renderTable({
     req(data_selection())
     c <- get_counts(data_selection(), summarize_by = "species")
+
     if(!is.null(c)) return(dplyr::select(c, "Species" = choices, "Total" = sum))
     if(is.null(c)) return(data.frame(Species = levels(data_selection()$species), Total = 0))
   }, digits = 0, include.rownames = FALSE)
 
   output$data_access <- renderText({
-    req(input$data_site_name)
+    req(input$data_site_name, data_selection())
     req(input$data_site_name != "")
-    if(sites_all$dataaccess[sites_all$site_name == input$data_site_name] == 0) return("Fully Public")
-    if(sites_all$dataaccess[sites_all$site_name == input$data_site_name] == 1) return("Visualizations Only")
+    da <- unique(data_selection()$dataaccess)
+    if(length(da) == 0) {
+      return("No selection")
+    } else if(da == 0) {
+      return("Fully Public")
+    } else if(da == 1) {
+      return("Visualizations Only")
+    }
   })
 
   # Resets ----------------------------------------------------
@@ -517,10 +490,8 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   ## Download Selected Data
   observeEvent(input$data_get, {
-    req(data_selection(), !is.null(db))
+    req(data_selection())
     if(verbose) cat("Downloading selected data...\n")
-
-    con <- dbConnect(dbDriver("PostgreSQL"),host = db$host, port = db$port, dbname = db$name, user = db$user, password = db$pass)
 
     d <- data_selection()
 
@@ -531,30 +502,25 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
       dates <- paste0("AND raw.visits.time >= '", dates[1], "' AND raw.visits.time < ('", dates[2], "'::date + '1 day'::interval)")
     }
 
-    withProgress(message = "Retrieving Data...",
-                 suppressWarnings(
-                   data <- dbGetQuery(con,
-                                      statement = paste0("SELECT raw.visits.bird_id, raw.visits.feeder_id, raw.visits.time ",
-                                                         "FROM raw.visits ",
-                                                         "WHERE raw.visits.bird_id IN ( '", paste0(unique(d$animal_id), collapse = "', '"), "' ) ",
-                                                         "AND raw.visits.feeder_id IN ( '", paste0(unique(d$logger_id), collapse = "', '"), "') ",
-                                                         dates
-                                      ))
-                 )
-    )
-    dbDisconnect(con)
+    qry <- paste0("raw.visits.bird_id IN ( '", paste0(unique(d$animal_id), collapse = "', '"), "' ) ",
+                  "AND raw.visits.feeder_id IN ( '", paste0(unique(d$logger_id), collapse = "', '"), "') ",
+                  dates)
+
+    withProgress(message = "Retrieving Data...", expr = {
+                 data <- utils::read.csv(text = RCurl::getForm(url, where = qry, key = check_db()), strip.white = TRUE, colClasses = "character")
+    })
 
     if(nrow(data) > 0) {
-      if(verbose) cat("Formatting selected data...")
+      if(verbose) cat("Formatting selected data...\n")
       tz_disp <- tz_offset(ifelse(d$site_name[1] == "Kamloops, BC", "America/Vancouver", "America/Costa_Rica"), tz_name = TRUE)
       data <- data %>%
-        dplyr::mutate(time = lubridate::with_tz(time, "UTC")) %>% # Because otherwise has system timezone
         dplyr::rename(animal_id = bird_id,
-                      logger_id = feeder_id) %>%
+                      logger_id = feeder_id,
+                      species = engl_name) %>%
         load_format(tz = "UTC", tz_disp = tz_disp) %>%
         dplyr::mutate(animal_id = factor(animal_id, levels = sort(unique(animals_all$animal_id))),
                       logger_id = factor(logger_id, levels = sort(unique(loggers_all$logger_id)))) %>%
-        dplyr::left_join(animals_all, by = c("animal_id")) %>%
+        dplyr::select(-site_id) %>%
         dplyr::left_join(loggers_all, by = c("logger_id", "site_name")) %>%
         dplyr::arrange(time)
     } else data <- NULL
@@ -581,8 +547,8 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
   output$map_data <- renderLeaflet({
     if(ns("") == "standalone-") msg <- "use the 'Import' UI (ui_import())." else msg <- "go to the 'Import' tab."
 
-    validate(need(!is.null(db), message = paste0("No Database access\n\n- To work with local data, ", msg, "\n- To work with the Database check out animalnexus.ca")))
-    req(!is.null(db))
+    validate(need(!is.null(check_db()), message = paste0("No Database access\n\n- To work with local data, ", msg, "\n- To work with the Database check out animalnexus.ca")))
+    req(!is.null(check_db()))
     if(verbose) cat("Initializing data map...\n")
 
     #Get counts summed across all dates
@@ -613,7 +579,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   ## Reset map on Reset Button
   observeEvent(input$data_reset, {
-    req(!is.null(db))
+    req(!is.null(check_db()))
     if(verbose) cat("Reset map\n")
     leafletProxy(ns("map_data")) %>%
       clearGroup(group = "Points") %>%
@@ -636,7 +602,7 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
 
   # Update map logger sites automatically on site selection
   observeEvent(input$data_site_name, {
-    req(!is.null(db), input$data_site_name != "")
+    req(!is.null(check_db()), input$data_site_name != "")
     if(verbose) cat("Updating markers...\n")
     f <- loggers_all[loggers_all$site_name == input$data_site_name, ]
     if(nrow(f) > 0) {
@@ -681,10 +647,13 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
           addCircleMarkers(data = s, lng = ~lon, lat = ~lat, group = "Points",
                            radius = ~scale_area(sum, val_min = 0),
                            fillOpacity = 0.7,
-                           fillColor = "orange")
+                           fillColor = "orange") %>%
+          clearGroup(group = "Sites") %>%
+          addMarkers(data = s, lng = ~lon, lat = ~lat, group = "Sites", popup = ~htmltools::htmlEscape(choices))
       } else {
         leafletProxy(ns("map_data")) %>%
-          clearGroup(group = "Points")
+          clearGroup(group = "Points") %>%
+          clearGroup(group = "Sites")
       }
     })
   }, priority = 50)
@@ -702,6 +671,8 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
       i <- values$input_selection
 
       date <- c(min(i$date), max(i$date))
+
+      validate(need(lubridate::is.Date(date) & all(!is.na(date)), "Invalide Date format"))
       total <- counts_site() %>%
         dplyr::mutate(selected = factor("unselected", levels = c("unselected", "selected")),
                       selected = replace(selected,
@@ -766,11 +737,6 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
                                     tags$li("Refine your selection by choosing which species to include/exclude"),
                                     tags$li("The selection will update depending on your other selections (i.e. if you select a date range with no visits by a particular species, that species will be deselected"),
                                     tags$li("Numbers in brackets reflect the total number of RFID reads per species.")),
-                                  h4("Advanced Options"),
-                                  tags$ul(
-                                    tags$li("Further refine your selection by choosing which animal_ids or logger_ids to include/exclude"),
-                                    tags$li("The selection of available ids will update depending on your other selections (i.e. if you deselect a species, all animal_ids associated with that species will disappear"),
-                                    tags$li("Numbers in brackets reflect the total number of RFID reads per id.")),
                                   strong("Note:"), "If you find you have 0 observations selected, try broadening your time range."
                           )
     ))
@@ -809,8 +775,9 @@ mod_data_db <- function(input, output, session, db, verbose = TRUE) {
                           title = "Advanced Options",
                           easyClose = TRUE,
                           tagList(tags$ul(
-                            tags$li("Select specific animal ids or logger ids"),
-                            tags$li("Numbers in brackets indicate the total number of reads in the database for each individual or logger"))
+                            tags$li("Further refine your selection by choosing which animal_ids or logger_ids to include/exclude"),
+                            tags$li("The selection of available ids will update depending on your other selections (i.e. if you deselect a species, all animal_ids associated with that species will disappear"),
+                            tags$li("Numbers in brackets reflect the total number of RFID reads per id."))
                           )))
   })
 

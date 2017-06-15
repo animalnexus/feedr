@@ -1,5 +1,3 @@
-last <- function(x)  return(x[length(x)])
-
 #' Get timezone offset from UTC
 #'
 #' @param tz Character. Timezone to calculate offset from
@@ -20,6 +18,8 @@ tz_offset <- function(tz, dst = FALSE, tz_name = FALSE) {
   }
   return(t)
 }
+
+last <- function(x)  return(x[length(x)])
 
 mp <- function(x) paste0(sort(unlist(strsplit(as.character(x), "_"))), collapse = "_")
 
@@ -70,19 +70,11 @@ merge_extra <- function(d, extra, only = NULL) {
   return(d)
 }
 
-round_6 <- function(time, by = "12") {
-  h <- lubridate::hour(time)
-  d <- lubridate::date(time)
-  tz <- lubridate::tz(time)
- if(h >= 6){
-   time <- d + lubridate::hours(6)
-   if (by != 24 & h >= 18) {
-     time <- d + lubridate::hours(18)
-   }
- } else if (h < 6) {
-   if(by == 12) time <- d - lubridate::days(1) + lubridate::hours(18)
-   if(by == 24) time <- d - lubridate::days(1) + lubridate::hours(6)
- }
-  time <- lubridate::force_tz(as.POSIXct(time), tz = tz)
-  return(time)
+# Average clock time
+mean_clock <- function(time, origin = FALSE) {
+  tz <- lubridate::tz(time[1])
+  mean_time <- format(mean(as.POSIXct(paste("1970-01-01", format(time, "%H:%M:%S")))), "%H:%M:%S")
+  mean_date <- ifelse(origin, "1970-01-01", as.character(as.Date(mean(time))))
+  return(as.POSIXct(paste(mean_date, mean_time), tz = tz))
 }
+

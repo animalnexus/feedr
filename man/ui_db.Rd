@@ -8,8 +8,6 @@ ui_db(verbose = FALSE)
 }
 \arguments{
 \item{verbose}{Logical. Print log events to console.}
-
-\item{diagnostic}{Logical. Display pause button for debugging}
 }
 \value{
 Downloaded data frame formatted and ready to be transformed

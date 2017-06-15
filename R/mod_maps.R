@@ -110,8 +110,8 @@ mod_maps_controls <- function(input, output, session, times, debounce_int, verbo
   output$UI_time_range <- renderUI({
     if(verbose) cat("  UI - Time range\n")
     x <- difftime(t()$end, t()$start)
-    if(units(x) == "hours") s <- 60*60
-    if(units(x) == "days") s <- 60*60*24
+    if(units(x) == "hours" | (units(x) == "days" && x <= 7)) s <- 60*60
+    if(units(x) == "days" && x > 7) s <- 60*60*24
 
     sliderInput(ns("time_range"), "Time Range",
                 min = t()$start,
@@ -205,7 +205,8 @@ mod_maps_controls <- function(input, output, session, times, debounce_int, verbo
 
   breaks <- reactive({
     req(interval_selection(data_range()) <= interval())
-    req(lubridate::interval(time_range()[1], time_range()[2]) %within% lubridate::interval(t()$start, t()$end)) #Make sure time range of data matches UIs (when switching datasets)
+
+    req(lubridate::interval(time_range()[1] + interval()*60, time_range()[2] - interval()*60) %within% lubridate::interval(t()$start, t()$end)) #Make sure time range of data matches UIs (for when switching datasets) within the interval range
 
     if(verbose) cat("  Breaks\n")
 

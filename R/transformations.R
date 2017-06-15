@@ -46,7 +46,7 @@
 #' v <- chickadees %>%
 #'   group_by(experiment) %>%
 #'   do(visits(.))
-
+#'
 #' @import magrittr
 #' @export
 visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass = TRUE, allow.imp, na.rm){
@@ -61,7 +61,6 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
             call. = FALSE)
     na_rm <- na.rm
   }
-
 
   # Confirm that expected columns and formats are present
   check_name(r, n = c("animal_id", "logger_id", "time"), "raw RFID")
@@ -98,16 +97,16 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
     #dplyr::mutate(diff_animal = dplyr::lead(logger_id) == logger_id & dplyr::lead(animal_id) != animal_id) %>%
     dplyr::mutate(diff_animal = dplyr::lead(animal_id) != animal_id) %>%
     dplyr::group_by(animal_id) %>%
-    dplyr::mutate(diff_time = difftime(lead(time), time, units = "sec") > bw,
+    dplyr::mutate(diff_time = difftime(dplyr::lead(time), time, units = "sec") > bw,
                   diff_logger = dplyr::lead(logger_id) != logger_id)
 
   # Check for impossible combos: where less than bw, still the same animal, but a different logger
   if(!allow_imp) {
     impos <- v %>%
-      dplyr::mutate(diff_imp = difftime(lead(time), time, units = "sec") < bw_imp,
+      dplyr::mutate(diff_imp = difftime(dplyr::lead(time), time, units = "sec") < bw_imp,
                     diff_imp = diff_imp & diff_logger) %>%
       dplyr::arrange(animal_id) %>%
-      dplyr::filter(diff_imp | lag(diff_imp)) %>%
+      dplyr::filter(diff_imp | dplyr::lag(diff_imp)) %>%
       unique()
 
     if(nrow(impos) > 0) {
@@ -116,10 +115,10 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
         dplyr::select(animal_id, time, logger_id)
 
       rows <- nrow(impos)
-      if(nrow(impos) > 5) {
-        rows <- 5
+      if(nrow(impos) > 6) {
+        rows <- 6
       }
-      stop("Impossible visits found, no specification for how to handle:\n\nIndividual(s) detected at 2+ loggers within ", bw_imp, "s.\nDecrease the `bw_imp` argument, remove these reads, or\nallow impossible visits (allow_imp = TRUE) and try again.\n\n", paste0(utils::capture.output(impos[1:rows, ]), collapse = "\n"))
+      stop("Impossible visits found (n = ", nrow(impos), "), no specification for how to handle:\n\nIndividual(s) detected at 2+ loggers within ", bw_imp, "s.\nDecrease the `bw_imp` argument, remove these reads, or\nallow impossible visits (allow_imp = TRUE) and try again.\n\nFirst 6 impossible visits:\n", paste0(utils::capture.output(as.data.frame(impos[1:rows, ])), collapse = "\n"), call. = FALSE)
     }
   }
 
@@ -183,7 +182,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
 }
 
 
-#' Movements between loggers
+#' Movements
 #'
 #' Turns visits to mulitple loggers into movements between loggers
 #'
@@ -227,7 +226,6 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
 #'   summarize(n_path = length(move_path) /2)
 #'
 #' # Calculate across different experiments:
-#' library(dplyr)
 #'
 #' v <- chickadees %>%
 #'   group_by(experiment) %>%
@@ -333,7 +331,7 @@ move_single <- function(v1, move_dir, move_path, all = FALSE){
   return(m)
 }
 
-#' Presence at a logger
+#' Presence
 #'
 #' Turns multiple visits at specific loggers into overall presence events.
 #' Presence is different from a visit in that a visit is considered a specific
@@ -461,10 +459,19 @@ presence_single <- function(v1, bw = bw){
 #'
 #' For an entire \code{visits} data frame, identifies displacement events.
 #' Displacements are events when one animal leaves the logger right before the
-#' arrival of another. In some species this can be used to infer dominance.
+#' arrival of another.
 #'
 #' The first and last visits on the record are automatically assumed to be
 #' non-displacer and non-displacee, respectively.
+#'
+#' In some species displacements can be used to infer dominance. Displacements
+#' The interactions data frame returned by the \code{disp()} function can be
+#' passed directly to the \code{\link[Perc]{as.conflictmat}} function of the
+#' \link{Perc} package to be transformed into a conflict matrix, ready for
+#' analysis of dominance using percolation and conductance. Finally, the
+#' displacements data frame can also be converted using the
+#' \code{\link{convert_anidom}} function to a data frame for use by the
+#' \link{aniDom} package's \link[aniDom]{elo_scores} function.
 #'
 #' @param v Dataframe. A visits data frame containing \strong{all} visits from
 #'   \strong{all} animals. From the output of \code{visits}. Must contain columns
@@ -491,6 +498,8 @@ presence_single <- function(v1, bw = bw){
 #'   following columns: \itemize{ \item ID of the displacee (\code{displacee})
 #'   \item ID of the displacer (\code{displacer}) \item No. of times this
 #'   interaction occurred (\code{n}) } }
+#'
+#' @seealso \link{Perc}, \link{aniDom}, \link{Dominance}
 #'
 #' @examples
 #'
@@ -533,7 +542,7 @@ presence_single <- function(v1, bw = bw){
 #'
 #' @import magrittr
 #' @export
-disp <- function(v, bw = 5, pass = TRUE){
+disp <- function(v, bw = 2, pass = TRUE){
 
   ## Check for correct formatting
   check_name(v, c("animal_id", "logger_id", "date", "start", "end"))
@@ -607,182 +616,344 @@ disp <- function(v, bw = 5, pass = TRUE){
   }
 }
 
-#' Displacements
+
+#' Activity
 #'
-#' Takes output from \code{disp()} and calculates dominance hierarchies. Should
-#' be considered experimental.
+#' Calculate activity status (active vs. inactive) at a resolution of \code{res}
+#' from \code{\link{presence}} data.
 #'
-#' @param d Data frame or List. Either the interactions data frame which is
-#'   returned as a list item from \code{disp()}, or the whole displacements list
-#'   returned by \code{disp()}.
-#' @param tries Numeric. The maximum number of iterations to find the 'best guess'
-#' @param omit_cutoff Numeric. Minimum number of interactions (sum of wins and
-#'   losses) individuals must have (omitted otherwise).
+#' A message will alert you to when the \code{res} is larger than the 50\% of
+#' the presence bout lengths. This may result in missed activity, and it may be
+#' better to choose a smaller \code{res}.
 #'
-#' @return The best guess dominance hierarchies (there may be more than one).
+#' The \code{missing} data frame should have columns \code{start} and \code{end}
+#' corresponding to the start and end times of the missing data. Any activity between
+#' those start/end times will be scored as unknown, regardless of the
+#' \code{logger_id}. However, if \code{by_logger} is TRUE, \code{missing} may
+#' also include the column \code{logger_id}. In this case, only activity for the
+#' logger with the missing start/end times will be scored as unknown. If
+#' \code{by_logger} is TRUE but \code{missing} does not contain the column
+#' \code{logger_id}, all activity between the start and end times will be scored
+#' as unknown, regardless of the logger. See examples.
 #'
-#' A list with the following named items:
-#' \enumerate{
-#'   \item \code{dominance}: A best guess at the dominance hierarchy (most to
-#' least dominant) (one vector per 'best guess')
-#'
-#'   \item \code{reversals}: Which individuals show reversals (and with whom)? (i.e. A > B, B >
-#'   C but C > A) (one data frame per 'best guess')
-#'
-#'   \item \code{interactions}: A matrix of dominance interactions. Displacers
-#'   across the top, displacees down the side. Values are the numbers of wins
-#'   (upper triangle) or losses (lower triangle) against the opposing
-#'   individual. (one matrix per 'best guess')
-#'
-#'   }
+#' @param p Dataframe. A \code{\link{presence}} data frame (may contain multiple
+#'   animal_ids).
+#' @param res Numeric. The resolution over which to calculate activity in
+#'   minutes.
+#' @param by_logger Logical. Should the activity be calculated overall, or
+#'   individually for each logger visited? If there is only one logger,
+#'   by_logger will automatically revert to TRUE to enable passing of
+#'   logger-related variables.
+#' @param missing Data frame. (NOT AVAILABLE) If there are known times for a
+#'   particular logger for which activity can't be recorded (i.e. times during
+#'   which a logger was inactive).
+#' @param sun Logical. Calculate sun rise/set? If by_logger = FALSE, returns
+#'   median sun rise/set across all loggers for each day.
+#' @param keep_all Logical. Keep all individuals, even ones with less than 24hrs of data.
+#' @param pass Logical. Pass 'extra' columns through the function and append them to the output.
+#' @param f Depreciated. Use \code{p}.
 #'
 #' @examples
 #'
-#'  # Look at dominance for chickadees in experiment 2
-#'  v <- visits(chickadees[chickadees$experiment == "exp2",])
-#'  d <- disp(v)
-#'  dm <- dom(d$interactions)
+#' v <- visits(chickadees)
+#' p <- presence(v)
+#' a <- activity(p, res = 1)
 #'
-#'  # But not necessary to specify interactions:
-#'  dm <- dom(d)
+#' # By logger (may take a while)
+#' \dontrun{
+#' a <- activity(p, res = 1, by_logger = TRUE)
+#'}
 #'
-#'  # Calculate across different experiments (expect warnings about unequal factor levels):
-#' library(dplyr)
-#'
-#' v <- chickadees %>%
-#'   group_by(experiment) %>%
-#'   do(visits(.))
-#'
-#' d <- v %>%
-#'   group_by(experiment) %>%
-#'   do(data = disp(.))
-#'
-#' dm <- d %>%
-#'   group_by(experiment) %>%
-#'   do(data = dom(.$data[[1]]))
-#'
-#' # Look at the dominance data stored in the 2nd experiment:
-#' dm$data[dm$experiment == "exp2"][[1]] #or
-#' dm[["data"]][[1]] #or
-#' dm$data[[1]]
-#'
-#' # Look at the dominance matrices from 3nd experiment:
-#' dm$data[dm$experiment == "exp3"][[1]]$matrices #or
-#' dm[["data"]][[2]]$matrices #or
-#' dm$data[[2]]$matrices
-#'
-#'
+#' @import magrittr
 #' @export
-dom <- function(d, tries = 50, omit_cutoff = 3){
 
-  # Function takes either the whole output of disp() or just the dominance table
-  if(!is.data.frame(d)) d <- d$interactions
+activity <- function(p, res = 15, by_logger = FALSE, missing = NULL, sun = TRUE, keep_all = FALSE, pass = TRUE, f){
 
-  # Check for Correct formating
-  check_name(d, c("displacer","displacee","n"), type = "displacement")
-  check_format(d)
-
-  # Start with best order
-  o <- dplyr::left_join(dplyr::group_by(d, displacer) %>% dplyr::summarize(win = sum(n)),
-                        dplyr::group_by(d, displacee) %>% dplyr::summarize(loss = sum(n)),
-                        by = c("displacer" = "displacee")) %>%
-    dplyr::mutate(win = replace(win, is.na(win), 0),
-                  loss = replace(loss, is.na(loss), 0),
-                  n = win + loss,
-                  p_win = win / n) %>%
-    dplyr::arrange(desc(p_win))
-
-  # Check sample sizes and warn if low
-
-  if(omit_cutoff > 0) {
-    omit <- o$displacer[(o$win + o$loss) < omit_cutoff]
-    o <- o[!(o$displacer %in% omit), ]
-    d <- d[!(d$displacee %in% omit) & !(d$displacer %in% omit), ]
-    if(length(omit) > 0) message("animal_ids with fewer than ", omit_cutoff, " interactions have been omitted: ", paste0(omit, collapse = ", "))
+  if (!missing(f)) {
+    warning("Argument f is deprecated; please use p instead.",
+            call. = FALSE)
+    p <- f
   }
 
-  o <- list(as.character(unique(o$displacer)))
+  check_name(p, c("animal_id", "logger_id", "start", "end"), "presence")
+  check_time(p, c("start", "end"))
 
-  ## Setup the matrix
-  dm <- tidyr::spread(d, displacee, n)
-  dm <- as.matrix(dm[, -grep("^displacer$", names(dm))])
-  rownames(dm) <- colnames(dm)
+  if(!is.null(missing)){
+    message("missing argument not yet implemented")
+    # if(!is.data.frame(missing)) {
+    #   if(!is.character(missing) | length(missing) != 1) {
+    #     stop("'missing' must be data frame or string with location of a csv file.")
+    #   } else {
+    #     missing <- utils::read.csv(missing)
+    #   }
+    # }
 
-  ## Setup Loop
-  try <- 0
-  o_l <- o
-  rev <- list()
-  done <- FALSE  ## Are we done this iteration?
-  prev <- vector()
+    #if(sum(names(missing) %in% c("start", "end")) != 2) stop("'missing' must have columns 'start' and 'end'.")
 
-  while(done == FALSE & try < tries){
+    #missing$start <- lubridate::parse_date_time(missing$start, orders = "%Y-%m-%d %H:%M:%S", truncated = 3, tz = tz)
+    #missing$end <- lubridate::parse_date_time(missing$end, orders = "%Y-%m-%d %H:%M:%S", truncated = 3, tz = tz)
 
-    ## For each alternative dominance ranking (o_l)
-    for(i in 1:length(o_l)){
-      new_o <- o_l[[i]]
-      temp <- dm
-
-      ## Sort matrix by dominance hierarchy (new_o)
-      temp <- temp[order(match(rownames(temp), new_o)), order(match(colnames(temp), new_o))]
-
-      ## CHECK (TODO set to stop script if this doesn't work)
-      all(is.na(diag(temp)))
-      all(dimnames(temp)[[1]] == dimnames(temp)[[2]])
-
-      ## Get upper and lower to compare
-      upper <- temp
-      upper[lower.tri(upper, diag = TRUE)] <- NA
-      lower <- t(temp)
-      lower[lower.tri(lower, diag = TRUE)] <- NA
-
-      ## Get reversals
-      if(length(which(upper < lower, arr.ind = TRUE)) > 0){
-        rev[[length(rev) + 1]] <- which(upper < lower, arr.ind = TRUE)
-      }
-    }
-
-    ## Keep only the orders with the fewest reversals
-    if(length(rev) > 0){
-      n <- sapply(rev, nrow)
-      rev <- rev[n == min(n)]
-      o_l <- o_l[n == min(n)]
-    }
-
-    # Compare with previous matrix, if the same, we're done
-    if(identical(prev, o_l)) done <- TRUE else prev <- o_l
-
-    if(length(rev) > 0 && length(rev[[1]]) > 0 && done == FALSE){
-      ## Add the new reversal switches to our list of options and try again
-      for(j in 1:length(rev)){
-        for(i in 1:nrow(rev[[j]])){
-          a <- rev[[j]][i,2]  ## Which individuals to move up
-          b <- rev[[j]][i,1]  ## Where to move it
-          o_l[[length(o_l) + 1]] <- c(new_o[1:(b - 1)], new_o[a], new_o[-c(1:(b - 1), a)])
-        }
-      }
-    } else {
-      done <- TRUE
-      try <- try + 1
-    }
-
-    ## Loop controls
-    if(done == FALSE){
-      try <- try + 1
-      o_l <- unique(o_l)
-      rev <- list()
-    }
+    # if(any(!lubridate::is.POSIXct(c(missing$start, missing$end)))) {
+    #   stop("'missing' start or end cannot be converted to date/time, be sure it is in a standard date/time format (YYYY-MM-DD HH:MM:SS is best).")
+    # }
   }
 
-  message(paste0("Tried ",try," times. Found ",length(o_l), " 'best' matrix(ces), each with ",if(length(rev) > 0) nrow(rev[[1]]) else 0," reversal(s)"))
+  # Get factor levels for whole dataset
+  if(is.factor(p$animal_id)) animal_id <- levels(p$animal_id) else animal_id <- unique(p$animal_id)
+  loggers <- unique(tibble::as_tibble(p[, names(p) %in% c("logger_id", "lat", "lon")]))
 
-  m <- list()
-  r <- list()
-  for(i in 1:length(o_l)) {
-    m[[length(m) + 1]] <- dm[order(match(rownames(dm), o_l[[i]])), order(match(colnames(dm), o_l[[i]]))]
-    if(length(rev) > 0 && length(rev[[i]]) > 0) r[[length(r)+1]] <- data.frame(animal_id1 = o_l[[i]][rev[[i]][, 1]], animal_id2 = o_l[[i]][rev[[i]][, 2]])
+  # Keep extra cols
+  if(pass) {
+    if(by_logger == FALSE) only <- c("animal_id", "date") else only <- c("logger_id", "animal_id", "date")
+    extra <- keep_extra(p, n = c("start", "end", "length"), only = only)
   }
 
-  return(list(dominance = o_l, reversals = r, matrices = m))
+  if(any(!lubridate::is.POSIXct(c(p$start, p$end)))) {
+    stop("Cannot define start and end times of the presence data set, make sure this is the output from presence().")
+  }
+
+
+  # Apply individually to each animal
+  a <- p %>%
+    dplyr::group_by(animal_id) %>%
+    dplyr::do(activity_single(., loggers = loggers, res = res, by_logger = by_logger, missing = missing, sun = sun, keep_all = keep_all)) %>%
+    dplyr::ungroup()
+
+  if(pass) a <- merge_extra(a, extra)
+
+  a <- dplyr::arrange(a, animal_id, date, time, logger_id)
+
+  # Apply factors
+  a$animal_id <- factor(a$animal_id, levels = animal_id)
+  a$logger_id <- factor(a$logger_id, levels = levels(loggers$logger_id))
+
+  return(a)
+
 }
 
 
+activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = NULL, sun = TRUE, keep_all = FALSE){
+
+  check_indiv(p1)
+
+  if(nrow(p1) == 0) {
+    message(paste0(p1$animal_id[1], ": Skipping. Individual has no data"))
+    return(tibble::data_frame())
+  } else {
+
+
+    # Grab the timezone
+    tz <- attr(p1$start, "tzone")
+
+    start <- lubridate::floor_date(min(p1$start), "day")
+    end <- lubridate::ceiling_date(max(p1$end), "day")
+
+    # Calculate Activity only if > 24hrs of data
+    if((max(p1$end) - min(p1$start)) < lubridate::dhours(24) & keep_all == FALSE) {
+      message(paste0(p1$animal_id[1], ": Skipping. Individual has less than 24hrs of data"))
+      return(tibble::data_frame())
+    } else if (all(p1$length == 0))  {
+      message(paste0(p1$animal_id[1], ": Skipping. All bouts are 0 min. Consider increasing 'bw' in presence()"))
+      return(tibble::data_frame())
+    } else {
+      ## ACCOUNT FOR MISSING!!!
+
+      # Check proportion of time active, warn if really low
+      p_active <- as.numeric(sum(p1$length)) / as.numeric(difftime(max(p1$end), min(p1$start), units = "mins"))
+      if(p_active < 0.05) message(paste0(p1$animal_id[1], ": Active less than 5% of the total time period..."))
+
+      # Override by_logger if only one logger_id to keep extra columns
+      #if(length(unique(p1$logger_id)) == 1) by_logger <- TRUE
+
+      # Get activity
+      prob <- round(length(p1$length[p1$length < res]) / nrow(p1) * 100, 2)
+      if(prob > 50) {
+        message(paste0(p1$animal_id[1], ": ", prob, "% of obs are shorter than 'res' (", res, " min). Median obs is ", round(median(p1$length), 2), " min."))
+      }
+
+      # Prep activity data frame
+      res <- res * 60
+      a <- tibble::data_frame(
+        animal_id = p1$animal_id[1],
+        time = seq(start, end, by = paste0(res, " sec")),
+        activity_c = factor("inactive",
+                            levels = c("active", "inactive", "unknown")))
+
+      a$date <- as.Date(lubridate::floor_date(a$time, unit = "day"))
+
+      # Get by individual only, or by individual for each logger
+      if(by_logger == FALSE){
+        a$logger_id <- NA
+      } else {
+        temp <- tibble::data_frame()
+        for(i in levels(loggers$logger_id)){
+          temp <- rbind(temp, cbind(a, logger_id = i))
+        }
+        a <- temp
+      }
+
+      # Fill with active/inactive
+      for(p_id in unique(p1$logger_id)){
+        p <- p1[p1$logger_id == p_id, ]
+        for(i in 1:nrow(p)) {
+          if(by_logger == FALSE) {
+            a$activity_c[a$time >= p$start[i] & a$time <= p$end[i]] <- "active"
+          } else {
+            a$activity_c[a$logger_id == p_id & a$time >= p$start[i] & a$time <= p$end[i]] <- "active"
+          }
+        }
+      }
+
+      # if(!is.null(missing)) {
+      #   for(i in 1:nrow(missing)){
+      #     if(by_logger == FALSE){
+      #       a$activity_c[a$time >= missing$start[i] & a$time <= missing$end[i]] <- "unknown"
+      #     } else {
+      #       a$activity_c[a$logger_id == missing$logger_id[i] & a$time >= missing$start[i] & a$time <= missing$end[i]] <- "unknown"
+      #     }
+      #   }
+      # }
+
+      # Create plotting column
+      a$activity <- as.numeric(a$activity_c == "active")
+      a$activity[a$activity_c == "unknown"] <- NA
+
+      # Calculate sunrise/sunset times
+      if(sun == TRUE) {
+        if(!all(c("lat", "lon") %in% names(p1))) {
+          message(paste0(p1$animal_id[1], ": Skipping sunrise/sunset, no lat/lon information"))
+        } else {
+
+          s <- expand.grid(logger_id = loggers$logger_id,
+                           date = as.Date(seq(start, end, by = "1 day"))) %>%
+            dplyr::left_join(unique(loggers[, c("logger_id", "lon", "lat")]), by = "logger_id")
+
+          s <- dplyr::bind_cols(s, sun(s[, c("lon", "lat")], s$date, tz = tz))
+
+          if(by_logger == TRUE) {
+            a <- dplyr::left_join(a, s[, c("logger_id", "date", "rise", "set")],
+                                  by = c("logger_id", "date"))
+          } else {
+            s <- s %>%
+              dplyr::group_by(date) %>%
+              dplyr::summarize(rise = median(rise),
+                               set = median(set))
+            a <- dplyr::left_join(a, s[, c("date", "rise", "set")], by = "date")
+          }
+        }
+      }
+
+      # Select
+      n <- c("animal_id", "date", "time", "activity", "activity_c", "logger_id", "rise", "set")
+      n <- n[n %in% names(a)]
+      a <- dplyr::select_(a, .dots = n)
+
+      return(a)
+    }
+  }
+}
+
+#' Daily activity
+#'
+#' Summarizes and averages activity data over a 24-hr period, generating a 24-hr
+#' daily activity pattern for plotting. The resulting data set contains four
+#' columns reflecting the proportions of time blocks scored as active, inactive,
+#' unknonw, or total.
+#'
+#' Output dates are irrelevant, as the data is tied to times, not
+#' dates. Therefore the dates are all assigned to 1970-01-01. When
+#' plotting, omit the date part of the label to accurately portray time only.
+#'
+#' Resolution of the data is automatically detected as the same as that
+#' specified in \code{activity()}.
+#'
+#'
+#' @param a Data frame. Data from output of \code{activity()}.
+#' @param pass Logical. Pass 'extra' columns through the function and append them to the output.
+#'
+#' @export
+
+daily <- function(a, pass = TRUE){
+
+  check_name(a, c("animal_id", "date", "time", "activity", "activity_c", "logger_id"), "activity")
+  check_time(a, c("time"))
+
+  # Get extra
+  if(pass){
+    if(all(is.na(a$logger_id))) only <- "animal_id" else only <- c("logger_id", "animal_id")
+    extra <- keep_extra(a, c("time", "activity", "activity_c"), only = only)
+  }
+
+  a$time_c <- format(a$time, "%H:%M:%S")
+
+  # Apply single function
+
+  d <- a %>%
+    dplyr::group_by(animal_id) %>%
+    dplyr::do(daily_single(., pass = pass)) %>%
+    dplyr::ungroup()
+
+  if(pass) d <- merge_extra(d, extra)
+
+
+  return(d)
+}
+
+daily_single <- function(a1, pass = TRUE){
+
+  check_indiv(a1)
+
+  # Grab the timezone
+  tz <- attr(a1$time, "tzone")
+
+  d <- a1 %>%
+    dplyr::group_by(animal_id, logger_id, time_c) %>%
+    dplyr::summarize(p_active = length(activity_c[activity_c == "active"]) / length(activity_c[activity_c != "unknown"]),
+                     p_inactive = length(activity_c[activity_c == "inactive"]) / length(activity_c[activity_c != "unknown"]),
+                     p_unknown = length(activity_c[activity_c == "unknown"]) / length(activity_c),
+                     p_total = 1 - p_unknown)
+
+
+  d$time <- as.POSIXct(paste0(lubridate::origin, " ", d$time_c), tz = tz)
+  #lubridate::tz(d$time) <- "UTM"
+
+  # Get sun/rise set if exist, and average
+  if(all(c("rise", "set") %in% names(a1))) {
+    sun <- unique(a1[, c("date", "logger_id", "rise", "set")])
+
+    sun <- sun %>%
+      dplyr::group_by(logger_id) %>%
+      dplyr::summarize(rise = mean_clock(rise, origin = TRUE),
+                       set = mean_clock(set, origin = TRUE))
+    d <- merge(d, sun, by = "logger_id", all.x = TRUE, all.y = FALSE)
+  }
+
+  # Order
+  n <- c("animal_id", "time", "time_c", "p_active", "p_inactive", "p_unknown", "p_total", "logger_id", "rise", "set")
+  n <- n[n %in% names(d)]
+
+  d <- dplyr::select_(d, .dots = n) %>%
+    dplyr::arrange(animal_id, time)
+
+  return(d)
+}
+
+#' Get sunrise/sunset times
+#'
+#' Calculate times of sunrise and sunset depending on the location and the date.
+#'
+#' @param loc Vector/Data frame. Longitude and Latitude coordinates for location
+#'   of sun rise/set
+#' @param date Vector. Date(s) to cacluate sun rise/set for.
+#' @param tz Timezone of the dates.
+#'
+#' @export
+sun <- function(loc, date, tz) {
+  if(class(loc) == "numeric") loc <- matrix(loc, nrow = 1)
+  if(class(loc) %in% c("data.frame", "matrix")) loc <- as.matrix(loc)
+  date <- as.POSIXct(as.character(date), tz = tz)
+  s <- data.frame(rise = maptools::sunriset(loc, date, direction = "sunrise", POSIXct.out = TRUE)$time,
+                  set = maptools::sunriset(loc, date, direction = "sunset", POSIXct.out = TRUE)$time)
+
+  return(s)
+}

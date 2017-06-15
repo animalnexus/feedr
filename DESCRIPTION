@@ -1,10 +1,10 @@
 Package: feedr
 Type: Package
 Title: Transforming Raw RFID Data
-Version: 0.8.2.1
-Date: 2017-03-16
-Authors@R: person("LaZerte", "Stefanie E.", email = "stefanie.lazerte@unbc.ca", role = c("aut","cre"))
-URL: https://github.com/steffilazerte/feedr
+Version: 0.9.0
+Date: 2017-06-05
+Authors@R: person("LaZerte", "Stefanie E", email = "steffi@steffi.ca", role = c("aut","cre"))
+URL: https://github.com/animalnexus/feedr
 Description: Load, clean, transform, and visualize raw RFID data for looking at a variety of
     biological questions.
 License: GPL-3
@@ -14,7 +14,7 @@ Imports:
     DT (>= 0.1),
     curl (>= 0.9.7),
     DBI (>= 0.4.1),
-    dplyr(>= 0.4.3),
+    dplyr(>= 0.5.0),
     ggplot2 (>= 2.1.0),
     ggmap (>= 2.6.1),
     htmltools (>= 0.3.5),
@@ -33,8 +33,12 @@ Imports:
     tidyr (>= 0.5.1),
     xml2 (>= 0.1.2)
 Suggests:
+    aniDom,
+    asnipe,
+    Dominance,
     knitr,
     lazyeval,
+    Perc,
     rmarkdown,
     sp,
     testthat

@@ -1,11 +1,12 @@
 
 check_name <- function(d, n = c("animal_id", "logger_id"), type = "visit") {
-  if(!all(n %in% names(d))) stop(paste0("You should be using '", type, "' data. Required columns aren't present. Require: ", paste0("'", n, "'", collapse = ", ")), call. = FALSE)
+  if(!is.null(type)) m <- paste0("You should be using '", type, "' data. ") else m <- ""
+  if(!all(n %in% names(d))) stop(paste0(m, "Required columns aren't present. Require: ", paste0("'", n, "'", collapse = ", ")), call. = FALSE)
 }
 
 check_time <- function(d, n = c("start", "end"), internal = TRUE) {
   if(!all(sapply(d[, n], class) == c("POSIXct", "POSIXt"))) {
-    stop(paste0("Columns ", paste0("'", n, "'", collapse = ", "), " must be in R's date/time formating (POSIXct).", ifelse(internal == TRUE, " This data frame should have been created with a feedr function. Have you changed the values since they were created?", " Consider as.POSIXct() and strptime() or lubridate::parse_date_time().")), call. = FALSE)
+    stop(paste0("Columns ", paste0("'", n, "'", collapse = ", "), " must be in R's date/time formating (POSIXct).", ifelse(internal == FALSE, " Consider using as.POSIXct() and strptime() or lubridate::parse_date_time().", "")), call. = FALSE)
   }
 }
 
@@ -37,7 +38,7 @@ check_indiv <- function(d) {
 
 check_format <- function(d, map = FALSE, disp = FALSE) {
   msg_l <- "Using '_' in logger_id values conflicts with the mapping functions."
-  msg_a <- "Using '_' in animal_id values conflicts with the displacement/dominance functions."
+  msg_a <- "Using '_' in animal_id values conflicts with the displacement function (disp())."
 
   if(!map) msg_l <- paste0(msg_l, " You should remove any '_'s if you plan to use these functions.")
   if(!disp) msg_a <- paste0(msg_a, " You should remove any '_'s if you plan to use these functions.")
@@ -46,5 +47,36 @@ check_format <- function(d, map = FALSE, disp = FALSE) {
   if("animal_id" %in% names(d)) if(any(stringr::str_count(d$animal_id, "_") > 0)) message(msg_a)
 }
 
+#' @import magrittr
+check_input <- function(d, input = "lon", options = c("lon", "longitude", "long"), verbose = TRUE) {
+  opts_string <- paste0("(^", paste0(options, collapse = "$)|(^"), "$)")
+  n <- which(stringr::str_detect(names(d), stringr::regex(opts_string, ignore_case = TRUE)))
+
+  # Check if any columns
+  if(length(n) > 0){
+    # Check if more than two columns for the input
+    if(length(n) > 1) {
+      c <- utils::combn(n, 2)
+      if(ncol(c) < 10) {
+        for(i in 1:ncol(c)) {
+          if(!isTRUE(all.equal(d[, c[1, i]], d[, c[2, i]]))) {
+            stop("There are multiple ", input, " columns which are not equivalent\n(expects ", input, " to be one of ", paste0(options, collapse = ", "), ", but ignores case")
+          }
+        }
+      } else {
+        stop("There are too many duplicate ", input, " columns\n(expects ", input, " to be one of ", paste0(options, collapse = ", "), ", but ignores case")
+      }
+      # Omit extra columns if duplicates
+      if(verbose) message("Omitting duplicate columns for ", input)
+      d <- d[, -n[2:length(n)]]
+      n <- n[1]
+    }
+    if(any(names(d)[n] != input)) {
+      if(verbose) message("Renaming column '", names(d)[n], "' to '", input, "'")
+      names(d)[n] <- input
+    }
+  }
+  return(d)
+}
 
 

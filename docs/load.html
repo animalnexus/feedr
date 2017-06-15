@@ -4,7 +4,7 @@
 
 <head>
 
-<meta charset="utf-8">
+<meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
@@ -342,15 +342,16 @@ div.tocify {
 06200004BF 01/11/16 10:50:02
 06200004E4 01/11/16 10:51:07</code></pre>
 <p>When we use <code>load_raw()</code> to import it, we get this:</p>
-<pre class="r"><code>r1 &lt;- load_raw(&quot;./Data/Raw/exp2/GR10DATA_2016_01_16.TXT&quot;)
-head(r1)</code></pre>
+<pre class="r"><code>r1 &lt;- load_raw(&quot;./Data/Raw/exp2/GR10DATA_2016_01_16.TXT&quot;)</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR10DATA_2016_01_16.TXT...</code></pre>
+<pre class="r"><code>head(r1)</code></pre>
 <pre><code>##    animal_id                time logger_id
-## 1 06200004BF 2016-01-11 10:48:49      GR10
-## 2 062000038F 2016-01-11 10:48:50      GR10
-## 3 06200004E4 2016-01-11 10:48:55      GR10
-## 4 06200004BF 2016-01-11 10:50:02      GR10
-## 5 06200004E4 2016-01-11 10:51:07      GR10
-## 6 06200004BE 2016-01-11 10:51:51      GR10</code></pre>
+## 1 06200004BF 2016-01-11 10:48:49  GR10DATA
+## 2 062000038F 2016-01-11 10:48:50  GR10DATA
+## 3 06200004E4 2016-01-11 10:48:55  GR10DATA
+## 4 06200004BF 2016-01-11 10:50:02  GR10DATA
+## 5 06200004E4 2016-01-11 10:51:07  GR10DATA
+## 6 06200004BE 2016-01-11 10:51:51  GR10DATA</code></pre>
 <p>Note that the <code>logger_id</code> has been extracted from the first line of the file. This is done by matching an expected pattern against the the contents of the first line (these patterns are called ‘Regular Expressions’).</p>
 <p>The default pattern matches GR or GPR followed by 1 or 2 digits. If you need to specify a different pattern you can do so. For example, if your loggers were labeled “Logger_10” or “Logger_01”:</p>
 <pre><code>Logger_10
@@ -359,8 +360,9 @@ head(r1)</code></pre>
 06200004E4 01/11/16 10:48:55
 06200004BF 01/11/16 10:50:02
 06200004E4 01/11/16 10:51:07</code></pre>
-<pre class="r"><code>r1 &lt;- load_raw(&quot;./Data/Raw/exp2/Logger_10_2016_01_16.TXT&quot;, logger_pattern = &quot;Logger_[0-9]{2}&quot;)
-head(r1)</code></pre>
+<pre class="r"><code>r1 &lt;- load_raw(&quot;./Data/Raw/exp2/Logger_10_2016_01_16.TXT&quot;, logger_pattern = &quot;Logger_[0-9]{2}&quot;)</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/Logger_10_2016_01_16.TXT...</code></pre>
+<pre class="r"><code>head(r1)</code></pre>
 <pre><code>##    animal_id                time logger_id
 ## 1 06200004BF 2016-01-11 10:48:49 Logger_10
 ## 2 062000038F 2016-01-11 10:48:50 Logger_10
@@ -385,15 +387,11 @@ head(r1)</code></pre>
 06200004E4 01/11/16 10:51:07</code></pre>
 <p>Then this pattern won’t work because it matches the first line, not the file name:</p>
 <pre class="r"><code>load_raw(&quot;./Data/Raw/exp2/Logger_Data.TXT&quot;, logger_pattern = &quot;Logger_[0-9]{2}&quot;, details = 0, skip = 1)</code></pre>
-<pre><code>##    animal_id                time logger_id
-## 1 06200004BF 2016-01-11 10:48:49      &lt;NA&gt;
-## 2 062000038F 2016-01-11 10:48:50      &lt;NA&gt;
-## 3 06200004E4 2016-01-11 10:48:55      &lt;NA&gt;
-## 4 06200004BF 2016-01-11 10:50:02      &lt;NA&gt;
-## 5 06200004E4 2016-01-11 10:51:07      &lt;NA&gt;
-## 6 06200004BE 2016-01-11 10:51:51      &lt;NA&gt;</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/Logger_Data.TXT...</code></pre>
+<pre><code>## Error: logger_id not detected in file name</code></pre>
 <p>But this pattern will work:</p>
 <pre class="r"><code>load_raw(&quot;./Data/Raw/exp2/Logger_Data.TXT&quot;, logger_pattern = &quot;Logger&quot;, details = 0, skip = 1)</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/Logger_Data.TXT...</code></pre>
 <pre><code>##    animal_id                time logger_id
 ## 1 06200004BF 2016-01-11 10:48:49    Logger
 ## 2 062000038F 2016-01-11 10:48:50    Logger
@@ -406,6 +404,7 @@ head(r1)</code></pre>
 <h4>2. <code>details = 1</code></h4>
 <p><code>logger_id</code> is in the first line of the file, also defined by the pattern <code>logger_pattern</code></p>
 <pre class="r"><code>load_raw(&quot;./Data/Raw/exp2/Logger_Data.TXT&quot;, logger_pattern = &quot;Logger_[0-9]{2}&quot;, details = 1)</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/Logger_Data.TXT...</code></pre>
 <pre><code>##    animal_id                time logger_id
 ## 1 06200004BF 2016-01-11 10:48:49 Logger_21
 ## 2 062000038F 2016-01-11 10:48:50 Logger_21
@@ -426,6 +425,7 @@ head(r1)</code></pre>
 06200004BF 01/11/16 10:50:02</code></pre>
 <p>And would be loaded by <code>load_raw()</code> like this:</p>
 <pre class="r"><code>load_raw(&quot;./Data/Raw/exp2/Logger_Data.TXT&quot;, logger_pattern = &quot;Logger_[0-9]{2}&quot;, details = 2)</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/Logger_Data.TXT...</code></pre>
 <pre><code>##    animal_id                time logger_id      lat       lon
 ## 1 06200004BF 2016-01-11 10:48:49 Logger_21 53.89086 -122.8193
 ## 2 062000038F 2016-01-11 10:48:50 Logger_21 53.89086 -122.8193
@@ -443,23 +443,53 @@ head(r1)</code></pre>
 <p>The function <code>load_raw_all()</code> is a wrapper function which will automatically load and combine data contained in several different files in a single folder, or in a nested series of folders. Other files can be present, but all data files must be identifiable by a pattern (<code>pattern</code> argument) in the file name.</p>
 <p>In this example our data files are stored in a folder called <code>raw</code> and there are several sets of data, each corresponding to an individual experiment which are then stored in their own folder called <code>exp1</code>, <code>exp2</code>, etc. Logger data files are identifiable by the characters ‘DATA’ present in the name (as in the above example), which is the default pattern:</p>
 <pre class="r"><code>r &lt;- load_raw_all(r_dir = &quot;./Data/Raw&quot;)</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR10DATA_2016_01_16.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR10DATA_2016_01_18.TXT...</code></pre>
 <pre><code>## Empty file skipped: ./Data/Raw/exp2/GR10DATA_2016_01_18.TXT</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR10DATA_2016_01_25.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR11DATA_2016_01_16.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR11DATA_2016_01_18.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR11DATA_2016_01_20.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR11DATA_2016_01_25.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR12DATA_2016_01_16.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR12DATA_2016_01_18.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR12DATA_2016_01_25.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR13DATA_2016_01_16.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR13DATA_2016_01_18.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR13DATA_2016_01_20.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR13DATA_2016_01_25.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR10DATA_2016_02_01.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR10DATA_2016_02_06.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR10DATA_2016_02_13.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR10DATA_2016_02_16.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR11DATA_2016_02_06.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR11DATA_2016_02_10.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR11DATA_2016_02_13.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR11DATA_2016_02_16.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR12DATA_2016_02_01.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR12DATA_2016_02_06.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR12DATA_2016_02_10.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR12DATA_2016_02_13.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR12DATA_2016_02_16.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR13DATA_2016_02_06.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR13DATA_2016_02_13.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR13DATA_2016_02_16.TXT...</code></pre>
 <pre class="r"><code>head(r)</code></pre>
-<pre><code>##    animal_id                time logger_id
-## 1 06200004BF 2016-01-11 10:48:49      GR10
-## 2 062000038F 2016-01-11 10:48:50      GR10
-## 3 06200004E4 2016-01-11 10:48:55      GR10
-## 4 06200004BF 2016-01-11 10:50:02      GR10
-## 5 06200004E4 2016-01-11 10:51:07      GR10
-## 6 06200004BE 2016-01-11 10:51:51      GR10</code></pre>
+<pre><code>##    animal_id                time logger_id       date
+## 1 06200004BF 2016-01-11 10:48:49  GR10DATA 2016-01-11
+## 2 062000038F 2016-01-11 10:48:50  GR10DATA 2016-01-11
+## 3 06200004E4 2016-01-11 10:48:55  GR10DATA 2016-01-11
+## 4 06200004BF 2016-01-11 10:50:02  GR10DATA 2016-01-11
+## 5 06200004E4 2016-01-11 10:51:07  GR10DATA 2016-01-11
+## 6 06200004BE 2016-01-11 10:51:51  GR10DATA 2016-01-11</code></pre>
 <pre class="r"><code>summary(r)</code></pre>
-<pre><code>##       animal_id          time                     logger_id  
-##  062000038D: 4374   Min.   :2016-01-06 13:18:44   GR10:5563  
-##  062000038F: 2750   1st Qu.:2016-01-14 13:16:54   GR11:8697  
-##  0700EE2B10: 2614   Median :2016-01-21 12:12:26   GR12:5649  
-##  062000014F: 2138   Mean   :2016-01-25 17:32:23   GR13:8819  
-##  0700ED9E0E: 1809   3rd Qu.:2016-02-05 09:11:10              
-##  0700EE0E42: 1675   Max.   :2016-02-16 14:30:29              
+<pre><code>##       animal_id          time                        logger_id         date           
+##  062000038D: 4374   Min.   :2016-01-06 13:18:44   GR10DATA:5563   Min.   :2016-01-06  
+##  062000038F: 2750   1st Qu.:2016-01-14 13:16:54   GR11DATA:8697   1st Qu.:2016-01-14  
+##  0700EE2B10: 2614   Median :2016-01-21 12:12:26   GR12DATA:5649   Median :2016-01-21  
+##  062000014F: 2138   Mean   :2016-01-25 17:32:23   GR13DATA:8819   Mean   :2016-01-25  
+##  0700ED9E0E: 1809   3rd Qu.:2016-02-05 09:11:10                   3rd Qu.:2016-02-05  
+##  0700EE0E42: 1675   Max.   :2016-02-16 14:30:29                   Max.   :2016-02-16  
 ##  (Other)   :13368</code></pre>
 <p>(Note that empty files are skipped, but identified)</p>
 <p>If your logger files don’t have an identifiable label, but are the only csv files in the folders, you could use:</p>
@@ -471,26 +501,56 @@ head(r1)</code></pre>
 <pre><code>## [1] &quot;exp2&quot; &quot;exp3&quot;</code></pre>
 <p>In our example, each experiment is stored in its own folder (‘exp2’ and ‘exp3’). Therefore we can tell our function to identify patterns (<code>extra_pattern</code>) in the file names and store the values in an extra column (<code>extra_name</code>):</p>
 <pre class="r"><code>r &lt;- load_raw_all(r_dir = &quot;./Data/Raw&quot;, extra_pattern = &quot;exp[2-3]{1}&quot;, extra_name = &quot;experiment&quot;)</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR10DATA_2016_01_16.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR10DATA_2016_01_18.TXT...</code></pre>
 <pre><code>## Empty file skipped: ./Data/Raw/exp2/GR10DATA_2016_01_18.TXT</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR10DATA_2016_01_25.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR11DATA_2016_01_16.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR11DATA_2016_01_18.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR11DATA_2016_01_20.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR11DATA_2016_01_25.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR12DATA_2016_01_16.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR12DATA_2016_01_18.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR12DATA_2016_01_25.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR13DATA_2016_01_16.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR13DATA_2016_01_18.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR13DATA_2016_01_20.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp2/GR13DATA_2016_01_25.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR10DATA_2016_02_01.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR10DATA_2016_02_06.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR10DATA_2016_02_13.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR10DATA_2016_02_16.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR11DATA_2016_02_06.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR11DATA_2016_02_10.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR11DATA_2016_02_13.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR11DATA_2016_02_16.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR12DATA_2016_02_01.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR12DATA_2016_02_06.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR12DATA_2016_02_10.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR12DATA_2016_02_13.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR12DATA_2016_02_16.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR13DATA_2016_02_06.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR13DATA_2016_02_13.TXT...</code></pre>
+<pre><code>## Loading file ./Data/Raw/exp3/GR13DATA_2016_02_16.TXT...</code></pre>
 <pre class="r"><code>head(r)</code></pre>
-<pre><code>##    animal_id                time logger_id experiment
-## 1 06200004BF 2016-01-11 10:48:49      GR10       exp2
-## 2 062000038F 2016-01-11 10:48:50      GR10       exp2
-## 3 06200004E4 2016-01-11 10:48:55      GR10       exp2
-## 4 06200004BF 2016-01-11 10:50:02      GR10       exp2
-## 5 06200004E4 2016-01-11 10:51:07      GR10       exp2
-## 6 06200004BE 2016-01-11 10:51:51      GR10       exp2</code></pre>
+<pre><code>##    animal_id                time logger_id experiment       date
+## 1 06200004BF 2016-01-11 10:48:49  GR10DATA       exp2 2016-01-11
+## 2 062000038F 2016-01-11 10:48:50  GR10DATA       exp2 2016-01-11
+## 3 06200004E4 2016-01-11 10:48:55  GR10DATA       exp2 2016-01-11
+## 4 06200004BF 2016-01-11 10:50:02  GR10DATA       exp2 2016-01-11
+## 5 06200004E4 2016-01-11 10:51:07  GR10DATA       exp2 2016-01-11
+## 6 06200004BE 2016-01-11 10:51:51  GR10DATA       exp2 2016-01-11</code></pre>
 <p>“exp[1-2]{1}” matches the exact characters “exp” followed by either a 1 or a 2 of which there is exactly 1. The values matching this pattern are then stored in a new column called ‘experiment’.</p>
 <p>Because here the loggers were RFID-enabled feeders reused for different experiments, some logger have the same id, but a different lat/lon. However, <code>logger_id</code>s need to be unique or we will have problems later on, so let’s create unique <code>logger_id</code> names:</p>
 <pre class="r"><code>r$logger_id &lt;- paste(r$experiment, r$logger_id, sep = &quot;-&quot;)
 head(r)</code></pre>
-<pre><code>##    animal_id                time logger_id experiment
-## 1 06200004BF 2016-01-11 10:48:49 exp2-GR10       exp2
-## 2 062000038F 2016-01-11 10:48:50 exp2-GR10       exp2
-## 3 06200004E4 2016-01-11 10:48:55 exp2-GR10       exp2
-## 4 06200004BF 2016-01-11 10:50:02 exp2-GR10       exp2
-## 5 06200004E4 2016-01-11 10:51:07 exp2-GR10       exp2
-## 6 06200004BE 2016-01-11 10:51:51 exp2-GR10       exp2</code></pre>
+<pre><code>##    animal_id                time     logger_id experiment       date
+## 1 06200004BF 2016-01-11 10:48:49 exp2-GR10DATA       exp2 2016-01-11
+## 2 062000038F 2016-01-11 10:48:50 exp2-GR10DATA       exp2 2016-01-11
+## 3 06200004E4 2016-01-11 10:48:55 exp2-GR10DATA       exp2 2016-01-11
+## 4 06200004BF 2016-01-11 10:50:02 exp2-GR10DATA       exp2 2016-01-11
+## 5 06200004E4 2016-01-11 10:51:07 exp2-GR10DATA       exp2 2016-01-11
+## 6 06200004BE 2016-01-11 10:51:51 exp2-GR10DATA       exp2 2016-01-11</code></pre>
 </div>
 <div id="logger-details" class="section level3">
 <h3>Logger details</h3>
@@ -511,20 +571,8 @@ head(l_index)</code></pre>
 ## Merge logger index into RFID data, matching &#39;experiment&#39; and &#39;logger_id&#39;
 r &lt;- merge(r, l_index, by = c(&quot;experiment&quot;, &quot;logger_id&quot;))
 head(r)</code></pre>
-<pre><code>##   experiment logger_id  animal_id                time logger_name      lat
-## 1       exp2 exp2-GR10 06200004BF 2016-01-11 10:48:49        GR10 53.89086
-## 2       exp2 exp2-GR10 062000038F 2016-01-11 10:48:50        GR10 53.89086
-## 3       exp2 exp2-GR10 06200004E4 2016-01-11 10:48:55        GR10 53.89086
-## 4       exp2 exp2-GR10 06200004BF 2016-01-11 10:50:02        GR10 53.89086
-## 5       exp2 exp2-GR10 06200004E4 2016-01-11 10:51:07        GR10 53.89086
-## 6       exp2 exp2-GR10 06200004BE 2016-01-11 10:51:51        GR10 53.89086
-##         lon
-## 1 -122.8193
-## 2 -122.8193
-## 3 -122.8193
-## 4 -122.8193
-## 5 -122.8193
-## 6 -122.8193</code></pre>
+<pre><code>## [1] experiment  logger_id   animal_id   time        date        logger_name lat         lon        
+## &lt;0 rows&gt; (or 0-length row.names)</code></pre>
 <p>This data is now ready for <a href="housekeeping.html">housekeeping</a> or go straight to <a href="transformations.html">transformations</a>!</p>
 <p><a id="dldata"></a></p>
 </div>
@@ -533,61 +581,56 @@ head(r)</code></pre>
 <h2><code>dl_data()</code></h2>
 <p>This is likely the easiest way to get data (provided the data you’re interested in is hosted in the animal__nexus__ database). This function requests data from animal__nexus__ and formats it for use with the <code>feedr</code> transformation functions.</p>
 <p>If you don’t specify anything, all data will be downloaded for the default site (Kamloops) and the default extra columns (loc and species) with the default timezone (America/Vancouver). See <code>?dl_data</code> for more details.</p>
-<pre><code>##    animal_id                time logger_id species       lon      lat
-## 1 062000031A 2015-09-02 08:25:58      2100    MOCH -120.3624 50.66896
-## 2 062000031A 2015-09-02 08:26:01      2100    MOCH -120.3624 50.66896
-## 3 062000031A 2015-09-03 10:12:20      2100    MOCH -120.3624 50.66896
-## 4 062000031A 2015-09-03 10:12:23      2100    MOCH -120.3624 50.66896
-## 5 062000031A 2015-09-05 16:32:20      2100    MOCH -120.3624 50.66896
-## 6 062000031A 2015-09-05 16:32:23      2100    MOCH -120.3624 50.66896</code></pre>
+<pre><code>##    animal_id                time logger_id            species age sex    site_name       date       lon      lat
+## 1 062000031A 2015-09-02 07:25:58      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-02 -120.3624 50.66896
+## 2 062000031A 2015-09-02 07:26:01      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-02 -120.3624 50.66896
+## 3 062000031A 2015-09-03 09:12:20      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-03 -120.3624 50.66896
+## 4 062000031A 2015-09-03 09:12:23      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-03 -120.3624 50.66896
+## 5 062000031A 2015-09-05 15:32:20      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-05 -120.3624 50.66896
+## 6 062000031A 2015-09-05 15:32:23      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-05 -120.3624 50.66896</code></pre>
 <pre class="r"><code>r &lt;- dl_data()
 head(r)</code></pre>
 <p>You can specify start and end times:</p>
 <pre class="r"><code>r &lt;- dl_data(start = &quot;2015-10-01&quot;, end = &quot;2015-10-02&quot;)
 head(r)</code></pre>
-<pre><code>##    animal_id                time logger_id species       lon      lat
-## 1 06200003AA 2015-10-01 08:24:44      2700    HOFI -120.3632 50.66909
-## 2 06200003AA 2015-10-01 08:24:46      2700    HOFI -120.3632 50.66909
-## 3 06200003AA 2015-10-01 08:24:49      2700    HOFI -120.3632 50.66909
-## 4 06200003AA 2015-10-01 08:24:51      2700    HOFI -120.3632 50.66909
-## 5 06200003AA 2015-10-01 08:24:53      2700    HOFI -120.3632 50.66909
-## 6 06200003AA 2015-10-01 08:24:55      2700    HOFI -120.3632 50.66909</code></pre>
+<pre><code>##    animal_id                time logger_id     species age sex    site_name       date       lon      lat
+## 1 06200003AA 2015-10-01 07:24:44      2700 House Finch  HY   F Kamloops, BC 2015-10-01 -120.3632 50.66909
+## 2 06200003AA 2015-10-01 07:24:46      2700 House Finch  HY   F Kamloops, BC 2015-10-01 -120.3632 50.66909
+## 3 06200003AA 2015-10-01 07:24:49      2700 House Finch  HY   F Kamloops, BC 2015-10-01 -120.3632 50.66909
+## 4 06200003AA 2015-10-01 07:24:51      2700 House Finch  HY   F Kamloops, BC 2015-10-01 -120.3632 50.66909
+## 5 06200003AA 2015-10-01 07:24:53      2700 House Finch  HY   F Kamloops, BC 2015-10-01 -120.3632 50.66909
+## 6 06200003AA 2015-10-01 07:24:55      2700 House Finch  HY   F Kamloops, BC 2015-10-01 -120.3632 50.66909</code></pre>
 <pre class="r"><code>r &lt;- dl_data(start = &quot;2015-10-01 09:00:00&quot;, end = &quot;2015-10-02&quot;)
 head(r)</code></pre>
-<pre><code>##    animal_id                time logger_id species       lon      lat
-## 1 06200003AA 2015-10-01 09:15:32      2700    HOFI -120.3632 50.66909
-## 2 06200004F8 2015-10-01 09:15:50      2700    HOFI -120.3632 50.66909
-## 3 06200004F8 2015-10-01 09:16:13      2700    HOFI -120.3632 50.66909
-## 4 06200004F8 2015-10-01 09:16:15      2700    HOFI -120.3632 50.66909
-## 5 06200004F8 2015-10-01 09:16:17      2700    HOFI -120.3632 50.66909
-## 6 06200004F8 2015-10-01 09:16:20      2700    HOFI -120.3632 50.66909</code></pre>
+<pre><code>##    animal_id                time logger_id     species age sex    site_name       date       lon      lat
+## 1 041868D396 2015-10-01 16:02:22      2100 House Finch AHY   F Kamloops, BC 2015-10-02 -120.3624 50.66896
+## 2 041868D396 2015-10-01 16:15:14      2100 House Finch AHY   F Kamloops, BC 2015-10-02 -120.3624 50.66896
+## 3 041868D396 2015-10-01 16:15:55      2100 House Finch AHY   F Kamloops, BC 2015-10-02 -120.3624 50.66896
+## 4 041868D396 2015-10-01 16:15:56      2100 House Finch AHY   F Kamloops, BC 2015-10-02 -120.3624 50.66896
+## 5 041868D396 2015-10-01 16:15:58      2100 House Finch AHY   F Kamloops, BC 2015-10-02 -120.3624 50.66896
+## 6 041868D396 2015-10-01 16:16:00      2100 House Finch AHY   F Kamloops, BC 2015-10-02 -120.3624 50.66896</code></pre>
 <p>You can also specify only a start or an end, all data up to or after that point will be grabbed:</p>
 <pre class="r"><code>r &lt;- dl_data(end = &quot;2015-09-06&quot;)
 head(r)</code></pre>
-<pre><code>##    animal_id                time logger_id species       lon      lat
-## 1 062000031A 2015-09-02 08:25:58      2100    MOCH -120.3624 50.66896
-## 2 062000031A 2015-09-02 08:26:01      2100    MOCH -120.3624 50.66896
-## 3 062000031A 2015-09-03 10:12:20      2100    MOCH -120.3624 50.66896
-## 4 062000031A 2015-09-03 10:12:23      2100    MOCH -120.3624 50.66896
-## 5 062000031A 2015-09-05 16:32:20      2100    MOCH -120.3624 50.66896
-## 6 062000031A 2015-09-05 16:32:23      2100    MOCH -120.3624 50.66896</code></pre>
+<pre><code>##    animal_id                time logger_id            species age sex    site_name       date       lon      lat
+## 1 062000031A 2015-09-02 07:25:58      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-02 -120.3624 50.66896
+## 2 062000031A 2015-09-02 07:26:01      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-02 -120.3624 50.66896
+## 3 062000031A 2015-09-03 09:12:20      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-03 -120.3624 50.66896
+## 4 062000031A 2015-09-03 09:12:23      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-03 -120.3624 50.66896
+## 5 062000031A 2015-09-05 15:32:20      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-05 -120.3624 50.66896
+## 6 062000031A 2015-09-05 15:32:23      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-05 -120.3624 50.66896</code></pre>
 <p>Extra animal or logger related details (<code>?dl_data</code> for more):</p>
-<pre class="r"><code>r &lt;- dl_data(end = &quot;2015-09-06&quot;, logger_details = c(&quot;loc&quot;,&quot;site_name&quot;), animal_details = c(&quot;species&quot;, &quot;age&quot;, &quot;sex&quot;))
-head(r)</code></pre>
-<pre><code>##    animal_id                time logger_id    site_name species age sex
-## 1 062000031A 2015-09-02 08:25:58      2100 Kamloops, BC    MOCH  SY   M
-## 2 062000031A 2015-09-02 08:26:01      2100 Kamloops, BC    MOCH  SY   M
-## 3 062000031A 2015-09-03 10:12:20      2100 Kamloops, BC    MOCH  SY   M
-## 4 062000031A 2015-09-03 10:12:23      2100 Kamloops, BC    MOCH  SY   M
-## 5 062000031A 2015-09-05 16:32:20      2100 Kamloops, BC    MOCH  SY   M
-## 6 062000031A 2015-09-05 16:32:23      2100 Kamloops, BC    MOCH  SY   M
-##         lon      lat
-## 1 -120.3624 50.66896
-## 2 -120.3624 50.66896
-## 3 -120.3624 50.66896
-## 4 -120.3624 50.66896
-## 5 -120.3624 50.66896
-## 6 -120.3624 50.66896</code></pre>
+<pre class="r"><code>r &lt;- dl_data(end = &quot;2015-09-06&quot;, logger_details = c(&quot;loc&quot;,&quot;site_name&quot;), animal_details = c(&quot;species&quot;, &quot;age&quot;, &quot;sex&quot;))</code></pre>
+<pre><code>## Warning: Argument logger_details is deprecated (all logger details will be returned)</code></pre>
+<pre><code>## Warning: Argument animal_details is deprecated (all animal details will be returned)</code></pre>
+<pre class="r"><code>head(r)</code></pre>
+<pre><code>##    animal_id                time logger_id            species age sex    site_name       date       lon      lat
+## 1 062000031A 2015-09-02 07:25:58      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-02 -120.3624 50.66896
+## 2 062000031A 2015-09-02 07:26:01      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-02 -120.3624 50.66896
+## 3 062000031A 2015-09-03 09:12:20      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-03 -120.3624 50.66896
+## 4 062000031A 2015-09-03 09:12:23      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-03 -120.3624 50.66896
+## 5 062000031A 2015-09-05 15:32:20      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-05 -120.3624 50.66896
+## 6 062000031A 2015-09-05 15:32:23      2100 Mountain Chickadee  SY   M Kamloops, BC 2015-09-05 -120.3624 50.66896</code></pre>
 </div>
 <div id="ui_import" class="section level2">
 <h2><code>ui_import()</code></h2>
@@ -623,7 +666,7 @@ $(document).ready(function () {
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>

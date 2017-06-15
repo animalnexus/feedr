@@ -22,7 +22,7 @@ shinyServer(function(input, output, session) {
 
   # Display package version -------------------------------------------------
   output$package_version <- renderText({
-    paste0("Using <a href = 'http://github.com/animalnexus/feedr' target = 'blank'>feedr v", packageVersion("feedr"), "</a>")
+    paste0("Using <a href = 'http://github.com/animalnexus/feedr' target = 'blank'>feedr v", utils::packageVersion("feedr"), "</a>")
   })
 
 
@@ -32,25 +32,13 @@ shinyServer(function(input, output, session) {
     data_import = NULL,
     data_db = NULL)
 
-  # Data base ---------------------------------------------------------------
-  cat("Get Database access if we have it\n")
-  ## Get Database access if we have it
-  if(file.exists("/usr/local/share/feedr/db_full.R")) {
-    cat("  Getting credentials\n")
-    source("/usr/local/share/feedr/db_full.R")
-  } else {
-    cat("  No credentials\n")
-    db <- NULL
-  }
-
-
   # Modules (Tabs) --------------------------------------------------------
 
   # Current Activity
-  callModule(module = feedr:::mod_map_current, id = "current", db = db)
+  callModule(module = feedr:::mod_map_current, id = "current")
 
   # Database and Import
-  data_db <- callModule(feedr:::mod_data_db, "access", db = db)
+  data_db <- callModule(feedr:::mod_data_db, "access")
   data_import <- callModule(feedr:::mod_data_import, "import")
 
   # Visualizations
@@ -60,7 +48,10 @@ shinyServer(function(input, output, session) {
   callModule(feedr:::mod_indiv, id = "indiv", r = r)
 
   # Transformations
-  trans <- callModule(feedr:::mod_trans, "trans", r = reactive({values$r}))
+  trans <- callModule(feedr:::mod_trans, "trans", r = reactive({values$r}), settings = settings)
+
+  # Settings
+  settings <- callModule(feedr:::mod_settings, "settings")
 
 
   # Getting data ------------------------------------------------------------
@@ -104,8 +95,8 @@ shinyServer(function(input, output, session) {
 
 
   # Transformed data --------------------------------------------------------
-  r <- reactive({trans$r()})
-  v <- reactive({trans$v()})
+  r <- reactive({trans$raw()})
+  v <- reactive({trans$visits()})
 
   # Loggers of current data
   loggers <- reactive({
@@ -162,9 +153,10 @@ shinyServer(function(input, output, session) {
 
   # Wait until data loaded before loading the rest
   observe({
-    req(r())
+    req(!is.null(values$r))
     session$sendCustomMessage('activeNavs', 'Visualizations')
     session$sendCustomMessage('activeNavs', 'Individuals')
     session$sendCustomMessage('activeNavs', 'Transformations')
+    session$sendCustomMessage('activeNavs', 'Settings')
   })
 })
