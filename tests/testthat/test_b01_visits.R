@@ -123,7 +123,8 @@ test_that("visits() pass", {
 
 test_that("visits() with group_by", {
   coords <- read.csv(system.file("extdata", "chickadees_logger_index.csv", package = "feedr")) %>%
-    dplyr::mutate(logger_id = paste0(experiment, "-", logger_name))
+    dplyr::mutate(logger_id = paste0(experiment, "-", logger_name),
+                  experiment = as.character(experiment))
 
   c <- load_raw_all(system.file("extdata", "raw", package = "feedr"),
                     extra_pattern = "exp[0-9]{1,2}",
