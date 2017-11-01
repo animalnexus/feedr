@@ -1,5 +1,7 @@
 [![Travis-Ci Build Status](https://travis-ci.org/animalnexus/feedr.svg?branch=master)](https://travis-ci.org/animalnexus/feedr)
+
 [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/animalnexus/feedr?branch=master&svg=true)](https://ci.appveyor.com/project/animalnexus/feedr)
+
 # feedr
 
 `feedr` is a package for [R](https://www.r-project.org/). This collection of functions is designed to load, transform and visualize RFID data created when pit-tagged animals are detected by RFID loggers associated with static stations (e.g., seed-feeders, nestboxes, nectar-feeders, etc.).
