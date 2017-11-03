@@ -4,13 +4,13 @@
 \name{chickadees}
 \alias{chickadees}
 \title{Read data on Chickadees from gap-crossing study}
-\format{A data frame with 26718 rows and 7 variables:
+\format{A data frame with 26,753 rows and 10 variables:
 \describe{
   \item{animal_id}{Unique RFID tag attached to a chickadee}
+  \item{date}{Date of the read}
   \item{time}{Time of read}
   \item{logger_id}{Unique id of logger where read was made}
   \item{experiment}{Which experiment (site) the data was collected at}
-  \item{date}{Date of read}
   \item{lat}{Latitude of logger location}
   \item{lon}{Longitude of logger location}}}
 \usage{

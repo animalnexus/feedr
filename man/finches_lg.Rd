@@ -4,13 +4,16 @@
 \name{finches_lg}
 \alias{finches_lg}
 \title{Large dataset of finche visits to RFID-enabled feeders}
-\format{A data frame with 42708 rows and 7 variables:
+\format{A data frame with 42708 rows and 10 variables:
 \describe{
   \item{animal_id}{Unique RFID tag attached to a finch}
+  \item{date}{Date of the read}
   \item{time}{Time of read}
   \item{logger_id}{Unique id of logger where read was made}
   \item{species}{Individual species}
+  \item{age}{Individual age}
   \item{sex}{Individual sex, if known}
+  \item{site_name}{Site name of the observation}
   \item{lat}{Latitude}
   \item{lon}{Longitude}}}
 \usage{
