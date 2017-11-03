@@ -30,7 +30,7 @@ In the normal order of operations, several functions depend on the output of oth
 
 For example, to get daily activity patterns, you could get your data from the animalnexus database with `dl_data()`, turn this raw data to visits data with `visits()`, turn visits data to activity data with `activity()` and finally, turn activity data into daily activity patterns with `daily()`.
 
-```{r, echo = F, fig.align='center'}
+```{r, echo = F, fig.align='center', warning = FALSE}
 DiagrammeR::grViz("
 digraph order {
 

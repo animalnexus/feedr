@@ -324,13 +324,13 @@ div.tocify {
 <p>These functions can be skipped, or used one after the other. It’s up to you. Basically, they are wrapper functions for cleaning your data while maintaining appropriate categorical (factor) levels.</p>
 <p>This tutorial assumes that you already know how to <a href="load.html">load/import</a> your data. We will be using the <code>feedr</code> package example data set: finches.</p>
 <pre class="r"><code>head(finches)</code></pre>
-<pre><code>##    animal_id                time logger_id     species sex       lon      lat
-## 1 0620000514 2016-01-28 12:34:25      2200 House Finch   F -120.3612 50.66778
-## 2 0620000514 2016-01-28 12:34:28      2200 House Finch   F -120.3612 50.66778
-## 3 041868D861 2016-01-28 12:35:41      2200 House Finch   M -120.3612 50.66778
-## 4 06200004F8 2016-01-28 12:35:52      2200 House Finch   F -120.3612 50.66778
-## 5 06200004F8 2016-01-28 12:35:59      2200 House Finch   F -120.3612 50.66778
-## 6 06200004F8 2016-01-28 12:36:02      2200 House Finch   F -120.3612 50.66778</code></pre>
+<pre><code>##    animal_id       date                time logger_id     species age sex    site_name       lon      lat
+## 1 0620000514 2016-01-28 2016-01-28 12:34:25      2200 House Finch AHY   F Kamloops, BC -120.3612 50.66778
+## 2 0620000514 2016-01-28 2016-01-28 12:34:28      2200 House Finch AHY   F Kamloops, BC -120.3612 50.66778
+## 3 041868D861 2016-01-28 2016-01-28 12:35:41      2200 House Finch AHY   M Kamloops, BC -120.3612 50.66778
+## 4 06200004F8 2016-01-28 2016-01-28 12:35:52      2200 House Finch AHY   F Kamloops, BC -120.3612 50.66778
+## 5 06200004F8 2016-01-28 2016-01-28 12:35:59      2200 House Finch AHY   F Kamloops, BC -120.3612 50.66778
+## 6 06200004F8 2016-01-28 2016-01-28 12:36:02      2200 House Finch AHY   F Kamloops, BC -120.3612 50.66778</code></pre>
 <p><a id = "checkids"></a></p>
 <div id="check_ids" class="section level2">
 <h2><code>check_ids()</code></h2>
