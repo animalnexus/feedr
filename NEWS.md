@@ -1,3 +1,8 @@
+# feedr 0.9.1
+
+- Fix bug wherein dates were converted using wrong timezone, occasionally resulting in wrong date
+- Updated included datasets
+
 # feedr 0.9.0
 
 ## Major Changes
