@@ -1,6 +1,8 @@
 context("map_leaflet Visualizations")
 
 test_that("maps_leaflet_base return maps", {
+  skip_on_cran()
+
   expect_silent(map <- map_leaflet_base(locs = unique(finches[, c("logger_id", "lat", "lon")])))
   expect_is(map, c("leaflet", "htmlwidget"))
   expect_true(all(attr(map$x, "leafletData") == unique(finches[, c("logger_id", "lat", "lon")])))
@@ -8,6 +10,8 @@ test_that("maps_leaflet_base return maps", {
 })
 
 test_that("map_leaflet() returns summary map", {
+  skip_on_cran()
+
   expect_error(map <- map_leaflet(p = presence(visits(finches)),
                                   m = move(visits(finches)),
                                   summary = "sum"), NA)
@@ -34,6 +38,8 @@ test_that("map_leaflet() returns summary map", {
 })
 
 test_that("map_leaflet() returns summary map of individuals", {
+  skip_on_cran()
+
   p_indiv <- summaries(presence(visits(finches)), "indiv")
   m_indiv <- summaries(move(visits(finches)), "indiv")
 
@@ -50,6 +56,8 @@ test_that("map_leaflet() returns summary map of individuals", {
 })
 
 test_that("map_leaflet() scale, pal, title", {
+  skip_on_cran()
+
   expect_error(map <- map_leaflet(p = presence(visits(finches)),
                                   m = move(visits(finches)),
                                   summary = "sum_indiv",

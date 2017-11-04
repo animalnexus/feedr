@@ -59,7 +59,7 @@ check_input <- function(d, input = "lon", options = c("lon", "longitude", "long"
       c <- utils::combn(n, 2)
       if(ncol(c) < 10) {
         for(i in 1:ncol(c)) {
-          if(!isTRUE(all.equal(d[, c[1, i]], d[, c[2, i]]))) {
+          if(!isTRUE(all.equal(d[, c[1, i]][[1]], d[, c[2, i]][[1]]))) {
             stop("There are multiple ", input, " columns which are not equivalent\n(expects ", input, " to be one of ", paste0(options, collapse = ", "), ", but ignores case")
           }
         }

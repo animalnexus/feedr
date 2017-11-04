@@ -11,7 +11,11 @@ expect_equal_to_ggplot_reference <- function(object, file, info = NULL) {
     reference <- png::readPNG(file)
     object <- png::readPNG("temp.png")
     if(length(reference) == length(object)) {
-      diff <- 100 * sum(object == reference) / length(reference)
+      object <- object + 1
+      reference <- reference + 1
+      diff <- abs(object - reference) / reference
+      # Proportion of pixels more than 5% different
+      diff <- 100 - (sum(diff > 0.05) / length(object) * 100)
     } else diff <- 0
     expect_gt(diff, 98, "Figures not equal")
     file.remove("temp.png")
@@ -22,7 +26,7 @@ expect_equal_to_ggplot_reference <- function(object, file, info = NULL) {
 expect_equal_to_leaflet_reference <- function(object, file, info = NULL) {
 
   if (!file.exists(file)) {
-    saveRDS(objct, file)
+    saveRDS(object, file)
     testthat::succeed()
   }
   else {

@@ -1,6 +1,7 @@
 context("map_ggmap Visualizations")
 
 test_that("map_ggmap() returns summary maps", {
+  skip_on_cran()
   expect_error(map <- map_ggmap(p = presence(visits(finches)),
                                 m = move(visits(finches)),
                                 summary = "sum"), NA)
@@ -41,6 +42,8 @@ test_that("map_ggmap() returns summary maps", {
 })
 
 test_that("map_ggmap() returns map of individuals", {
+  skip_on_cran()
+
   p_indiv <- summaries(presence(visits(finches)), "indiv")
   m_indiv <- summaries(move(visits(finches)), "indiv")
 
@@ -64,6 +67,8 @@ test_that("map_ggmap() returns map of individuals", {
 })
 
 test_that("map_ggmap() scale, pal, title", {
+  skip_on_cran()
+
   expect_message(expect_error(map <- map_ggmap(p = presence(visits(finches)),
                                                m = move(visits(finches)),
                                                summary = "sum_indiv",
@@ -76,6 +81,8 @@ test_that("map_ggmap() scale, pal, title", {
 })
 
 test_that("map_ggmap() maptype, mapsource, zoom", {
+  skip_on_cran()
+
   expect_message(expect_error(map <- map_ggmap(p = presence(visits(finches)),
                                                m = move(visits(finches)),
                                                summary = "sum_indiv",

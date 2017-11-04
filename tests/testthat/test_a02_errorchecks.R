@@ -98,15 +98,15 @@ test_that("check_input renames columns (regular)", {
 
   expect_message(r2 <- check_input(r1, input = "animal_id", options = c("animal_id", "bird_id")), "Renaming column 'Animal_ID' to 'animal_id'")
   expect_is(r2, "data.frame")
-  expect_named(r2, c("animal_id", "TIME", "feeder_id", "species", "sex", "lon", "lat"))
+  expect_named(r2, c("animal_id", "date", "TIME", "feeder_id", "species", "age", "sex", "site_name", "lon", "lat"))
 
   expect_message(r3 <- check_input(r2, input = "time", options = "time"), "Renaming column 'TIME' to 'time'")
   expect_is(r3, "data.frame")
-  expect_named(r3, c("animal_id", "time", "feeder_id", "species", "sex", "lon", "lat"))
+  expect_named(r3, c("animal_id", "date", "time", "feeder_id", "species", "age", "sex", "site_name", "lon", "lat"))
 
   expect_message(r4 <- check_input(r3, input = "logger_id", options = c("feeder_id", "logger_id")), "Renaming column 'feeder_id' to 'logger_id'")
   expect_is(r4, "data.frame")
-  expect_named(r4, c("animal_id", "time", "logger_id", "species", "sex", "lon", "lat"))
+  expect_named(r4, c("animal_id", "date", "time", "logger_id", "species", "age", "sex", "site_name", "lon", "lat"))
 
   expect_equal(r4, finches)
 })
@@ -119,7 +119,11 @@ test_that("check_input omits duplicate columns", {
     r <- finches %>%
       dplyr::rename_(.dots = setNames("lon", i[1])) %>%
       dplyr::mutate_(.dots = setNames(list(i[1]), i[2]))
+
+    # tibble
     expect_message(r2 <- check_input(r), "Omitting duplicate columns for lon")
+    # data frame
+    expect_message(as.data.frame(check_input(r)), "Omitting duplicate columns for lon")
     expect_is(r2, "data.frame")
     expect_equivalent(finches, r2)
   }
@@ -141,8 +145,16 @@ test_that("check_input renames AND omits duplicates", {
   r <- finches %>%
     dplyr::rename(Lon = lon) %>%
     dplyr::mutate(Longitude = Lon)
+
+  # tibble
   expect_message(r2 <- check_input(r), "Omitting duplicate columns for lon")
   expect_message(r2 <- check_input(r), "Renaming column 'Lon' to 'lon'")
+
+  # data.frame
+  expect_message(as.data.frame(check_input(r)), "Omitting duplicate columns for lon")
+  expect_message(as.data.frame(check_input(r)), "Renaming column 'Lon' to 'lon'")
+
+
   expect_is(r2, "data.frame")
   expect_equivalent(finches, r2)
 
