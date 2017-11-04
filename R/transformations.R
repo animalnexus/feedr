@@ -445,7 +445,7 @@ presence_single <- function(v1, bw = bw){
 
   ## Create the presence data frame.
   p <- tibble::data_frame(animal_id = v1$animal_id[1],
-                          date = as.Date(v1$start_orig[v1$start == TRUE]),
+                          date = v1$date[v1$start == TRUE],
                           logger_id = v1$logger_id[v1$start == TRUE],
                           start = v1$start_orig[v1$start == TRUE],
                           end = v1$end_orig[v1$end == TRUE],
