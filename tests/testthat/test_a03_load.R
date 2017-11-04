@@ -52,7 +52,7 @@ test_that("load_format fixes names", {
   expect_message(load_format(r1), "Renaming column 'TIME' to 'time'")
 
   expect_named(suppressMessages(load_format(r1)),
-               c("animal_id", "date", "time", "logger_id", "specIes", "SEX", "lon", "lat"))
+               c("animal_id", "date", "time", "logger_id", "specIes", "age", "SEX", "site_name","lon", "lat"))
 })
 
 

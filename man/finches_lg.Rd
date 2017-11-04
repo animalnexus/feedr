@@ -3,7 +3,7 @@
 \docType{data}
 \name{finches_lg}
 \alias{finches_lg}
-\title{Large dataset of finche visits to RFID-enabled feeders}
+\title{Large dataset of finch visits to RFID-enabled feeders}
 \format{A data frame with 42708 rows and 10 variables:
 \describe{
   \item{animal_id}{Unique RFID tag attached to a finch}

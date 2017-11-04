@@ -8,11 +8,14 @@ test_that("presence() handles single animal", {
 
   ## Format
   expect_is(p, "data.frame")
-  expect_length(p, 12)
+  expect_length(p, 14)
   expect_match(names(p)[1:5], "^logger_id$|^animal_id$|^date$|^start$|^end$|^length$")
   expect_is(p$animal_id, "factor")
   expect_is(p$logger_id, "factor")
+  expect_is(p$date, "Date")
   expect_is(p$start, "POSIXct")
+
+  expect_equal(p$date, as.Date(p$start, tz = lubridate::tz(p$start)))
 
   ## Not impossible nor missing
   expect_equal(sum(is.na(p)), 0)
@@ -28,10 +31,11 @@ test_that("presence() handles multiple animals", {
 
   ## Format
   expect_is(p, "data.frame")
-  expect_length(p, 12)
+  expect_length(p, 14)
   expect_match(names(p)[1:5], "^logger_id$|^animal_id$|^date$|^start$|^end$|^length$")
   expect_is(p$animal_id, "factor")
   expect_is(p$logger_id, "factor")
+  expect_is(p$date, "Date")
   expect_is(p$start, "POSIXct")
 
   ## Not impossible nor missing
@@ -41,6 +45,6 @@ test_that("presence() handles multiple animals", {
 
 test_that("presence() pass", {
   expect_length(presence(visits(finches), pass = FALSE), 6)
-  expect_length(presence(visits(finches), pass = TRUE), 12)
+  expect_length(presence(visits(finches), pass = TRUE), 14)
 })
 

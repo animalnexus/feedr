@@ -15,12 +15,16 @@ test_that("activity() in general", {
   expect_match(names(a)[1:6], "^animal_id$|^time$|^date$|^activity$|^activity_c$|^logger_id$")
   expect_is(a$animal_id, "factor")
   expect_is(a$logger_id, "factor")
+  expect_is(a$date, "Date")
   expect_is(a$time, "POSIXct")
 
   expect_equal(a$animal_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
   expect_equal(a$logger_id[1], factor(NA, levels = c("2100", "2200", "2400", "2700")))
-  expect_equal(a$time[1], as.POSIXct("2016-01-28", tz = "America/Vancouver"))
+  expect_equal(a$date[1], as.Date("2016-01-28"))
+  expect_equal(a$time[1], as.POSIXct("2016-01-28", tz = "Etc/GMT+8"))
   expect_equal(nrow(a), 386)
+
+  expect_equal(a$date, as.Date(a$time, tz = lubridate::tz(a$time)))
 })
 
 # activity()
@@ -76,7 +80,7 @@ test_that("daily() by_logger == FALSE", {
 
   expect_equal(d$animal_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
   expect_equal(d$logger_id[1], factor(NA, levels = c("2100", "2200", "2400", "2700")))
-  expect_equal(d$time[1], as.POSIXct("1970-01-01", tz = "America/Vancouver"))
+  expect_equal(d$time[1], as.POSIXct("1970-01-01", tz = "Etc/GMT+8"))
   expect_equal(nrow(d), 192)
 
   a <- activity(p, by_logger = TRUE)
@@ -84,6 +88,6 @@ test_that("daily() by_logger == FALSE", {
 
   expect_equal(d$animal_id[1], factor("06200004F8", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
   expect_equal(d$logger_id[1], factor(2100, levels = c("2100", "2200", "2400", "2700")))
-  expect_equal(d$time[1], as.POSIXct("1970-01-01", tz = "America/Vancouver"))
+  expect_equal(d$time[1], as.POSIXct("1970-01-01", tz = "Etc/GMT+8"))
   expect_equal(nrow(d), 768)
 })

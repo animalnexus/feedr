@@ -14,7 +14,7 @@ test_that("disp() returns appropriate, non-empty dataframe", {
   expect_is(d2 <- d[["summaries"]], "data.frame")
   expect_is(d3 <- d[["interactions"]], "data.frame")
 
-  expect_length(d1, 12)
+  expect_length(d1, 14)
   expect_length(d2, 4)
   expect_length(d3, 3)
 
@@ -49,7 +49,11 @@ test_that("disp() returns correct data", {
   ## Data
   expect_equal(unique(d1$animal_id[1]), factor("0620000514", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
   expect_equal(d1$logger_id[1], factor(c("2200"), levels = c("2100", "2200", "2400", "2700")))
-  expect_equal(d1$left[1], as.POSIXct(c("2016-01-28 12:34:28"), tz = "America/Vancouver"))
+  expect_equal(d1$left[1], as.POSIXct(c("2016-01-28 12:34:28"), tz = "Etc/GMT+8"))
+  expect_equal(d1$date[1], as.Date("2016-01-28"))
+
+  expect_equal(d1$date, as.Date(d1$left, tz = lubridate::tz(d1$left)))
+
   expect_equal(d1$animal_n[1], 5)
   expect_equal(d1$logger_n[1], 4)
   expect_equal(round(d1$lon[2], 4), -120.3612)
@@ -63,5 +67,5 @@ test_that("disp() returns correct data", {
 
 test_that("disp() pass", {
   expect_length(visits(finches) %>% disp(., bw = 30, pass = FALSE) %>% .$displacements, 6)
-  expect_length(visits(finches) %>% disp(., bw = 30, pass = TRUE) %>% .$displacements, 12)
+  expect_length(visits(finches) %>% disp(., bw = 30, pass = TRUE) %>% .$displacements, 14)
 })

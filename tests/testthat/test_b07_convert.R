@@ -252,7 +252,7 @@ test_that("convert_activity converts as expected", {
   expect_is(i, "list")
   expect_named(i, as.character(sort(unique(r$animal_id))))
   expect_is(i[[1]], "numeric")
-  expect_equal(i[["062000043E"]], c(3.067125, 3.067271), tolerance = 0.0000001)
+  expect_equal(i[["062000043E"]], c(2.805326, 2.805471), tolerance = 0.0000001)
 })
 
 test_that("convert_activity runs activity functions as expected", {
