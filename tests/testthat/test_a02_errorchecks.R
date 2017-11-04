@@ -119,7 +119,11 @@ test_that("check_input omits duplicate columns", {
     r <- finches %>%
       dplyr::rename_(.dots = setNames("lon", i[1])) %>%
       dplyr::mutate_(.dots = setNames(list(i[1]), i[2]))
+
+    # tibble
     expect_message(r2 <- check_input(r), "Omitting duplicate columns for lon")
+    # data frame
+    expect_message(as.data.frame(check_input(r)), "Omitting duplicate columns for lon")
     expect_is(r2, "data.frame")
     expect_equivalent(finches, r2)
   }
@@ -141,8 +145,16 @@ test_that("check_input renames AND omits duplicates", {
   r <- finches %>%
     dplyr::rename(Lon = lon) %>%
     dplyr::mutate(Longitude = Lon)
+
+  # tibble
   expect_message(r2 <- check_input(r), "Omitting duplicate columns for lon")
   expect_message(r2 <- check_input(r), "Renaming column 'Lon' to 'lon'")
+
+  # data.frame
+  expect_message(as.data.frame(check_input(r)), "Omitting duplicate columns for lon")
+  expect_message(as.data.frame(check_input(r)), "Renaming column 'Lon' to 'lon'")
+
+
   expect_is(r2, "data.frame")
   expect_equivalent(finches, r2)
 
