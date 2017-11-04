@@ -164,7 +164,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
     dplyr::ungroup() %>%
     dplyr::mutate(animal_n = length(unique(animal_id)),         # Get sample sizes
                  logger_n = length(unique(logger_id)),
-                 date = as.Date(start))
+                 date = as.Date(start, tz = lubridate::tz(start)))
 
   # Set timezone attributes
   attr(v$start, "tzone") <- tz
