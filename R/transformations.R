@@ -1,3 +1,195 @@
+#' Summarize trips when RFID loggers define in/out
+#'
+#' When RFID loggers are set up in sequence to capture movements in or out of an
+#' area (nest box, hive, etc.). This function assumes that if an individual
+#' enters by A -> B then it must exit B -> A.
+#'
+#' Specify \code{type} to indicate what the trip of interest is (either time
+#' out, or time in, the area of interest). Assume loggers A follwed by B
+#' indicates an exit. A full "out" trip must have an exit followed eventually by
+#' an entry. The trip starts the moment an individual finishes exiting (ie.
+#' arrives at B if the last read was at A) and ends the moment an individual
+#' starts to enter (ie. arrives at A if the next read is at B). A full "in" trip
+#' must have an entry follwed eventually by an exit. The trip starts the moment
+#' an individual finishes entering (ie. arrives at A if the last read was at B)
+#' and ends the moment an individual starts to exit (ie. arrives at B if the
+#' next read is at A).
+#'
+#' \code{trip_length} indicates the total time between the start of a trip and
+#' the end of a trip. Sometimes an individual may exit (or enter), but might not
+#' leave the area around the outside (or inside) logger. The
+#' \code{max_time_away} column indicates the maximum amount of time the
+#' individual was not detected by a logger during the trip. Where the
+#' trip_length is roughly equivalent to the max_time_away, the individual likely
+#' left the immediate area. Where the max_time_away is very small, the
+#' individual may have spent much of the time hovering around the the logger.
+#'
+#' Note that duplicate enters or exits (i.e. two or more successive exits/enters) are
+#' ignored. Only the final exit followed by an entry (or the final entry,
+#' followed by an exit) is considered. This means that some trips may not be
+#' detected. It is less likely that a detected trip represents more than one
+#' trip, however, as both an exit and an entry would have had to be missed.
+#'
+#'
+#' @param r Data frame. Raw data frame.
+#' @param dir_in Character vector. A vector in the format of 'id1_id2' where id1
+#'   is the outer RFID logger and id2 is the inner RFID logger for specifying
+#'   direction 'enter' as id1 to id2.
+#' @param type Character. Either 'out' or 'in' depending on whether to
+#'   concentrate on time spent out or time spent in.
+#' @param all Logical. Include all individuals even those that did not complete
+#'   any trips.
+#' @param pass Logical. Pass 'extra' columns through the function and append
+#'   them to the output.
+#'
+#' @export
+
+inout <- function(r, dir_in, type = "out", all = FALSE, pass = TRUE){
+
+  # Check for correct formatting
+  check_name(r, c("animal_id", "logger_id", "date", "time"))
+  check_time(r, n = "time")
+  check_format(r)
+
+  if(type == "out") {
+    dir_from <- "exit"
+    dir_to <- "enter"
+  } else if(type == "in"){
+    dir_from <- "enter"
+    dir_to <- "exit"
+  }
+
+  # Check direction options
+  id_opts <- paste0("(", paste0(unique(r$logger_id), collapse = ")|("), ")")
+  if(!is.character(dir_in) |
+     !all(grepl(paste0("(", id_opts,")", "_", "(", id_opts, ")"), dir_in))) {
+    stop("dir_in must be a character vector in the format of 'id1_id2' where id1 is the outer RFID logger and id2 is the inner RFID logger. id1 and id2 must be in logger_ids. You can include multiple sets of RFID loggers.")
+  }
+
+  # Get factor levels for whole dataset
+  if(is.factor(r$animal_id)) animal_id <- levels(r$animal_id) else animal_id <- unique(r$animal_id)
+  if(is.factor(r$logger_id)) logger_id <- levels(r$logger_id) else logger_id <- unique(r$logger_id)
+
+  # Remove factors to allow silent joins between different levels
+  r$animal_id <- as.character(r$animal_id)
+  r$logger_id <- as.character(r$logger_id)
+
+  # Get extra columns
+  if(pass == TRUE) extra <- keep_extra(r, n = c("time", "logger_id"))
+
+  # Apply individually to each animal
+  i <- r %>%
+    dplyr::group_by(animal_id) %>%
+    dplyr::do(inout_single(., dir_in = dir_in, all = all)) %>%
+    dplyr::ungroup()
+
+  if(nrow(i) > 0){
+
+    i <- i %>%
+      dplyr::group_by(animal_id, inout_id) %>%
+      dplyr::filter((direction == dir_from & time == max(time)) |
+                      (direction == dir_to & time == min(time)))
+    if(i$direction[1] == dir_to) i <- i[-1, ]
+    if(i$direction[nrow(i)] == dir_from) i <- i[-nrow(i), ]
+
+    # Maybe report number of problems, amount of time, etc.?
+    i <- i %>%
+      dplyr::group_by(animal_id) %>%
+      dplyr::mutate(inout_dir = inout_dir[inout_dir %in% dir_in][1],
+                    problem_next = dplyr::if_else(direction == dplyr::lead(direction), TRUE, FALSE),
+                    problem_prev = dplyr::if_else(direction == dplyr::lag(direction), TRUE, FALSE),
+                    problem = problem_next & problem_prev) %>%
+      dplyr::filter(problem != TRUE) %>%
+      dplyr::group_by(animal_id, direction) %>%
+      dplyr::mutate(trip_id = seq_along(animal_id))
+
+    i_sum <- summarize_inout(i, r, dir_in, dir_from, dir_to, type = "out")
+
+    i <- i %>%
+      dplyr::select(-logger_id, -inout_id, -problem_next, -problem_prev, -problem) %>%
+      tidyr::spread(direction, time) %>%
+      dplyr::select(animal_id, date, trip_id, inout_dir, exit, enter) %>%
+      dplyr::ungroup() %>%
+      dplyr::left_join(i_sum, by = c("animal_id", "inout_dir", "trip_id"))
+
+    # Order
+    if(type == "out") i <- dplyr::arrange(i, animal_id, exit)
+    if(type == "in") i <- dplyr::arrange(i, animal_id, enter)
+
+    # Add in extra cols
+    if(pass == TRUE) i <- merge_extra(i, extra)
+
+  }
+  i$animal_id <- factor(i$animal_id, levels = animal_id)
+
+  return(i)
+}
+
+summarize_inout <- function(i, r, dir_in, dir_from, dir_to, type = "out"){
+  # Calculate place/in times and amount of hovering time
+
+  i_raw <- r %>%
+    dplyr::select(animal_id, logger_id, time) %>%
+    dplyr::mutate(inout_dir = purrr::map_chr(logger_id, ~dir_in[stringr::str_detect(dir_in, .x)])) %>%
+    dplyr::left_join(i[, c("animal_id", "time", "direction", "trip_id", "inout_dir")],
+                     by = c("animal_id", "time", "inout_dir")) %>%
+    dplyr::group_by(animal_id, inout_dir) %>%
+    dplyr::mutate(trip_idx = trip_id,
+                  trip_idx = replace(trip_idx, direction == dir_to, "NOID"),
+                  trip_id2 = fill_trips(trip_idx),
+                  trip_id2 = replace(trip_id2,
+                                     !is.na(direction) & direction == dir_to,
+                                     trip_id[!is.na(direction) & direction == dir_to]),
+                  trip_id2 = as.numeric(replace(trip_id2, trip_id2 == "NOID", NA))) %>%
+    dplyr::select(animal_id, inout_dir, time, trip_id = trip_id2) %>%
+    dplyr::filter(!is.na(trip_id)) %>%
+    dplyr::group_by(animal_id, inout_dir, trip_id) %>%
+    dplyr::mutate(diff_time = as.numeric(difftime(dplyr::lead(time), time, units = "secs"))) %>%
+    dplyr::summarize(trip_length = as.numeric(difftime(max(time), min(time), units = "secs")),
+                     max_time_away = max(diff_time, na.rm = TRUE))
+  return(i_raw)
+}
+
+# inout function for single animal
+inout_single <- function(r1, dir_in, all = FALSE){
+
+  if(length(unique(r1$logger_id)) > 1) { # Only proceed if there are actual data!
+
+    # If there are movements, calculate events
+    e1 <- r1 %>%
+      dplyr::ungroup() %>%
+      dplyr::select(animal_id, date, time, logger_id) %>%
+      dplyr::arrange(time) %>%
+      dplyr::mutate(first = logger_id != dplyr::lead(logger_id),
+                    second = logger_id != dplyr::lag(logger_id)) %>%
+      dplyr::filter(first | second) %>%
+      tidyr::gather(direction, value, first, second) %>%
+      dplyr::filter(value) %>%
+      dplyr::select(-value) %>%
+      dplyr::arrange(time) %>%
+      dplyr::mutate(inout_id = sort(rep(1:(length(animal_id)/2),2))) %>%
+      dplyr::group_by(inout_id) %>%
+      dplyr::mutate(inout_dir = paste0(as.character(logger_id), collapse = "_")) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(direction = "exit",
+                    direction = replace(direction, inout_dir %in% dir_in, "enter"))
+
+  } else if (all == TRUE) {
+    # Create the movement data frame for animals that didn't move between loggers
+    e1 <- tibble::data_frame(animal_id = r1$animal_id[1],
+                             date = as.Date(NA),
+                             time = as.POSIXct(NA),
+                             logger_id = as.character(NA),
+                             direction = as.character(NA),
+                             inout_id = as.numeric(NA),
+                             inout_dir = as.character(NA))
+  } else {
+    # If there are no movements and all == FALSE, return an empty data frame
+    e1 <- tibble::data_frame()
+  }
+  return(e1)
+}
+
 #' Visits
 #'
 #' Raw data from RFID loggers contain multiple reads per individual simply

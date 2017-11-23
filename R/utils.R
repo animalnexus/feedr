@@ -78,3 +78,10 @@ mean_clock <- function(time, origin = FALSE) {
   return(as.POSIXct(paste(mean_date, mean_time), tz = tz))
 }
 
+
+fill_trips <- function(x) {
+  n1 <- sum(is.na(x)[seq_len(which(!is.na(x))[1])])
+  x1 <- x[which(!is.na(x))][cumsum(!is.na(x))]
+  if(n1 > 0) x1 <- c(rep(NA, n1), x1)
+  return(x1)
+}
