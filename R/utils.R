@@ -80,6 +80,7 @@ mean_clock <- function(time, origin = FALSE) {
 
 
 fill_trips <- function(x) {
+  if(all(is.na(x))) return(NA)
   n1 <- sum(is.na(x)[seq_len(which(!is.na(x))[1])])
   x1 <- x[which(!is.na(x))][cumsum(!is.na(x))]
   if(n1 > 0) x1 <- c(rep(NA, n1), x1)

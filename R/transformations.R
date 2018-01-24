@@ -152,7 +152,16 @@ summarize_inout <- function(i, r, dir_in, dir_from, dir_to, type = "out"){
     dplyr::mutate(diff_time = as.numeric(difftime(dplyr::lead(time), time, units = "secs"))) %>%
     dplyr::summarize(trip_length = as.numeric(difftime(max(time), min(time), units = "secs")),
                      max_time_away = max(diff_time, na.rm = TRUE))
-  return(i_raw)
+
+  if(length(s <- setdiff(unique(r$animal_id), unique(i_raw$animal_id))) > 0) {
+    i_raw <- dplyr::bind_rows(i_raw,
+                              tibble::tibble(animal_id = as.character(s),
+                                             inout_dir = as.character(NA),
+                                             trip_id = as.numeric(NA),
+                                             trip_length = as.numeric(NA),
+                                             max_time_away = as.numeric(NA)))
+  }
+  i_raw
 }
 
 # inout function for single animal
