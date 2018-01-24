@@ -1,3 +1,11 @@
+# feedr 0.10.0 2018-01-24
+
+## New features
+- Add `inout()` function to caluclate trips with RFID loggers are set up to determine directionality
+
+## Bug fix
+- Fix `load_format()` so it lose millisecond information in times
+
 # feedr 0.9.1
 
 - Fix bug wherein dates were converted using wrong timezone, occasionally resulting in wrong date
