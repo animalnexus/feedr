@@ -74,8 +74,13 @@ inout <- function(r, dir_in, type = "out", all = FALSE, pass = TRUE){
   r$animal_id <- as.character(r$animal_id)
   r$logger_id <- as.character(r$logger_id)
 
+  # Exclude loggers which not involved
+  if(any(exclude <- !stringr::str_detect(dir_in, r$logger_id))) {
+    r <- r[!exclude, ]
+  }
+
   # Get extra columns
-  if(pass == TRUE) extra <- keep_extra(r, n = c("time", "logger_id"))
+  if(pass == TRUE) extra <- keep_extra(r, n = c("time", "logger_id"), only = c("animal_id", "date"))
 
   # Apply individually to each animal
   i <- r %>%
