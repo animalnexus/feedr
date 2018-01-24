@@ -514,7 +514,9 @@ load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE, tim
   if(!dst) tz_disp <- tz_offset(tz_disp, tz_name = TRUE)
 
   # Trim leading or trailing whitespace
-  r <- dplyr::mutate_all(r, trimws)
+  r <- dplyr::mutate_if(r,
+                        .predicate = ~ is.factor(.x) | is.character(.x),
+                        .funs = trimws)
 
   # If locs combined, split apart
   if("loc" %in% names(r)) {
@@ -532,8 +534,10 @@ load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE, tim
   r <- check_input(r, input = "date", options = "date", verbose = verbose)
 
   # Extract Proper Date and Times
-  if("time" %in% names(r)) {
-    r$time <- lubridate::parse_date_time(r$time, orders = time_format, tz = tz, truncated = 1)
+  if("time" %in% names(r)){
+    if(!lubridate::is.POSIXct(r$time)) {
+      r$time <- lubridate::parse_date_time(r$time, orders = time_format, tz = tz, truncated = 1)
+    }
     if(tz != tz_disp) r$time <- lubridate::with_tz(r$time, tz_disp)
     r$date <- as.Date(r$time, tz = lubridate::tz(r$time))
   }
