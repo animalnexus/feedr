@@ -115,20 +115,30 @@ inout <- function(r, dir_in, type = "out", all = FALSE, pass = TRUE){
     i_sum <- summarize_inout(i, r, dir_in, dir_from, dir_to, type = "out")
 
     i <- i %>%
-      dplyr::select(-logger_id, -inout_id, -problem_next, -problem_prev, -problem) %>%
+      dplyr::select(-date, -logger_id, -inout_id, -problem_next, -problem_prev, -problem) %>%
       tidyr::spread(direction, time) %>%
-      dplyr::select(animal_id, date, trip_id, inout_dir, exit, enter) %>%
+      dplyr::select(animal_id, trip_id, inout_dir, exit, enter) %>%
       dplyr::ungroup() %>%
       dplyr::left_join(i_sum, by = c("animal_id", "inout_dir", "trip_id"))
 
-    # Order
-    if(type == "out") i <- dplyr::arrange(i, animal_id, exit)
-    if(type == "in") i <- dplyr::arrange(i, animal_id, enter)
+    # Remove trips where exit/enter times are identical (i.e. only one read on one of the loggers)
+    i <- dplyr::filter(i, exit != enter)
+
+    # Re-calculate date from enter/exit and organize
+    if(type == "out") {
+      i <- dplyr::arrange(i, animal_id, exit) %>%
+        dplyr::mutate(date = lubridate::as_date(exit))
+    }
+    if(type == "in") {
+      i <- dplyr::arrange(i, animal_id, enter) %>%
+        dplyr::mutate(date = lubridate::as_date(enter))
+    }
 
     # Add in extra cols
     if(pass == TRUE) i <- merge_extra(i, extra)
 
   }
+
   i$animal_id <- factor(i$animal_id, levels = animal_id)
 
   return(i)
@@ -136,7 +146,6 @@ inout <- function(r, dir_in, type = "out", all = FALSE, pass = TRUE){
 
 summarize_inout <- function(i, r, dir_in, dir_from, dir_to, type = "out"){
   # Calculate place/in times and amount of hovering time
-
   i_raw <- r %>%
     dplyr::select(animal_id, logger_id, time) %>%
     dplyr::mutate(inout_dir = purrr::map_chr(logger_id, ~dir_in[stringr::str_detect(dir_in, .x)])) %>%
