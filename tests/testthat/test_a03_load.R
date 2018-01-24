@@ -55,6 +55,24 @@ test_that("load_format fixes names", {
                c("animal_id", "date", "time", "logger_id", "specIes", "age", "SEX", "site_name","lon", "lat"))
 })
 
+test_that("load_format doesn't change columns already time", {
+
+  r1 <- finches[1:5,] %>%
+    dplyr::mutate(time = lubridate::ymd_hms(c("2001-01-01 00:00:00.111",
+                                              "2001-01-01 00:00:00.211",
+                                              "2001-01-01 00:00:00.331",
+                                              "2001-01-01 00:00:00.783",
+                                              "2001-01-01 00:00:00.923")))
+
+  expect_true(r1$time[1] < r1$time[2])
+  expect_false(r1$time[1] == r1$time[2])
+
+  r2 <- load_format(r1)
+
+  expect_true(r2$time[1] < r2$time[2])
+  expect_false(r2$time[1] == r2$time[2])
+
+})
 
 
 # load_raw ----------------------------------------------------------------
