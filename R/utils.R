@@ -86,3 +86,10 @@ fill_trips <- function(x) {
   if(n1 > 0) x1 <- c(rep(NA, n1), x1)
   return(x1)
 }
+
+# If first or last enter/exit is odd
+remove_edges <- function(x, dir_to, dir_from) {
+  if(x$direction[1] == dir_to) x <- x[-1, ]
+  if(nrow(x) > 0) if(x$direction[nrow(x)] == dir_from) x <- x[-nrow(x), ]
+  x
+}

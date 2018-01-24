@@ -93,9 +93,13 @@ inout <- function(r, dir_in, type = "out", all = FALSE, pass = TRUE){
     i <- i %>%
       dplyr::group_by(animal_id, inout_id) %>%
       dplyr::filter((direction == dir_from & time == max(time)) |
-                      (direction == dir_to & time == min(time)))
-    if(i$direction[1] == dir_to) i <- i[-1, ]
-    if(i$direction[nrow(i)] == dir_from) i <- i[-nrow(i), ]
+                      (direction == dir_to & time == min(time))) %>%
+      dplyr::ungroup()
+
+    i <- i %>%
+      tidyr::nest(-animal_id) %>%
+      dplyr::mutate(data = purrr::map(data, ~remove_edges(.x, dir_to, dir_from))) %>%
+      tidyr::unnest()
 
     # Maybe report number of problems, amount of time, etc.?
     i <- i %>%
