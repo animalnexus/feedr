@@ -134,8 +134,11 @@ mod_map_current <- function(input, output, session) {
                            last = max(end),
                            n = length(animal_id),
                            time = round(sum(end - start)/60, 2)) %>%
-          dplyr::group_by(logger_id) %>%
-          dplyr::do(circle(point = unique(.[, c("lat", "lon")]), data = ., radius = 0.01))
+          dplyr::group_by(logger_id)
+        cat("Calc circle...\n")
+
+          data <- data %>%
+            dplyr::do(circle(point = unique(.[, c("lat", "lon")]), data = ., radius = 0.01))
         cat("Finished with current activity...\n")
       })
     })
