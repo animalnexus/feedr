@@ -46,8 +46,8 @@ test_that("Data selection", {
   ui_loaded(remDr)
   expect_false(test_error(remDr))
   #take_screenshot(remDr, file = paste0(test_dir, "/screenshots/anim_kam_remote_"), ref = TRUE)
-  take_screenshot(remDr, file = paste0(test_dir, "/screenshots/anim_kam_remote_"))
-  expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/anim_kam_remote_")))
+  #take_screenshot(remDr, file = paste0(test_dir, "/screenshots/anim_kam_remote_"))
+  #expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/anim_kam_remote_")))
 
   nav_tab(remDr, "Individuals")
   ui_loaded(remDr)
