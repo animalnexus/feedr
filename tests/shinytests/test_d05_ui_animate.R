@@ -6,7 +6,7 @@ context("ui_animate() locally")
 # })
 
 test_that("Options set", {
-  remDr <- shiny_test_startup(f_animate, appURL, args = "feedr::visits(feedr::finches)",
+  remDr <- shiny_test_startup(f_animate, appURL, arg = "feedr::visits(feedr::finches)",
                               browserName = "chrome")
   Sys.sleep(5)
 
@@ -19,11 +19,11 @@ test_that("Options set", {
             c("instant", "sum", "60"),
             c("TRUE")) #sunrise/set
 
-  for(i in 1:length(s)) {
-    if(s[[i]][1] != "") for(a in s[[i]]) click_setting(remDr, paste0("[value = '", a, "']"))
-    take_screenshot(remDr, file = paste0(test_dir, "/screenshots/anim_kam_", i))
-    expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/anim_kam_", i)))
-  }
+  #for(i in 1:length(s)) {
+  #  if(s[[i]][1] != "") for(a in s[[i]]) click_setting(remDr, paste0("[value = '", a, "']"))
+  #  take_screenshot(remDr, file = paste0(test_dir, "/screenshots/anim_kam_", i))
+  #  expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/anim_kam_", i)))
+  #}
 
   # Check random settings
   for(i in 1:10) {

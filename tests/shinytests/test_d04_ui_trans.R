@@ -4,7 +4,7 @@ context("ui_trans() locally")
 # Initial loading: Finches dataset ----------------------------------------
 test_that("Initial loading: Finches dataset", {
 
-  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches")
+  remDr <- shiny_test_startup(f_trans, appURL, arg = "feedr::finches")
 
   # All download buttons as expected
   b <- remDr$findElements("css selector", "a[id *= 'data_dl']")
@@ -30,9 +30,9 @@ test_that("Initial loading: Finches dataset", {
   # Check Data access message
 
   # Take and compare screenshots
-  #take_screenshot(remDr, file = paste0(test_dir, "/screenshots/trans_kam_"), ref = TRUE)
-  take_screenshot(remDr, file = paste0(test_dir, "/screenshots/trans_kam_"))
-  expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/trans_kam_")))
+  ##take_screenshot(remDr, file = paste0(test_dir, "/screenshots/trans_kam_"), ref = TRUE)
+  #take_screenshot(remDr, file = paste0(test_dir, "/screenshots/trans_kam_"))
+  #expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/trans_kam_")))
 
   shiny_test_cleanup(remDr, f_trans)
 })
@@ -40,7 +40,7 @@ test_that("Initial loading: Finches dataset", {
 
 # Log returns correct values: Finches dataset -----------------------------
 test_that("Log returns correct values: Finches dataset", {
-  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches")
+  remDr <- shiny_test_startup(f_trans, appURL, arg = "feedr::finches")
 
   nav_tab(remDr, "Settings")
   s <- lapply(1:nrow(man2), function(x) get_settings(remDr, setting = man2$id[x], type = man2$class[x]))
@@ -83,7 +83,7 @@ test_that("Log returns correct values: Finches dataset", {
 # Test Activity Settings --------------------------------------------------
 test_that("Test Activity Settings", {
 
-  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches")
+  remDr <- shiny_test_startup(f_trans, appURL, arg = "feedr::finches")
 
   # Set settings
   nav_tab(remDr, "Settings")
@@ -115,7 +115,7 @@ test_that("Test Activity Settings", {
 # Test Movement Settings --------------------------------------------------
 test_that("Test Movement Settings", {
 
-  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches")
+  remDr <- shiny_test_startup(f_trans, appURL, arg = "feedr::finches")
 
   # Set settings
   nav_tab(remDr, "Settings")
@@ -145,7 +145,7 @@ test_that("Test Movement Settings", {
 # Test Random Settings ----------------------------------------------------
 test_that("Test Random Settings", {
 
-  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches")
+  remDr <- shiny_test_startup(f_trans, appURL, arg = "feedr::finches")
 
   # Set settings randomly and test
   for(i in 1:3){
@@ -197,7 +197,7 @@ test_that("All data download to csv", {
     "browser.helperApps.neverAsk.saveToDisk"='application/csv,application/zip'
   ))
 
-  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches", extra = dl_profile)
+  remDr <- shiny_test_startup(f_trans, appURL, arg = "feedr::finches", extra = dl_profile)
 
   dl <- remDr$findElement("css", "[id $= 'data_dl']")
   dl$clickElement()
@@ -243,7 +243,7 @@ test_that("Settings download properly", {
   dl_profile <- makeFirefoxProfile(list(
     "browser.helperApps.neverAsk.saveToDisk"='application/csv,text/csv'
   ))
-  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches", extra = dl_profile)
+  remDr <- shiny_test_startup(f_trans, appURL, arg = "feedr::finches", extra = dl_profile)
 
   # Settings
   nav_tab(remDr, "Settings")
@@ -286,7 +286,7 @@ test_that("Settings load properly", {
   dl_profile <- makeFirefoxProfile(list(
     "browser.helperApps.neverAsk.saveToDisk"='application/csv,text/csv'
   ))
-  remDr <- shiny_test_startup(f_trans, appURL, args = "feedr::finches", extra = dl_profile)
+  remDr <- shiny_test_startup(f_trans, appURL, arg = "feedr::finches", extra = dl_profile)
 
   # Get random Settings
   nav_tab(remDr, "Settings")

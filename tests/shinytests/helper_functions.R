@@ -1,7 +1,7 @@
-start_shiny <- function(f, args = NULL){
-  if(is.null(args)) args <- ""
+start_shiny <- function(f, arg = NULL){
+  if(is.null(arg)) arg <- ""
   stop_shiny(f)
-  suppressWarnings(system(paste0("(Rscript -e \"options(shiny.port = 4100); d <- ", f, "(", args, "); write.csv(d, '/home/steffi/Projects/feedr Project/tests/downloads/output.csv', row.names = FALSE)\" &)"), ignore.stderr = TRUE))#, ignore.stdout = TRUE, ignore.stderr = TRUE)
+  suppressWarnings(system(paste0("(Rscript -e \"options(shiny.port = 4100); d <- ", f, "(", arg, "); write.csv(d, '/home/steffi/Projects/feedr Project/tests/downloads/output.csv', row.names = FALSE)\" &)"), ignore.stderr = TRUE))#, ignore.stdout = TRUE, ignore.stderr = TRUE)
 }
 
 stop_shiny <- function(f){
@@ -9,20 +9,22 @@ stop_shiny <- function(f){
   if(length(pid_shiny) > 0) system(paste0("kill -TERM ", pid_shiny), ignore.stderr = TRUE)
 }
 
-shiny_test_startup <- function(f = NULL, appURL, args = NULL,
+shiny_test_startup <- function(f = NULL, appURL, arg = NULL,
                                browserName = "chrome", extra = NULL, type = "local") {
   #skip_on_cran()
   skip_on_travis()
   skip_on_appveyor()
 
+  stop_shiny(f)
+
   # Start Selenium Server
-  system("(java -jar ~/R/x86_64-pc-linux-gnu-library/3.3/RSelenium/bin/selenium-server-standalone.jar &)",
+  system("(java -jar ~/R/x86_64-pc-linux-gnu-library/3.5/RSelenium/bin/selenium-server-standalone-3.9.1.jar &)",
          ignore.stdout = TRUE, ignore.stderr = TRUE)
 
   Sys.sleep(3)
 
   if(type == "local"){
-    start_shiny(f, args)
+    start_shiny(f, arg)
   }
 
   if(!is.null(extra)) {
@@ -39,13 +41,14 @@ shiny_test_startup <- function(f = NULL, appURL, args = NULL,
 }
 
 shiny_test_cleanup <- function(remDr, f = NULL, type = "local"){
-  if(type == "local") stop_shiny(f)
   remDr$closeWindow()
   remDr$close()
+  if(type == "local") stop_shiny(f)
+
 
   # Get server PIDs and terminate Selenium server
   suppressWarnings({
-    pid_sel <- system("pgrep -f [s]elenium-server-standalone.jar", intern = TRUE)
+    pid_sel <- system("pgrep -f [s]elenium-server-standalone-3.9.1.jar", intern = TRUE)
     system(paste0("kill -TERM ", pid_sel))
   })
 }
@@ -61,7 +64,9 @@ page_loaded <- function(remDr) {
 
  while(!ready){
    message("Wait for page...")
-   if(as.numeric(difftime(Sys.time(), start, units = "sec")) > 30) {
+   if(as.numeric(difftime(Sys.time(), start, units = "sec")) > 2) {
+     remDr$refresh()
+   } else if(as.numeric(difftime(Sys.time(), start, units = "sec")) > 30) {
      message("breaking")
      break
    }
@@ -157,8 +162,12 @@ change_settings <- function(remDr, setting, value){
     }
   } else if(is.numeric(value)) {
     c <- e$findChildElement(using = "css selector", value = "input")
-    c$clearElement()
-    c$sendKeysToElement(list(as.character(value)))
+    #c$clearElement()
+    # c$clickElement()
+    # c$sendKeysToActiveElement(key = "end")
+    # for(i in 1:15) c$sendKeysToActiveElement(key = "backspace")
+    new_clear(c)
+    c$sendKeysToActiveElement(list(as.character(value)))
   }
   Sys.sleep(0.25)
 }
@@ -202,11 +211,10 @@ reg_escape <- function(string) {
 click_button <- function(remDr, id, type = "button") {
   e <- remDr$findElement(using = "css",
                     value = paste0(type, "[id $= '", id, "']"))
-  remDr$mouseMoveToLocation(webElement = e)
+  #remDr$mouseMoveToLocation(webElement = e)
   if(id %in% c("settings_get", "settings_save", "import_reveal")) { # won't be visible otherwise
     webElem <- remDr$findElement("css", "body")
-    webElem$sendKeysToElement(list(key = "home"))
-
+    webElem$sendKeysToActiveElement(list(key = "home"))
   }
   Sys.sleep(0.5)
   e$clickElement()
@@ -313,7 +321,7 @@ msg_table <- function(t){
 
 select_files <- function(remDr, files){
   e <- remDr$findElement("css", "[id $= 'file1']")
-  #for(f in files) e$sendKeysToElement(list(f))
+  #for(f in files) e$sendKeysToActiveElement(list(f))
   e$sendKeysToElement(list(paste0(files, collapse = "\n")))
   data_loaded(remDr)
   Sys.sleep(0.5)
@@ -322,6 +330,7 @@ select_files <- function(remDr, files){
 
 download_files <- function(remDr, files, preview = NULL, type = "preformat", time_format = "ymd HMS") {
   # Import
+
   click_button(remDr, "get_data")
   Sys.sleep(0.5)
   expect_false(test_error(remDr))
@@ -352,15 +361,23 @@ test_db_site <- function(remDr, site = "Kamloops, BC") {
 
 test_db_dates <- function(remDr, dates = NULL){
     # Select Dates
-    e <- remDr$findElements(using = 'css', value = "[data-initial-date]")
-    sapply(e, function(x) x$clearElement())
+    #e <- remDr$findElements(using = 'css', value = "[data-initial-date]")
+    e <- remDr$findElements(using = 'class name', value = "input-daterange")
     e[[1]]$clickElement()
-    e[[1]]$sendKeysToElement(list(dates[1]))
-    e[[1]]$sendKeysToElement(list("", key = "escape"))
+    e <- remDr$findElements(using = 'css', value = "[data-initial-date]")
+    #sapply(e, function(x) x$clearElement()) #Doesn't work any more?
+    e[[1]]$clickElement()
+    e[[1]]$sendKeysToActiveElement(list("", key = "end"))
+    for(i in 1:10) e[[1]]$sendKeysToActiveElement(list("", key = "backspace"))
+    e[[1]]$sendKeysToActiveElement(list(dates[1]))
+    e[[1]]$sendKeysToActiveElement(list("", key = "escape"))
     Sys.sleep(0.25)
+    #e[[2]]$clearElement()
     e[[2]]$clickElement()
-    e[[2]]$sendKeysToElement(list(dates[2]))
-    e[[2]]$sendKeysToElement(list("", key = "escape"))
+    e[[2]]$sendKeysToActiveElement(list("", key = "end"))
+    for(i in 1:10) e[[2]]$sendKeysToActiveElement(list("", key = "backspace"))
+    e[[2]]$sendKeysToActiveElement(list(dates[2]))
+    e[[2]]$sendKeysToActiveElement(list("", key = "escape"))
     Sys.sleep(1)
     expect_false(test_error(remDr))
 }
@@ -482,4 +499,10 @@ rand_opts <- function(){
   if(ran_opts$id != "all") ran_opts$sum_type <- "sum"
   if(ran_opts$res == 1440) ran_opts$sun <- FALSE
   return(ran_opts)
+}
+
+new_clear <- function(e){
+  e$clickElement()
+  e$sendKeysToActiveElement(list(key = "end"))
+  for(i in 1:15) e$sendKeysToActiveElement(list(key = "backspace"))
 }

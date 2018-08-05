@@ -1,7 +1,7 @@
 context("ui_db() locally")
 
 
-# Select Kamloops data -------------------------------------------------------------------
+# Select Kamloops data----------------------------------------------------------
 test_that("Select Kamloops data", {
   remDr <- shiny_test_startup(f_db, appURL)
 
@@ -12,11 +12,20 @@ test_that("Select Kamloops data", {
   test_db_species(remDr, species = c("Mountain Chickadee"))
   test_db_n(remDr, species = "Mountain Chickadee", n = 1198)
 
+  test_db_species(remDr, species = c("Dark-eyed Junco"))
+  expect_false(test_error(remDr))
+
   test_db_species(remDr, species = c("House Finch"))
   test_db_n(remDr, species = "House Finch", n = 29978)
 
-  test_db_species(remDr, species = c("Dark-eyed Junco"))
-  expect_false(test_error(remDr))
+  # Check Data access message
+  a <- remDr$findElement(using = "css selector", value = "[id $= 'data_access']")
+  expect_equivalent(a$getElementText(), "Fully Public")
+
+  # Take and compare screenshots
+  # Sys.sleep(1)
+  # take_screenshot(remDr, file = paste0(test_dir, "/screenshots/db_kam_"))
+  # expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/db_kam_")))
 
   # Test empty data range
   test_db_site(remDr, site = "Kamloops, BC")
@@ -25,17 +34,6 @@ test_that("Select Kamloops data", {
 
   expect_false(test_error(remDr))
 
-  test_db_site(remDr, site = "Kamloops, BC")
-  test_db_species(remDr, species = c("House Finch"))
-
-  # Check Data access message
-  a <- remDr$findElement(using = "css selector", value = "[id $= 'data_access']")
-  expect_equivalent(a$getElementText(), "Fully Public")
-
-  # Take and compare screenshots
-  Sys.sleep(1)
-  take_screenshot(remDr, file = paste0(test_dir, "/screenshots/db_kam_"))
-  expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/db_kam_")))
 
   shiny_test_cleanup(remDr, f_db)
 })
@@ -65,9 +63,9 @@ test_that("Select Costa Rican Data", {
   expect_equivalent(a$getElementText(), "No selection")
 
   # Take and compare screenshots
-  test_db_dates(remDr, dates = c("2013-04-01", "2013-05-02"))
-  take_screenshot(remDr, file = paste0(test_dir, "/screenshots/db_cr_"))
-  expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/db_cr_")))
+  # test_db_dates(remDr, dates = c("2013-04-01", "2013-05-02"))
+  # take_screenshot(remDr, file = paste0(test_dir, "/screenshots/db_cr_"))
+  # expect_lt(99, compare_screenshot(file = paste0(test_dir, "/screenshots/db_cr_")))
 
   shiny_test_cleanup(remDr, f_db)
 })

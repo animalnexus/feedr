@@ -13,9 +13,9 @@ test_that("Import single preformat file", {
 
   # Preview Table
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:first-child")$getElementText())
-  expect_equivalent(e, "0620000514 2016-01-28 12:34:25 2200 House Finch F -120.3612389 50.66778333 2016-01-28")
+  expect_equivalent(e, "0620000514 2016-01-28 2016-01-28 12:34:25 2200 House Finch AHY F Kamloops, BC -120.3612389 50.66778333")
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:nth-child(10)")$getElementText())
-  expect_equivalent(e, "062000043E 2016-01-28 12:36:47 2200 House Finch M -120.3612389 50.66778333 2016-01-28")
+  expect_equivalent(e, "062000043E 2016-01-28 2016-01-28 12:36:47 2200 House Finch ASY M Kamloops, BC -120.3612389 50.66778333")
 
   # Save preview table
   preview <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody")$getElementText())
@@ -41,9 +41,9 @@ test_that("Import multiple preformat files", {
 
   # Preview Table
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:first-child")$getElementText())
-  expect_equivalent(e, "06200004BF 2016-01-11 10:48:49 exp2-GR10 exp2 2016-01-11 53.89086 -122.81933")
+  expect_equivalent(e, "06200004BF 2016-01-11 2016-01-11 10:48:49 exp2-GR10DATA exp2 53.89086 -122.81933")
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:nth-child(10)")$getElementText())
-  expect_equivalent(e, "06200004BE 2016-01-11 10:53:02 exp2-GR10 exp2 2016-01-11 53.89086 -122.81933")
+  expect_equivalent(e, "06200004BE 2016-01-11 2016-01-11 10:53:02 exp2-GR10DATA exp2 53.89086 -122.81933")
 
   # Save preview table
   preview <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody")$getElementText())
@@ -78,9 +78,9 @@ test_that("Import single logger file", {
 
   # Preview Table
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:first-child")$getElementText())
-  expect_equivalent(e, "06200001F0 2016-01-13 10:29:57 GR11DATA 2016-01-13")
+  expect_equivalent(e, "06200001F0 2016-01-13 2016-01-13 10:29:57 GR11DATA")
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:nth-child(10)")$getElementText())
-  expect_equivalent(e, "06200003C3 2016-01-13 10:31:12 GR11DATA 2016-01-13")
+  expect_equivalent(e, "06200003C3 2016-01-13 2016-01-13 10:31:12 GR11DATA")
 
   # Save preview table
   preview <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody")$getElementText())
@@ -112,9 +112,9 @@ test_that("Import multiple logger files", {
 
   # Preview Table
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:first-child")$getElementText())
-  expect_equivalent(e, "06200004BF 2016-01-11 10:48:49 GR10DATA 2016-01-11")
+  expect_equivalent(e, "06200004BF 2016-01-11 2016-01-11 10:48:49 GR10DATA")
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:nth-child(10)")$getElementText())
-  expect_equivalent(e, "06200004BE 2016-01-11 10:53:02 GR10DATA 2016-01-11")
+  expect_equivalent(e, "06200004BE 2016-01-11 2016-01-11 10:53:02 GR10DATA")
 
   # Save preview table
   preview <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody")$getElementText())
@@ -160,9 +160,9 @@ test_that("Preformat - Fix column names", {
 
   # Preview Table
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:first-child")$getElementText())
-  expect_equivalent(e, "0620000514 2016-01-28 12:34:25 2200 House Finch F -120.3612389 50.66778333 2016-01-28")
+  expect_equivalent(e, "0620000514 2016-01-28 2016-01-28 12:34:25 2200 House Finch F -120.3612389 50.66778333")
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:nth-child(10)")$getElementText())
-  expect_equivalent(e, "062000043E 2016-01-28 12:36:47 2200 House Finch M -120.3612389 50.66778333 2016-01-28")
+  expect_equivalent(e, "062000043E 2016-01-28 2016-01-28 12:36:47 2200 House Finch M -120.3612389 50.66778333")
 
   # Save preview table
   preview <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody")$getElementText())
@@ -231,25 +231,25 @@ test_that("Skip - logger", {
   Sys.sleep(1)
 
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:nth-child(3)")$getElementText())
-  expect_equivalent(e, "06200004E4 2016-01-11 10:48:55 GR10DATA 2016-01-11")
+  expect_equivalent(e, "06200004E4 2016-01-11 2016-01-11 10:48:55 GR10DATA")
 
   # Modify skip
   e <- remDr$findElement("css", "[id $= '-skip']")
-  e$clearElement()
-  e$sendKeysToElement(list("1"))
+  new_clear(e)
+  e$sendKeysToActiveElement(list("1"))
   Sys.sleep(1)
 
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:nth-child(2)")$getElementText())
-  expect_equivalent(e, "06200004E4 2016-01-11 10:48:55 GR10DATA 2016-01-11")
+  expect_equivalent(e, "06200004E4 2016-01-11 2016-01-11 10:48:55 GR10DATA")
 
   # Modify skip
   e <- remDr$findElement("css", "[id $= '-skip']")
-  e$clearElement()
-  e$sendKeysToElement(list("2"))
+  new_clear(e)
+  e$sendKeysToActiveElement(list("2"))
   Sys.sleep(1)
 
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:nth-child(1)")$getElementText())
-  expect_equivalent(e, "06200004E4 2016-01-11 10:48:55 GR10DATA 2016-01-11")
+  expect_equivalent(e, "06200004E4 2016-01-11 2016-01-11 10:48:55 GR10DATA")
 
   shiny_test_cleanup(remDr, f_import)
 })
@@ -261,11 +261,11 @@ test_that("Skip - preformat1", {
   select_files(remDr, d_preformat[1])
 
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:nth-child(3)")$getElementText())
-  expect_equivalent(e, "06200004E4 2016-01-11 10:48:55 exp2-GR10 exp2 2016-01-11 53.89086 -122.81933")
+  expect_equivalent(e, "06200004E4 2016-01-11 2016-01-11 10:48:55 exp2-GR10DATA exp2 53.89086 -122.81933")
 
   # Modify skip
   e <- remDr$findElement("css", "[id $= '-skip']")
-  e$clearElement()
+  new_clear(e)
   e$sendKeysToElement(list("1"))
   Sys.sleep(0.5)
 
@@ -283,8 +283,8 @@ test_that("Skip - preformat2", {
 
   # Modify skip
   e <- remDr$findElement("css", "[id $= '-skip']")
-  e$clearElement()
-  e$sendKeysToElement(list("1"))
+  new_clear(e)
+  e$sendKeysToActiveElement(list("1"))
   Sys.sleep(0.5)
 
   expect_null(test_msg(remDr))
@@ -309,9 +309,9 @@ test_that("Preformat - Separator (tab)", {
   expect_null(test_msg(remDr))
 
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:first-child")$getElementText())
-  expect_equivalent(e, "620000514 2016-01-28 12:34:25 2200 House Finch F -120.3612389 50.66778333 2016-01-28")
+  expect_equivalent(e, "620000514 2016-01-28 2016-01-28 12:34:25 2200 House Finch F -120.3612389 50.66778333")
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:nth-child(10)")$getElementText())
-  expect_equivalent(e, "062000043E 2016-01-28 12:36:47 2200 House Finch M -120.3612389 50.66778333 2016-01-28")
+  expect_equivalent(e, "062000043E 2016-01-28 2016-01-28 12:36:47 2200 House Finch M -120.3612389 50.66778333")
 
   shiny_test_cleanup(remDr, f_import)
 })
@@ -332,9 +332,9 @@ test_that("Preformat - Separator (semicolon)", {
   expect_null(test_msg(remDr))
 
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:first-child")$getElementText())
-  expect_equivalent(e, "620000514 2016-01-28 12:34:25 2200 House Finch F -120.3612389 50.66778333 2016-01-28")
+  expect_equivalent(e, "620000514 2016-01-28 2016-01-28 12:34:25 2200 House Finch F -120.3612389 50.66778333")
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:nth-child(10)")$getElementText())
-  expect_equivalent(e, "062000043E 2016-01-28 12:36:47 2200 House Finch M -120.3612389 50.66778333 2016-01-28")
+  expect_equivalent(e, "062000043E 2016-01-28 2016-01-28 12:36:47 2200 House Finch M -120.3612389 50.66778333")
 
   shiny_test_cleanup(remDr, f_import)
 })
@@ -384,9 +384,9 @@ test_that("Logger file - Lat/Lon in Data file", {
 
   # Preview Table
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:first-child")$getElementText())
-  expect_equivalent(e, "06200004BB 2016-01-29 14:04:31 GR10DATA 53.89086 -122.81933 2016-01-29")
+  expect_equivalent(e, "06200004BB 2016-01-29 2016-01-29 14:04:31 GR10DATA 53.89086 -122.81933")
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:nth-child(10)")$getElementText())
-  expect_equivalent(e, "0700EE19CE 2016-01-31 08:43:15 GR10DATA 53.89086 -122.81933 2016-01-31")
+  expect_equivalent(e, "0700EE19CE 2016-01-31 2016-01-31 08:43:15 GR10DATA 53.89086 -122.81933")
 
   shiny_test_cleanup(remDr, f_import)
 })
@@ -415,9 +415,9 @@ test_that("Logger file - Lat/Lon in Index file", {
 
   # Preview Table
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:first-child")$getElementText())
-  expect_equivalent(e, "062000039D 2015-12-05 10:35:13 GR10DATA 2015-12-05 53.914484 -122.769248")
+  expect_equivalent(e, "062000039D 2015-12-05 2015-12-05 10:35:13 GR10DATA 53.914484 -122.769248")
   e <- unlist(remDr$findElement("css", "[id $= 'preview'] * tbody > tr:nth-child(10)")$getElementText())
-  expect_equivalent(e, "06200003DE 2015-12-05 10:40:52 GR10DATA 2015-12-05 53.914484 -122.769248")
+  expect_equivalent(e, "06200003DE 2015-12-05 2015-12-05 10:40:52 GR10DATA 53.914484 -122.769248")
 
   shiny_test_cleanup(remDr, f_import)
 })
