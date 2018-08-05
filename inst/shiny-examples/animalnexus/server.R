@@ -1,5 +1,5 @@
 cat("Starting server...\n")
-library(feedr, lib.loc = "/usr/local/lib/R_exp/site-library/")
+library(feedr, lib.loc = "/usr/local/lib/R/site-library/")
 library(magrittr)
 library(shiny)
 library(shinyjs)
