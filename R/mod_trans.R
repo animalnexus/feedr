@@ -63,7 +63,7 @@ trans_preamble <- function(args = TRUE) {
                   file_name = tolower(stringr::str_extract(title, "^[^ ]*")))
 
   if(args) return(dplyr::filter(manual, !is.na(value), !(arg %in% c("missing", "pass"))))
-  if(!args) return(unique(dplyr::select(manual, -arg, -desc, -class, -value, -id, -lab)))
+  if(!args) return(dplyr::distinct(dplyr::select(manual, -arg, -desc, -class, -value, -id, -lab)))
 }
 
 #' @import shiny
