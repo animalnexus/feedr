@@ -1,10 +1,12 @@
-# feedr 0.10.0 2018-01-24
+# feedr 0.10.0 2018-08-04
 
 ## New features
 - Add `inout()` function to caluclate trips with RFID loggers are set up to determine directionality
 
 ## Bug fix
 - Fix `load_format()` so it lose millisecond information in times
+- Convert `length` to numeric in `presence()` to avoid problems with `ui_animate()`
+- Fix bug which crashed `ui_trans()`
 
 # feedr 0.9.1
 
