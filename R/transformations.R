@@ -668,7 +668,9 @@ presence_single <- function(v1, bw = bw){
                           logger_id = v1$logger_id[v1$start == TRUE],
                           start = v1$start_orig[v1$start == TRUE],
                           end = v1$end_orig[v1$end == TRUE],
-                          length = difftime(v1$end_orig[v1$end == TRUE], v1$start_orig[v1$start == TRUE], units = "mins"))
+                          length = as.numeric(difftime(v1$end_orig[v1$end == TRUE],
+                                                       v1$start_orig[v1$start == TRUE],
+                                                       units = "mins")))
 
   return(p)
 }
