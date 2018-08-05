@@ -111,6 +111,7 @@ mod_map_current <- function(input, output, session) {
     invalidateLater(5 * 60 * 1000) # Update again after 5min
     input$current_update
 
+    cat("Getting current activity...\n")
     isolate({
       values$current_time <- Sys.time()
       withProgress(message = "Updating...", {
@@ -122,7 +123,12 @@ mod_map_current <- function(input, output, session) {
           load_format(., tz = "UTC", tz_disp = "America/Vancouver") %>%
           dplyr::mutate(logger_id = as.character(logger_id)) %>% # To avoid join warnings
           dplyr::left_join(loggers_all, by = "logger_id") %>%
-          visits(.) %>%
+          visits(.)
+
+        last_24 <- lubridate::with_tz(Sys.time(), tz = "America/Vancouver") - lubridate::hours(24)
+        if(nrow(dplyr::filter(data, end >= last_24)) > 0) data <- dplyr::filter(data, end >= last_24)
+
+        data <- data %>%
           dplyr::group_by(animal_id, logger_id, species, age, sex, lat, lon) %>%
           dplyr::summarize(first = min(start),
                            last = max(end),
@@ -130,10 +136,7 @@ mod_map_current <- function(input, output, session) {
                            time = round(sum(end - start)/60, 2)) %>%
           dplyr::group_by(logger_id) %>%
           dplyr::do(circle(point = unique(.[, c("lat", "lon")]), data = ., radius = 0.01))
-
-        last_24 <- lubridate::with_tz(Sys.time(), tz = "America/Vancouver") - lubridate::hours(24)
-
-        if(nrow(dplyr::filter(data, time >= last_24)) > 0) data <- dplyr::filter(data, time >= last_24)
+        cat("Finished with current activity...\n")
       })
     })
     return(data)
