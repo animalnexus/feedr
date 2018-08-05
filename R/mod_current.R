@@ -91,7 +91,8 @@ mod_map_current <- function(input, output, session) {
   })
 
   # Circle function ---------------------------------------------------------
-  circle <- function(point, data, radius = 0.5){
+  circle <- function(data, radius = 0.5){
+    point <- dplyr::distinct(data[, c("lat", "lon")])
     n <- seq(0, by = 360/nrow(data), length.out = nrow(data))
     temp <- data.frame(do.call("rbind", lapply(n, function(x) {
       maptools::gcDestination(lon = point$lon,
@@ -99,9 +100,8 @@ mod_map_current <- function(input, output, session) {
                               bearing = x,
                               dist = radius, dist.units = "km", model = "WGS84")
     })), row.names = NULL)
-    names(temp) <- c("lon", "lat")
-    circle <- cbind(data, temp)
-    return(circle)
+    data[, c("lon", "lat")] <- temp
+    data
   }
 
   # Current activity ----------------------------------------------------
@@ -137,8 +137,13 @@ mod_map_current <- function(input, output, session) {
           dplyr::group_by(logger_id)
         cat("Calc circle...\n")
 
-          data <- data %>%
-            dplyr::do(circle(point = unique(.[, c("lat", "lon")]), data = ., radius = 0.01))
+        #data <- data %>%
+        #  dplyr::do(circle(point = unique(.[, c("lat", "lon")]), data = ., radius = 0.01))
+        data <- tidyr::nest(data, -logger_id) %>%
+          dplyr::mutate(data =
+                          purrr::map(data,
+                                     ~circle(data = .x, radius = 0.01))) %>%
+          tidyr::unnest()
         cat("Finished with current activity...\n")
       })
     })
