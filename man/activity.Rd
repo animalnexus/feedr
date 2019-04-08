@@ -4,8 +4,8 @@
 \alias{activity}
 \title{Activity}
 \usage{
-activity(p, res = 15, by_logger = FALSE, missing = NULL, sun = TRUE,
-  keep_all = FALSE, pass = TRUE, f)
+activity(p, res = 15, by_logger = FALSE, missing = NULL,
+  sun = TRUE, keep_all = FALSE, pass = TRUE, f)
 }
 \arguments{
 \item{p}{Dataframe. A \code{\link{presence}} data frame (may contain multiple

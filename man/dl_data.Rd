@@ -6,8 +6,9 @@
 \usage{
 dl_data(start = NULL, end = NULL,
   url = "http://gaia.tru.ca/birdMOVES/rscripts/anquery.csv",
-  tz_disp = "Etc/GMT+8", dst = FALSE, species = NULL, site_id = NULL,
-  feeder_details, bird_details, logger_details, animal_details)
+  tz_disp = "Etc/GMT+8", dst = FALSE, species = NULL,
+  site_id = NULL, feeder_details, bird_details, logger_details,
+  animal_details)
 }
 \arguments{
 \item{start}{Character. This is the start date (inclusive, with or without

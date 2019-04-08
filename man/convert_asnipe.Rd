@@ -4,7 +4,8 @@
 \alias{convert_asnipe}
 \title{Convert data for use in two asnipe functions}
 \usage{
-convert_asnipe(r, fun = "gmmevents", by_day = TRUE, time_scale = "secs")
+convert_asnipe(r, fun = "gmmevents", by_day = TRUE,
+  time_scale = "secs")
 }
 \arguments{
 \item{r}{Dataframe. Raw RFID dataset. Must have at least columns

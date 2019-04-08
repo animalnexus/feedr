@@ -7,8 +7,8 @@
 map_ggmap(p = NULL, m = NULL, locs = NULL, summary = "none",
   p_scale = 1, m_scale = 1, p_title = "Time", m_title = "Path use",
   p_pal = c("yellow", "red"), m_pal = c("yellow", "red"),
-  maptype = "satellite", mapsource = "google", zoom = 17, which = NULL,
-  u.scale, p.scale, u.title, p.title, u.pal, p.pal)
+  maptype = "satellite", mapsource = "google", zoom = 17,
+  which = NULL, u.scale, p.scale, u.title, p.title, u.pal, p.pal)
 }
 \arguments{
 \item{p}{Dataframe. Regular or summarized presence data with columns
