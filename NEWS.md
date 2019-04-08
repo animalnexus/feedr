@@ -1,3 +1,8 @@
+# feedr 0.10.1 2019-04-08
+
+## Bug fixes
+- Fix bug which created NA for end of final visit
+
 # feedr 0.10.0 2018-08-04
 
 ## New features

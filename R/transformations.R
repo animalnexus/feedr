@@ -359,7 +359,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
     # Assign end points
     dplyr::mutate(new = "include") %>%
     dplyr::mutate(new = replace(new, diff_logger | diff_time | diff_animal, "end"),
-                  new = replace(new, is.na(dplyr::lead(new)), "end")) %>%
+                  new = replace(new, is.na(diff_animal) & is.na(diff_time) & is.na(diff_logger), "end")) %>%
     # Assign start or start-end points for each individual
     dplyr::mutate(new = replace(new, new == "include" &
                                   (is.na(dplyr::lag(new)) | dplyr::lag(new) == "end"), "start"),
