@@ -204,8 +204,8 @@ inout_single <- function(r1, dir_in, all = FALSE){
   } else if (all == TRUE) {
     # Create the movement data frame for animals that didn't move between loggers
     e1 <- tibble::data_frame(animal_id = r1$animal_id[1],
-                             date = as.Date(NA),
-                             time = as.POSIXct(NA),
+                             date = lubridate::as_date(NA),
+                             time = lubridate::as_datetime(NA),
                              logger_id = as.character(NA),
                              direction = as.character(NA),
                              inout_id = as.numeric(NA),
@@ -374,10 +374,12 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE,
                                   (is.na(dplyr::lag(new)) | dplyr::lag(new) == "end"), "start-end")) %>%
     dplyr::ungroup() %>%
     dplyr::filter(new != "include") %>%
-    dplyr::mutate(start = as.POSIXct(NA, tz = tz),
-                  end = as.POSIXct(NA, tz = tz),
-                  start = replace(start, stringr::str_detect(new, "start"), time[stringr::str_detect(new, "start")]),
-                  end = replace(end, stringr::str_detect(new, "end"), time[stringr::str_detect(new, "end")])) %>%
+    dplyr::mutate(start = lubridate::as_datetime(NA, tz = tz),
+                  end = lubridate::as_datetime(NA, tz = tz),
+                  start = replace(start, stringr::str_detect(new, "start"),
+                                  time[stringr::str_detect(new, "start")]),
+                  end = replace(end, stringr::str_detect(new, "end"),
+                                time[stringr::str_detect(new, "end")])) %>%
     dplyr::select(logger_id, animal_id, start, end) %>%
     tidyr::gather(variable, value, start, end) %>%
     dplyr::filter(!is.na(value)) %>%
@@ -410,12 +412,8 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE,
     dplyr::select(-n) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(animal_n = length(unique(animal_id)),         # Get sample sizes
-                 logger_n = length(unique(logger_id)),
-                 date = as.Date(start, tz = lubridate::tz(start)))
-
-  # Set timezone attributes
-  attr(v$start, "tzone") <- tz
-  attr(v$end, "tzone") <- tz
+                  logger_n = length(unique(logger_id)),
+                  date = lubridate::as_date(start))
 
   # Order data frame
   s <- c("animal_id", "date", "start", "end", "logger_id")
@@ -565,8 +563,8 @@ move_single <- function(v1, move_dir, move_path, all = FALSE){
   } else if (all == TRUE) {
     # Create the movement data frame for animals that didn't move between loggers
     m <- tibble::data_frame(animal_id = v1$animal_id[1],
-                            date = as.Date(NA),
-                            time = as.POSIXct(NA),
+                            date = lubridate::as_date(NA),
+                            time = lubridate::as_datetime(NA),
                             logger_id = as.character(NA),
                             direction = as.character(NA),
                             move_id = as.numeric(NA),
@@ -1028,7 +1026,7 @@ activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = 
         activity_c = factor("inactive",
                             levels = c("active", "inactive", "unknown")))
 
-      a$date <- as.Date(lubridate::floor_date(a$time, unit = "day"))
+      a$date <- lubridate::as_date(lubridate::floor_date(a$time, unit = "day"))
 
       # Get by individual only, or by individual for each logger
       if(by_logger == FALSE){
@@ -1074,7 +1072,7 @@ activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = 
         } else {
 
           s <- expand.grid(logger_id = loggers$logger_id,
-                           date = as.Date(seq(start, end, by = "1 day"))) %>%
+                           date = lubridate::as_date(seq(start, end, by = "1 day"))) %>%
             dplyr::left_join(unique(loggers[, c("logger_id", "lon", "lat")]), by = "logger_id")
 
           s <- dplyr::bind_cols(s, sun(s[, c("lon", "lat")], s$date, tz = tz))
@@ -1163,7 +1161,7 @@ daily_single <- function(a1, pass = TRUE){
                      p_total = 1 - p_unknown)
 
 
-  d$time <- as.POSIXct(paste0(lubridate::origin, " ", d$time_c), tz = tz)
+  d$time <- lubridate::as_datetime(paste0(lubridate::origin, " ", d$time_c), tz = tz)
   #lubridate::tz(d$time) <- "UTM"
 
   # Get sun/rise set if exist, and average
@@ -1200,9 +1198,11 @@ daily_single <- function(a1, pass = TRUE){
 sun <- function(loc, date, tz) {
   if(class(loc) == "numeric") loc <- matrix(loc, nrow = 1)
   if(class(loc) %in% c("data.frame", "matrix")) loc <- as.matrix(loc)
-  date <- as.POSIXct(as.character(date), tz = tz)
-  s <- data.frame(rise = maptools::sunriset(loc, date, direction = "sunrise", POSIXct.out = TRUE)$time,
-                  set = maptools::sunriset(loc, date, direction = "sunset", POSIXct.out = TRUE)$time)
+  date <- lubridate::as_datetime(as.character(date), tz = tz)
+  s <- data.frame(rise = maptools::sunriset(loc, date, direction = "sunrise",
+                                            POSIXct.out = TRUE)$time,
+                  set = maptools::sunriset(loc, date, direction = "sunset",
+                                           POSIXct.out = TRUE)$time)
 
   return(s)
 }

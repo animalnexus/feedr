@@ -4,12 +4,14 @@
 - Add `count_raw` argument to `visits()` function which returns the number of raw RFID reads summarized in a single visit.
 
 ## Bug fixes
-- Fix bug which created NA for end of final visit
+- Fix bug which created `NA` for end of final visit
+- Fix timezone complexities in `visits()`
+- Use `lubridate` to convert times
 
 # feedr 0.10.0 2018-08-04
 
 ## New features
-- Add `inout()` function to caluclate trips with RFID loggers are set up to determine directionality
+- Add `inout()` function to calculate trips with RFID loggers are set up to determine directionality
 
 ## Bug fix
 - Fix `load_format()` so it lose millisecond information in times
