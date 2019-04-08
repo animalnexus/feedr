@@ -266,7 +266,6 @@ inout_single <- function(r1, dir_in, all = FALSE){
 #'   group_by(experiment) %>%
 #'   do(visits(.))
 #'
-#' @import magrittr
 #' @export
 visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass = TRUE, allow.imp, na.rm){
   if (!missing(allow.imp)) {
@@ -454,8 +453,6 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
 #'   group_by(experiment) %>%
 #'   do(move(.))
 #'
-
-#' @import magrittr
 #' @export
 move <- function(v, all = FALSE, pass = TRUE){
 
@@ -761,7 +758,6 @@ presence_single <- function(v1, bw = bw){
 #' d[["data"]][[2]]$displacements #or
 #' d$data[[2]]$displacements
 #'
-#' @import magrittr
 #' @export
 disp <- function(v, bw = 2, pass = TRUE){
 
@@ -885,7 +881,6 @@ disp <- function(v, bw = 2, pass = TRUE){
 #' a <- activity(p, res = 1, by_logger = TRUE)
 #'}
 #'
-#' @import magrittr
 #' @export
 
 activity <- function(p, res = 15, by_logger = FALSE, missing = NULL, sun = TRUE, keep_all = FALSE, pass = TRUE, f){

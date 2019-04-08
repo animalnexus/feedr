@@ -109,7 +109,6 @@ path_lines <- function(map, data, m_scale, m_pal, m_title, val_min, val_max, lay
 #
 # Designed for advanced use (see map_leaflet() for general mapping)
 #
-#' @import magrittr
 path_layer <- function(map, m,
                        m_scale = 1, m_title = "Path use",
                        m_pal = c("yellow", "orange", "red"), controls = TRUE,

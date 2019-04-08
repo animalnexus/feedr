@@ -106,7 +106,6 @@ check.ids <- function(r, animal_ids, omit_animal = c("wand", "error")){
 #' @return A data frame with corrected ids. Messages are printed to inform the
 #'   user of any corrections made.
 #'
-#' @import magrittr
 #' @export
 check_problems <- function(r, problems){
   if(length(problems) > 1 & !is.data.frame(problems)) stop("Problems should either be the name of a comma separated file (csv) OR should be a data frame. In either case, the data should contain headers 'original_id' and 'corrected_id'")

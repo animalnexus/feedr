@@ -50,7 +50,6 @@
 #' get_associations_points_bw(a)
 #' }
 #'
-#' @import magrittr
 #' @export
 convert_asnipe <- function(r, fun = "gmmevents", by_day = TRUE, time_scale = "secs"){
   check_name(r, n = c('animal_id', 'logger_id', 'time'))
@@ -117,7 +116,6 @@ convert_asnipe <- function(r, fun = "gmmevents", by_day = TRUE, time_scale = "se
 #'
 #' }
 #'
-#' @import magrittr
 #' @export
 convert_anidom <- function(d){
 
@@ -185,7 +183,6 @@ convert_anidom <- function(d){
 #' Sociogram(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bits = i$bytes)
 #' }
 #'
-#' @import magrittr
 #' @export
 convert_dominance <- function(d) {
   # Function takes either the whole output of disp() or just the displacements
@@ -258,7 +255,6 @@ convert_dominance <- function(d) {
 #'
 #' }
 #'
-#' @import magrittr
 #' @export
 convert_perc <- function(d){
 
@@ -313,7 +309,6 @@ convert_perc <- function(d){
 #' # etc.
 #' }
 #'
-#' @import magrittr
 #' @export
 convert_activity <- function(r){
   # Check for Correct formating
