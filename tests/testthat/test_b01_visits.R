@@ -1,4 +1,3 @@
-library(magrittr)
 context("Transformations to visits")
 
 # visits()
@@ -71,8 +70,6 @@ test_that("visits() jumps over obs of diff animals at diff loggers", {
   }
 
   # Expect no two visits at the same logger to overlap
-
-  library(lubridate)
 
   error <- data.frame()
 
@@ -156,4 +153,22 @@ test_that("visits() with group_by", {
   expect_silent(visits(c))
   expect_silent(dplyr::group_by(c, experiment) %>% dplyr::do(visits(., bw = 3, allow_imp = TRUE)))
 
+})
+
+test_that("visits() counts appropriate raw numbers", {
+  expect_silent(v <- visits(finches, count_raw = TRUE))
+  expect_true("raw_n" %in% names(v))
+
+  for(r in sample(1:nrow(v), replace = FALSE, size = 10)){
+    f <- dplyr::filter(finches,
+                       animal_id == v$animal_id[r],
+                       logger_id == v$logger_id[r],
+                       time >= v$start[r], time <= v$end[r]) %>%
+      nrow()
+
+    expect_equal(f, v$raw_n[r])
+  }
+
+  expect_silent(v <- visits(finches))
+  expect_false("raw_n" %in% names(v))
 })

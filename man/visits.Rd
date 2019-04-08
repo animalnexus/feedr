@@ -5,7 +5,7 @@
 \title{Visits}
 \usage{
 visits(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE,
-  pass = TRUE, allow.imp, na.rm)
+  count_raw = FALSE, pass = TRUE, allow.imp, na.rm)
 }
 \arguments{
 \item{r}{Dataframe. Contains raw reads from an RFID reader with colums
@@ -22,6 +22,9 @@ between loggers. If quicker, visits considered impossible.}
 
 \item{na_rm}{Logical. Whether NA values should be automatically omited.
 Otherwise an error is returned.}
+
+\item{count_raw}{Logical. Whether to count the number of raw values
+summarized into a single visit.}
 
 \item{pass}{Logical. Pass 'extra' columns through the function and append
 them to the output.}

@@ -1,5 +1,8 @@
 # feedr 0.10.1 2019-04-08
 
+## New features
+- Add `count_raw` argument to `visits()` function which returns the number of raw RFID reads summarized in a single visit.
+
 ## Bug fixes
 - Fix bug which created NA for end of final visit
 

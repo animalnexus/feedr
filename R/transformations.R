@@ -244,6 +244,8 @@ inout_single <- function(r1, dir_in, all = FALSE){
 #'   between loggers. If quicker, visits considered impossible.
 #' @param na_rm Logical. Whether NA values should be automatically omited.
 #'   Otherwise an error is returned.
+#' @param count_raw Logical. Whether to count the number of raw values
+#'   summarized into a single visit.
 #' @param pass Logical. Pass 'extra' columns through the function and append
 #'   them to the output.
 #' @param allow.imp,na.rm Depreciated.
@@ -267,7 +269,8 @@ inout_single <- function(r1, dir_in, all = FALSE){
 #'   do(visits(.))
 #'
 #' @export
-visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass = TRUE, allow.imp, na.rm){
+visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE,
+                   count_raw = FALSE, pass = TRUE, allow.imp, na.rm){
   if (!missing(allow.imp)) {
     warning("Argument allow.imp is deprecated; please use allow_imp instead.",
             call. = FALSE)
@@ -316,11 +319,14 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
     dplyr::mutate(diff_animal = dplyr::lead(animal_id) != animal_id) %>%
     dplyr::group_by(animal_id) %>%
     dplyr::mutate(diff_time = difftime(dplyr::lead(time), time, units = "sec") > bw,
-                  diff_logger = dplyr::lead(logger_id) != logger_id)
+                  diff_logger = dplyr::lead(logger_id) != logger_id) %>%
+    dplyr::ungroup()
 
   # Check for impossible combos: where less than bw, still the same animal, but a different logger
   if(!allow_imp) {
     impos <- v %>%
+      dplyr::mutate(animal_id = as.character(animal_id)) %>%
+      dplyr::group_by(animal_id) %>%
       dplyr::mutate(diff_imp = difftime(dplyr::lead(time), time, units = "sec") < bw_imp,
                     diff_imp = diff_imp & diff_logger) %>%
       dplyr::arrange(animal_id) %>%
@@ -361,6 +367,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
     dplyr::mutate(new = replace(new, diff_logger | diff_time | diff_animal, "end"),
                   new = replace(new, is.na(diff_animal) & is.na(diff_time) & is.na(diff_logger), "end")) %>%
     # Assign start or start-end points for each individual
+    dplyr::group_by(animal_id) %>%
     dplyr::mutate(new = replace(new, new == "include" &
                                   (is.na(dplyr::lag(new)) | dplyr::lag(new) == "end"), "start"),
                   new = replace(new, new == "end" &
@@ -377,7 +384,29 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
     dplyr::arrange(value) %>%
     dplyr::group_by(logger_id, animal_id, variable) %>%
     dplyr::mutate(n = 1:length(value)) %>%
-    tidyr::spread(variable, value) %>%
+    tidyr::spread(variable, value)
+
+  # Get samples
+  if(count_raw) {
+    r_sub <- dplyr::select(r, animal_id, logger_id, start = time)
+
+    n <- dplyr::left_join(r_sub, dplyr::select(v, -end),
+                          by = c("start", "animal_id", "logger_id")) %>%
+      dplyr::group_by(animal_id, logger_id) %>%
+      dplyr::mutate(g = as.numeric(!is.na(n))) %>%
+      dplyr::mutate(g = cumsum(g)) %>%
+      dplyr::group_by(animal_id, logger_id, g) %>%
+      dplyr::mutate(raw_n = length(g)) %>%
+      dplyr::ungroup() %>%
+      dplyr::filter(!is.na(n)) %>%
+      dplyr::select(-start, -g)
+
+    v <- dplyr::left_join(v, n,
+                          by = c("n", "animal_id", "logger_id"))
+  }
+
+  # Clean up
+  v <- v %>%
     dplyr::select(-n) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(animal_n = length(unique(animal_id)),         # Get sample sizes
@@ -389,8 +418,12 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
   attr(v$end, "tzone") <- tz
 
   # Order data frame
+  s <- c("animal_id", "date", "start", "end", "logger_id")
+  if(count_raw) s <- c(s, "raw_n")
+  s <- c(s, "animal_n", "logger_n")
+
   v <- v %>%
-    dplyr::select(animal_id, date, start, end, logger_id, animal_n, logger_n) %>%
+    dplyr::select(s) %>%
     dplyr::arrange(animal_id, start)
 
   # Add in extra variables
