@@ -13,7 +13,7 @@ Imports:
     DT (>= 0.1),
     curl (>= 0.9.7),
     DBI (>= 0.4.1),
-    dplyr(>= 0.5.0),
+    dplyr (>= 0.5.0),
     ggplot2 (>= 2.1.0),
     ggmap (>= 2.6.1),
     htmltools (>= 0.3.5),
@@ -24,12 +24,12 @@ Imports:
     purrr (>= 0.2.3),
     RCurl (>= 1.95-4.8),
     RPostgreSQL (>= 0.4.1),
-    scales(>= 0.4.0),
+    scales (>= 0.4.0),
     shiny (>= 1.0.0),
     shinyBS (>= 0.61),
     shinyjs (>= 0.9),
     stringr (>= 1.0.0),
-    tibble(>= 1.2),
+    tibble (>= 1.2),
     tidyr (>= 0.5.1),
     xml2 (>= 0.1.2)
 Suggests:
