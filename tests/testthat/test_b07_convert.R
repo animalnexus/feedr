@@ -215,8 +215,7 @@ test_that("convert_dominance converts as expected", {
 })
 
 test_that("convert_dominance runs Dominance ADI functions as expected", {
-  skip_on_travis()
-  skip_on_appveyor()
+  skip_on_os(c("mac", "linux"))
 
   d <- disp(visits(finches_lg), bw = 5)
   i <- convert_dominance(d)
@@ -247,8 +246,7 @@ test_that("convert_dominance runs Dominance ADI functions as expected", {
 })
 
 test_that("convert_dominance runs Dominance Sociogram functions as expected", {
-  skip_on_travis()
-  skip_on_appveyor()
+  skip_on_os(c("mac", "linux"))
 
   d <- disp(visits(finches_lg), bw = 5)
   i <- convert_dominance(d)
