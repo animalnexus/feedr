@@ -18,7 +18,7 @@ summaries <- function(d, summary = "sum_indiv") {
   if(summary == "indiv") g <- c("animal_id", g)
 
   # Summaries
-  d <- dplyr::group_by(d, dplyr::across(g))
+  d <- dplyr::group_by(d, dplyr::across(dplyr::all_of(g)))
 
   if("move_path" %in% g) {
     d <- dplyr::summarize(d, s = length(.data$move_path),

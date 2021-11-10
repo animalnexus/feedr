@@ -48,11 +48,11 @@ non-displacer and non-displacee, respectively.
 In some species displacements can be used to infer dominance. Displacements
 The interactions data frame returned by the \code{disp()} function can be
 passed directly to the \code{\link[Perc:as.conflictmat]{Perc::as.conflictmat()}} function of the
-\link{Perc} package to be transformed into a conflict matrix, ready for
+Perc package to be transformed into a conflict matrix, ready for
 analysis of dominance using percolation and conductance. Finally, the
 displacements data frame can also be converted using the
 \code{\link[=convert_anidom]{convert_anidom()}} function to a data frame for use by the
-\link{aniDom} package's \link[aniDom:elo_scores]{elo_scores} function.
+aniDom package's \link[aniDom:elo_scores]{elo_scores} function.
 }
 \examples{
 
@@ -93,7 +93,4 @@ d$data[d$experiment == "exp3"][[1]]$displacements #or
 d[["data"]][[2]]$displacements #or
 d$data[[2]]$displacements
 
-}
-\seealso{
-\link{Perc}, \link{aniDom}, \link{Dominance}
 }

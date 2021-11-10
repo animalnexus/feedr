@@ -43,6 +43,6 @@ plot(a[["06200004F8"]])
 
 }
 \seealso{
-\link{activity} package and it's function \link[activity:fitact]{fitact}.
+activity package and it's function \link[activity:fitact]{fitact}.
 \url{https://cran.r-project.org/package=activity}
 }

@@ -1,12 +1,27 @@
 
 check_name <- function(d, n = c("animal_id", "logger_id"), type = "visit") {
-  if(!is.null(type)) m <- paste0("You should be using '", type, "' data. ") else m <- ""
-  if(!all(n %in% names(d))) stop(paste0(m, "Required columns aren't present. Require: ", paste0("'", n, "'", collapse = ", ")), call. = FALSE)
+
+  if(!is.null(type)) {
+    m <- paste0("You should be using '", type, "' data. ")
+  } else m <- ""
+
+  if(!all(n %in% names(d))) {
+    stop(m,
+         "Required columns aren't present. Require: ",
+         paste0("'", n, "'", collapse = ", "), call. = FALSE)
+  }
 }
 
 check_time <- function(d, n = c("start", "end"), internal = TRUE) {
+
   if(!all(sapply(d[, n], class) == c("POSIXct", "POSIXt"))) {
-    stop(paste0("Columns ", paste0("'", n, "'", collapse = ", "), " must be in R's date/time formating (POSIXct).", ifelse(internal == FALSE, " Consider using as.POSIXct() and strptime() or lubridate::parse_date_time().", "")), call. = FALSE)
+    stop("Columns ", paste0("'", n, "'", collapse = ", "),
+         " must be in R's date/time formating (POSIXct).",
+         ifelse(internal == FALSE,
+                paste0(" Consider using as.POSIXct() and strptime() or ",
+                       "lubridate::parse_date_time()."),
+                ""),
+         call. = FALSE)
   }
 }
 
@@ -29,11 +44,15 @@ check_tz <- function(tz) {
       tz <- "UTC"
     }
   }
-  return(tz)
+  tz
 }
 
 check_indiv <- function(d) {
-  if(length(unique(d$animal_id)) > 1) stop("This function is only designed to be run on one individual at a time. Consider using the ddply() function from the plyr package, or the do() function from the dplyr package to apply this function to all animals.", call. = FALSE)
+  if(length(unique(d$animal_id)) > 1) {
+    stop("This function is only designed to be run on one individual at a time.",
+         "Consider using the nest() from tidyr and map() from purrr ",
+         "to apply this function to all animals.", call. = FALSE)
+  }
 }
 
 check_format <- function(d, map = FALSE, disp = FALSE) {
@@ -52,7 +71,8 @@ check_input <- function(d, input = "lon",
                         verbose = TRUE) {
 
   opts_string <- paste0("(^", paste0(options, collapse = "$)|(^"), "$)")
-  n <- which(stringr::str_detect(names(d), stringr::regex(opts_string, ignore_case = TRUE)))
+  n <- which(stringr::str_detect(names(d), stringr::regex(opts_string,
+                                                          ignore_case = TRUE)))
 
   # Check if any columns
   if(length(n) > 0){
@@ -62,11 +82,16 @@ check_input <- function(d, input = "lon",
       if(ncol(c) < 10) {
         for(i in 1:ncol(c)) {
           if(!isTRUE(all.equal(d[, c[1, i]][[1]], d[, c[2, i]][[1]]))) {
-            stop("There are multiple ", input, " columns which are not equivalent\n(expects ", input, " to be one of ", paste0(options, collapse = ", "), ", but ignores case")
+            stop("There are multiple ", input,
+                 " columns which are not equivalent\n(expects ",
+                 input, " to be one of ",
+                 paste0(options, collapse = ", "), ", but ignores case")
           }
         }
       } else {
-        stop("There are too many duplicate ", input, " columns\n(expects ", input, " to be one of ", paste0(options, collapse = ", "), ", but ignores case")
+        stop("There are too many duplicate ", input,
+             " columns\n(expects ", input, " to be one of ",
+             paste0(options, collapse = ", "), ", but ignores case")
       }
       # Omit extra columns if duplicates
       if(verbose) message("Omitting duplicate columns for ", input)
@@ -78,7 +103,7 @@ check_input <- function(d, input = "lon",
       names(d)[n] <- input
     }
   }
-  return(d)
+  d
 }
 
 

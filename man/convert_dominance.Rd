@@ -12,7 +12,7 @@ returned as a list item from \code{disp()}, or the whole displacements list
 returned by \code{disp()}.}
 }
 \value{
-List of data frames to use in functions from the \link{Dominance}
+List of data frames to use in functions from the Dominance
 package. data_sheet contains all interactions: action.from/action.to
 represent individuals (code is matched to animal_id in the items data
 frame). action.from represent displacers (winners), action.to represent
@@ -27,7 +27,7 @@ the calculation. See examples for specific application.
 \description{
 Converts displacements RFID data into a format for easy use by either the
 \code{\link[Dominance:ADI]{Dominance::ADI()}} or the \code{\link[Dominance:Sociogram]{Dominance::Sociogram()}}
-functions included in the \link{Dominance} package for calculating average
+functions included in the Dominance package for calculating average
 dominance indices and drawing sociograms. Only includes individuals that
 participated in at least one interaction.
 }
@@ -52,5 +52,5 @@ Sociogram(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bits 
 
 }
 \seealso{
-\link{Dominance} package and it's functions: \link[Dominance:ADI]{ADI} and \link[Dominance:Sociogram]{Sociogram}. \url{https://cran.r-project.org/package=Dominance}
+Dominance package and it's functions: \link[Dominance:ADI]{Dominance::ADI} and \link[Dominance:Sociogram]{Dominance::Sociogram}. \url{https://cran.r-project.org/package=Dominance}
 }

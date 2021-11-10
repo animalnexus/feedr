@@ -42,7 +42,7 @@ If \code{fun = "get_associations_points_tw"}, a data frame with four columns: \c
 Converts raw RFID data into a format for easy use by either the
 \code{\link[asnipe:gmmevents]{asnipe::gmmevents()}} or the
 \code{\link[asnipe:get_associations_points_tw]{asnipe::get_associations_points_tw()}} functions included in the
-\link{asnipe} package for calculating group membership.
+asnipe package for calculating group membership.
 }
 \examples{
 
@@ -62,5 +62,5 @@ get_associations_points_bw(a)
 
 }
 \seealso{
-\link{asnipe} package and it's functions: \link[asnipe:gmmevents]{gmmevents} and \link[asnipe:get_associations_points_tw]{get_associations_points_tw}. \url{https://cran.r-project.org/package=asnipe}
+asnipe package and it's functions: \link[asnipe:gmmevents]{gmmevents} and \link[asnipe:get_associations_points_tw]{get_associations_points_tw}. \url{https://cran.r-project.org/package=asnipe}
 }
