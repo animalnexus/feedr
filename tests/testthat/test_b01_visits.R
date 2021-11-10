@@ -1,17 +1,14 @@
-library(magrittr)
-context("Transformations to visits")
-
 # visits()
 test_that("visits() returns appropriate, non-empty dataframe", {
   expect_silent(v <- visits(finches))
-  expect_is(v, "data.frame")
+  expect_s3_class(v, "data.frame")
   expect_equal(sum(is.na(v)), 0)
   expect_match(names(v)[1:3], "^animal_id$|^date$|^start$|^end$|^logger_id$")
-  expect_is(v$animal_id, "factor")
-  expect_is(v$logger_id, "factor")
-  expect_is(v$start, "POSIXct")
-  expect_is(v$end, "POSIXct")
-  expect_is(v$date, "Date")
+  expect_s3_class(v$animal_id, "factor")
+  expect_s3_class(v$logger_id, "factor")
+  expect_s3_class(v$start, "POSIXct")
+  expect_s3_class(v$end, "POSIXct")
+  expect_s3_class(v$date, "Date")
 
   for(r in list(finches, finches_lg, chickadees)) {
     v <- visits(r)
@@ -72,8 +69,6 @@ test_that("visits() jumps over obs of diff animals at diff loggers", {
 
   # Expect no two visits at the same logger to overlap
 
-  library(lubridate)
-
   error <- data.frame()
 
   for(q in c("finches", "finches_lg")) {
@@ -87,7 +82,8 @@ test_that("visits() jumps over obs of diff animals at diff loggers", {
     for(l in unique(v$logger_id)){
      # message(q, ": ", l)
       for(i in 1:length(v$visits[v$logger_id == l])){
-        if(any(v$visits[v$logger_id == l][i] %within% v$visits[v$logger_id == l][-i])) {
+        if(any(lubridate::`%within%`(v$visits[v$logger_id == l][i],
+                                     v$visits[v$logger_id == l][-i]))) {
           error <- rbind(error, data.frame(data = q, type = "logger", visits = v$visits[v$logger_id == l][i], id = l))
         }
       }
@@ -97,7 +93,8 @@ test_that("visits() jumps over obs of diff animals at diff loggers", {
     for(a in unique(v$animal_id)){
     # message(q, ": ", a)
       for(i in 1:length(v$visits[v$logger_id == l])){
-        if(any(v$visits[v$logger_id == l][i] %within% v$visits[v$logger_id == l][-i])) {
+        if(any(lubridate::`%within%`(v$visits[v$logger_id == l][i],
+                                     v$visits[v$logger_id == l][-i]))) {
           error <- rbind(error, data.frame(data = q, type = "animal_id", visits = v$visits[v$logger_id == l][i], id = l))
         }
       }
@@ -151,9 +148,9 @@ test_that("visits() with group_by", {
                     extra_pattern = "exp[0-9]{1,2}",
                     extra_name = "experiment", tz = "America/Vancouver") %>%
     dplyr::mutate(logger_id = paste0(experiment, "-", logger_id)) %>%
-    dplyr::left_join(coords, by = c("logger_id", "experiment"))
+    dplyr::left_join(coords, by = c("logger_id", "experiment")) %>%
+    suppressMessages()
 
   expect_silent(visits(c))
   expect_silent(dplyr::group_by(c, experiment) %>% dplyr::do(visits(., bw = 3, allow_imp = TRUE)))
-
 })

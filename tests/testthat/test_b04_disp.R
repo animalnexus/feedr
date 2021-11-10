@@ -1,18 +1,13 @@
-library(feedr)
-library(magrittr)
-context("Transformations to displacements")
-
-# disp()
 test_that("disp() returns appropriate, non-empty dataframe", {
 
   ## Errors
-  expect_message(d <- visits(finches) %>% disp(.))
-  expect_silent(d <- visits(finches) %>% disp(., bw = 300))
+  expect_message(d <- visits(finches) %>% disp(), "There are no displacement")
+  expect_silent(d <- visits(finches) %>% disp(bw = 300))
 
   ## Format
-  expect_is(d1 <- d[["displacements"]], "data.frame")
-  expect_is(d2 <- d[["summaries"]], "data.frame")
-  expect_is(d3 <- d[["interactions"]], "data.frame")
+  expect_s3_class(d1 <- d[["displacements"]], "data.frame")
+  expect_s3_class(d2 <- d[["summaries"]], "data.frame")
+  expect_s3_class(d3 <- d[["interactions"]], "data.frame")
 
   expect_length(d1, 14)
   expect_length(d2, 4)
@@ -27,10 +22,10 @@ test_that("disp() returns appropriate, non-empty dataframe", {
   expect_equal(sum(is.na(d3)), 0)
 
   expect_match(names(d1)[1:3], "^animal_id$|^date$|^left$|^arrived$|^logger_id$|^role$")
-  expect_is(d1$animal_id, "factor")
-  expect_is(d1$date, "Date")
-  expect_is(d1$logger_id, "factor")
-  expect_is(d1$left, "POSIXct")
+  expect_s3_class(d1$animal_id, "factor")
+  expect_s3_class(d1$date, "Date")
+  expect_s3_class(d1$logger_id, "factor")
+  expect_s3_class(d1$left, "POSIXct")
 })
 
 test_that("disp() has correct spacing", {
@@ -69,3 +64,4 @@ test_that("disp() pass", {
   expect_length(visits(finches) %>% disp(., bw = 30, pass = FALSE) %>% .$displacements, 6)
   expect_length(visits(finches) %>% disp(., bw = 30, pass = TRUE) %>% .$displacements, 14)
 })
+

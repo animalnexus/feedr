@@ -1,7 +1,3 @@
-library(magrittr)
-context("Loading files")
-
-
 # load_format -------------------------------------------------------------
 test_that("load_format() loads and formats data correctly", {
   f <- system.file("extdata", "chickadees.csv", package = "feedr") %>%
@@ -10,12 +6,12 @@ test_that("load_format() loads and formats data correctly", {
   current_tz <- feedr:::check_tz(Sys.timezone())
   current_tz_nodst <- tz_offset(current_tz, tz_name = TRUE)
 
-  expect_is(r <- load_format(f), "data.frame")
+  expect_s3_class(r <- load_format(f), "data.frame")
   expect_match(names(r)[1:4], "^animal_id$|^time$|^logger_id$|^date$")
-  expect_is(r$animal_id, "factor")
-  expect_is(r$logger_id, "factor")
-  expect_is(r$time, "POSIXct")
-  expect_is(r$date, "Date")
+  expect_s3_class(r$animal_id, "factor")
+  expect_s3_class(r$logger_id, "factor")
+  expect_s3_class(r$time, "POSIXct")
+  expect_s3_class(r$date, "Date")
 
   expect_equal(r$animal_id[1], chickadees$animal_id[1])
   expect_equal(r$logger_id[1], chickadees$logger_id[1])
@@ -43,16 +39,18 @@ test_that("load_format() loads and formats data correctly", {
 test_that("load_format fixes names", {
 
   r1 <- finches %>%
-    dplyr::rename(Animal_ID = animal_id, TIME = time, feeder_id = logger_id, specIes = species, SEX = sex, longitude = lon, latitude = lat)
+    dplyr::rename(Animal_ID = animal_id, TIME = time, feeder_id = logger_id,
+                  specIes = species, SEX = sex, longitude = lon, latitude = lat)
 
-  expect_message(load_format(r1), "Renaming column 'Animal_ID' to 'animal_id'")
-  expect_message(load_format(r1), "Renaming column 'feeder_id' to 'logger_id'")
-  expect_message(load_format(r1), "Renaming column 'longitude' to 'lon'")
-  expect_message(load_format(r1), "Renaming column 'latitude' to 'lat'")
-  expect_message(load_format(r1), "Renaming column 'TIME' to 'time'")
+  expect_message(load_format(r1), "Renaming column 'Animal_ID' to 'animal_id'") %>%
+    expect_message("Renaming column 'feeder_id' to 'logger_id'") %>%
+    expect_message("Renaming column 'longitude' to 'lon'") %>%
+    expect_message("Renaming column 'latitude' to 'lat'") %>%
+    expect_message("Renaming column 'TIME' to 'time'")
 
   expect_named(suppressMessages(load_format(r1)),
-               c("animal_id", "date", "time", "logger_id", "specIes", "age", "SEX", "site_name","lon", "lat"))
+               c("animal_id", "date", "time", "logger_id", "specIes",
+                 "age", "SEX", "site_name","lon", "lat"))
 })
 
 test_that("load_format doesn't change columns already time", {
@@ -80,13 +78,13 @@ test_that("load_raw loads and formats data correctly - logger id from file name"
   f <- system.file("extdata", "raw", "exp2", "GR10DATA_2016_01_16.TXT", package = "feedr")
   expect_message(load_raw(r_file = f), "Loading file")
   expect_silent(r <- load_raw(r_file = f, verbose = FALSE))
-  expect_is(r, "data.frame")
+  expect_s3_class(r, "data.frame")
 
   expect_match(names(r)[1:4], "^animal_id$|^date$|^time$|^logger_id$")
-  expect_is(r$animal_id, "character")
-  expect_is(r$logger_id, "character")
-  expect_is(r$time, "POSIXct")
-  expect_is(r$date, "Date")
+  expect_type(r$animal_id, "character")
+  expect_type(r$logger_id, "character")
+  expect_s3_class(r$time, "POSIXct")
+  expect_s3_class(r$date, "Date")
 
   expect_equal(r$animal_id[2], "062000038F")
   expect_equal(r$logger_id[2], "GR10DATA")
@@ -94,25 +92,38 @@ test_that("load_raw loads and formats data correctly - logger id from file name"
   expect_equal(substr(r$time, 1, 10), as.character(r$date))
 
   # No dst
-  expect_equal(load_raw(f)$time[2], as.POSIXct("2016-01-11 10:48:50", tz = tz_offset(check_tz(Sys.timezone()), tz_name = TRUE)))
-  expect_equal(load_raw(f, tz = "America/Vancouver")$time[2], as.POSIXct("2016-01-11 10:48:50", tz = "Etc/GMT+8"))
-  expect_equal(load_raw(f, tz = "America/Vancouver", tz_disp = "America/Toronto")$time[2], as.POSIXct("2016-01-11 13:48:50", tz = "Etc/GMT+5"))
+  expect_equal(load_raw(f)$time[2],
+               as.POSIXct("2016-01-11 10:48:50",
+                          tz = tz_offset(check_tz(Sys.timezone()), tz_name = TRUE))) %>%
+    expect_message()
+  expect_equal(load_raw(f, tz = "America/Vancouver")$time[2],
+               as.POSIXct("2016-01-11 10:48:50", tz = "Etc/GMT+8")) %>%
+    expect_message()
+  expect_equal(load_raw(f, tz = "America/Vancouver",
+                        tz_disp = "America/Toronto")$time[2],
+               as.POSIXct("2016-01-11 13:48:50", tz = "Etc/GMT+5")) %>%
+    expect_message()
 
   # With dst
-  expect_equal(load_raw(f, dst = TRUE)$time[2], as.POSIXct("2016-01-11 10:48:50", tz = check_tz(Sys.timezone())))
-  expect_equal(load_raw(f, dst = TRUE, tz = "America/Vancouver")$time[2], as.POSIXct("2016-01-11 10:48:50", tz = "America/Vancouver"))
-  expect_equal(load_raw(f, dst = TRUE, tz = "America/Vancouver", tz_disp = "America/Toronto")$time[2], as.POSIXct("2016-01-11 13:48:50", tz = "America/Toronto"))
+  expect_equal(load_raw(f, dst = TRUE)$time[2], as.POSIXct("2016-01-11 10:48:50", tz = check_tz(Sys.timezone()))) %>%
+    expect_message()
+  expect_equal(load_raw(f, dst = TRUE, tz = "America/Vancouver")$time[2], as.POSIXct("2016-01-11 10:48:50", tz = "America/Vancouver")) %>%
+    expect_message()
+  expect_equal(load_raw(f, dst = TRUE, tz = "America/Vancouver", tz_disp = "America/Toronto")$time[2], as.POSIXct("2016-01-11 13:48:50", tz = "America/Toronto")) %>%
+    expect_message()
 })
 
 test_that("load_raw loads and formats data correctly - logger id from first line", {
   f <- system.file("extdata", "raw", "exp2", "GR10DATA_2016_01_16.TXT", package = "feedr")
-  expect_is(r <- load_raw(r_file = f, details = 1, tz = "America/Vancouver"), "data.frame")
-  expect_is(r2 <- load_raw(r_file = f, details = 1, tz = "America/Vancouver", logger_pattern = "[GPR]{2,3}[0-9]{1,2}"), "data.frame")
+  expect_s3_class(r <- load_raw(r_file = f, details = 1, tz = "America/Vancouver"), "data.frame") %>%
+    expect_message()
+  expect_s3_class(r2 <- load_raw(r_file = f, details = 1, tz = "America/Vancouver", logger_pattern = "[GPR]{2,3}[0-9]{1,2}"), "data.frame") %>%
+    expect_message()
   expect_match(names(r)[1:4], "^animal_id$|^date$|^time$|^logger_id$")
-  expect_is(r$animal_id, "character")
-  expect_is(r$logger_id, "character")
-  expect_is(r$time, "POSIXct")
-  expect_is(r$date, "Date")
+  expect_type(r$animal_id, "character")
+  expect_type(r$logger_id, "character")
+  expect_s3_class(r$time, "POSIXct")
+  expect_s3_class(r$date, "Date")
 
   expect_equal(substr(r$time, 1, 10), as.character(r$date))
 
@@ -120,12 +131,14 @@ test_that("load_raw loads and formats data correctly - logger id from first line
   expect_true(all(r$logger_id == "GR10DATA"))
   expect_true(all(r2$logger_id == "GR10"))
   expect_equal(r$time[2], as.POSIXct("2016-01-11 10:48:50", tz = "Etc/GMT+8"))
-  expect_equal(load_raw(f, details = 1, tz = "America/Vancouver", tz_disp = "America/Toronto")$time[2], as.POSIXct("2016-01-11 13:48:50", tz = "Etc/GMT+5"))
+  expect_equal(load_raw(f, details = 1, tz = "America/Vancouver", tz_disp = "America/Toronto")$time[2], as.POSIXct("2016-01-11 13:48:50", tz = "Etc/GMT+5"))  %>%
+    expect_message()
 })
 
 test_that("load_raw handles empty files gracefully", {
   f <- system.file("extdata", "raw", "exp2", "GR10DATA_2016_01_18.TXT", package = "feedr")
-  expect_message(r <- load_raw(r_file = f))
+  expect_message(r <- load_raw(r_file = f)) %>%
+    expect_message()
   expect_null(r, NULL)
 })
 
@@ -136,38 +149,71 @@ test_that("load_raw stops/warns if can't get logger_id", {
   expect_message(expect_error(r <- load_raw(r_file = f, skip = 2, details = 0,
                                             logger_pattern = "[GPR]{2,3}[0-9]{1,2}"),
                               "logger_id not detected in file name"), "Loading file")
-  expect_silent(expect_error(r <- load_raw(r_file = f, skip = 2, details = 0, verbose = FALSE,
-                                           logger_pattern = "[GPR]{2,3}[0-9]{1,2}"),
-                             "logger_id not detected in file name"))
+  expect_error(r <- load_raw(r_file = f, skip = 2, details = 0, verbose = FALSE,
+                             logger_pattern = "[GPR]{2,3}[0-9]{1,2}"),
+               "logger_id not detected in file name") %>%
+    expect_silent()
 
   # Not in body as should be
   f <- system.file("extdata", "import_tests", "logger_inname_GR10DATA.TXT", package = "feedr")
-  expect_message(expect_warning(expect_error(r <- load_raw(r_file = f, details = 1), NA), "logger_id extracted from first line of the file as '06200004BF 15/01/2016 10:48:49', this seems odd"), "Loading file")
-  expect_equivalent(r$logger_id[1], "06200004BF 15/01/2016 10:48:49")
-  expect_silent(expect_warning(expect_error(r <- load_raw(r_file = f, details = 1, verbose = FALSE), NA), "logger_id extracted from first line of the file as '06200004BF 15/01/2016 10:48:49', this seems odd"))
+  expect_warning(r <- load_raw(r_file = f, details = 1),
+                 "logger_id extracted from first line of the file as ") %>%
+    expect_warning("All formats failed to parse") %>%
+    expect_message("Loading file") %>%
+    expect_silent()
+
+  expect_equal(r$logger_id[1], "06200004BF 15/01/2016 10:48:49",
+               ignore_attr = TRUE)
+  expect_warning(r <- load_raw(r_file = f, details = 1, verbose = FALSE),
+                 "logger_id extracted from first line of the file as ") %>%
+    expect_warning("All formats failed to parse") %>%
+    expect_silent()
 
   # No Lat/Lon in body as should be
   f <- system.file("extdata", "raw", "exp2", "GR10DATA_2016_01_16.TXT", package = "feedr")
-  expect_message(expect_error(r <- load_raw(r_file = f, details = 2), "Expecting one pair of lat/lon on second line of the file"), "Loading file")
-  expect_silent(expect_error(r <- load_raw(r_file = f, details = 2, verbose = FALSE), "Expecting one pair of lat/lon on second line of the file"))
+  expect_error(r <- load_raw(r_file = f, details = 2),
+               "Expecting one pair of lat/lon on second line of the file") %>%
+  expect_message("Loading file")
+
+  expect_error(r <- load_raw(r_file = f, details = 2, verbose = FALSE),
+               "Expecting one pair of lat/lon on second line of the file") %>%
+    expect_silent()
 })
 
 
 # load_raw_all ------------------------------------------------------------
 test_that("load_raw_all loads and formats data correctly", {
   d <- system.file("extdata", "raw", package = "feedr")
-  expect_message(expect_error(load_raw_all(r_dir = d, extra_pattern = "exp[0-9]{1,2}", extra_name = "Experiment", tz = "America/Vancouver"), NA), "Empty file skipped")
-  expect_silent(load <- load_raw_all(r_dir = d, extra_pattern = "exp[0-9]{1,2}", extra_name = "Experiment", tz = "America/Vancouver", verbose = FALSE))
+  expect_message(load_raw_all(r_dir = d, extra_pattern = "exp[0-9]{1,2}",
+                              extra_name = "Experiment",
+                              tz = "America/Vancouver"),
+                 "Empty file skipped") %>%
+    suppressMessages()
 
-  expect_message(expect_error(load_raw_all(r_dir = d, extra_pattern = "exp[0-9]{1,2}", extra_name = "Experiment", tz = "America/Vancouver", tz_disp = "America/Toronto"), NA), "Empty file skipped")
-  expect_silent(load2 <- load_raw_all(r_dir = d, extra_pattern = "exp[0-9]{1,2}", extra_name = "Experiment", tz = "America/Vancouver", tz_disp = "America/Toronto", verbose = FALSE))
+  expect_silent(load <- load_raw_all(r_dir = d, extra_pattern = "exp[0-9]{1,2}",
+                                     extra_name = "Experiment",
+                                     tz = "America/Vancouver", verbose = FALSE))
 
-  expect_is(load, "data.frame")
+  expect_message(load_raw_all(r_dir = d, extra_pattern = "exp[0-9]{1,2}",
+                              extra_name = "Experiment",
+                              tz = "America/Vancouver",
+                              tz_disp = "America/Toronto"),
+                 "Empty file skipped") %>%
+    suppressMessages()
+
+  expect_silent(load2 <- load_raw_all(r_dir = d,
+                                      extra_pattern = "exp[0-9]{1,2}",
+                                      extra_name = "Experiment",
+                                      tz = "America/Vancouver",
+                                      tz_disp = "America/Toronto",
+                                      verbose = FALSE))
+
+  expect_s3_class(load, "data.frame")
   expect_match(names(load)[1:3], "^animal_id$|^date$|^time$|^logger_id$")
-  expect_is(load$animal_id, "factor")
-  expect_is(load$logger_id, "factor")
-  expect_is(load$time, "POSIXct")
-  expect_is(load$date, "Date")
+  expect_s3_class(load$animal_id, "factor")
+  expect_s3_class(load$logger_id, "factor")
+  expect_s3_class(load$time, "POSIXct")
+  expect_s3_class(load$date, "Date")
 
   expect_equal(substr(load$time, 1, 10), as.character(load$date))
 
@@ -176,64 +222,4 @@ test_that("load_raw_all loads and formats data correctly", {
   expect_equal(load$time[1], as.POSIXct("2016-01-11 10:48:49", tz = "Etc/GMT+8"))
   expect_equal(load2$time[1], as.POSIXct("2016-01-11 13:48:49", tz = "Etc/GMT+5"))
 })
-
-
-# dl_data -----------------------------------------------------------------
-test_that("dl_data loads and formats data correctly", {
-  expect_silent(load <- dl_data(start = "2016-01-01", end = "2016-02-01"))
-  expect_silent(load2 <- dl_data(start = "2016-01-01", end = "2016-02-01", tz_disp = "America/Toronto"))
-  expect_is(load, "data.frame")
-  expect_match(names(load)[1:4], "^animal_id$|^date$|^time$|^logger_id$")
-  expect_is(load$animal_id, "factor")
-  expect_is(load$logger_id, "factor")
-  expect_is(load$time, "POSIXct")
-
-  expect_equal(load$animal_id[1], factor("0620000514", levels = c("041868D396", "041868D861", "041868FF93", "062000043E", "06200004F8", "0620000514")))
-  expect_equal(load$logger_id[1], factor("2200", levels = c("2100", "2200", "2400", "2700")))
-  expect_equal(load$time[1], as.POSIXct("2016-01-28 12:34:25", tz = "Etc/GMT+8"))
-  expect_equal(load2$time[1], as.POSIXct("2016-01-28 15:34:25", tz = "Etc/GMT+5"))
-})
-
-test_that("dl_data gracefully ends if no data to download", {
-  expect_error(dl_data(start = "2010-01-01", end = "2010-02-02"), "There are no online data matching these parameters.")
-})
-
-test_that("dl_data filters by species_code and site_id", {
-  all <- dl_data(start = "2016-01-28", end = "2016-02-01")
-  hofi <- dl_data(start = "2016-01-28", end = "2016-02-01", species = "House Finch")
-  moch <- dl_data(start = "2016-01-28", end = "2016-02-01", species = "Mountain Chickadee")
-
-  expect_equal(unique(all$species), c("House Finch", "Mountain Chickadee"))
-  expect_equal(unique(hofi$species), c("House Finch"))
-  expect_equal(unique(moch$species), c("Mountain Chickadee"))
-  expect_equal(nrow(all), 413)
-  expect_equal(nrow(hofi), 412)
-  expect_equal(nrow(moch), 1)
-  expect_true(min(all$time) >= as.POSIXct("2016-01-28"))
-  expect_true(max(all$time) <= as.POSIXct("2016-02-01"))
-
-  hofi_sp <- dl_data(start = "2016-01-28", end = "2016-02-01", species = "house finch")
-  moch_sp <- dl_data(start = "2016-01-28", end = "2016-02-01", species = "mountain CHICKadee")
-
-  expect_equal(hofi, hofi_sp)
-  expect_equal(moch, moch_sp)
-})
-
-test_that("dl_data sites and that uses credentials appropriatly", {
-  if(!is.null(check_db())) {
-    both <- dl_data(start = "2013-05-24", end = "2015-09-04")
-    expect_equal(unique(both$site_name), c("Costa Rica", "Kamloops, BC"))
-    kl <- dl_data(start = "2013-05-24", end = "2015-09-04", site_id = "kl")
-    expect_equal(unique(kl$site_name), "Kamloops, BC")
-    cr <- dl_data(start = "2013-05-24", end = "2015-09-04", site_id = "cr")
-    expect_equal(unique(cr$site_name), "Costa Rica")
-  } else {
-    both <- dl_data(start = "2013-05-24", end = "2015-09-04")
-    expect_equal(unique(both$site_name), "Kamloops, BC")
-    kl <- dl_data(start = "2013-05-24", end = "2015-09-04", site_id = "kl")
-    expect_equal(unique(kl$site_name), "Kamloops, BC")
-    expect_error(dl_data(start = "2013-05-24", end = "2015-09-04", site_id = "cr"), "There are no online data matching these parameters.")
-  }
-})
-
 

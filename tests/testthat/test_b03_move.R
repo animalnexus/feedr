@@ -1,22 +1,21 @@
-library(magrittr)
-context("Transformations to movements")
-
-# move()
 test_that("move() returns appropriate, non-empty dataframe", {
 
   ## Errors
-  expect_silent(m <- move(visits(finches)))
+  m <- finches %>%
+    visits() %>%
+    move() %>%
+    expect_silent()
 
   ## Format
-  expect_is(m, "data.frame")
+  expect_s3_class(m, "data.frame")
   expect_length(m, 17)
   expect_equal(nrow(m), 30)
   expect_equal(sum(is.na(m)), 0)
   expect_match(names(m)[1:3], "^animal_id$|^date$|^time$|^logger_id$|^direction$|^move_dir$|^move_path$|^strength$")
-  expect_is(m$animal_id, "factor")
-  expect_is(m$logger_id, "factor")
-  expect_is(m$date, "Date")
-  expect_is(m$time, "POSIXct")
+  expect_s3_class(m$animal_id, "factor")
+  expect_s3_class(m$logger_id, "factor")
+  expect_s3_class(m$date, "Date")
+  expect_s3_class(m$time, "POSIXct")
 
 
 })
@@ -48,12 +47,12 @@ test_that("move() returns expected data", {
 test_that("move() handles zero movements and single animal", {
   ## No movements (all = FALSE)
   expect_silent(m <- visits(finches) %>% dplyr::filter(animal_id == "062000043E") %>% move())
-  expect_is(m, "data.frame")
+  expect_s3_class(m, "data.frame")
   expect_equal(nrow(m), 0)
 
   ## No movements (all = TRUE)
   expect_silent(m <- visits(finches) %>% dplyr::filter(animal_id == "062000043E") %>% move(., all = TRUE))
-  expect_is(m, "data.frame")
+  expect_s3_class(m, "data.frame")
   expect_length(m, 17)
   expect_equal(nrow(m), 1)
   expect_equal(m$animal_id[1], factor("062000043E", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))

@@ -1,6 +1,3 @@
-library(magrittr)
-context("Scaling by area for maps")
-
 test_that("scale_area() returns correct min/max/length", {
   s <- list(seq(0.1, 1, length.out = 5),
             1:5,
@@ -74,3 +71,4 @@ test_that("scale_area(radius) returns expected values", {
   expect_equal(round(scale_area(c(4,8,19,500,6000,30000), radius = TRUE, min = 5), 6),
               c(5.000000, 5.144595, 5.522747, 14.383703, 47.157465, 105.000000))
 })
+
