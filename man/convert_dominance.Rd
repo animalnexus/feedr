@@ -13,20 +13,20 @@ returned by \code{disp()}.}
 }
 \value{
 List of data frames to use in functions from the \link{Dominance}
-  package. data_sheet contains all interactions: action.from/action.to
-  represent individuals (code is matched to animal_id in the items data
-  frame). action.from represent displacers (winners), action.to represent
-  displacees (losers), kind.of.action is a dummy variable representing the
-  action type (displacement). items is a data frame matching animal_ids to to
-  the code used in the data_sheet. actions contain the one action type
-  (displacements) and the classification and weighting (corresponds to
-  action.from being a winner, and action.to being a loser). bytes is a dummy
-  vector indicating that the action type "displacement" should be included in
-  the calculation. See examples for specific application.
+package. data_sheet contains all interactions: action.from/action.to
+represent individuals (code is matched to animal_id in the items data
+frame). action.from represent displacers (winners), action.to represent
+displacees (losers), kind.of.action is a dummy variable representing the
+action type (displacement). items is a data frame matching animal_ids to to
+the code used in the data_sheet. actions contain the one action type
+(displacements) and the classification and weighting (corresponds to
+action.from being a winner, and action.to being a loser). bytes is a dummy
+vector indicating that the action type "displacement" should be included in
+the calculation. See examples for specific application.
 }
 \description{
 Converts displacements RFID data into a format for easy use by either the
-\code{\link[Dominance]{ADI}} or the \code{\link[Dominance]{Sociogram}}
+\code{\link[Dominance:ADI]{Dominance::ADI()}} or the \code{\link[Dominance:Sociogram]{Dominance::Sociogram()}}
 functions included in the \link{Dominance} package for calculating average
 dominance indices and drawing sociograms. Only includes individuals that
 participated in at least one interaction.
@@ -52,5 +52,5 @@ Sociogram(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bits 
 
 }
 \seealso{
-\link{Dominance} package and it's functions: \link[Dominance]{ADI} and \link[Dominance]{Sociogram}. \url{https://cran.r-project.org/package=Dominance}
+\link{Dominance} package and it's functions: \link[Dominance:ADI]{ADI} and \link[Dominance:Sociogram]{Sociogram}. \url{https://cran.r-project.org/package=Dominance}
 }

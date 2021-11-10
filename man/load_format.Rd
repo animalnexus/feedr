@@ -4,19 +4,25 @@
 \alias{load_format}
 \title{Format data}
 \usage{
-load_format(r, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE,
-  time_format = "ymd HMS", verbose = TRUE)
+load_format(
+  r,
+  tz = Sys.timezone(),
+  tz_disp = NULL,
+  dst = FALSE,
+  time_format = "ymd HMS",
+  verbose = TRUE
+)
 }
 \arguments{
 \item{r}{Data frame. Data frame to format.}
 
 \item{tz}{Character. The time zone the date/times are in (should match one of
-the zones produced by \code{OlsonNames())}. Attempts to use user's system
+the zones produced by \verb{OlsonNames())}. Attempts to use user's system
 timezone, if none supplied. Defaults to UTC if all else fails.}
 
 \item{tz_disp}{Character. The time zone the date/times should be displayed in
 (if not the same as \code{tz}; should match one of the zones produced by
-\code{OlsonNames())}.}
+\verb{OlsonNames())}.}
 
 \item{dst}{Logical. Whether or not to use Daylight Savings. When set to FALSE
 timezones are converted to the Etc/GMT+X timezones which do not include
@@ -45,7 +51,7 @@ and long, but will be renamed to lat and lon).
 \code{time} should be a character or factor in date/time format , e.g.
 2016-09-30 14:00:00. The exact format of the date/time can be supplied using
 the \code{time_format} argument and should represent a format usable by the
-\code{\link[lubridate]{parse_date_time()}} function from the \link{lubridate}
+\code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} function from the \link{lubridate}
 package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.). For example, 09/30/16
 2:00 pm can be specified by time_format = "mdy HM p".
 }

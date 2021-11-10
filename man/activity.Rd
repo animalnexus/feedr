@@ -4,11 +4,19 @@
 \alias{activity}
 \title{Activity}
 \usage{
-activity(p, res = 15, by_logger = FALSE, missing = NULL, sun = TRUE,
-  keep_all = FALSE, pass = TRUE, f)
+activity(
+  p,
+  res = 15,
+  by_logger = FALSE,
+  missing = NULL,
+  sun = TRUE,
+  keep_all = FALSE,
+  pass = TRUE,
+  f
+)
 }
 \arguments{
-\item{p}{Dataframe. A \code{\link{presence}} data frame (may contain multiple
+\item{p}{Dataframe. A \code{\link[=presence]{presence()}} data frame (may contain multiple
 animal_ids).}
 
 \item{res}{Numeric. The resolution over which to calculate activity in
@@ -34,10 +42,10 @@ median sun rise/set across all loggers for each day.}
 }
 \description{
 Calculate activity status (active vs. inactive) at a resolution of \code{res}
-from \code{\link{presence}} data.
+from \code{\link[=presence]{presence()}} data.
 }
 \details{
-A message will alert you to when the \code{res} is larger than the 50\% of
+A message will alert you to when the \code{res} is larger than the 50\\% of
 the presence bout lengths. This may result in missed activity, and it may be
 better to choose a smaller \code{res}.
 

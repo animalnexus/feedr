@@ -3,21 +3,21 @@
 #'
 #' This function pads all short ids with leading zeros, then compares the animal
 #' ids in your data file to those in an index file. Any ids matched to a species
-#' with a value in the \code{omit_animal} argument will be omitted from the data
+#' with a value in the `omit_animal` argument will be omitted from the data
 #' set.
 #'
-#' This is useful for removing ids you know are errors (e.g., \code{0000000000})
+#' This is useful for removing ids you know are errors (e.g., `0000000000`)
 #' or which you know are wands.
 #'
 #' @param r Data frame. A data frame of read data, with at least column
-#'   \code{animal_id}.
+#'   `animal_id`.
 #' @param ids Character or Data frame. Either the name and location of a
 #'   .csv file containing the animal id index or a data frame of the animal id
-#'   index. In either case, the data must contain two columns: \code{animal_id}
-#'   and \code{species}.
-#' @param omit Character vector. All the values of \code{species} in the
+#'   index. In either case, the data must contain two columns: `animal_id`
+#'   and `species`.
+#' @param omit Character vector. All the values of `species` in the
 #'   animal id index which you would like to omit from your data. Defaults to
-#'   \code{c("wand", "error")}.
+#'   `c("wand", "error")`.
 #' @param id_length Numeric. How many characters are expected in each id? This
 #'   will test to make sure all ids are the right length (i.e. make sure
 #'   leading zeros haven't been omitted). NA skips this test.
@@ -97,16 +97,15 @@ check.ids <- function(r, animal_ids, omit_animal = c("wand", "error")){
 #' in the field.
 #'
 #' @param r Data frame. A data frame of read data, with at least column
-#'   \code{animal_id}.
+#'   `animal_id`.
 #' @param problems Character or Data frame. Either the name and location of a
 #'   .csv file containing the problem index or a data frame of the problem
 #'   index. In either case, the data must contain two columns:
-#'   \code{original_id} and \code{corrected_id}.
+#'   `original_id` and `corrected_id`.
 #'
 #' @return A data frame with corrected ids. Messages are printed to inform the
 #'   user of any corrections made.
 #'
-#' @import magrittr
 #' @export
 check_problems <- function(r, problems){
   if(length(problems) > 1 & !is.data.frame(problems)) stop("Problems should either be the name of a comma separated file (csv) OR should be a data frame. In either case, the data should contain headers 'original_id' and 'corrected_id'")

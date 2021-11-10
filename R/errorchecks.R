@@ -47,8 +47,10 @@ check_format <- function(d, map = FALSE, disp = FALSE) {
   if("animal_id" %in% names(d)) if(any(stringr::str_count(d$animal_id, "_") > 0)) message(msg_a)
 }
 
-#' @import magrittr
-check_input <- function(d, input = "lon", options = c("lon", "longitude", "long"), verbose = TRUE) {
+check_input <- function(d, input = "lon",
+                        options = c("lon", "longitude", "long"),
+                        verbose = TRUE) {
+
   opts_string <- paste0("(^", paste0(options, collapse = "$)|(^"), "$)")
   n <- which(stringr::str_detect(names(d), stringr::regex(opts_string, ignore_case = TRUE)))
 

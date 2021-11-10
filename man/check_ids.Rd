@@ -27,7 +27,7 @@ leading zeros haven't been omitted). NA skips this test.}
 }
 \value{
 A data frame without the specified animal ids. Messages are printed to
-  inform the user of matching or non-matching animal ids.
+inform the user of matching or non-matching animal ids.
 }
 \description{
 This function pads all short ids with leading zeros, then compares the animal

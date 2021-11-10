@@ -4,21 +4,32 @@
 \alias{load_raw}
 \title{Load raw read data}
 \usage{
-load_raw(r_file, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE,
-  details = 1, logger_pattern = NA, time_format = "mdy HMS",
-  extra_pattern = NULL, extra_name = NULL, sep = "", skip = 0,
-  verbose = TRUE, feeder_pattern)
+load_raw(
+  r_file,
+  tz = Sys.timezone(),
+  tz_disp = NULL,
+  dst = FALSE,
+  details = 1,
+  logger_pattern = NA,
+  time_format = "mdy HMS",
+  extra_pattern = NULL,
+  extra_name = NULL,
+  sep = "",
+  skip = 0,
+  verbose = TRUE,
+  feeder_pattern
+)
 }
 \arguments{
 \item{r_file}{Character. The location of a single file to load.}
 
 \item{tz}{Character. The time zone the date/times are in (should match one of
-the zones produced by \code{OlsonNames())}. Attempts to use user's system
+the zones produced by \verb{OlsonNames())}. Attempts to use user's system
 timezone, if none supplied. Defaults to UTC if all else fails.}
 
 \item{tz_disp}{Character. The time zone the date/times should be displayed in
 (if not the same as \code{tz}; should match one of the zones produced by
-\code{OlsonNames())}. Defaults to tz if none supplied.}
+\verb{OlsonNames())}. Defaults to tz if none supplied.}
 
 \item{dst}{Logical. Whether or not to use Daylight Savings. When set to FALSE
 timezones are converted to the Etc/GMT+X timezones which do not include
@@ -33,7 +44,7 @@ DST).}
 \item{logger_pattern}{Character. A regular expression matching the logger id
 in the file name. NA (default) matches file name (extension omitted) or
 first line of the file (See the \code{details} argument). Alternatively,
-"[GPR]\{2,3\}[0-9]\{1,2\}" would match the names of TRU loggers.}
+"\link{GPR}\{2,3\}\link{0-9}\{1,2\}" would match the names of TRU loggers.}
 
 \item{time_format}{Character. The date/time format of the 'date' and 'time'
 columns combined. Defaults to "mdy HMS". Should be in formats usable by the
@@ -48,7 +59,7 @@ first line of the file.}
 order of \code{extra_pattern} for storing the results of the pattern.}
 
 \item{sep}{Character. An override for the separator in the
-\code{read.table()} call (see \code{sep =} under \code{?read.table} for
+\code{read.table()} call (see \verb{sep =} under \code{?read.table} for
 more details).}
 
 \item{skip}{Character. Extra lines to skip in addition to the lines specified
@@ -74,13 +85,13 @@ data.
 The columns \code{date} and \code{time} will be combined to extract the
 date/time of each event. Thus, the \code{time_format} argument specifies the
 order of the combined date and time columns and should be in formats usable
-by the \code{\link[lubridate]{parse_date_time()}} function from the
+by the \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} function from the
 \link{lubridate} package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.). For
 example, the default "mdy HMS" expects a date column in the format of
 month/day/year and a time column in the format of H:M:S (note that separators
 and leading zeros are ignored, thus month-day-year is equivalent to
 month/day/year, see the \code{order} argument of the
-\link[lubridate]{parse_date_time} function for more information. More complex
+\link[lubridate:parse_date_time]{parse_date_time} function for more information. More complex
 formats can also be specified:  For example, 09/30/16 2:00 pm can be
 specified by time_format = "mdy HM p".
 

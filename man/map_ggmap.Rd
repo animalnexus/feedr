@@ -4,11 +4,28 @@
 \alias{map_ggmap}
 \title{Map data using ggmap}
 \usage{
-map_ggmap(p = NULL, m = NULL, locs = NULL, summary = "none",
-  p_scale = 1, m_scale = 1, p_title = "Time", m_title = "Path use",
-  p_pal = c("yellow", "red"), m_pal = c("yellow", "red"),
-  maptype = "satellite", mapsource = "google", zoom = 17, which = NULL,
-  u.scale, p.scale, u.title, p.title, u.pal, p.pal)
+map_ggmap(
+  p = NULL,
+  m = NULL,
+  locs = NULL,
+  summary = "none",
+  p_scale = 1,
+  m_scale = 1,
+  p_title = "Time",
+  m_title = "Path use",
+  p_pal = c("yellow", "red"),
+  m_pal = c("yellow", "red"),
+  maptype = "satellite",
+  mapsource = "google",
+  zoom = 17,
+  which = NULL,
+  u.scale,
+  p.scale,
+  u.title,
+  p.title,
+  u.pal,
+  p.pal
+)
 }
 \arguments{
 \item{p}{Dataframe. Regular or summarized presence data with columns
@@ -29,8 +46,10 @@ total amount of time spent at a logger, "sum_indiv", averages the totals by
 the number of individuals in the data, "indiv" calculates totals for each
 individual.}
 
-\item{p_scale, m_scale}{Numerical. Relative scaling constants to increase (> 1) or
-decrease (< 1) the relative size of presence (p) and path (m) data.}
+\item{p_scale, m_scale}{Numerical. Relative scaling constants to increase (>
+\enumerate{
+\item or decrease (< 1) the relative size of presence (p) and path (m) data.
+}}
 
 \item{p_title, m_title}{Character. Titles for the legends of presence (p) and
 path (m) data.}
@@ -39,41 +58,43 @@ path (m) data.}
 presence (p) and movement (m) data.}
 
 \item{maptype}{Character. The type of map to download. See \code{maptype}
-under \code{\link[ggmap]{get_map}} for more options.}
+under \code{\link[ggmap:get_map]{ggmap::get_map()}} for more options.}
 
 \item{mapsource}{Character. The source of the map to download. See
-\code{source} under \code{\link[ggmap]{get_map}} for more options.}
+\code{source} under \code{\link[ggmap:get_map]{ggmap::get_map()}} for more options.}
 
 \item{zoom}{Numeric. The zoom level of the map to download. See \code{zoom}
-under \code{\link[ggmap]{get_map}} for more options.}
+under \code{\link[ggmap:get_map]{ggmap::get_map()}} for more options.}
 
-\item{which}{Character vector. A vector of animal ids specifying which to show.
-Only applies when using individual data.}
+\item{which}{Character vector. A vector of animal ids specifying which to
+show. Only applies when using individual data.}
 
 \item{u.scale, p.scale, u.title, p.title, u.pal, p.pal}{Depreciated.}
 }
 \value{
 An interactive leaflet map with layers for presence, movements and
-  logger positions.
+logger positions.
 }
 \description{
+\strong{DEFUNCT FOR NOW}
+}
+\details{
 A visual summary of presence at and movements between loggers using ggmap in
 R. This produces a static map. This function can take invidiual data as well
 as grand summaries (see Details and Examples).
-}
-\details{
+
 The type of summary visualized is defined by the \code{summary}
-  argument: \code{summary = "sum"} calculates the total amount of time spent
-  at each logger (presence) or total number of movements between loggers
-  (movements). \code{summary = "sum_indiv"} averages these totals by the
-  number of individuals in the data set, resulting in an average total amount
-  of time per individual and an average amount of movements per individual
-  for, or between, each logger. \code{summary = "indiv"} calculates
-  individual totals. If the data is already summarized, use \code{summary =
-  "none"}.
+argument: \code{summary = "sum"} calculates the total amount of time spent
+at each logger (presence) or total number of movements between loggers
+(movements). \code{summary = "sum_indiv"} averages these totals by the
+number of individuals in the data set, resulting in an average total amount
+of time per individual and an average amount of movements per individual
+for, or between, each logger. \code{summary = "indiv"} calculates
+individual totals. If the data is already summarized, use \code{summary = "none"}.
 }
 \examples{
 
+\dontrun{
 v <- visits(finches)
 p <- presence(v, bw = 15)
 m <- move(v)
@@ -97,5 +118,7 @@ m2 <- m \%>\%
   summarize(path_use = length(move_path) / logger_n[1])
 
 map_ggmap(p = p2, m = m2)
+
+}
 
 }

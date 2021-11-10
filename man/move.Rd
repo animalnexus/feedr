@@ -21,21 +21,21 @@ them to the output.}
 }
 \value{
 A data frame of movements. These are defined as the bout of time from
-  leaving one logger to arriving at a second one. Each movement bout consists
-  of two rows of data containing:
-  \itemize{
-  \item ID of the animal (\code{animal_id})
-  \item Date of event (\code{date})
-  \item Time of event (\code{time})
-  \item The ID of loggers involved (\code{logger_id})
-  \item The movement path including direction (\code{move_dir})
-  \item The movement path independent of direction (\code{move_path})
-  \item The 'strength' of the connection (inverse of time taken to move
-  between; \code{strength})
-  \item Information on whether left/arrived (\code{direction})
-  \item The ID of a single move event for a particular individual (\code{move_id})
-  \item Any extra columns \code{pass}ed through
-  }
+leaving one logger to arriving at a second one. Each movement bout consists
+of two rows of data containing:
+\itemize{
+\item ID of the animal (\code{animal_id})
+\item Date of event (\code{date})
+\item Time of event (\code{time})
+\item The ID of loggers involved (\code{logger_id})
+\item The movement path including direction (\code{move_dir})
+\item The movement path independent of direction (\code{move_path})
+\item The 'strength' of the connection (inverse of time taken to move
+between; \code{strength})
+\item Information on whether left/arrived (\code{direction})
+\item The ID of a single move event for a particular individual (\code{move_id})
+\item Any extra columns \code{pass}ed through
+}
 }
 \description{
 Turns visits to mulitple loggers into movements between loggers
