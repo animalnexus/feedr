@@ -1,7 +1,7 @@
 Package: feedr
 Type: Package
 Title: Transforming Raw RFID Data
-Version: 0.10.0
+Version: 0.11.0
 Authors@R: person("LaZerte", "Stefanie E", email = "steffi@steffi.ca", role = c("aut","cre"))
 URL: https://github.com/animalnexus/feedr
 Description: Load, clean, transform, and visualize raw RFID data for looking at a variety of
@@ -10,38 +10,29 @@ License: GPL-3
 LazyData: TRUE
 Depends: R (>= 3.2.2)
 Imports:
-    DT (>= 0.1),
-    curl (>= 0.9.7),
-    DBI (>= 0.4.1),
-    dplyr(>= 0.5.0),
-    ggplot2 (>= 2.1.0),
-    ggmap (>= 2.6.1),
-    htmltools (>= 0.3.5),
-    leaflet (>= 1.1.0),
-    lubridate (>= 1.5.6),
-    magrittr (>= 1.5),
-    maptools (>= 0.8-39),
-    purrr (>= 0.2.3),
-    RCurl (>= 1.95-4.8),
-    RPostgreSQL (>= 0.4.1),
-    scales(>= 0.4.0),
-    shiny (>= 1.0.0),
-    shinyBS (>= 0.61),
-    shinyjs (>= 0.9),
-    stringr (>= 1.0.0),
-    tibble(>= 1.2),
-    tidyr (>= 0.5.1),
-    xml2 (>= 0.1.2)
+    dplyr (>= 1.0.0),
+    ggplot2 (>= 3.3.3),
+    htmltools (>= 0.5.1.1),
+    leaflet (>= 2.0.4.1),
+    lubridate (>= 1.7.10),
+    magrittr (>= 2.0.1),
+    maptools (>= 1.1.1),
+    purrr (>= 0.3.4),
+    scales (>= 1.1.1),
+    stringr (>= 1.4.0),
+    tibble (>= 3.1.2),
+    tidyr (>= 1.1.3)
 Suggests:
     aniDom,
     asnipe,
     Dominance,
     knitr,
-    lazyeval,
     Perc,
     rmarkdown,
     sp,
-    testthat
-RoxygenNote: 6.0.1
+    testthat (>= 3.0.0)
+RoxygenNote: 7.1.2
 VignetteBuilder: knitr
-Remotes: rstudio/leaflet
+Roxygen: list(markdown = TRUE)
+Encoding: UTF-8
+Config/testthat/edition: 3

@@ -1,7 +1,13 @@
-# feedr 0.10.0 2018-08-04
+# feedr dev
+
+- Updated package to current dependency versions
+- Splitting Shiny UI elements into a separate package to make maintaining this one easier
+
+
+# feedr 0.10.0
 
 ## New features
-- Add `inout()` function to caluclate trips with RFID loggers are set up to determine directionality
+- Add `inout()` function to calculate trips with RFID loggers are set up to determine directionality
 
 ## Bug fix
 - Fix `load_format()` so it lose millisecond information in times
