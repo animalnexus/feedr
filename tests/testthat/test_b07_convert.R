@@ -178,6 +178,7 @@ test_that("convert_anidom runs aniDom functions as expected", {
 })
 
 test_that("convert_dominance converts as expected", {
+  skip_on_os(c("mac", "linux"))
   d <- disp(visits(finches_lg), bw = 5)
   expect_silent(a <- convert_dominance(d$displacements))
   expect_silent(a2 <- convert_dominance(d))
