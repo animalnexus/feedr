@@ -1,79 +1,68 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
 
 <title>Loading in Data</title>
 
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
 <script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
-<script src="site_libs/highlightjs-1.1/highlight.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
-  pre:not([class]) {
-    background-color: white;
-  }
-</style>
 <script type="text/javascript">
-if (window.hljs && document.readyState && document.readyState === "complete") {
-   window.setTimeout(function() {
-      hljs.initHighlighting();
-   }, 0);
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
 }
 </script>
 
 
 
-<style type="text/css">
-h1 {
-  font-size: 34px;
-}
-h1.title {
-  font-size: 38px;
-}
-h2 {
-  font-size: 30px;
-}
-h3 {
-  font-size: 24px;
-}
-h4 {
-  font-size: 18px;
-}
-h5 {
-  font-size: 16px;
-}
-h6 {
-  font-size: 12px;
-}
-.table th:not([align]) {
-  text-align: left;
-}
-</style>
+
 
 <link rel="stylesheet" href="custom.css" type="text/css" />
 
-</head>
 
-<body>
 
 <style type = "text/css">
 .main-container {
@@ -81,58 +70,68 @@ h6 {
   margin-left: auto;
   margin-right: auto;
 }
-code {
-  color: inherit;
-  background-color: rgba(0, 0, 0, 0.04);
-}
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
 }
+.html-widget {
+  margin-bottom: 20px;
+}
 button.code-folding-btn:focus {
   outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
 }
 </style>
 
 
 <style type="text/css">
-/* padding for bootstrap navbar */
-body {
-  padding-top: 66px;
-  padding-bottom: 40px;
+.dropdown-submenu {
+  position: relative;
 }
-/* offset scroll position for anchor links (for fixed navbar)  */
-.section h1 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
 }
-
-.section h2 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
 }
-.section h3 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
 }
-.section h4 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
 }
-.section h5 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu.pull-left {
+  float: none;
 }
-.section h6 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
 }
 </style>
 
-<script>
+<script type="text/javascript">
 // manage active state of menu based on current page
 $(document).ready(function () {
   // active menu anchor
@@ -143,54 +142,85 @@ $(document).ready(function () {
   var menuAnchor = $('a[href="' + href + '"]');
 
   // mark it active
-  menuAnchor.parent().addClass('active');
+  menuAnchor.tab('show');
 
   // if it's got a parent navbar menu mark it active as well
   menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
 });
 </script>
-
-
-<div class="container-fluid main-container">
 
 <!-- tabsets -->
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-</script>
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
 
 <!-- code folding -->
 
 
-
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = false;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -204,6 +234,12 @@ $(document).ready(function ()  {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -239,8 +275,6 @@ div.tocify {
 
 .tocify-subheader .tocify-item {
   font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -256,8 +290,18 @@ div.tocify {
 
 </style>
 
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
 <!-- setup 3col/9col grid for toc_float and main content  -->
-<div class="row-fluid">
+<div class="row">
 <div class="col-xs-12 col-sm-4 col-md-3">
 <div id="TOC" class="tocify">
 </div>
@@ -307,7 +351,7 @@ div.tocify {
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-<div class="fluid-row" id="header">
+<div id="header">
 
 
 
@@ -320,12 +364,10 @@ div.tocify {
 <ul>
 <li><a href="#loadraw"><code>load_raw()</code></a></li>
 <li><a href="#loadrawall"><code>load_raw_all()</code></a></li>
-<li><a href="#dldata"><code>dl_data()</code></a></li>
 </ul>
-<p>These functions work with either <strong>raw</strong> RFID logger data (downloaded directly from the loggers) or <strong>database</strong> data downloaded from <a href="http://animalnexus.ca" class="uri">http://animalnexus.ca</a> directly or with the <code>dl_data()</code> function.</p>
 <div id="a-note-about-file-structure" class="section level2">
 <h2>A note about file structure</h2>
-<p>It’s important to remember that when specifying file locations, you must either specify a complete file location (e.g. “/home/steffi/Desktop/data.csv”) <strong>or</strong> an appropriate relative file location. A relative file location would be something like: “./Data/data.csv” which points to a file called data.csv which is in a folder called “Data”. The “./” indicates that “Data” is in the current working directory. If we used “../” that would indicate that “Data” was one directory up.</p>
+<p>It’s important to remember that when specifying file locations, you must either specify a complete file location (e.g. “/home/steffi/Desktop/data.csv”) <strong>or</strong> an appropriate relative file location. A relative file location would be something like: “./Data/data.csv” which points to a file called data.csv which is in a folder called “Data”. The “./” indicates that “Data” is in the current working directory. If we used “../” that would indicate that “Data” was one directory up.</p>
 <p>Also, remember that file locations are relative to where R’s working directory is, and this is not necessarily the same place as the R script with which you are working.</p>
 <p>If you are using RStudio, it is highly recommended that you specify an RStudio project in the directory which holds your scripts. This way, anytime you open the file, the working directly is automatically set to your script directly.</p>
 <p><strong>This tutorial assumes that your data is stored in a folder called “Data” which is in turn stored in your R scripts folder.</strong></p>
@@ -433,7 +475,7 @@ div.tocify {
 ## 4 06200004BF 2016-01-11 2016-01-11 10:50:02 Logger_21 53.89086 -122.8193
 ## 5 06200004E4 2016-01-11 2016-01-11 10:51:07 Logger_21 53.89086 -122.8193
 ## 6 06200004BE 2016-01-11 2016-01-11 10:51:51 Logger_21 53.89086 -122.8193</code></pre>
-<p>For more information on how to write Regular Expression patterns, see documentation for “Regular Expressions” (e.g. <a href="http://www.regular-expressions.info/tutorial.html" class="uri">http://www.regular-expressions.info/tutorial.html</a>)</p>
+<p>For more information on how to write Regular Expression patterns, see documentation for “Regular Expressions” (e.g. <a href="http://www.regular-expressions.info/tutorial.html" class="uri">http://www.regular-expressions.info/tutorial.html</a>)</p>
 <p><a id="loadrawall"></a></p>
 </div>
 </div>
@@ -579,71 +621,10 @@ head(r)</code></pre>
 ## 5       exp2 exp2-GR10DATA 06200004E4 2016-01-11 2016-01-11 10:51:07    GR10DATA 53.89086 -122.8193
 ## 6       exp2 exp2-GR10DATA 06200004BE 2016-01-11 2016-01-11 10:51:51    GR10DATA 53.89086 -122.8193</code></pre>
 <p>This data is now ready for <a href="housekeeping.html">housekeeping</a> or go straight to <a href="transformations.html">transformations</a>!</p>
-<p><a id="dldata"></a></p>
-</div>
-</div>
-<div id="dl_data" class="section level2">
-<h2><code>dl_data()</code></h2>
-<p>This is likely the easiest way to get data (provided the data you’re interested in is hosted in the animal__nexus__ database). This function requests data from animal__nexus__ and formats it for use with the <code>feedr</code> transformation functions.</p>
-<p>If you don’t specify anything, all data will be downloaded for the default site (Kamloops) and the default extra columns (loc and species) with the default timezone (America/Vancouver). See <code>?dl_data</code> for more details.</p>
-<pre><code>##    animal_id       date                time logger_id            species age sex    site_name       lon      lat
-## 1 062000031A 2015-09-02 2015-09-02 07:25:58      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 2 062000031A 2015-09-02 2015-09-02 07:26:01      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 3 062000031A 2015-09-03 2015-09-03 09:12:20      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 4 062000031A 2015-09-03 2015-09-03 09:12:23      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 5 062000031A 2015-09-05 2015-09-05 15:32:20      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 6 062000031A 2015-09-05 2015-09-05 15:32:23      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896</code></pre>
-<pre class="r"><code>r &lt;- dl_data()
-head(r)</code></pre>
-<p>You can specify start and end times:</p>
-<pre class="r"><code>r &lt;- dl_data(start = &quot;2015-10-01&quot;, end = &quot;2015-10-02&quot;)
-head(r)</code></pre>
-<pre><code>##    animal_id       date                time logger_id     species age sex    site_name       lon      lat
-## 1 06200003AA 2015-10-01 2015-10-01 07:24:44      2700 House Finch  HY   F Kamloops, BC -120.3632 50.66909
-## 2 06200003AA 2015-10-01 2015-10-01 07:24:46      2700 House Finch  HY   F Kamloops, BC -120.3632 50.66909
-## 3 06200003AA 2015-10-01 2015-10-01 07:24:49      2700 House Finch  HY   F Kamloops, BC -120.3632 50.66909
-## 4 06200003AA 2015-10-01 2015-10-01 07:24:51      2700 House Finch  HY   F Kamloops, BC -120.3632 50.66909
-## 5 06200003AA 2015-10-01 2015-10-01 07:24:53      2700 House Finch  HY   F Kamloops, BC -120.3632 50.66909
-## 6 06200003AA 2015-10-01 2015-10-01 07:24:55      2700 House Finch  HY   F Kamloops, BC -120.3632 50.66909</code></pre>
-<pre class="r"><code>r &lt;- dl_data(start = &quot;2015-10-01 09:00:00&quot;, end = &quot;2015-10-02&quot;)
-head(r)</code></pre>
-<pre><code>##    animal_id       date                time logger_id     species age sex    site_name       lon      lat
-## 1 041868D396 2015-10-01 2015-10-01 16:02:22      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 2 041868D396 2015-10-01 2015-10-01 16:15:14      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 3 041868D396 2015-10-01 2015-10-01 16:15:55      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 4 041868D396 2015-10-01 2015-10-01 16:15:56      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 5 041868D396 2015-10-01 2015-10-01 16:15:58      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 6 041868D396 2015-10-01 2015-10-01 16:16:00      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896</code></pre>
-<p>You can also specify only a start or an end, all data up to or after that point will be grabbed:</p>
-<pre class="r"><code>r &lt;- dl_data(end = &quot;2015-09-06&quot;)
-head(r)</code></pre>
-<pre><code>##    animal_id       date                time logger_id            species age sex    site_name       lon      lat
-## 1 062000031A 2015-09-02 2015-09-02 07:25:58      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 2 062000031A 2015-09-02 2015-09-02 07:26:01      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 3 062000031A 2015-09-03 2015-09-03 09:12:20      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 4 062000031A 2015-09-03 2015-09-03 09:12:23      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 5 062000031A 2015-09-05 2015-09-05 15:32:20      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 6 062000031A 2015-09-05 2015-09-05 15:32:23      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896</code></pre>
-<p>Extra animal or logger related details (<code>?dl_data</code> for more):</p>
-<pre class="r"><code>r &lt;- dl_data(end = &quot;2015-09-06&quot;, logger_details = c(&quot;loc&quot;,&quot;site_name&quot;), animal_details = c(&quot;species&quot;, &quot;age&quot;, &quot;sex&quot;))</code></pre>
-<pre><code>## Warning: Argument logger_details is deprecated (all logger details will be returned)</code></pre>
-<pre><code>## Warning: Argument animal_details is deprecated (all animal details will be returned)</code></pre>
-<pre class="r"><code>head(r)</code></pre>
-<pre><code>##    animal_id       date                time logger_id            species age sex    site_name       lon      lat
-## 1 062000031A 2015-09-02 2015-09-02 07:25:58      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 2 062000031A 2015-09-02 2015-09-02 07:26:01      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 3 062000031A 2015-09-03 2015-09-03 09:12:20      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 4 062000031A 2015-09-03 2015-09-03 09:12:23      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 5 062000031A 2015-09-05 2015-09-05 15:32:20      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896
-## 6 062000031A 2015-09-05 2015-09-05 15:32:23      2100 Mountain Chickadee  SY   M Kamloops, BC -120.3624 50.66896</code></pre>
-</div>
-<div id="ui_import" class="section level2">
-<h2><code>ui_import()</code></h2>
-<p><strong><code>ui_import()</code></strong> is a helper function that launches a stand-alone shiny app to give you a user-interface for importing data.</p>
-<pre class="r"><code>my_imported_data &lt;- ui_import()</code></pre>
 <hr />
 <p>Back to <a href="#top">top</a><br />
 Go back to <a href="index.html">home</a> | Continue with <a href="housekeeping.html">housekeeping</a></p>
+</div>
 </div>
 
 
@@ -657,13 +638,59 @@ Go back to <a href="index.html">home</a> | Continue with <a href="housekeeping.h
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

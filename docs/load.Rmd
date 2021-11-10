@@ -19,9 +19,6 @@ This is a quick tutorial to get you started with loading in your own data. `feed
 
 - [`load_raw()`](#loadraw)
 - [`load_raw_all()`](#loadrawall)
-- [`dl_data()`](#dldata)
-
-These functions work with either __raw__ RFID logger data (downloaded directly from the loggers) or __database__ data downloaded from <http://animalnexus.ca> directly or with the `dl_data()` function.
 
 
 ## A note about file structure
@@ -202,59 +199,6 @@ head(r)
 ```
 
 This data is now ready for [housekeeping](housekeeping.html) or go straight to [transformations](transformations.html)!
-
-
-<a id="dldata"></a>
-
-## `dl_data()`
-
-This is likely the easiest way to get data (provided the data you're interested in is hosted in the animal__nexus__ database). This function requests data from animal__nexus__ and formats it for use with the `feedr` transformation functions.
-
-If you don't specify anything, all data will be downloaded for the default site (Kamloops) and the default extra columns (loc and species) with the default timezone (America/Vancouver). See `?dl_data` for more details.
-
-```{r dl_data, echo = FALSE, message = FALSE}
-r <- dl_data(end = "2015-09-06")
-head(r)
-```
-
-```{r, eval = FALSE}
-r <- dl_data()
-head(r)
-```
-
-You can specify start and end times:
-
-```{r, message = FALSE}
-r <- dl_data(start = "2015-10-01", end = "2015-10-02")
-head(r)
-```
-
-```{r, message = FALSE}
-r <- dl_data(start = "2015-10-01 09:00:00", end = "2015-10-02")
-head(r)
-```
-
-You can also specify only a start or an end, all data up to or after that point will be grabbed:
-
-```{r, message = FALSE}
-r <- dl_data(end = "2015-09-06")
-head(r)
-```
-
-Extra animal or logger related details (`?dl_data` for more):
-
-```{r, message = FALSE}
-r <- dl_data(end = "2015-09-06", logger_details = c("loc","site_name"), animal_details = c("species", "age", "sex"))
-head(r)
-```
-
-## `ui_import()`
-
-**`ui_import()`** is a helper function that launches a stand-alone shiny app to give you a user-interface for importing data.
-
-```{r, eval = FALSE}
-my_imported_data <- ui_import()
-```
 
 
 --------------------------

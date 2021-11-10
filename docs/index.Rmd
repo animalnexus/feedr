@@ -10,13 +10,21 @@ source("setup.R")
 rmarkdown::render_site("./docs/") -->
 
 
+
 This is an overview of how to use functions in the `feedr` package to transform and visual your RFID data. Note that while we've tried to explain the code in detail, if you are new to R, you may benefit from an introduction to coding in R before tackling your data with the `feedr` package
+
+> **NOTE**: As of Nov 10th, 2021, feedr shiny UI functions have been moved to the
+> feedrUI package. This documentation now only reflects the basic feedr functions
+>
+> I'm in the process of updating this documentation (slowly!) so parts may seem
+> out of date. Let me know (open an [issue](https://github.com/animalnexus/feedr/issues))
+> if you find anything particularly problematic, thanks!
 
 ## Order of operations
 This package contains functions to perform three broad services: 
 
 1. [__Loading/Importing Data__](#load)  
-    Raw data directly from the loggers, already amalgamated, or from the animal__nexus__ website 
+    Raw data directly from the loggers, or data already amalgamated
 2. [__Housekeeping__](#hk)  
     Functions for checking and correcting errors before you transform the data
 3. [__Transformations__](#trans)  
@@ -24,11 +32,9 @@ This package contains functions to perform three broad services:
 4. [__Visualizations__](#vis)  
     Static or interactive maps produced by the mapping functions which visualize movements between and presence around the RFID loggers.
 
-There are also three 'user-interface' (UI) functions that can be used to simplify the use of these functions (see below).
-
 In the normal order of operations, several functions depend on the output of other functions.
 
-For example, to get daily activity patterns, you could get your data from the animalnexus database with `dl_data()`, turn this raw data to visits data with `visits()`, turn visits data to activity data with `activity()` and finally, turn activity data into daily activity patterns with `daily()`.
+For example, to get daily activity patterns, you could load your raw data with `load_raw()`, turn this raw data to visits data with `visits()`, turn visits data to activity data with `activity()` and finally, turn activity data into daily activity patterns with `daily()`.
 
 ```{r, echo = F, fig.align='center', warning = FALSE}
 DiagrammeR::grViz("
@@ -39,7 +45,7 @@ graph [overlap = true, compound = true]
 node[shape = Mrecord]
 edge[arrowhead = vee]
 
-load[label = '{Loading/Importing Data | {load_raw_all() | load_web() | dl_data()}}']
+load[label = '{Loading/Importing Data | {load_raw()}}']
 
 hk[label = '{Housekeeping (Optional) | {check_ids() | check_problems()}}', width = 3]
 
@@ -60,7 +66,7 @@ presence -> act
 disp -> dom
 act -> daily
 
-map[label = '{Visualizations | {map_ggmap() | map_leaflet()}}']
+map[label = '{Visualizations | {map_leaflet()}}']
 
 {presence; move} -> map
 
@@ -85,10 +91,8 @@ head(chickadees)
 ### [Loading/Importing Data](load.html)
 <a id = "load"></a>
 
-- __ui_import():__ Launch an interactive user-interface to import/load local data files
 - __load_raw():__ Load in a single file of raw logger data
 - __load_raw_all():__ Load in and combine multiple files of raw logger data
-- __dl_data():__ Download and load data directly from the animal__nexus__ website
 
 ### [Housekeeping](housekeeping.html)
 <a id = "hk"></a>
@@ -99,7 +103,6 @@ head(chickadees)
 ### [Transformations](transformations.html)
 <a id = "trans"></a>
 
-- __ui_trans():__ Launch an interactive user-interface to transform data
 - __visits():__ Transform raw data into visits data
 - __move():__ Transform visits data into movements between loggers
 - __presence():__ Transform visits data into presence around loggers
@@ -111,8 +114,6 @@ head(chickadees)
 ## [Visualizations](maps.html)
 <a id = "vis"></a>
 
-- __ui_animate():__ Launch an interactive user-interface to create animations
-- __map_ggmap():__ Visualize movements and/or presence with ggmap (static)
 - __map_leaflet():__ Visualize movements and/or presence with leaflet (interactive)
 
 -----------------------------------------
