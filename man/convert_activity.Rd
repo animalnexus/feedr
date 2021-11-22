@@ -10,15 +10,15 @@ convert_activity(r)
 \item{r}{Dataframe. Raw RFID dataset. Must have at least columns
 \code{animal_id}, \code{logger_id} and \code{time}. The column time should
 be formated as POSIXct (data/time). (Consider using
-\code{\link{load_format}} to format your dataframe)}
+\code{\link[=load_format]{load_format()}} to format your dataframe)}
 }
 \value{
 A list of vectors corresponding to each individual. See examples for
-  specific application.
+specific application.
 }
 \description{
 Converts raw RFID data into a format for easy use by the
-\code{\link[activity]{fitact}} function included in the \link{activity}
+\code{\link[activity:fitact]{activity::fitact()}} function included in the \link{activity}
 package for modelling activity levels and daily activity patterns.
 }
 \examples{
@@ -43,6 +43,6 @@ plot(a[["06200004F8"]])
 
 }
 \seealso{
-\link{activity} package and it's function \link[activity]{fitact}.
-  \url{https://cran.r-project.org/package=activity}
+activity package and it's function \link[activity:fitact]{fitact}.
+\url{https://cran.r-project.org/package=activity}
 }

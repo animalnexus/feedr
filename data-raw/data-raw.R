@@ -2,7 +2,7 @@ library(dplyr)
 library(magrittr)
 
 ## Finches
-finches_lg <- dl_data(start = "2015-09-01",
+finches_lg <- feedrUI::dl_data(start = "2015-09-01",
                end = "2015-11-01") %>%
   filter(species == "House Finch",
          sex %in% c("M", "F"),
@@ -15,7 +15,7 @@ write.csv("./data-raw/finches_lg.csv", row.names = FALSE)
 write.csv("./inst/extdata/finches_lg.csv", row.names = FALSE)
 devtools::use_data(finches_lg, overwrite = TRUE)
 
-finches <- dl_data(start = "2016-01-28", end = "2016-01-30") %>%
+finches <- feedrUI::dl_data(start = "2016-01-28", end = "2016-01-30") %>%
   filter(species == "House Finch") %>%
   droplevels() %>%
   as_tibble()

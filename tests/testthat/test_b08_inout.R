@@ -1,6 +1,3 @@
-library(magrittr)
-context("In/Out")
-
 test_that("In/Out runs silently", {
   expect_silent(inout(finches_lg, dir_in = "2100_2700", type = "out"))
   expect_silent(inout(finches_lg, dir_in = "2100_2700", type = "in"))
@@ -11,23 +8,23 @@ in_dir <- inout(finches_lg, dir_in = "2100_2700", type = "in")
 
 
 test_that("Data looks as expected", {
-  expect_is(out_dir, "data.frame")
-  expect_is(out_dir$animal_id, "factor")
-  expect_is(out_dir$trip_id, "numeric")
-  expect_is(out_dir$inout_dir, "character")
-  expect_is(out_dir$exit, "POSIXct")
-  expect_is(out_dir$enter, "POSIXct")
-  expect_is(out_dir$trip_length, "numeric")
-  expect_is(out_dir$max_time_away, "numeric")
+  expect_s3_class(out_dir, "data.frame")
+  expect_s3_class(out_dir$animal_id, "factor")
+  expect_type(out_dir$trip_id, "double")
+  expect_type(out_dir$inout_dir, "character")
+  expect_s3_class(out_dir$exit, "POSIXct")
+  expect_s3_class(out_dir$enter, "POSIXct")
+  expect_type(out_dir$trip_length, "double")
+  expect_type(out_dir$max_time_away, "double")
 
-  expect_is(in_dir, "data.frame")
-  expect_is(in_dir$animal_id, "factor")
-  expect_is(in_dir$trip_id, "numeric")
-  expect_is(in_dir$inout_dir, "character")
-  expect_is(in_dir$exit, "POSIXct")
-  expect_is(in_dir$enter, "POSIXct")
-  expect_is(in_dir$trip_length, "numeric")
-  expect_is(in_dir$max_time_away, "numeric")
+  expect_s3_class(in_dir, "data.frame")
+  expect_s3_class(in_dir$animal_id, "factor")
+  expect_type(in_dir$trip_id, "double")
+  expect_type(in_dir$inout_dir, "character")
+  expect_s3_class(in_dir$exit, "POSIXct")
+  expect_s3_class(in_dir$enter, "POSIXct")
+  expect_type(in_dir$trip_length, "double")
+  expect_type(in_dir$max_time_away, "double")
 })
 
 test_that("Trips have valid values", {

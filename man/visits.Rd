@@ -4,8 +4,16 @@
 \alias{visits}
 \title{Visits}
 \usage{
-visits(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE,
-  pass = TRUE, allow.imp, na.rm)
+visits(
+  r,
+  bw = 3,
+  allow_imp = FALSE,
+  bw_imp = 2,
+  na_rm = FALSE,
+  pass = TRUE,
+  allow.imp,
+  na.rm
+)
 }
 \arguments{
 \item{r}{Dataframe. Contains raw reads from an RFID reader with colums
@@ -30,9 +38,9 @@ them to the output.}
 }
 \value{
 A data frame with visits specifying \code{animal_id} and
-  \code{logger_id} as well as the \code{start} and \code{end} of the visit.
-  Any extra columns that are unique at the level of animal_id or logger_id will
-  also be passed through (i.e. age, sex, logger location, etc.).
+\code{logger_id} as well as the \code{start} and \code{end} of the visit.
+Any extra columns that are unique at the level of animal_id or logger_id will
+also be passed through (i.e. age, sex, logger location, etc.).
 }
 \description{
 Raw data from RFID loggers contain multiple reads per individual simply
@@ -48,8 +56,8 @@ Visits are defined by three pieces of data:
 }
 
 The function will return an error if impossible visits are detected (unless
-  \code{allow_imp = TRUE}) . A visit is deemed impossible if a single animal
-  travels between loggers in less time than specified by \code{bw}.
+\code{allow_imp = TRUE}) . A visit is deemed impossible if a single animal
+travels between loggers in less time than specified by \code{bw}.
 }
 \examples{
 v <- visits(finches)

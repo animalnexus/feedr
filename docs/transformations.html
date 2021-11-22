@@ -1,83 +1,72 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
 
 <title>Transforming/Summarizing Data</title>
 
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
 <script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
-<script src="site_libs/highlightjs-1.1/highlight.js"></script>
-<script src="site_libs/htmlwidgets-0.9/htmlwidgets.js"></script>
-<script src="site_libs/viz-0.3/viz.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<script src="site_libs/viz-1.8.2/viz.js"></script>
 <link href="site_libs/DiagrammeR-styles-0.2/styles.css" rel="stylesheet" />
-<script src="site_libs/grViz-binding-0.9.0/grViz.js"></script>
+<script src="site_libs/grViz-binding-1.0.6.1/grViz.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
-  pre:not([class]) {
-    background-color: white;
-  }
-</style>
 <script type="text/javascript">
-if (window.hljs && document.readyState && document.readyState === "complete") {
-   window.setTimeout(function() {
-      hljs.initHighlighting();
-   }, 0);
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
 }
 </script>
 
 
 
-<style type="text/css">
-h1 {
-  font-size: 34px;
-}
-h1.title {
-  font-size: 38px;
-}
-h2 {
-  font-size: 30px;
-}
-h3 {
-  font-size: 24px;
-}
-h4 {
-  font-size: 18px;
-}
-h5 {
-  font-size: 16px;
-}
-h6 {
-  font-size: 12px;
-}
-.table th:not([align]) {
-  text-align: left;
-}
-</style>
+
 
 <link rel="stylesheet" href="custom.css" type="text/css" />
 
-</head>
 
-<body>
 
 <style type = "text/css">
 .main-container {
@@ -85,58 +74,68 @@ h6 {
   margin-left: auto;
   margin-right: auto;
 }
-code {
-  color: inherit;
-  background-color: rgba(0, 0, 0, 0.04);
-}
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
 }
+.html-widget {
+  margin-bottom: 20px;
+}
 button.code-folding-btn:focus {
   outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
 }
 </style>
 
 
 <style type="text/css">
-/* padding for bootstrap navbar */
-body {
-  padding-top: 66px;
-  padding-bottom: 40px;
+.dropdown-submenu {
+  position: relative;
 }
-/* offset scroll position for anchor links (for fixed navbar)  */
-.section h1 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
 }
-
-.section h2 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
 }
-.section h3 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
 }
-.section h4 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
 }
-.section h5 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu.pull-left {
+  float: none;
 }
-.section h6 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
 }
 </style>
 
-<script>
+<script type="text/javascript">
 // manage active state of menu based on current page
 $(document).ready(function () {
   // active menu anchor
@@ -147,54 +146,85 @@ $(document).ready(function () {
   var menuAnchor = $('a[href="' + href + '"]');
 
   // mark it active
-  menuAnchor.parent().addClass('active');
+  menuAnchor.tab('show');
 
   // if it's got a parent navbar menu mark it active as well
   menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
 });
 </script>
-
-
-<div class="container-fluid main-container">
 
 <!-- tabsets -->
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-</script>
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
 
 <!-- code folding -->
 
 
-
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = false;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -208,6 +238,12 @@ $(document).ready(function ()  {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -243,8 +279,6 @@ div.tocify {
 
 .tocify-subheader .tocify-item {
   font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -260,8 +294,18 @@ div.tocify {
 
 </style>
 
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
 <!-- setup 3col/9col grid for toc_float and main content  -->
-<div class="row-fluid">
+<div class="row">
 <div class="col-xs-12 col-sm-4 col-md-3">
 <div id="TOC" class="tocify">
 </div>
@@ -311,7 +355,7 @@ div.tocify {
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-<div class="fluid-row" id="header">
+<div id="header">
 
 
 
@@ -338,8 +382,9 @@ div.tocify {
 <li><a href="#multiple-groups">Working with multiple groups</a> - Applying transformations to different data groups simultaneously</li>
 </ol>
 <p>Or click on the function name below to skip directly to the function tutorial:</p>
-<p><div id="htmlwidget-4ed19674468155efad5e" style="width:500px;height:480px;" class="grViz html-widget"></div>
-<script type="application/json" data-for="htmlwidget-4ed19674468155efad5e">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nvisits[label = \"visits()\", URL = \"#visits\", tooltip = \"Individual logger visits\"]\ndisp[label = \"disp()\", URL = \"#displacements\", tooltip = \"Displacements from the logger by another animal\"]\nmove[label = \"move()\", URL = \"#movements\", tooltip = \"Movements between loggers\"]\npresence[label = \"presence()\", URL = \"#presence\", tooltip = \"presence bouts at loggers\"]\nact[label = \"activity()\", URL = \"#acitivty\", tooltip = \"Activity scored (active/inactive)\"]\ndaily[label = \"daily()\", URL = \"#dailyactivity\", tooltip = \"Daily activity patterns\"]\n\nvisits-> {disp, move, presence}\npresence -> act\nact -> daily\n\nmap1[label = \"map_ggmap()\", URL = \"#mapggmap\", tooltip = \"Visualize with a static map\"]\nmap2[label = \"map_leaflet()\", URL = \"#mapleaflet\", tooltip = \"Visualize with an interactive map\"]\n\n{presence; move} -> {map1; map2}\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script> <a id = "visits"></a></p>
+<div id="htmlwidget-a5031e773a89b18789be" style="width:500px;height:480px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-a5031e773a89b18789be">{"x":{"diagram":"\ndigraph order {\n\ngraph [overlap = true, compound = true]\n\nnode[shape = Mrecord]\nedge[arrowhead = vee]\n\nvisits[label = \"visits()\", URL = \"#visits\", tooltip = \"Individual logger visits\"]\ndisp[label = \"disp()\", URL = \"#displacements\", tooltip = \"Displacements from the logger by another animal\"]\nmove[label = \"move()\", URL = \"#movements\", tooltip = \"Movements between loggers\"]\npresence[label = \"presence()\", URL = \"#presence\", tooltip = \"presence bouts at loggers\"]\nact[label = \"activity()\", URL = \"#acitivty\", tooltip = \"Activity scored (active/inactive)\"]\ndaily[label = \"daily()\", URL = \"#dailyactivity\", tooltip = \"Daily activity patterns\"]\n\nvisits-> {disp, move, presence}\npresence -> act\nact -> daily\n\nmap1[label = \"map_ggmap()\", URL = \"#mapggmap\", tooltip = \"Visualize with a static map\"]\nmap2[label = \"map_leaflet()\", URL = \"#mapleaflet\", tooltip = \"Visualize with an interactive map\"]\n\n{presence; move} -> {map1; map2}\n\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<p><a id = "visits"></a></p>
 </div>
 <div id="visits" class="section level2">
 <h2><code>visits()</code></h2>
@@ -347,46 +392,50 @@ div.tocify {
 <p>This is always the first function you should use. Raw read data contains an individual line of data for each read event made by the RFID logger.</p>
 <p>For example, if the logger was set to record ids every ~2 seconds, an individual sitting on the logger for 8 seconds followed by a 12 second gap before returning would look something like this:</p>
 <pre class="r"><code>head(finches_lg)</code></pre>
-<pre><code>##    animal_id       date                time logger_id     species age sex    site_name       lon      lat
-## 1 041868E9A8 2015-10-01 2015-10-01 16:38:52      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 2 041868E9A8 2015-10-01 2015-10-01 16:38:54      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 3 041868E9A8 2015-10-01 2015-10-01 16:38:56      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 4 041868E9A8 2015-10-01 2015-10-01 16:38:58      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 5 041868E9A8 2015-10-01 2015-10-01 16:39:00      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 6 041868E9A8 2015-10-01 2015-10-01 16:39:12      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896</code></pre>
+<pre><code>## # A tibble: 6 × 10
+##   animal_id  date       time                logger_id species     age   sex   site_name      lon   lat
+##   &lt;fct&gt;      &lt;date&gt;     &lt;dttm&gt;              &lt;fct&gt;     &lt;chr&gt;       &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt;
+## 1 041868E9A8 2015-10-01 2015-10-01 16:38:52 2100      House Finch AHY   F     Kamloops, BC -120.  50.7
+## 2 041868E9A8 2015-10-01 2015-10-01 16:38:54 2100      House Finch AHY   F     Kamloops, BC -120.  50.7
+## 3 041868E9A8 2015-10-01 2015-10-01 16:38:56 2100      House Finch AHY   F     Kamloops, BC -120.  50.7
+## 4 041868E9A8 2015-10-01 2015-10-01 16:38:58 2100      House Finch AHY   F     Kamloops, BC -120.  50.7
+## 5 041868E9A8 2015-10-01 2015-10-01 16:39:00 2100      House Finch AHY   F     Kamloops, BC -120.  50.7
+## 6 041868E9A8 2015-10-01 2015-10-01 16:39:12 2100      House Finch AHY   F     Kamloops, BC -120.  50.7</code></pre>
 <p>The <code>visits()</code> function turns this raw data into something more practical:</p>
 <pre class="r"><code>v &lt;- visits(finches_lg)
 head(v)</code></pre>
-<pre><code>## # A tibble: 6 x 13
-##    animal_id       date               start                 end logger_id animal_n logger_n species site_name   age   sex       lon      lat
-##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;fctr&gt;    &lt;int&gt;    &lt;int&gt;   &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-## 1 041868E9A8 2015-10-02 2015-10-01 16:38:52 2015-10-01 16:39:00      2100       11        4    &lt;NA&gt;      &lt;NA&gt;   AHY     F -120.3624 50.66896
-## 2 041868E9A8 2015-10-02 2015-10-01 16:39:12 2015-10-01 16:39:12      2100       11        4    &lt;NA&gt;      &lt;NA&gt;   AHY     F -120.3624 50.66896
-## 3 041868E9A8 2015-10-02 2015-10-01 16:40:53 2015-10-01 16:40:53      2100       11        4    &lt;NA&gt;      &lt;NA&gt;   AHY     F -120.3624 50.66896
-## 4 041868E9A8 2015-10-02 2015-10-01 16:45:00 2015-10-01 16:45:56      2700       11        4    &lt;NA&gt;      &lt;NA&gt;   AHY     F -120.3632 50.66909
-## 5 041868E9A8 2015-10-02 2015-10-01 16:46:31 2015-10-01 16:46:31      2700       11        4    &lt;NA&gt;      &lt;NA&gt;   AHY     F -120.3632 50.66909
-## 6 041868E9A8 2015-10-02 2015-10-01 16:51:03 2015-10-01 16:51:16      2700       11        4    &lt;NA&gt;      &lt;NA&gt;   AHY     F -120.3632 50.66909</code></pre>
+<pre><code>## # A tibble: 6 × 13
+##   animal_id  date       start               end                 logger_id animal_n logger_n species     site_name    age   sex     lon   lat
+##   &lt;fct&gt;      &lt;date&gt;     &lt;dttm&gt;              &lt;dttm&gt;              &lt;fct&gt;        &lt;int&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 041868E9A8 2015-10-01 2015-10-01 16:38:52 2015-10-01 16:39:00 2100            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 2 041868E9A8 2015-10-01 2015-10-01 16:39:12 2015-10-01 16:39:12 2100            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 3 041868E9A8 2015-10-01 2015-10-01 16:40:53 2015-10-01 16:40:53 2100            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 4 041868E9A8 2015-10-01 2015-10-01 16:45:00 2015-10-01 16:45:56 2700            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 5 041868E9A8 2015-10-01 2015-10-01 16:46:31 2015-10-01 16:46:31 2700            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 6 041868E9A8 2015-10-01 2015-10-01 16:51:03 2015-10-01 16:51:16 2700            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7</code></pre>
 <p>We can see that the first series of raw reads have been combined into one visit, starting at 2015-10-01 17:38:52 and ending at 2015-10-01 17:39:00.</p>
 <p>We can also look directly at visit data for a particular individual by pulling out it’s <code>animal_id</code>:</p>
 <pre class="r"><code>head(finches_lg[finches_lg$animal_id == &quot;06200004F8&quot;, ])</code></pre>
-<pre><code>##        animal_id       date                time logger_id     species age sex    site_name       lon      lat
-## 10482 06200004F8 2015-09-11 2015-09-11 15:59:06      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 10483 06200004F8 2015-09-11 2015-09-11 15:59:09      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 10484 06200004F8 2015-09-11 2015-09-11 15:59:12      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 10485 06200004F8 2015-09-11 2015-09-11 15:59:15      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 10486 06200004F8 2015-09-11 2015-09-11 15:59:18      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896
-## 10487 06200004F8 2015-09-11 2015-09-11 15:59:21      2100 House Finch AHY   F Kamloops, BC -120.3624 50.66896</code></pre>
+<pre><code>## # A tibble: 6 × 10
+##   animal_id  date       time                logger_id species     age   sex   site_name      lon   lat
+##   &lt;fct&gt;      &lt;date&gt;     &lt;dttm&gt;              &lt;fct&gt;     &lt;chr&gt;       &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt;
+## 1 06200004F8 2015-09-11 2015-09-11 15:59:06 2100      House Finch AHY   F     Kamloops, BC -120.  50.7
+## 2 06200004F8 2015-09-11 2015-09-11 15:59:09 2100      House Finch AHY   F     Kamloops, BC -120.  50.7
+## 3 06200004F8 2015-09-11 2015-09-11 15:59:12 2100      House Finch AHY   F     Kamloops, BC -120.  50.7
+## 4 06200004F8 2015-09-11 2015-09-11 15:59:15 2100      House Finch AHY   F     Kamloops, BC -120.  50.7
+## 5 06200004F8 2015-09-11 2015-09-11 15:59:18 2100      House Finch AHY   F     Kamloops, BC -120.  50.7
+## 6 06200004F8 2015-09-11 2015-09-11 15:59:21 2100      House Finch AHY   F     Kamloops, BC -120.  50.7</code></pre>
 <pre class="r"><code>head(v[v$animal_id == &quot;06200004F8&quot;, ])</code></pre>
-<pre><code>## # A tibble: 6 x 13
-##    animal_id       date               start                 end logger_id animal_n logger_n     species    site_name   age   sex       lon      lat
-##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;fctr&gt;    &lt;int&gt;    &lt;int&gt;       &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-## 1 06200004F8 2015-09-11 2015-09-11 15:59:06 2015-09-11 16:00:12      2100       11        4 House Finch Kamloops, BC   AHY     F -120.3624 50.66896
-## 2 06200004F8 2015-09-12 2015-09-11 16:00:17 2015-09-11 16:00:32      2100       11        4 House Finch Kamloops, BC   AHY     F -120.3624 50.66896
-## 3 06200004F8 2015-09-12 2015-09-11 16:01:19 2015-09-11 16:03:29      2100       11        4 House Finch Kamloops, BC   AHY     F -120.3624 50.66896
-## 4 06200004F8 2015-09-12 2015-09-11 16:03:33 2015-09-11 16:06:59      2100       11        4 House Finch Kamloops, BC   AHY     F -120.3624 50.66896
-## 5 06200004F8 2015-09-12 2015-09-12 10:53:13 2015-09-12 10:55:13      2100       11        4 House Finch Kamloops, BC   AHY     F -120.3624 50.66896
-## 6 06200004F8 2015-09-12 2015-09-12 10:55:17 2015-09-12 10:55:40      2100       11        4 House Finch Kamloops, BC   AHY     F -120.3624 50.66896</code></pre>
-<p>Alternatively, you can use <code>filter(v, animal_id == &quot;06200004F8&quot;)</code> from the <code>dplyr</code> package or <code>subset(v, animal_id == &quot;06200004F8&quot;)</code> which is built into R base.</p>
+<pre><code>## # A tibble: 6 × 13
+##   animal_id  date       start               end                 logger_id animal_n logger_n species     site_name    age   sex     lon   lat
+##   &lt;fct&gt;      &lt;date&gt;     &lt;dttm&gt;              &lt;dttm&gt;              &lt;fct&gt;        &lt;int&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 06200004F8 2015-09-11 2015-09-11 15:59:06 2015-09-11 16:00:12 2100            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 2 06200004F8 2015-09-11 2015-09-11 16:00:17 2015-09-11 16:00:32 2100            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 3 06200004F8 2015-09-11 2015-09-11 16:01:19 2015-09-11 16:03:29 2100            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 4 06200004F8 2015-09-11 2015-09-11 16:03:33 2015-09-11 16:06:59 2100            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 5 06200004F8 2015-09-12 2015-09-12 10:53:13 2015-09-12 10:55:13 2100            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 6 06200004F8 2015-09-12 2015-09-12 10:55:17 2015-09-12 10:55:40 2100            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7</code></pre>
+<p>Alternatively, you can use <code>filter(v, animal_id == "06200004F8")</code> from the <code>dplyr</code> package or <code>subset(v, animal_id == "06200004F8")</code> which is built into R base.</p>
 <p>Visits are defined by:</p>
 <ul>
 <li>How much time has passed between reads (<code>bw</code>)</li>
@@ -413,39 +462,39 @@ head(v)</code></pre>
 <pre><code>## [1] 4</code></pre>
 <p><code>species</code>, <code>sex</code>, <code>lon</code> and <code>lat</code> are all columns originally in the <code>finches_lg</code> data set, they were automatically passed through the <code>visits()</code> function. Columns of extra data that are associated with either a <code>date</code>, an <code>animal_id</code>, or a <code>logger_id</code> will always be passed through unless <code>pass = FALSE</code>:</p>
 <pre class="r"><code>visits(finches_lg, pass = FALSE)</code></pre>
-<pre><code>## # A tibble: 2,945 x 7
-##     animal_id       date               start                 end logger_id animal_n logger_n
-##        &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;fctr&gt;    &lt;int&gt;    &lt;int&gt;
-##  1 041868E9A8 2015-10-02 2015-10-01 16:38:52 2015-10-01 16:39:00      2100       11        4
-##  2 041868E9A8 2015-10-02 2015-10-01 16:39:12 2015-10-01 16:39:12      2100       11        4
-##  3 041868E9A8 2015-10-02 2015-10-01 16:40:53 2015-10-01 16:40:53      2100       11        4
-##  4 041868E9A8 2015-10-02 2015-10-01 16:45:00 2015-10-01 16:45:56      2700       11        4
-##  5 041868E9A8 2015-10-02 2015-10-01 16:46:31 2015-10-01 16:46:31      2700       11        4
-##  6 041868E9A8 2015-10-02 2015-10-01 16:51:03 2015-10-01 16:51:16      2700       11        4
-##  7 041868E9A8 2015-10-02 2015-10-01 16:51:42 2015-10-01 16:51:58      2700       11        4
-##  8 041868E9A8 2015-10-02 2015-10-01 16:52:51 2015-10-01 16:53:07      2700       11        4
-##  9 041868E9A8 2015-10-02 2015-10-01 16:53:41 2015-10-01 16:54:57      2700       11        4
-## 10 041868E9A8 2015-10-02 2015-10-01 16:56:42 2015-10-01 16:56:42      2700       11        4
-## # ... with 2,935 more rows</code></pre>
+<pre><code>## # A tibble: 2,945 × 7
+##    animal_id  date       start               end                 logger_id animal_n logger_n
+##    &lt;fct&gt;      &lt;date&gt;     &lt;dttm&gt;              &lt;dttm&gt;              &lt;fct&gt;        &lt;int&gt;    &lt;int&gt;
+##  1 041868E9A8 2015-10-01 2015-10-01 16:38:52 2015-10-01 16:39:00 2100            11        4
+##  2 041868E9A8 2015-10-01 2015-10-01 16:39:12 2015-10-01 16:39:12 2100            11        4
+##  3 041868E9A8 2015-10-01 2015-10-01 16:40:53 2015-10-01 16:40:53 2100            11        4
+##  4 041868E9A8 2015-10-01 2015-10-01 16:45:00 2015-10-01 16:45:56 2700            11        4
+##  5 041868E9A8 2015-10-01 2015-10-01 16:46:31 2015-10-01 16:46:31 2700            11        4
+##  6 041868E9A8 2015-10-01 2015-10-01 16:51:03 2015-10-01 16:51:16 2700            11        4
+##  7 041868E9A8 2015-10-01 2015-10-01 16:51:42 2015-10-01 16:51:58 2700            11        4
+##  8 041868E9A8 2015-10-01 2015-10-01 16:52:51 2015-10-01 16:53:07 2700            11        4
+##  9 041868E9A8 2015-10-01 2015-10-01 16:53:41 2015-10-01 16:54:57 2700            11        4
+## 10 041868E9A8 2015-10-01 2015-10-01 16:56:42 2015-10-01 16:56:42 2700            11        4
+## # … with 2,935 more rows</code></pre>
 </div>
 <div id="bw" class="section level3">
 <h3><code>bw</code></h3>
 <p>Depending on the interval between reads in your RFID logger, you may have to adjust the value of <code>bw</code> which specifies how many seconds between reads separates two visits. The default is 3 seconds, but if your loggers scan at a slower interval, you will need to adjust the <code>bw</code> argument:</p>
 <pre class="r"><code>visits(finches_lg, bw = 15)</code></pre>
-<pre><code>## # A tibble: 1,957 x 13
-##     animal_id       date               start                 end logger_id animal_n logger_n     species    site_name   age   sex       lon      lat
-##        &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;fctr&gt;    &lt;int&gt;    &lt;int&gt;       &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-##  1 041868E9A8 2015-10-02 2015-10-01 16:38:52 2015-10-01 16:39:12      2100       11        4        &lt;NA&gt;         &lt;NA&gt;   AHY     F -120.3624 50.66896
-##  2 041868E9A8 2015-10-02 2015-10-01 16:40:53 2015-10-01 16:40:53      2100       11        4        &lt;NA&gt;         &lt;NA&gt;   AHY     F -120.3624 50.66896
-##  3 041868E9A8 2015-10-02 2015-10-01 16:45:00 2015-10-01 16:45:56      2700       11        4        &lt;NA&gt;         &lt;NA&gt;   AHY     F -120.3632 50.66909
-##  4 041868E9A8 2015-10-02 2015-10-01 16:46:31 2015-10-01 16:46:31      2700       11        4        &lt;NA&gt;         &lt;NA&gt;   AHY     F -120.3632 50.66909
-##  5 041868E9A8 2015-10-02 2015-10-01 16:51:03 2015-10-01 16:51:16      2700       11        4        &lt;NA&gt;         &lt;NA&gt;   AHY     F -120.3632 50.66909
-##  6 041868E9A8 2015-10-02 2015-10-01 16:51:42 2015-10-01 16:51:58      2700       11        4        &lt;NA&gt;         &lt;NA&gt;   AHY     F -120.3632 50.66909
-##  7 041868E9A8 2015-10-02 2015-10-01 16:52:51 2015-10-01 16:53:07      2700       11        4        &lt;NA&gt;         &lt;NA&gt;   AHY     F -120.3632 50.66909
-##  8 041868E9A8 2015-10-02 2015-10-01 16:53:41 2015-10-01 16:54:57      2700       11        4        &lt;NA&gt;         &lt;NA&gt;   AHY     F -120.3632 50.66909
-##  9 041868E9A8 2015-10-02 2015-10-01 16:56:42 2015-10-01 16:56:42      2700       11        4        &lt;NA&gt;         &lt;NA&gt;   AHY     F -120.3632 50.66909
-## 10 041868E9A8 2015-10-02 2015-10-02 09:57:00 2015-10-02 09:57:14      2200       11        4 House Finch Kamloops, BC   AHY     F -120.3612 50.66778
-## # ... with 1,947 more rows</code></pre>
+<pre><code>## # A tibble: 1,957 × 13
+##    animal_id  date       start               end                 logger_id animal_n logger_n species     site_name    age   sex     lon   lat
+##    &lt;fct&gt;      &lt;date&gt;     &lt;dttm&gt;              &lt;dttm&gt;              &lt;fct&gt;        &lt;int&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 041868E9A8 2015-10-01 2015-10-01 16:38:52 2015-10-01 16:39:12 2100            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+##  2 041868E9A8 2015-10-01 2015-10-01 16:40:53 2015-10-01 16:40:53 2100            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+##  3 041868E9A8 2015-10-01 2015-10-01 16:45:00 2015-10-01 16:45:56 2700            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+##  4 041868E9A8 2015-10-01 2015-10-01 16:46:31 2015-10-01 16:46:31 2700            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+##  5 041868E9A8 2015-10-01 2015-10-01 16:51:03 2015-10-01 16:51:16 2700            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+##  6 041868E9A8 2015-10-01 2015-10-01 16:51:42 2015-10-01 16:51:58 2700            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+##  7 041868E9A8 2015-10-01 2015-10-01 16:52:51 2015-10-01 16:53:07 2700            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+##  8 041868E9A8 2015-10-01 2015-10-01 16:53:41 2015-10-01 16:54:57 2700            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+##  9 041868E9A8 2015-10-01 2015-10-01 16:56:42 2015-10-01 16:56:42 2700            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 10 041868E9A8 2015-10-02 2015-10-02 09:57:00 2015-10-02 09:57:14 2200            11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## # … with 1,947 more rows</code></pre>
 </div>
 <div id="impossiblemissing-visits" class="section level3">
 <h3>Impossible/missing visits</h3>
@@ -482,20 +531,20 @@ visit_summary &lt;- v %&gt;%
             n_days = length(unique(date)),
             mean_visit_length = mean(as.numeric(difftime(end, start, units = &quot;sec&quot;))))
 visit_summary</code></pre>
-<pre><code>## # A tibble: 11 x 5
-##     animal_id n_visits n_loggers n_days mean_visit_length
-##        &lt;fctr&gt;    &lt;int&gt;     &lt;int&gt;  &lt;int&gt;             &lt;dbl&gt;
-##  1 041868E9A8      150         3      7         12.846667
-##  2 041869123C       34         1      2          3.264706
-##  3 06200003AA      321         2     21         22.096573
-##  4 0620000400       31         2      5         11.580645
-##  5 062000043E        1         1      1          2.000000
-##  6 0620000477      105         2     10        109.542857
-##  7 06200004F8     1179         4     42         36.536047
-##  8 0620000500      961         3     36         17.145682
-##  9 0620000513        5         1      1         51.800000
-## 10 0620000514      142         3     17         15.866197
-## 11 0620000520       16         1      2         10.625000</code></pre>
+<pre><code>## # A tibble: 11 × 5
+##    animal_id  n_visits n_loggers n_days mean_visit_length
+##    &lt;fct&gt;         &lt;int&gt;     &lt;int&gt;  &lt;int&gt;             &lt;dbl&gt;
+##  1 041868E9A8      150         3      8             12.8 
+##  2 041869123C       34         1      2              3.26
+##  3 06200003AA      321         2     21             22.1 
+##  4 0620000400       31         2      5             11.6 
+##  5 062000043E        1         1      1              2   
+##  6 0620000477      105         2     10            110.  
+##  7 06200004F8     1179         4     42             36.5 
+##  8 0620000500      961         3     35             17.1 
+##  9 0620000513        5         1      1             51.8 
+## 10 0620000514      142         3     16             15.9 
+## 11 0620000520       16         1      2             10.6</code></pre>
 <p><strong>A Side Note</strong><br />
 This bit of code uses a slightly advanced technique called ‘pipes’: <code>%&gt;%</code> These allow you to pass the output from one line directly down to the next line where it becomes the first (and hidden) argument. In this case, the first line specifies our visits data frame <code>v</code>, this then becomes the input for <code>group_by()</code>. The output of <code>group_by()</code> then becomes the input for <code>summarize()</code>. This makes your coding more efficient but may take a bit of getting used to.</p>
 <p>You can find an in-depth look at <code>dplyr</code>, pipes and related packages here: <a href="http://r4ds.had.co.nz/transform.html" class="uri">http://r4ds.had.co.nz/transform.html</a></p>
@@ -508,20 +557,20 @@ visit_summary &lt;- summarize(visit_summary,
                n_days = length(unique(date)),
                mean_visit_length = mean(as.numeric(difftime(end, start, units = &quot;sec&quot;))))
 visit_summary</code></pre>
-<pre><code>## # A tibble: 11 x 5
-##     animal_id n_visits n_loggers n_days mean_visit_length
-##        &lt;fctr&gt;    &lt;int&gt;     &lt;int&gt;  &lt;int&gt;             &lt;dbl&gt;
-##  1 041868E9A8      150         3      7         12.846667
-##  2 041869123C       34         1      2          3.264706
-##  3 06200003AA      321         2     21         22.096573
-##  4 0620000400       31         2      5         11.580645
-##  5 062000043E        1         1      1          2.000000
-##  6 0620000477      105         2     10        109.542857
-##  7 06200004F8     1179         4     42         36.536047
-##  8 0620000500      961         3     36         17.145682
-##  9 0620000513        5         1      1         51.800000
-## 10 0620000514      142         3     17         15.866197
-## 11 0620000520       16         1      2         10.625000</code></pre>
+<pre><code>## # A tibble: 11 × 5
+##    animal_id  n_visits n_loggers n_days mean_visit_length
+##    &lt;fct&gt;         &lt;int&gt;     &lt;int&gt;  &lt;int&gt;             &lt;dbl&gt;
+##  1 041868E9A8      150         3      8             12.8 
+##  2 041869123C       34         1      2              3.26
+##  3 06200003AA      321         2     21             22.1 
+##  4 0620000400       31         2      5             11.6 
+##  5 062000043E        1         1      1              2   
+##  6 0620000477      105         2     10            110.  
+##  7 06200004F8     1179         4     42             36.5 
+##  8 0620000500      961         3     35             17.1 
+##  9 0620000513        5         1      1             51.8 
+## 10 0620000514      142         3     16             15.9 
+## 11 0620000520       16         1      2             10.6</code></pre>
 <p>The result is a data frame with one row for each <code>animal_id</code>, giving us information on how many loggers that animal has used, how many visits they have made, over how many days, and what the average visit length was.</p>
 <p>If we wanted to plot this data, the package <code>ggplot2</code> is a great option:</p>
 <pre class="r"><code>library(ggplot2)
@@ -547,15 +596,15 @@ ggplot(data = visit_summary, aes(x = animal_id, y = mean_visit_length)) +
 <pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
 m &lt;- move(v)
 head(m)</code></pre>
-<pre><code>## # A tibble: 6 x 15
-##    animal_id       date                time logger_id direction move_id  move_dir move_path    strength animal_n logger_n   age   sex       lon      lat
-##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;    &lt;fctr&gt;     &lt;chr&gt;   &lt;int&gt;    &lt;fctr&gt;    &lt;fctr&gt;       &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-## 1 041868E9A8 2015-10-02 2015-10-01 16:40:53      2100      left       1 2100_2700 2100_2700 14.57489879       11        4   AHY     F -120.3624 50.66896
-## 2 041868E9A8 2015-10-02 2015-10-01 16:45:00      2700   arrived       1 2100_2700 2100_2700 14.57489879       11        4   AHY     F -120.3632 50.66909
-## 3 041868E9A8 2015-10-02 2015-10-01 16:56:42      2700      left       2 2700_2200 2200_2700  0.05880623       11        4   AHY     F -120.3632 50.66909
-## 4 041868E9A8 2015-10-02 2015-10-02 09:57:00      2200   arrived       2 2700_2200 2200_2700  0.05880623       11        4   AHY     F -120.3612 50.66778
-## 5 041868E9A8 2015-10-06 2015-10-06 13:24:50      2200      left       3 2200_2700 2200_2700  0.59504132       11        4   AHY     F -120.3612 50.66778
-## 6 041868E9A8 2015-10-06 2015-10-06 15:05:40      2700   arrived       3 2200_2700 2200_2700  0.59504132       11        4   AHY     F -120.3632 50.66909</code></pre>
+<pre><code>## # A tibble: 6 × 17
+##   animal_id  date       time                logger_id direction move_id move_dir  move_path strength animal_n logger_n species     site_name    age   sex     lon   lat
+##   &lt;fct&gt;      &lt;date&gt;     &lt;dttm&gt;              &lt;fct&gt;     &lt;chr&gt;       &lt;int&gt; &lt;fct&gt;     &lt;fct&gt;        &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 041868E9A8 2015-10-01 2015-10-01 16:40:53 2100      left            1 2100_2700 2100_2700  14.6          11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 2 041868E9A8 2015-10-01 2015-10-01 16:45:00 2700      arrived         1 2100_2700 2100_2700  14.6          11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 3 041868E9A8 2015-10-01 2015-10-01 16:56:42 2700      left            2 2700_2200 2200_2700   0.0588       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 4 041868E9A8 2015-10-02 2015-10-02 09:57:00 2200      arrived         2 2700_2200 2200_2700   0.0588       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 5 041868E9A8 2015-10-06 2015-10-06 13:24:50 2200      left            3 2200_2700 2200_2700   0.595        11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 6 041868E9A8 2015-10-06 2015-10-06 15:05:40 2700      arrived         3 2200_2700 2200_2700   0.595        11        4 House Finch Kamloops, BC AHY   F     -120.  50.7</code></pre>
 <div id="data-returned-1" class="section level3">
 <h3>Data returned</h3>
 <p>This function returns a lot of information for each movement event. Note, in particular, that each movement event results in two rows of data: leaving and arriving</p>
@@ -594,13 +643,13 @@ unique(m$animal_id)         # The animal_ids currently in the movement data</cod
 <pre><code>## [1] 11</code></pre>
 <p>Here we’ve told R that an additional parameter for <code>move()</code> is <code>all = TRUE</code>. animals which never visit more than one logger will have NA’s in the data frame:</p>
 <pre class="r"><code>m[is.na(m$direction), ]</code></pre>
-<pre><code>## # A tibble: 4 x 15
-##    animal_id   date   time logger_id direction move_id move_dir move_path strength animal_n logger_n   age   sex   lon   lat
-##       &lt;fctr&gt; &lt;date&gt; &lt;dttm&gt;    &lt;fctr&gt;     &lt;chr&gt;   &lt;dbl&gt;   &lt;fctr&gt;    &lt;fctr&gt;    &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
-## 1 041869123C     NA     NA      &lt;NA&gt;      &lt;NA&gt;      NA     &lt;NA&gt;      &lt;NA&gt;       NA       NA       NA   AHY     M    NA    NA
-## 2 062000043E     NA     NA      &lt;NA&gt;      &lt;NA&gt;      NA     &lt;NA&gt;      &lt;NA&gt;       NA       NA       NA   ASY     M    NA    NA
-## 3 0620000513     NA     NA      &lt;NA&gt;      &lt;NA&gt;      NA     &lt;NA&gt;      &lt;NA&gt;       NA       NA       NA   AHY     F    NA    NA
-## 4 0620000520     NA     NA      &lt;NA&gt;      &lt;NA&gt;      NA     &lt;NA&gt;      &lt;NA&gt;       NA       NA       NA   AHY     M    NA    NA</code></pre>
+<pre><code>## # A tibble: 4 × 17
+##   animal_id  date   time   logger_id direction move_id move_dir move_path strength animal_n logger_n species site_name age   sex     lon   lat
+##   &lt;fct&gt;      &lt;date&gt; &lt;dttm&gt; &lt;fct&gt;     &lt;chr&gt;       &lt;dbl&gt; &lt;fct&gt;    &lt;fct&gt;        &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 041869123C NA     NA     &lt;NA&gt;      &lt;NA&gt;           NA &lt;NA&gt;     &lt;NA&gt;            NA       NA       NA &lt;NA&gt;    &lt;NA&gt;      AHY   M        NA    NA
+## 2 062000043E NA     NA     &lt;NA&gt;      &lt;NA&gt;           NA &lt;NA&gt;     &lt;NA&gt;            NA       NA       NA &lt;NA&gt;    &lt;NA&gt;      ASY   M        NA    NA
+## 3 0620000513 NA     NA     &lt;NA&gt;      &lt;NA&gt;           NA &lt;NA&gt;     &lt;NA&gt;            NA       NA       NA &lt;NA&gt;    &lt;NA&gt;      AHY   F        NA    NA
+## 4 0620000520 NA     NA     &lt;NA&gt;      &lt;NA&gt;           NA &lt;NA&gt;     &lt;NA&gt;            NA       NA       NA &lt;NA&gt;    &lt;NA&gt;      AHY   M        NA    NA</code></pre>
 </div>
 <div id="summarizing-1" class="section level3">
 <h3>Summarizing</h3>
@@ -608,57 +657,59 @@ unique(m$animal_id)         # The animal_ids currently in the movement data</cod
 <p>Are certain paths used more often?</p>
 <pre class="r"><code>move_summary &lt;- m %&gt;%
   group_by(move_path, logger_id) %&gt;%
-  summarize(n = length(move_path))
-move_summary</code></pre>
-<pre><code>## # A tibble: 11 x 3
-## # Groups:   move_path [?]
+  summarize(n = length(move_path))</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;move_path&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>move_summary</code></pre>
+<pre><code>## # A tibble: 11 × 3
+## # Groups:   move_path [6]
 ##    move_path logger_id     n
-##       &lt;fctr&gt;    &lt;fctr&gt; &lt;int&gt;
-##  1 2100_2200      2100    12
-##  2 2100_2200      2200    12
-##  3 2100_2400      2100     1
-##  4 2100_2400      2400     1
-##  5 2100_2700      2100   159
-##  6 2100_2700      2700   159
-##  7 2200_2700      2200    15
-##  8 2200_2700      2700    15
-##  9 2400_2700      2400     1
-## 10 2400_2700      2700     1
-## 11      &lt;NA&gt;      &lt;NA&gt;     4</code></pre>
+##    &lt;fct&gt;     &lt;fct&gt;     &lt;int&gt;
+##  1 2100_2200 2100         12
+##  2 2100_2200 2200         12
+##  3 2100_2400 2100          1
+##  4 2100_2400 2400          1
+##  5 2100_2700 2100        159
+##  6 2100_2700 2700        159
+##  7 2200_2700 2200         15
+##  8 2200_2700 2700         15
+##  9 2400_2700 2400          1
+## 10 2400_2700 2700          1
+## 11 &lt;NA&gt;      &lt;NA&gt;          4</code></pre>
 <p>The NAs reflect the four individuals that did not move.</p>
 <p>Note that because there are two rows per movement event (leaving and arriving), we group by logger_id to summarize individually by logger (resulting in duplicate <code>n</code>s per <code>move_path</code>. This will account for the 2 rows and keep logger ids in the final data frame (required for mapping later on).</p>
 <p>However, if you only wanted <code>move_path</code> and <code>n</code>, you could simply omit <code>logger_id</code> and remove duplicates:</p>
 <pre class="r"><code>move_summary %&gt;% 
   select(-logger_id) %&gt;%
   unique()</code></pre>
-<pre><code>## # A tibble: 6 x 2
+<pre><code>## # A tibble: 6 × 2
 ## # Groups:   move_path [6]
 ##   move_path     n
-##      &lt;fctr&gt; &lt;int&gt;
+##   &lt;fct&gt;     &lt;int&gt;
 ## 1 2100_2200    12
 ## 2 2100_2400     1
 ## 3 2100_2700   159
 ## 4 2200_2700    15
 ## 5 2400_2700     1
-## 6      &lt;NA&gt;     4</code></pre>
+## 6 &lt;NA&gt;          4</code></pre>
 <pre class="r"><code>ggplot(data = move_summary, aes(x = move_path, y = n)) +
   geom_bar(stat = &quot;identity&quot;)</code></pre>
 <p><img src="transformations_files/figure-html/unnamed-chunk-18-1.png" width="576" /></p>
 <p>Are certain directions on particular paths used more often? (i.e. do birds go back and forth or do they circle around?)</p>
 <pre class="r"><code>move_summary &lt;- m %&gt;%
   group_by(logger_id, move_path, move_dir) %&gt;%
-  summarize(n = length(move_path))
-head(move_summary)</code></pre>
-<pre><code>## # A tibble: 6 x 4
+  summarize(n = length(move_path))</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;logger_id&#39;, &#39;move_path&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>head(move_summary)</code></pre>
+<pre><code>## # A tibble: 6 × 4
 ## # Groups:   logger_id, move_path [4]
-##   logger_id move_path  move_dir     n
-##      &lt;fctr&gt;    &lt;fctr&gt;    &lt;fctr&gt; &lt;int&gt;
-## 1      2100 2100_2200 2200_2100     6
-## 2      2100 2100_2200 2100_2200     6
-## 3      2100 2100_2400 2100_2400     1
-## 4      2100 2100_2700 2700_2100    79
-## 5      2100 2100_2700 2100_2700    80
-## 6      2200 2100_2200 2200_2100     6</code></pre>
+##   logger_id move_path move_dir      n
+##   &lt;fct&gt;     &lt;fct&gt;     &lt;fct&gt;     &lt;int&gt;
+## 1 2100      2100_2200 2200_2100     6
+## 2 2100      2100_2200 2100_2200     6
+## 3 2100      2100_2400 2100_2400     1
+## 4 2100      2100_2700 2700_2100    79
+## 5 2100      2100_2700 2100_2700    80
+## 6 2200      2100_2200 2200_2100     6</code></pre>
 <pre class="r"><code>ggplot(data = move_summary, aes(x = move_path, y = n, fill = move_dir)) +
   geom_bar(stat = &quot;identity&quot;, position = &quot;dodge&quot;, colour = &quot;black&quot;)</code></pre>
 <p><img src="transformations_files/figure-html/unnamed-chunk-20-1.png" width="576" /></p>
@@ -666,26 +717,28 @@ head(move_summary)</code></pre>
 <pre class="r"><code>move_summary &lt;- m %&gt;%
   group_by(logger_id, move_path) %&gt;%
   summarize(n = length(move_path),
-            strength = mean(strength, na.rm = TRUE))
-move_summary</code></pre>
-<pre><code>## # A tibble: 11 x 4
-## # Groups:   logger_id [?]
-##    logger_id move_path     n   strength
-##       &lt;fctr&gt;    &lt;fctr&gt; &lt;int&gt;      &lt;dbl&gt;
-##  1      2100 2100_2200    12  1.2150942
-##  2      2100 2100_2400     1  3.9560440
-##  3      2100 2100_2700   159 10.5643650
-##  4      2200 2100_2200    12  1.2150942
-##  5      2200 2200_2700    15  0.8765755
-##  6      2400 2100_2400     1  3.9560440
-##  7      2400 2400_2700     1  0.1445725
-##  8      2700 2100_2700   159 10.5643650
-##  9      2700 2200_2700    15  0.8765755
-## 10      2700 2400_2700     1  0.1445725
-## 11      &lt;NA&gt;      &lt;NA&gt;     4        NaN</code></pre>
+            strength = mean(strength, na.rm = TRUE))</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;logger_id&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>move_summary</code></pre>
+<pre><code>## # A tibble: 11 × 4
+## # Groups:   logger_id [5]
+##    logger_id move_path     n strength
+##    &lt;fct&gt;     &lt;fct&gt;     &lt;int&gt;    &lt;dbl&gt;
+##  1 2100      2100_2200    12    1.22 
+##  2 2100      2100_2400     1    3.96 
+##  3 2100      2100_2700   159   10.6  
+##  4 2200      2100_2200    12    1.22 
+##  5 2200      2200_2700    15    0.877
+##  6 2400      2100_2400     1    3.96 
+##  7 2400      2400_2700     1    0.145
+##  8 2700      2100_2700   159   10.6  
+##  9 2700      2200_2700    15    0.877
+## 10 2700      2400_2700     1    0.145
+## 11 &lt;NA&gt;      &lt;NA&gt;          4  NaN</code></pre>
 <pre class="r"><code>ggplot(data = move_summary, aes(x = strength, y = n)) +
   geom_point() +
   stat_smooth(method = &quot;lm&quot;) # add a regression line w/ standard error</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
 <pre><code>## Warning: Removed 1 rows containing non-finite values (stat_smooth).</code></pre>
 <pre><code>## Warning: Removed 1 rows containing missing values (geom_point).</code></pre>
 <p><img src="transformations_files/figure-html/unnamed-chunk-22-1.png" width="768" /></p>
@@ -694,9 +747,9 @@ move_summary</code></pre>
   group_by(animal_id) %&gt;%
   summarize(n = length(move_path[!is.na(move_path)])) # Number of movements omitting NAs
 move_summary</code></pre>
-<pre><code>## # A tibble: 11 x 2
-##     animal_id     n
-##        &lt;fctr&gt; &lt;int&gt;
+<pre><code>## # A tibble: 11 × 2
+##    animal_id      n
+##    &lt;fct&gt;      &lt;int&gt;
 ##  1 041868E9A8     8
 ##  2 041869123C     0
 ##  3 06200003AA    12
@@ -730,15 +783,15 @@ move_summary</code></pre>
 <pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
 p &lt;- presence(v)
 head(p)</code></pre>
-<pre><code>## # A tibble: 6 x 12
-##    animal_id       date logger_id               start                 end         length animal_n logger_n   age   sex       lon      lat
-##       &lt;fctr&gt;     &lt;date&gt;    &lt;fctr&gt;              &lt;dttm&gt;              &lt;dttm&gt;         &lt;time&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-## 1 041868E9A8 2015-10-02      2100 2015-10-01 16:38:52 2015-10-01 16:40:53  2.016667 mins       11        4   AHY     F -120.3624 50.66896
-## 2 041868E9A8 2015-10-02      2700 2015-10-01 16:45:00 2015-10-01 16:56:42 11.700000 mins       11        4   AHY     F -120.3632 50.66909
-## 3 041868E9A8 2015-10-02      2200 2015-10-02 09:57:00 2015-10-02 10:11:43 14.716667 mins       11        4   AHY     F -120.3612 50.66778
-## 4 041868E9A8 2015-10-02      2200 2015-10-02 11:45:37 2015-10-02 12:06:27 20.833333 mins       11        4   AHY     F -120.3612 50.66778
-## 5 041868E9A8 2015-10-02      2200 2015-10-02 13:22:58 2015-10-02 13:27:30  4.533333 mins       11        4   AHY     F -120.3612 50.66778
-## 6 041868E9A8 2015-10-02      2200 2015-10-02 14:33:42 2015-10-02 14:37:25  3.716667 mins       11        4   AHY     F -120.3612 50.66778</code></pre>
+<pre><code>## # A tibble: 6 × 14
+##   animal_id  date       logger_id start               end                 length animal_n logger_n species     site_name    age   sex     lon   lat
+##   &lt;fct&gt;      &lt;date&gt;     &lt;fct&gt;     &lt;dttm&gt;              &lt;dttm&gt;               &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 041868E9A8 2015-10-01 2100      2015-10-01 16:38:52 2015-10-01 16:40:53   2.02       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 2 041868E9A8 2015-10-01 2700      2015-10-01 16:45:00 2015-10-01 16:56:42  11.7        11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 3 041868E9A8 2015-10-02 2200      2015-10-02 09:57:00 2015-10-02 10:11:43  14.7        11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 4 041868E9A8 2015-10-02 2200      2015-10-02 11:45:37 2015-10-02 12:06:27  20.8        11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 5 041868E9A8 2015-10-02 2200      2015-10-02 13:22:58 2015-10-02 13:27:30   4.53       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 6 041868E9A8 2015-10-02 2200      2015-10-02 14:33:42 2015-10-02 14:37:25   3.72       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7</code></pre>
 <div id="data-returned-2" class="section level3">
 <h3>Data returned</h3>
 <ul>
@@ -758,40 +811,40 @@ head(p)</code></pre>
 <pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
 p &lt;- presence(v, bw = 20)  # Within 20 min
 head(p)</code></pre>
-<pre><code>## # A tibble: 6 x 12
-##    animal_id       date logger_id               start                 end         length animal_n logger_n   age   sex       lon      lat
-##       &lt;fctr&gt;     &lt;date&gt;    &lt;fctr&gt;              &lt;dttm&gt;              &lt;dttm&gt;         &lt;time&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-## 1 041868E9A8 2015-10-02      2100 2015-10-01 16:38:52 2015-10-01 16:40:53  2.016667 mins       11        4   AHY     F -120.3624 50.66896
-## 2 041868E9A8 2015-10-02      2700 2015-10-01 16:45:00 2015-10-01 16:56:42 11.700000 mins       11        4   AHY     F -120.3632 50.66909
-## 3 041868E9A8 2015-10-02      2200 2015-10-02 09:57:00 2015-10-02 10:11:43 14.716667 mins       11        4   AHY     F -120.3612 50.66778
-## 4 041868E9A8 2015-10-02      2200 2015-10-02 11:45:37 2015-10-02 12:06:27 20.833333 mins       11        4   AHY     F -120.3612 50.66778
-## 5 041868E9A8 2015-10-02      2200 2015-10-02 13:22:58 2015-10-02 13:27:30  4.533333 mins       11        4   AHY     F -120.3612 50.66778
-## 6 041868E9A8 2015-10-02      2200 2015-10-02 14:33:42 2015-10-02 14:37:25  3.716667 mins       11        4   AHY     F -120.3612 50.66778</code></pre>
+<pre><code>## # A tibble: 6 × 14
+##   animal_id  date       logger_id start               end                 length animal_n logger_n species     site_name    age   sex     lon   lat
+##   &lt;fct&gt;      &lt;date&gt;     &lt;fct&gt;     &lt;dttm&gt;              &lt;dttm&gt;               &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 041868E9A8 2015-10-01 2100      2015-10-01 16:38:52 2015-10-01 16:40:53   2.02       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 2 041868E9A8 2015-10-01 2700      2015-10-01 16:45:00 2015-10-01 16:56:42  11.7        11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 3 041868E9A8 2015-10-02 2200      2015-10-02 09:57:00 2015-10-02 10:11:43  14.7        11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 4 041868E9A8 2015-10-02 2200      2015-10-02 11:45:37 2015-10-02 12:06:27  20.8        11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 5 041868E9A8 2015-10-02 2200      2015-10-02 13:22:58 2015-10-02 13:27:30   4.53       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 6 041868E9A8 2015-10-02 2200      2015-10-02 14:33:42 2015-10-02 14:37:25   3.72       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7</code></pre>
 <pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
 p &lt;- presence(v, bw = 90)  # Within 1.5 h
 head(p)</code></pre>
-<pre><code>## # A tibble: 6 x 12
-##    animal_id       date logger_id               start                 end           length animal_n logger_n   age   sex       lon      lat
-##       &lt;fctr&gt;     &lt;date&gt;    &lt;fctr&gt;              &lt;dttm&gt;              &lt;dttm&gt;           &lt;time&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-## 1 041868E9A8 2015-10-02      2100 2015-10-01 16:38:52 2015-10-01 16:40:53   2.0166667 mins       11        4   AHY     F -120.3624 50.66896
-## 2 041868E9A8 2015-10-02      2700 2015-10-01 16:45:00 2015-10-01 16:56:42  11.7000000 mins       11        4   AHY     F -120.3632 50.66909
-## 3 041868E9A8 2015-10-02      2200 2015-10-02 09:57:00 2015-10-02 10:11:43  14.7166667 mins       11        4   AHY     F -120.3612 50.66778
-## 4 041868E9A8 2015-10-02      2200 2015-10-02 11:45:37 2015-10-02 14:37:25 171.8000000 mins       11        4   AHY     F -120.3612 50.66778
-## 5 041868E9A8 2015-10-03      2200 2015-10-02 16:44:14 2015-10-02 16:50:15   6.0166667 mins       11        4   AHY     F -120.3612 50.66778
-## 6 041868E9A8 2015-10-03      2200 2015-10-03 09:25:06 2015-10-03 09:26:04   0.9666667 mins       11        4   AHY     F -120.3612 50.66778</code></pre>
+<pre><code>## # A tibble: 6 × 14
+##   animal_id  date       logger_id start               end                  length animal_n logger_n species     site_name    age   sex     lon   lat
+##   &lt;fct&gt;      &lt;date&gt;     &lt;fct&gt;     &lt;dttm&gt;              &lt;dttm&gt;                &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 041868E9A8 2015-10-01 2100      2015-10-01 16:38:52 2015-10-01 16:40:53   2.02        11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 2 041868E9A8 2015-10-01 2700      2015-10-01 16:45:00 2015-10-01 16:56:42  11.7         11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 3 041868E9A8 2015-10-02 2200      2015-10-02 09:57:00 2015-10-02 10:11:43  14.7         11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 4 041868E9A8 2015-10-02 2200      2015-10-02 11:45:37 2015-10-02 14:37:25 172.          11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 5 041868E9A8 2015-10-02 2200      2015-10-02 16:44:14 2015-10-02 16:50:15   6.02        11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 6 041868E9A8 2015-10-03 2200      2015-10-03 09:25:06 2015-10-03 09:26:04   0.967       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7</code></pre>
 <p>The <code>bw</code> parameter can also be omitted entirely:</p>
 <pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
 p &lt;- presence(v, bw = NULL)
 head(p)</code></pre>
-<pre><code>## # A tibble: 6 x 12
-##    animal_id       date logger_id               start                 end           length animal_n logger_n   age   sex       lon      lat
-##       &lt;fctr&gt;     &lt;date&gt;    &lt;fctr&gt;              &lt;dttm&gt;              &lt;dttm&gt;           &lt;time&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-## 1 041868E9A8 2015-10-02      2100 2015-10-01 16:38:52 2015-10-01 16:40:53    2.016667 mins       11        4   AHY     F -120.3624 50.66896
-## 2 041868E9A8 2015-10-02      2700 2015-10-01 16:45:00 2015-10-01 16:56:42   11.700000 mins       11        4   AHY     F -120.3632 50.66909
-## 3 041868E9A8 2015-10-02      2200 2015-10-02 09:57:00 2015-10-06 13:24:50 5967.833333 mins       11        4   AHY     F -120.3612 50.66778
-## 4 041868E9A8 2015-10-06      2700 2015-10-06 15:05:40 2015-10-06 15:08:29    2.816667 mins       11        4   AHY     F -120.3632 50.66909
-## 5 041868E9A8 2015-10-06      2200 2015-10-06 15:14:47 2015-10-09 13:11:08 4196.350000 mins       11        4   AHY     F -120.3612 50.66778
-## 6 041869123C 2015-10-15      2200 2015-10-15 09:16:52 2015-10-16 08:27:48 1390.933333 mins       11        4   AHY     M -120.3612 50.66778</code></pre>
+<pre><code>## # A tibble: 6 × 14
+##   animal_id  date       logger_id start               end                  length animal_n logger_n species     site_name    age   sex     lon   lat
+##   &lt;fct&gt;      &lt;date&gt;     &lt;fct&gt;     &lt;dttm&gt;              &lt;dttm&gt;                &lt;dbl&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 041868E9A8 2015-10-01 2100      2015-10-01 16:38:52 2015-10-01 16:40:53    2.02       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 2 041868E9A8 2015-10-01 2700      2015-10-01 16:45:00 2015-10-01 16:56:42   11.7        11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 3 041868E9A8 2015-10-02 2200      2015-10-02 09:57:00 2015-10-06 13:24:50 5968.         11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 4 041868E9A8 2015-10-06 2700      2015-10-06 15:05:40 2015-10-06 15:08:29    2.82       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 5 041868E9A8 2015-10-06 2200      2015-10-06 15:14:47 2015-10-09 13:11:08 4196.         11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 6 041869123C 2015-10-15 2200      2015-10-15 09:16:52 2015-10-16 08:27:48 1391.         11        4 House Finch Kamloops, BC AHY   M     -120.  50.7</code></pre>
 <p>When <code>bw = NULL</code> only a move to a different logger will initiate a new presence bout. Therefore this identifies how much time passes before a new logger is visited. The end time reflects the time of the final visit to that logger before moving to a new logger, but if an individual were to visit logger A all day on day 1 and disappear on day 2 and then make one visit to logger A on day 3 before moving immediately to logger B, that first bout of ‘presence’ would be considered two days long, whereas in reality, the individual did not make any visits on one of those days.</p>
 </div>
 <div id="summarizing-2" class="section level3">
@@ -806,24 +859,23 @@ presence_summary &lt;- p %&gt;%
             mean_length = mean(length)) ## mean length of events
 
 presence_summary</code></pre>
-<pre><code>## # A tibble: 11 x 3
-##     animal_id     n      mean_length
-##        &lt;fctr&gt; &lt;int&gt;           &lt;time&gt;
-##  1 041868E9A8    28  7.37500000 mins
-##  2 041869123C     2 11.92500000 mins
-##  3 06200003AA    66  5.07752525 mins
-##  4 0620000400     8  4.07500000 mins
-##  5 062000043E     1  0.03333333 mins
-##  6 0620000477    37  6.05180180 mins
-##  7 06200004F8   270  7.27419753 mins
-##  8 0620000500   202  5.30445545 mins
-##  9 0620000513     1  6.10000000 mins
-## 10 0620000514    48  4.31354167 mins
-## 11 0620000520     2  4.86666667 mins</code></pre>
+<pre><code>## # A tibble: 11 × 3
+##    animal_id      n mean_length
+##    &lt;fct&gt;      &lt;int&gt;       &lt;dbl&gt;
+##  1 041868E9A8    28      7.38  
+##  2 041869123C     2     11.9   
+##  3 06200003AA    66      5.08  
+##  4 0620000400     8      4.08  
+##  5 062000043E     1      0.0333
+##  6 0620000477    37      6.05  
+##  7 06200004F8   270      7.27  
+##  8 0620000500   202      5.30  
+##  9 0620000513     1      6.1   
+## 10 0620000514    48      4.31  
+## 11 0620000520     2      4.87</code></pre>
 <p>Is there a relationship between the number and length of presence bouts?</p>
 <pre class="r"><code>ggplot(data = presence_summary, aes(x = n, y = mean_length)) +
   geom_point()</code></pre>
-<pre><code>## Don&#39;t know how to automatically pick scale for object of type difftime. Defaulting to continuous.</code></pre>
 <p><img src="transformations_files/figure-html/unnamed-chunk-29-1.png" width="768" /></p>
 <p>Do animals spend more time around certain loggers?</p>
 <pre class="r"><code>presence_summary &lt;- p %&gt;%
@@ -833,19 +885,17 @@ presence_summary</code></pre>
             se_length = sd(length)/sqrt(n))
 
 presence_summary</code></pre>
-<pre><code>## # A tibble: 4 x 4
-##   logger_id     n   mean_length      se_length
-##      &lt;fctr&gt; &lt;int&gt;        &lt;time&gt;         &lt;time&gt;
-## 1      2100   272 6.447059 mins 0.4577221 mins
-## 2      2200    77 5.318831 mins 0.6708895 mins
-## 3      2400     1 2.033333 mins        NA mins
-## 4      2700   315 6.080159 mins 0.3474290 mins</code></pre>
+<pre><code>## # A tibble: 4 × 4
+##   logger_id     n mean_length se_length
+##   &lt;fct&gt;     &lt;int&gt;       &lt;dbl&gt;     &lt;dbl&gt;
+## 1 2100        272        6.45     0.458
+## 2 2200         77        5.32     0.671
+## 3 2400          1        2.03    NA    
+## 4 2700        315        6.08     0.347</code></pre>
 <pre class="r"><code>ggplot(data = presence_summary, aes(x = logger_id, y = mean_length, fill = logger_id)) +
   geom_bar(stat = &quot;identity&quot;) +
   geom_errorbar(aes(ymin = mean_length - se_length, 
                     ymax = mean_length + se_length), width = 0.25)</code></pre>
-<pre><code>## Don&#39;t know how to automatically pick scale for object of type difftime. Defaulting to continuous.</code></pre>
-<pre><code>## Warning: Removed 1 rows containing missing values (geom_errorbar).</code></pre>
 <p><img src="transformations_files/figure-html/unnamed-chunk-30-1.png" width="768" /></p>
 <p>Note that there is only one bout of presence around logger 2400, hence the lack of errorbars.</p>
 <table>
@@ -875,15 +925,15 @@ names(d)</code></pre>
 <h3>Data returned</h3>
 <p>This function returns a list with three different types of displacement information: <code>displacements</code>, <code>summaries</code>, and <code>interactions</code>.</p>
 <pre class="r"><code>head(d$displacements)</code></pre>
-<pre><code>## # A tibble: 6 x 12
-##    animal_id       date                left             arrived logger_id      role animal_n logger_n   age   sex       lon      lat
-##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;fctr&gt;     &lt;chr&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-## 1 06200004F8 2015-09-16 2015-09-16 15:26:08 2015-09-16 15:26:09      2100 displacee       11        4   AHY     F -120.3624 50.66896
-## 2 0620000500 2015-09-16 2015-09-16 15:26:08 2015-09-16 15:26:09      2100 displacer       11        4    HY     F -120.3624 50.66896
-## 3 06200004F8 2015-09-17 2015-09-17 14:09:33 2015-09-17 14:09:34      2700 displacee       11        4   AHY     F -120.3632 50.66909
-## 4 0620000500 2015-09-17 2015-09-17 14:09:33 2015-09-17 14:09:34      2700 displacer       11        4    HY     F -120.3632 50.66909
-## 5 06200004F8 2015-09-17 2015-09-17 15:25:29 2015-09-17 15:25:30      2700 displacee       11        4   AHY     F -120.3632 50.66909
-## 6 0620000500 2015-09-17 2015-09-17 15:25:29 2015-09-17 15:25:30      2700 displacer       11        4    HY     F -120.3632 50.66909</code></pre>
+<pre><code>## # A tibble: 6 × 14
+##   animal_id  date       left                arrived             logger_id role      animal_n logger_n species     site_name    age   sex     lon   lat
+##   &lt;fct&gt;      &lt;date&gt;     &lt;dttm&gt;              &lt;dttm&gt;              &lt;fct&gt;     &lt;chr&gt;        &lt;int&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 06200004F8 2015-09-16 2015-09-16 15:26:08 2015-09-16 15:26:09 2100      displacee       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 2 0620000500 2015-09-16 2015-09-16 15:26:08 2015-09-16 15:26:09 2100      displacer       11        4 House Finch Kamloops, BC HY    F     -120.  50.7
+## 3 06200004F8 2015-09-17 2015-09-17 14:09:33 2015-09-17 14:09:34 2700      displacee       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 4 0620000500 2015-09-17 2015-09-17 14:09:33 2015-09-17 14:09:34 2700      displacer       11        4 House Finch Kamloops, BC HY    F     -120.  50.7
+## 5 06200004F8 2015-09-17 2015-09-17 15:25:29 2015-09-17 15:25:30 2700      displacee       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 6 0620000500 2015-09-17 2015-09-17 15:25:29 2015-09-17 15:25:30 2700      displacer       11        4 House Finch Kamloops, BC HY    F     -120.  50.7</code></pre>
 <p>The <code>displacements</code> item is a data frame containing information on each displacement event</p>
 <ul>
 <li><code>animal_id</code> id of an animal involved in a displacement event</li>
@@ -895,15 +945,15 @@ names(d)</code></pre>
 </ul>
 <p><code>animal_n</code>, <code>logger_n</code>, <code>species</code>, <code>sex</code>, <code>lon</code>, and <code>lat</code> are extra columns passed through (see <a href="#visitsdata">visits data</a> for more information).</p>
 <pre class="r"><code>head(d$summaries)</code></pre>
-<pre><code>## # A tibble: 6 x 4
-##    animal_id displacee displacer     p_win
-##       &lt;fctr&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
-## 1 0620000500         1         6 0.8571429
-## 2 06200004F8         6         1 0.1428571
-## 3 041868E9A8         0         0       NaN
-## 4 041869123C         0         0       NaN
-## 5 06200003AA         0         0       NaN
-## 6 0620000400         0         0       NaN</code></pre>
+<pre><code>## # A tibble: 6 × 4
+##   animal_id  displacee displacer   p_win
+##   &lt;fct&gt;          &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+## 1 0620000500         1         6   0.857
+## 2 06200004F8         6         1   0.143
+## 3 041868E9A8         0         0 NaN    
+## 4 041869123C         0         0 NaN    
+## 5 06200003AA         0         0 NaN    
+## 6 0620000400         0         0 NaN</code></pre>
 <p>The <code>summaries</code> item is a data frame summarizing the displacement events for each individual</p>
 <ul>
 <li><code>animal_id</code> id of animal</li>
@@ -912,9 +962,9 @@ names(d)</code></pre>
 <li><code>p_win</code> is the proportion of times the animal ‘won’ the interaction (i.e. number of displacer events divided by total interactions)</li>
 </ul>
 <pre class="r"><code>head(d$interactions)</code></pre>
-<pre><code>## # A tibble: 6 x 3
-##    displacer  displacee     n
-##       &lt;fctr&gt;     &lt;fctr&gt; &lt;dbl&gt;
+<pre><code>## # A tibble: 6 × 3
+##   displacer  displacee      n
+##   &lt;fct&gt;      &lt;fct&gt;      &lt;dbl&gt;
 ## 1 0620000500 041868E9A8     0
 ## 2 0620000500 041869123C     0
 ## 3 0620000500 06200003AA     0
@@ -948,35 +998,35 @@ disp(v)</code></pre>
 <p>The <code>disp()</code> function also contains a <code>bw</code> argument. In this case it reflects the maximum interval between the first animal leaving and the second animal arriving for an interaction to be considered a displacement:</p>
 <pre class="r"><code>v &lt;- visits(finches_lg, bw = 5)
 head(disp(v)$summaries)</code></pre>
-<pre><code>## # A tibble: 6 x 4
-##    animal_id displacee displacer     p_win
-##       &lt;fctr&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
-## 1 0620000500         1         6 0.8571429
-## 2 06200004F8         6         1 0.1428571
-## 3 041868E9A8         0         0       NaN
-## 4 041869123C         0         0       NaN
-## 5 06200003AA         0         0       NaN
-## 6 0620000400         0         0       NaN</code></pre>
+<pre><code>## # A tibble: 6 × 4
+##   animal_id  displacee displacer   p_win
+##   &lt;fct&gt;          &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+## 1 0620000500         1         6   0.857
+## 2 06200004F8         6         1   0.143
+## 3 041868E9A8         0         0 NaN    
+## 4 041869123C         0         0 NaN    
+## 5 06200003AA         0         0 NaN    
+## 6 0620000400         0         0 NaN</code></pre>
 <pre class="r"><code>head(disp(v, bw = 10)$summaries)</code></pre>
-<pre><code>## # A tibble: 6 x 4
-##    animal_id displacee displacer     p_win
-##       &lt;fctr&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
-## 1 041868E9A8         0         2 1.0000000
-## 2 0620000500        25        57 0.6951220
-## 3 06200004F8        48        33 0.4074074
-## 4 06200003AA         8         3 0.2727273
-## 5 0620000477        11         3 0.2142857
-## 6 0620000400         4         1 0.2000000</code></pre>
+<pre><code>## # A tibble: 6 × 4
+##   animal_id  displacee displacer p_win
+##   &lt;fct&gt;          &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;
+## 1 041868E9A8         0         2 1    
+## 2 0620000500        25        57 0.695
+## 3 06200004F8        48        33 0.407
+## 4 06200003AA         8         3 0.273
+## 5 0620000477        11         3 0.214
+## 6 0620000400         4         1 0.2</code></pre>
 <pre class="r"><code>head(disp(v, bw = 15)$summaries)</code></pre>
-<pre><code>## # A tibble: 6 x 4
-##    animal_id displacee displacer     p_win
-##       &lt;fctr&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
-## 1 041868E9A8         0         3 1.0000000
-## 2 0620000500        28        66 0.7021277
-## 3 06200004F8        57        36 0.3870968
-## 4 06200003AA         9         5 0.3571429
-## 5 0620000400         4         1 0.2000000
-## 6 0620000477        12         3 0.2000000</code></pre>
+<pre><code>## # A tibble: 6 × 4
+##   animal_id  displacee displacer p_win
+##   &lt;fct&gt;          &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;
+## 1 041868E9A8         0         3 1    
+## 2 0620000500        28        66 0.702
+## 3 06200004F8        57        36 0.387
+## 4 06200003AA         9         5 0.357
+## 5 0620000400         4         1 0.2  
+## 6 0620000477        12         3 0.2</code></pre>
 <p>However, an interval of 15s is pretty long and probably doesn’t constitute a real displacement event.</p>
 </div>
 <div id="summarizing-3" class="section level3">
@@ -1008,32 +1058,32 @@ full_summary &lt;- full_join(disp_summary, presence_summary, by = &quot;logger_i
          n_per_hour = n / amount * 60) # Calculate the number of interactions as an hourly rate
 
 full_summary</code></pre>
-<pre><code>## # A tibble: 4 x 5
+<pre><code>## # A tibble: 4 × 5
 ## # Groups:   logger_id, role [4]
-##   logger_id      role     n      amount n_per_hour
-##      &lt;fctr&gt;     &lt;chr&gt; &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;
-## 1      2100 displacer     5 1753.600000 0.17107664
-## 2      2700 displacer     2 1915.250000 0.06265501
-## 3      2200      &lt;NA&gt;     0  409.550000 0.00000000
-## 4      2400      &lt;NA&gt;     0    2.033333 0.00000000</code></pre>
+##   logger_id role          n  amount n_per_hour
+##   &lt;fct&gt;     &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;      &lt;dbl&gt;
+## 1 2100      displacer     5 1754.       0.171 
+## 2 2700      displacer     2 1915.       0.0627
+## 3 2200      &lt;NA&gt;          0  410.       0     
+## 4 2400      &lt;NA&gt;          0    2.03     0</code></pre>
 <pre class="r"><code>ggplot(data = full_summary, aes(x = logger_id, y = n)) +
   geom_bar(stat = &quot;identity&quot;)</code></pre>
 <p><img src="transformations_files/figure-html/unnamed-chunk-37-1.png" width="768" /></p>
 <pre class="r"><code>d$summaries</code></pre>
-<pre><code>## # A tibble: 11 x 4
-##     animal_id displacee displacer     p_win
-##        &lt;fctr&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
-##  1 0620000500         1         6 0.8571429
-##  2 06200004F8         6         1 0.1428571
-##  3 041868E9A8         0         0       NaN
-##  4 041869123C         0         0       NaN
-##  5 06200003AA         0         0       NaN
-##  6 0620000400         0         0       NaN
-##  7 062000043E         0         0       NaN
-##  8 0620000477         0         0       NaN
-##  9 0620000513         0         0       NaN
-## 10 0620000514         0         0       NaN
-## 11 0620000520         0         0       NaN</code></pre>
+<pre><code>## # A tibble: 11 × 4
+##    animal_id  displacee displacer   p_win
+##    &lt;fct&gt;          &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+##  1 0620000500         1         6   0.857
+##  2 06200004F8         6         1   0.143
+##  3 041868E9A8         0         0 NaN    
+##  4 041869123C         0         0 NaN    
+##  5 06200003AA         0         0 NaN    
+##  6 0620000400         0         0 NaN    
+##  7 062000043E         0         0 NaN    
+##  8 0620000477         0         0 NaN    
+##  9 0620000513         0         0 NaN    
+## 10 0620000514         0         0 NaN    
+## 11 0620000520         0         0 NaN</code></pre>
 <pre class="r"><code>ggplot(data = d$summaries, aes(x = animal_id, y = p_win)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #rotate and shift id labels
   geom_bar(stat = &quot;identity&quot;) +
@@ -1074,15 +1124,15 @@ a &lt;- activity(p, res = 5)</code></pre>
 <pre><code>## 0620000514: 75% of obs are shorter than &#39;res&#39; (5 min). Median obs is 1.59 min.</code></pre>
 <pre><code>## 0620000520: Active less than 5% of the total time period...</code></pre>
 <pre class="r"><code>head(a)</code></pre>
-<pre><code>## # A tibble: 6 x 12
-##    animal_id       date                time activity activity_c logger_id                rise                 set animal_n logger_n   age   sex
-##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;    &lt;dbl&gt;     &lt;fctr&gt;    &lt;fctr&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt; &lt;chr&gt;
-## 1 041868E9A8 2015-10-01 2015-10-01 00:00:00        0   inactive      &lt;NA&gt; 2015-10-01 06:01:35 2015-10-01 17:39:43       11        4   AHY     F
-## 2 041868E9A8 2015-10-01 2015-10-01 00:05:00        0   inactive      &lt;NA&gt; 2015-10-01 06:01:35 2015-10-01 17:39:43       11        4   AHY     F
-## 3 041868E9A8 2015-10-01 2015-10-01 00:10:00        0   inactive      &lt;NA&gt; 2015-10-01 06:01:35 2015-10-01 17:39:43       11        4   AHY     F
-## 4 041868E9A8 2015-10-01 2015-10-01 00:15:00        0   inactive      &lt;NA&gt; 2015-10-01 06:01:35 2015-10-01 17:39:43       11        4   AHY     F
-## 5 041868E9A8 2015-10-01 2015-10-01 00:20:00        0   inactive      &lt;NA&gt; 2015-10-01 06:01:35 2015-10-01 17:39:43       11        4   AHY     F
-## 6 041868E9A8 2015-10-01 2015-10-01 00:25:00        0   inactive      &lt;NA&gt; 2015-10-01 06:01:35 2015-10-01 17:39:43       11        4   AHY     F</code></pre>
+<pre><code>## # A tibble: 6 × 14
+##   animal_id  date       time                activity activity_c logger_id rise                set                 animal_n logger_n species     site_name    age   sex  
+##   &lt;fct&gt;      &lt;date&gt;     &lt;dttm&gt;                 &lt;dbl&gt; &lt;fct&gt;      &lt;fct&gt;     &lt;dttm&gt;              &lt;dttm&gt;                 &lt;int&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt;
+## 1 041868E9A8 2015-10-01 2015-10-01 00:00:00        0 inactive   &lt;NA&gt;      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F    
+## 2 041868E9A8 2015-10-01 2015-10-01 00:05:00        0 inactive   &lt;NA&gt;      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F    
+## 3 041868E9A8 2015-10-01 2015-10-01 00:10:00        0 inactive   &lt;NA&gt;      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F    
+## 4 041868E9A8 2015-10-01 2015-10-01 00:15:00        0 inactive   &lt;NA&gt;      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F    
+## 5 041868E9A8 2015-10-01 2015-10-01 00:20:00        0 inactive   &lt;NA&gt;      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F    
+## 6 041868E9A8 2015-10-01 2015-10-01 00:25:00        0 inactive   &lt;NA&gt;      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F</code></pre>
 <div id="data-returned-4" class="section level3">
 <h3>Data returned</h3>
 <p>Several messages along with a data set containing:</p>
@@ -1100,7 +1150,7 @@ a &lt;- activity(p, res = 5)</code></pre>
 <p>The messages reflect information regarding the quality of the activity data:</p>
 <ul>
 <li>activity being low (“Active less than 5%…”)</li>
-<li>skipped individuals (“Skipping. Individual has less than 24hrs data) (see <code>keep_all</code> below)</li>
+<li>skipped individuals ("Skipping. Individual has less than 24hrs data) (see <code>keep_all</code> below)</li>
 <li>obs which are shorter than the resolution ‘res’ (X% of obs are shorter than ‘res’) (see <code>res</code> below)</li>
 </ul>
 </div>
@@ -1108,29 +1158,29 @@ a &lt;- activity(p, res = 5)</code></pre>
 <h3><code>res</code></h3>
 <p>The default function calculates activity for each animal at a resolution of 15min. Meaning that every 15min an individual is scored as active or inactive. However, if individuals make short and infrequency visits to a logger, periods of activity may be missed if the active bouts are smaller than the resolution. Resolution can be adjusted through the <code>res</code> argument (note the change in time, and the change in messages).</p>
 <pre class="r"><code>head(activity(p, res = 1))</code></pre>
-<pre><code>## # A tibble: 6 x 12
-##    animal_id       date                time activity activity_c logger_id                rise                 set animal_n logger_n   age   sex
-##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;    &lt;dbl&gt;     &lt;fctr&gt;    &lt;fctr&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt; &lt;chr&gt;
-## 1 041868E9A8 2015-10-01 2015-10-01 00:00:00        0   inactive      &lt;NA&gt; 2015-10-01 06:01:35 2015-10-01 17:39:43       11        4   AHY     F
-## 2 041868E9A8 2015-10-01 2015-10-01 00:01:00        0   inactive      &lt;NA&gt; 2015-10-01 06:01:35 2015-10-01 17:39:43       11        4   AHY     F
-## 3 041868E9A8 2015-10-01 2015-10-01 00:02:00        0   inactive      &lt;NA&gt; 2015-10-01 06:01:35 2015-10-01 17:39:43       11        4   AHY     F
-## 4 041868E9A8 2015-10-01 2015-10-01 00:03:00        0   inactive      &lt;NA&gt; 2015-10-01 06:01:35 2015-10-01 17:39:43       11        4   AHY     F
-## 5 041868E9A8 2015-10-01 2015-10-01 00:04:00        0   inactive      &lt;NA&gt; 2015-10-01 06:01:35 2015-10-01 17:39:43       11        4   AHY     F
-## 6 041868E9A8 2015-10-01 2015-10-01 00:05:00        0   inactive      &lt;NA&gt; 2015-10-01 06:01:35 2015-10-01 17:39:43       11        4   AHY     F</code></pre>
+<pre><code>## # A tibble: 6 × 14
+##   animal_id  date       time                activity activity_c logger_id rise                set                 animal_n logger_n species     site_name    age   sex  
+##   &lt;fct&gt;      &lt;date&gt;     &lt;dttm&gt;                 &lt;dbl&gt; &lt;fct&gt;      &lt;fct&gt;     &lt;dttm&gt;              &lt;dttm&gt;                 &lt;int&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt;
+## 1 041868E9A8 2015-10-01 2015-10-01 00:00:00        0 inactive   &lt;NA&gt;      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F    
+## 2 041868E9A8 2015-10-01 2015-10-01 00:01:00        0 inactive   &lt;NA&gt;      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F    
+## 3 041868E9A8 2015-10-01 2015-10-01 00:02:00        0 inactive   &lt;NA&gt;      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F    
+## 4 041868E9A8 2015-10-01 2015-10-01 00:03:00        0 inactive   &lt;NA&gt;      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F    
+## 5 041868E9A8 2015-10-01 2015-10-01 00:04:00        0 inactive   &lt;NA&gt;      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F    
+## 6 041868E9A8 2015-10-01 2015-10-01 00:05:00        0 inactive   &lt;NA&gt;      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F</code></pre>
 </div>
 <div id="by_logger" class="section level3">
 <h3><code>by_logger</code></h3>
 <p>By default, the <code>activity()</code> function sums all activity across loggers. However, if you wish to calculate separate activity patterns for different loggers, you can set <code>by_logger = TRUE</code>. Note the <code>logger_id</code> and that there are now 4 observations per time block for each individual:</p>
 <pre class="r"><code>head(activity(p, by_logger = TRUE))</code></pre>
-<pre><code>## # A tibble: 6 x 14
-##    animal_id       date                time activity activity_c logger_id                rise                 set animal_n logger_n   age   sex       lon      lat
-##       &lt;fctr&gt;     &lt;date&gt;              &lt;dttm&gt;    &lt;dbl&gt;     &lt;fctr&gt;    &lt;fctr&gt;              &lt;dttm&gt;              &lt;dttm&gt;    &lt;int&gt;    &lt;int&gt; &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;
-## 1 041868E9A8 2015-10-01 2015-10-01 00:00:00        0   inactive      2100 2015-10-01 06:01:35 2015-10-01 17:39:43       NA       NA   AHY     F -120.3624 50.66896
-## 2 041868E9A8 2015-10-01 2015-10-01 00:00:00        0   inactive      2200 2015-10-01 06:01:35 2015-10-01 17:39:43       NA       NA   AHY     F -120.3612 50.66778
-## 3 041868E9A8 2015-10-01 2015-10-01 00:00:00        0   inactive      2400 2015-10-01 06:01:35 2015-10-01 17:39:43       NA       NA   AHY     F -120.3635 50.66938
-## 4 041868E9A8 2015-10-01 2015-10-01 00:00:00        0   inactive      2700 2015-10-01 06:01:35 2015-10-01 17:39:43       NA       NA   AHY     F -120.3632 50.66909
-## 5 041868E9A8 2015-10-01 2015-10-01 00:15:00        0   inactive      2100 2015-10-01 06:01:35 2015-10-01 17:39:43       NA       NA   AHY     F -120.3624 50.66896
-## 6 041868E9A8 2015-10-01 2015-10-01 00:15:00        0   inactive      2200 2015-10-01 06:01:35 2015-10-01 17:39:43       NA       NA   AHY     F -120.3612 50.66778</code></pre>
+<pre><code>## # A tibble: 6 × 16
+##   animal_id  date       time                activity activity_c logger_id rise                set                 animal_n logger_n species     site_name    age   sex     lon   lat
+##   &lt;fct&gt;      &lt;date&gt;     &lt;dttm&gt;                 &lt;dbl&gt; &lt;fct&gt;      &lt;fct&gt;     &lt;dttm&gt;              &lt;dttm&gt;                 &lt;int&gt;    &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 041868E9A8 2015-10-01 2015-10-01 00:00:00        0 inactive   2100      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 2 041868E9A8 2015-10-01 2015-10-01 00:00:00        0 inactive   2200      2015-10-01 06:01:35 2015-10-01 17:39:43       NA       NA &lt;NA&gt;        &lt;NA&gt;         AHY   F     -120.  50.7
+## 3 041868E9A8 2015-10-01 2015-10-01 00:00:00        0 inactive   2400      2015-10-01 06:01:35 2015-10-01 17:39:43       NA       NA &lt;NA&gt;        &lt;NA&gt;         AHY   F     -120.  50.7
+## 4 041868E9A8 2015-10-01 2015-10-01 00:00:00        0 inactive   2700      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 5 041868E9A8 2015-10-01 2015-10-01 00:15:00        0 inactive   2100      2015-10-01 06:01:35 2015-10-01 17:39:43       11        4 House Finch Kamloops, BC AHY   F     -120.  50.7
+## 6 041868E9A8 2015-10-01 2015-10-01 00:15:00        0 inactive   2200      2015-10-01 06:01:35 2015-10-01 17:39:43       NA       NA &lt;NA&gt;        &lt;NA&gt;         AHY   F     -120.  50.7</code></pre>
 </div>
 <div id="sun" class="section level3">
 <h3><code>sun</code></h3>
@@ -1250,11 +1300,11 @@ head(i)</code></pre>
 s &lt;- elo_scores(winners = i$winner, losers = i$loser)
 s</code></pre>
 <pre><code>##                  [,1]
-## 0620000500  383.75568
-## 06200004F8   59.78409
-## 0620000477 -219.62800
-## 06200003AA -177.56012
-## 0620000400  -46.35165</code></pre>
+## 0620000500  162.13422
+## 06200004F8  134.00095
+## 0620000477  -65.58584
+## 06200003AA  -18.31690
+## 0620000400 -212.23243</code></pre>
 <pre class="r"><code># Estimate repeatability
 estimate_uncertainty_by_repeatability(winners = i$winner, losers = i$loser)
 estimate_uncertainty_by_splitting(winners = i$winner, losers = i$loser, 
@@ -1413,20 +1463,20 @@ m_exp &lt;- v_exp %&gt;%
 # Summarizing
 p_avg &lt;- p_exp %&gt;%
   group_by(experiment, logger_id) %&gt;%
-  summarize(amount = sum(length)/animal_n[1])  #This is using the animal_n specific to the experiment
-
-m_avg &lt;- m_exp %&gt;%
+  summarize(amount = sum(length)/animal_n[1])  #This is using the animal_n specific to the experiment</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;experiment&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>m_avg &lt;- m_exp %&gt;%
   group_by(experiment, move_path, logger_id, lat, lon) %&gt;%
-  summarize(path_use = length(move_path))
-
-summary(p_avg)</code></pre>
-<pre><code>##   experiment                logger_id    amount        
-##  Length:8           exp2-GR10DATA:1   Length:8         
-##  Class :character   exp2-GR11DATA:1   Class :difftime  
-##  Mode  :character   exp2-GR12DATA:1   Mode  :numeric   
-##                     exp2-GR13DATA:1                    
-##                     exp3-GR10DATA:1                    
-##                     exp3-GR11DATA:1                    
+  summarize(path_use = length(move_path))</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;experiment&#39;, &#39;move_path&#39;, &#39;logger_id&#39;, &#39;lat&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>summary(p_avg)</code></pre>
+<pre><code>##   experiment                logger_id     amount     
+##  Length:8           exp2-GR10DATA:1   Min.   :105.4  
+##  Class :character   exp2-GR11DATA:1   1st Qu.:153.6  
+##  Mode  :character   exp2-GR12DATA:1   Median :238.3  
+##                     exp2-GR13DATA:1   Mean   :224.8  
+##                     exp3-GR10DATA:1   3rd Qu.:307.1  
+##                     exp3-GR11DATA:1   Max.   :320.9  
 ##                     (Other)      :2</code></pre>
 <pre class="r"><code>summary(m_avg)</code></pre>
 <pre><code>##   experiment                              move_path          logger_id      lat             lon            path_use    
@@ -1447,36 +1497,38 @@ exp &lt;- chickadees %&gt;%
   nest(.key = &quot;raw&quot;) %&gt;%
   mutate(visits = map(raw, ~ visits(.x)),
          presence = map(visits, ~ presence(.x)),
-         move = map(presence, ~ move(.x)))
-         
-exp</code></pre>
-<pre><code>## # A tibble: 2 x 5
-##   experiment                   raw               visits              presence                  move
-##        &lt;chr&gt;                &lt;list&gt;               &lt;list&gt;                &lt;list&gt;                &lt;list&gt;
-## 1       exp2 &lt;tibble [15,956 x 6]&gt; &lt;tibble [9,137 x 9]&gt; &lt;tibble [1,287 x 10]&gt; &lt;tibble [1,144 x 13]&gt;
-## 2       exp3 &lt;tibble [10,797 x 6]&gt; &lt;tibble [7,380 x 9]&gt; &lt;tibble [1,595 x 10]&gt; &lt;tibble [1,338 x 13]&gt;</code></pre>
+         move = map(presence, ~ move(.x)))</code></pre>
+<pre><code>## Warning: `.key` is deprecated</code></pre>
+<pre class="r"><code>exp</code></pre>
+<pre><code>## # A tibble: 2 × 5
+## # Groups:   experiment [2]
+##   experiment raw                   visits               presence              move                 
+##   &lt;chr&gt;      &lt;list&gt;                &lt;list&gt;               &lt;list&gt;                &lt;list&gt;               
+## 1 exp2       &lt;tibble [15,956 × 6]&gt; &lt;tibble [9,137 × 9]&gt; &lt;tibble [1,287 × 10]&gt; &lt;tibble [1,144 × 13]&gt;
+## 2 exp3       &lt;tibble [10,797 × 6]&gt; &lt;tibble [7,380 × 9]&gt; &lt;tibble [1,595 × 10]&gt; &lt;tibble [1,338 × 13]&gt;</code></pre>
 </div>
 <div id="summarizing-6" class="section level2">
 <h2>Summarizing</h2>
 <pre class="r"><code>p_avg &lt;- exp %&gt;%
   unnest(presence) %&gt;%
   group_by(experiment, logger_id) %&gt;%
-  summarize(amount = sum(length)/animal_n[1])  
-  # This is using the animal_n specific to the experiment
+  summarize(amount = sum(length)/animal_n[1])  </code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;experiment&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>  # This is using the animal_n specific to the experiment
 
 m_avg &lt;- exp %&gt;%
   unnest(move) %&gt;%
   group_by(experiment, move_path, logger_id, lat, lon) %&gt;%
-  summarize(path_use = length(move_path))
-
-summary(p_avg)</code></pre>
-<pre><code>##   experiment                logger_id    amount        
-##  Length:8           exp2-GR10DATA:1   Length:8         
-##  Class :character   exp2-GR11DATA:1   Class :difftime  
-##  Mode  :character   exp2-GR12DATA:1   Mode  :numeric   
-##                     exp2-GR13DATA:1                    
-##                     exp3-GR10DATA:1                    
-##                     exp3-GR11DATA:1                    
+  summarize(path_use = length(move_path))</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;experiment&#39;, &#39;move_path&#39;, &#39;logger_id&#39;, &#39;lat&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>summary(p_avg)</code></pre>
+<pre><code>##   experiment                logger_id     amount     
+##  Length:8           exp2-GR10DATA:1   Min.   :105.4  
+##  Class :character   exp2-GR11DATA:1   1st Qu.:153.6  
+##  Mode  :character   exp2-GR12DATA:1   Median :238.3  
+##                     exp2-GR13DATA:1   Mean   :224.8  
+##                     exp3-GR10DATA:1   3rd Qu.:307.1  
+##                     exp3-GR11DATA:1   Max.   :320.9  
 ##                     (Other)      :2</code></pre>
 <pre class="r"><code>summary(m_avg)</code></pre>
 <pre><code>##   experiment                              move_path          logger_id      lat             lon            path_use    
@@ -1503,13 +1555,59 @@ Go back to <a href="index.html">home</a> | Go back to <a href="housekeeping.html
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

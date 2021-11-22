@@ -13,14 +13,14 @@ returned by \code{disp()}.}
 }
 \value{
 A data frame listing winners and losers of all displacements sorted
-  by time of the event.
+by time of the event.
 }
 \description{
 Converts displacements data into a format for easy use by either the
-\code{\link[aniDom]{elo_scores}}, the
-\code{\link[aniDom]{estimate_uncertainty_by_repeatability}}, or the
-\code{\link[aniDom]{estimate_uncertainty_by_splitting}} functions included in
-the \link{aniDom} package for calculating dominance hierarchies from
+\code{\link[aniDom:elo_scores]{aniDom::elo_scores()}}, the
+\code{\link[aniDom:estimate_uncertainty_by_repeatability]{aniDom::estimate_uncertainty_by_repeatability()}}, or the
+\code{\link[aniDom:estimate_uncertainty_by_splitting]{aniDom::estimate_uncertainty_by_splitting()}} functions included in
+the aniDom package for calculating dominance hierarchies from
 Elo scores and assessing their robustness. Only includes individuals that
 participated in at least one interaction.
 }
@@ -49,5 +49,5 @@ r2 <- estimate_uncertainty_by_splitting(winners = i$winner, losers = i$loser, ra
 
 }
 \seealso{
-\link{aniDom} package and it's functions: \link[aniDom]{elo_scores}, \link[aniDom]{estimate_uncertainty_by_repeatability}, and \link[aniDom]{estimate_uncertainty_by_splitting}. \url{https://cran.r-project.org/package=aniDom}
+aniDom package and it's functions: \link[aniDom:elo_scores]{elo_scores}, \link[aniDom:estimate_uncertainty_by_repeatability]{estimate_uncertainty_by_repeatability}, and \link[aniDom:estimate_uncertainty_by_splitting]{estimate_uncertainty_by_splitting}. \url{https://cran.r-project.org/package=aniDom}
 }

@@ -4,10 +4,25 @@
 \alias{map_leaflet}
 \title{Map data using leaflet}
 \usage{
-map_leaflet(p = NULL, m = NULL, locs = NULL, summary = "none",
-  p_scale = 1, m_scale = 1, p_title = "Time", m_title = "Path use",
-  p_pal = c("yellow", "red"), m_pal = c("yellow", "red"), controls = TRUE,
-  u.scale, p.scale, u.title, p.title, u.pal, p.pal)
+map_leaflet(
+  p = NULL,
+  m = NULL,
+  locs = NULL,
+  summary = "none",
+  p_scale = 1,
+  m_scale = 1,
+  p_title = "Time",
+  m_title = "Path use",
+  p_pal = c("yellow", "red"),
+  m_pal = c("yellow", "red"),
+  controls = TRUE,
+  u.scale,
+  p.scale,
+  u.title,
+  p.title,
+  u.pal,
+  p.pal
+)
 }
 \arguments{
 \item{p}{Dataframe. Regular or summarized presence data with columns
@@ -43,7 +58,8 @@ different layers)}
 \item{u.scale, p.scale, u.title, p.title, u.pal, p.pal}{Depreciated.}
 }
 \value{
-An interactive leaflet map with layers for presence, movement paths and logger positions.
+An interactive leaflet map with layers for presence, movement paths
+and logger positions.
 }
 \description{
 A visual summary of presence at and movements between loggers using leaflet
@@ -52,14 +68,13 @@ invidiual data as well as grand summaries (see Details and Examples).
 }
 \details{
 The type of summary visualized is defined by the \code{summary}
-  argument: \code{summary = "sum"} calculates the total amount of time spent
-  at each logger (presence) or total number of movements between loggers
-  (movements). \code{summary = "sum_indiv"} averages these totals by the
-  number of individuals in the data set, resulting in an average total amount
-  of time per individual and an average amount of movements per individual
-  for, or between, each logger. \code{summary = "indiv"} calculates
-  individual totals. If the data is already summarized, use \code{summary =
-  "none"}.
+argument: \code{summary = "sum"} calculates the total amount of time spent
+at each logger (presence) or total number of movements between loggers
+(movements). \code{summary = "sum_indiv"} averages these totals by the
+number of individuals in the data set, resulting in an average total amount
+of time per individual and an average amount of movements per individual
+for, or between, each logger. \code{summary = "indiv"} calculates
+individual totals. If the data is already summarized, use \code{summary = "none"}.
 }
 \examples{
 v <- visits(finches)

@@ -13,11 +13,11 @@ returned by \code{disp()}.}
 }
 \value{
 A data frame of interactions for input into
-  \code{\link[Perc]{as.conflicmat}}. See examples for specific application.
+\code{\link[Perc:as.conflictmat]{Perc::as.conflictmat()}}. See examples for specific application.
 }
 \description{
 Converts displacements RFID data into a format for easy use by the
-\code{\link[Perc]{as.conflictmat}} function included in the \link{Perc}
+\code{\link[Perc:as.conflictmat]{Perc::as.conflictmat()}} function included in the Perc
 package. Can then be applied to internal Perc functions for calculating
 dominance from perculation and conductance. Only includes individuals that
 participated in at least one interaction.
@@ -43,6 +43,6 @@ simRankOrder(perm$p.hat, num = 10, kmax = 1000)
 
 }
 \seealso{
-\link{Perc} package and it's function \link[Perc]{as.conflictmat}.
-  \url{https://cran.r-project.org/package=Perc}
+Perc package and it's function \link[Perc:as.conflictmat]{as.conflictmat}.
+\url{https://cran.r-project.org/package=Perc}
 }

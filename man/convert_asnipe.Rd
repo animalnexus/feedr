@@ -10,26 +10,26 @@ convert_asnipe(r, fun = "gmmevents", by_day = TRUE, time_scale = "secs")
 \item{r}{Dataframe. Raw RFID dataset. Must have at least columns
 \code{animal_id}, \code{logger_id} and \code{time}. The column time should
 be formated as POSIXct (data/time). (Consider using
-\code{\link{load_format}} to format your dataframe)}
+\code{\link[=load_format]{load_format()}} to format your dataframe)}
 
 \item{fun}{Which asipe function should the data be formated for?
-\code{\link[asnipe]{gmmevents}} or
-\code{\link[asnipe]{get_associations_points_tw}}.}
+\code{\link[asnipe:gmmevents]{asnipe::gmmevents()}} or
+\code{\link[asnipe:get_associations_points_tw]{asnipe::get_associations_points_tw()}}.}
 
-\item{by_day}{Logical. The \code{\link[asnipe]{gmmevents}} function suggests that
+\item{by_day}{Logical. The \code{\link[asnipe:gmmevents]{asnipe::gmmevents()}} function suggests that
 locations are split into sublocations defined by the scale at which one
 might see temporal gaps in the data (e.g., by day as diurnal species are
 not active at night). If \code{by_day = TRUE}, logger_ids (locations) will
 be split into unique locations by date (e.g., 2200 would become
 2200_2016-10-28, 2200_2016_10-29, etc.). See
-\code{\link[asnipe]{gmmevents}} for more details. Ignored if the
+\code{\link[asnipe:gmmevents]{asnipe::gmmevents()}} for more details. Ignored if the
 \code{get_associations_points_tw} function is selected.}
 
-\item{time_scale}{Character. The \code{\link[asnipe]{gmmevents}} function
+\item{time_scale}{Character. The \code{\link[asnipe:gmmevents]{asnipe::gmmevents()}} function
 suggests that the time data should be at a scale relevant to the definition
 of group membership. For birds in flocks visiting feeders, seconds are
 appropriate. Values can be any specified by the
-\code{\link[base]{difftime}} function: "auto", "secs", "mins", "hours",
+\code{\link[base:difftime]{base::difftime()}} function: "auto", "secs", "mins", "hours",
 "days", "weeks". Ignored if the \code{get_associations_points_tw} function
 is selected.}
 }
@@ -40,9 +40,9 @@ If \code{fun = "get_associations_points_tw"}, a data frame with four columns: \c
 }
 \description{
 Converts raw RFID data into a format for easy use by either the
-\code{\link[asnipe]{gmmevents}} or the
-\code{\link[asnipe]{get_associations_points_tw}} functions included in the
-\link{asnipe} package for calculating group membership.
+\code{\link[asnipe:gmmevents]{asnipe::gmmevents()}} or the
+\code{\link[asnipe:get_associations_points_tw]{asnipe::get_associations_points_tw()}} functions included in the
+asnipe package for calculating group membership.
 }
 \examples{
 
@@ -62,5 +62,5 @@ get_associations_points_bw(a)
 
 }
 \seealso{
-\link{asnipe} package and it's functions: \link[asnipe]{gmmevents} and \link[asnipe]{get_associations_points_tw}. \url{https://cran.r-project.org/package=asnipe}
+asnipe package and it's functions: \link[asnipe:gmmevents]{gmmevents} and \link[asnipe:get_associations_points_tw]{get_associations_points_tw}. \url{https://cran.r-project.org/package=asnipe}
 }

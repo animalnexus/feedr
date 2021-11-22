@@ -1,90 +1,78 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
 
 <title>Visualizing Data</title>
 
-<script src="site_libs/jquery-1.12.4/jquery.min.js"></script>
+<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
 <script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
-<script src="site_libs/highlightjs-1.1/highlight.js"></script>
-<script src="site_libs/htmlwidgets-0.9/htmlwidgets.js"></script>
-<link href="site_libs/leaflet-0.7.7/leaflet.css" rel="stylesheet" />
-<script src="site_libs/leaflet-0.7.7/leaflet.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.5.4/htmlwidgets.js"></script>
+<link href="site_libs/leaflet-1.3.1/leaflet.css" rel="stylesheet" />
+<script src="site_libs/leaflet-1.3.1/leaflet.js"></script>
 <link href="site_libs/leafletfix-1.0.0/leafletfix.css" rel="stylesheet" />
-<link href="site_libs/leaflet-label-0.2.2/leaflet.label.css" rel="stylesheet" />
-<script src="site_libs/leaflet-label-0.2.2/leaflet.label.js"></script>
-<script src="site_libs/Proj4Leaflet-0.7.2/proj4-compressed.js"></script>
-<script src="site_libs/Proj4Leaflet-0.7.2/proj4leaflet.js"></script>
-<script src="site_libs/leaflet-binding-1.1.0.9000/leaflet.js"></script>
-<script src="site_libs/leaflet-providers-1.0.27/leaflet-providers.js"></script>
-<script src="site_libs/leaflet-providers-plugin-1.1.0.9000/leaflet-providers-plugin.js"></script>
+<script src="site_libs/proj4-2.6.2/proj4.min.js"></script>
+<script src="site_libs/Proj4Leaflet-1.0.1/proj4leaflet.js"></script>
+<link href="site_libs/rstudio_leaflet-1.3.1/rstudio_leaflet.css" rel="stylesheet" />
+<script src="site_libs/leaflet-binding-2.0.4.1/leaflet.js"></script>
+<script src="site_libs/leaflet-providers-1.9.0/leaflet-providers_1.9.0.js"></script>
+<script src="site_libs/leaflet-providers-plugin-2.0.4.1/leaflet-providers-plugin.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
-  pre:not([class]) {
-    background-color: white;
-  }
-</style>
 <script type="text/javascript">
-if (window.hljs && document.readyState && document.readyState === "complete") {
-   window.setTimeout(function() {
-      hljs.initHighlighting();
-   }, 0);
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
 }
 </script>
 
 
 
-<style type="text/css">
-h1 {
-  font-size: 34px;
-}
-h1.title {
-  font-size: 38px;
-}
-h2 {
-  font-size: 30px;
-}
-h3 {
-  font-size: 24px;
-}
-h4 {
-  font-size: 18px;
-}
-h5 {
-  font-size: 16px;
-}
-h6 {
-  font-size: 12px;
-}
-.table th:not([align]) {
-  text-align: left;
-}
-</style>
+
 
 <link rel="stylesheet" href="custom.css" type="text/css" />
 
-</head>
 
-<body>
 
 <style type = "text/css">
 .main-container {
@@ -92,58 +80,68 @@ h6 {
   margin-left: auto;
   margin-right: auto;
 }
-code {
-  color: inherit;
-  background-color: rgba(0, 0, 0, 0.04);
-}
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
 }
+.html-widget {
+  margin-bottom: 20px;
+}
 button.code-folding-btn:focus {
   outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
 }
 </style>
 
 
 <style type="text/css">
-/* padding for bootstrap navbar */
-body {
-  padding-top: 66px;
-  padding-bottom: 40px;
+.dropdown-submenu {
+  position: relative;
 }
-/* offset scroll position for anchor links (for fixed navbar)  */
-.section h1 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
 }
-
-.section h2 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
 }
-.section h3 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
 }
-.section h4 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
 }
-.section h5 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu.pull-left {
+  float: none;
 }
-.section h6 {
-  padding-top: 71px;
-  margin-top: -71px;
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
 }
 </style>
 
-<script>
+<script type="text/javascript">
 // manage active state of menu based on current page
 $(document).ready(function () {
   // active menu anchor
@@ -154,54 +152,85 @@ $(document).ready(function () {
   var menuAnchor = $('a[href="' + href + '"]');
 
   // mark it active
-  menuAnchor.parent().addClass('active');
+  menuAnchor.tab('show');
 
   // if it's got a parent navbar menu mark it active as well
   menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
 });
 </script>
-
-
-<div class="container-fluid main-container">
 
 <!-- tabsets -->
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-</script>
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
 
 <!-- code folding -->
 
 
-
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = false;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -215,6 +244,12 @@ $(document).ready(function ()  {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -250,8 +285,6 @@ div.tocify {
 
 .tocify-subheader .tocify-item {
   font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -267,8 +300,18 @@ div.tocify {
 
 </style>
 
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
 <!-- setup 3col/9col grid for toc_float and main content  -->
-<div class="row-fluid">
+<div class="row">
 <div class="col-xs-12 col-sm-4 col-md-3">
 <div id="TOC" class="tocify">
 </div>
@@ -318,7 +361,7 @@ div.tocify {
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-<div class="fluid-row" id="header">
+<div id="header">
 
 
 
@@ -329,7 +372,9 @@ div.tocify {
 
 <p>Here we will go over visualizing your data with maps. <code>feedr</code> includes two wrapper functions that can be used to visualize your data on maps. These two functions, <code>map_leaflet</code> and <code>map_ggmap</code> are really just convenience functions to do a lot of the grunt work. If you want to achieve a more fine tuned map, I suggest you check out the packages <code>leaflet</code> and <code>ggmap</code>.</p>
 <p><code>map_leaflet</code> and <code>map_ggmap</code> take summarized presence and movement data and turn it into circles and paths around/between loggers representing time spent at different loggers and the amount of movement between particular logger paths. Because different projects may need different summaries (totals vs. means, corrected for number of individuals, uncorrected, etc.) we will first go over how to create the summary data and then pass this to the functions for plotting. This gives us more flexibility, but does mean that we have to do some work before we can visualize the data.</p>
-<p><code>feedr</code> also includes a stand-alone shiny app (launched with <code>ui_animate()</code>) that can be used to create simple animations of your data, this is a simple process as it does not require summarized data, but is also less flexible (see <a href="#animations">animations</a> below).</p>
+<blockquote>
+<p><strong>NOTE:</strong> As of Nov 10th, 2021, <code>map_ggmap()</code> is no longer available. I’m hoping to get a replacement.</p>
+</blockquote>
 <div id="built-in-summaries" class="section level2">
 <h2>Built-in Summaries</h2>
 <p>Let’s start by calculating presence and movements:</p>
@@ -348,23 +393,22 @@ m &lt;- move(v)</code></pre>
 <h2><code>map_leaflet()</code></h2>
 <p>This function creates an interactive html map using leaflet for R (package <code>leaflet</code>).</p>
 <pre class="r"><code>map_leaflet(p = p, m = m, summary = &quot;sum_indiv&quot;)</code></pre>
-<div id="htmlwidget-22428ab617926c7f46c3" style="width:768px;height:480px;" class="leaflet html-widget"></div>
-<script type="application/json" data-for="htmlwidget-22428ab617926c7f46c3">{"x":{"options":{"maxZoom":18,"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,"Open Street Map",{"minZoom":0,"maxZoom":18,"maxNativeZoom":null,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"continuousWorld":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["Stamen.Toner",null,"Black and White",{"errorTileUrl":"","noWrap":false,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false}]},{"method":"addProviderTiles","args":["Esri.WorldImagery",null,"Satellite",{"errorTileUrl":"","noWrap":false,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false}]},{"method":"addProviderTiles","args":["Esri.WorldTopoMap",null,"Terrain",{"errorTileUrl":"","noWrap":false,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false}]},{"method":"addCircleMarkers","args":[[50.66895556,50.66778333,50.6693833,50.66909444],[-120.3624278,-120.3612389,-120.3634889,-120.3631833],5,null,"Loggers",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"white","weight":2,"opacity":1,"fill":true,"fillColor":"black","fillOpacity":1,"dashArray":null},null,null,["Logger: 2100","Logger: 2200","Logger: 2400","Logger: 2700"],null,null,null,null]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],"Loggers",{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[50.66909444,50.66895556,50.66778333,50.6693833],[-120.3631833,-120.3624278,-120.3612389,-120.3634889],[50,47.9293342840202,24.7224979028219,10],["presence-1","presence-2","presence-3","presence-4"],"Time",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"black","weight":1,"opacity":1,"fill":true,"fillColor":["#FF0000","#FF1600","#FFC800","#FFFF00"],"fillOpacity":0.8,"dashArray":null},null,null,["174","159","37","0"],null,null,null,null]},{"method":"addLegend","args":[{"colors":["#FFFF00 , #FFB600 28.6411192320089%, #FF6C00 57.3885167214029%, #FF2300 86.1359142107968%, #FF0000 "],"labels":["50","100","150"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Time","extra":{"p_1":0.286411192320089,"p_n":0.861359142107968},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Time"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3634889],"lat":[50.66895556,50.6693833]}]]],"2100_2400","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"0.1",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3634889,-120.3631833],"lat":[50.6693833,50.66909444]}]]],"2400_2700","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"0.1",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3612389],"lat":[50.66895556,50.66778333]}]]],"2100_2200","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FFEC00","weight":12.7848101265823,"opacity":0.8,"fill":false,"fillColor":"#FFEC00","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"1.1",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3612389,-120.3631833],"lat":[50.66778333,50.66909444]}]]],"2200_2700","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FFE800","weight":13.5443037974684,"opacity":0.8,"fill":false,"fillColor":"#FFE800","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"1.4",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3631833],"lat":[50.66895556,50.66909444]}]]],"2100_2700","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FF0000","weight":50,"opacity":0.8,"fill":false,"fillColor":"#FF0000","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"14",null,null,null,null]},{"method":"addLegend","args":[{"colors":["#FFFF00 , #FFDD00 13.2911392405063%, #FFB900 27.2151898734177%, #FF9500 41.1392405063291%, #FF7200 55.0632911392405%, #FF4F00 68.9873417721519%, #FF2C00 82.9113924050633%, #FF0900 96.8354430379747%, #FF0000 "],"labels":["2","4","6","8","10","12","14"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Path use","extra":{"p_1":0.132911392405063,"p_n":0.968354430379747},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Time","Path use"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]}],"limits":{"lat":[50.66778333,50.6693833],"lng":[-120.3634889,-120.3612389]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-0e1a34c2d97cd36a1e6b" style="width:768px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0e1a34c2d97cd36a1e6b">{"x":{"options":{"maxZoom":18,"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,"Open Street Map",{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["Stamen.Toner",null,"Black and White",{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addProviderTiles","args":["Esri.WorldImagery",null,"Satellite",{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addProviderTiles","args":["Esri.WorldTopoMap",null,"Terrain",{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addCircleMarkers","args":[[50.66895556,50.66778333,50.6693833,50.66909444],[-120.3624278,-120.3612389,-120.3634889,-120.3631833],5,null,"Loggers",{"interactive":true,"className":"","stroke":true,"color":"white","weight":2,"opacity":1,"fill":true,"fillColor":"black","fillOpacity":1},null,null,["Logger: 2100","Logger: 2200","Logger: 2400","Logger: 2700"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],"Loggers",{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[50.66909444,50.66895556,50.66778333,50.6693833],[-120.3631833,-120.3624278,-120.3612389,-120.3634889],[50,47.9293342840202,24.7224979028219,10],["presence-1","presence-2","presence-3","presence-4"],"Time",{"interactive":true,"className":"","stroke":true,"color":"black","weight":1,"opacity":1,"fill":true,"fillColor":["#FF0000","#FF1600","#FFC800","#FFFF00"],"fillOpacity":0.8},null,null,["174","159","37","0"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLegend","args":[{"colors":["#FFFF00 , #FFB600 28.6411192320089%, #FF6C00 57.3885167214029%, #FF2300 86.1359142107968%, #FF0000 "],"labels":["50","100","150"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Time","extra":{"p_1":0.286411192320089,"p_n":0.861359142107968},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Time"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3634889],"lat":[50.66895556,50.6693833]}]]],"2100_2400","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"0.1",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3634889,-120.3631833],"lat":[50.6693833,50.66909444]}]]],"2400_2700","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"0.1",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3612389],"lat":[50.66895556,50.66778333]}]]],"2100_2200","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FFEC00","weight":12.7848101265823,"opacity":0.8,"fill":false,"fillColor":"#FFEC00","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"1.1",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3612389,-120.3631833],"lat":[50.66778333,50.66909444]}]]],"2200_2700","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FFE800","weight":13.5443037974684,"opacity":0.8,"fill":false,"fillColor":"#FFE800","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"1.4",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3631833],"lat":[50.66895556,50.66909444]}]]],"2100_2700","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FF0000","weight":50,"opacity":0.8,"fill":false,"fillColor":"#FF0000","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"14",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLegend","args":[{"colors":["#FFFF00 , #FFDD00 13.2911392405063%, #FFB900 27.2151898734177%, #FF9500 41.1392405063291%, #FF7200 55.0632911392405%, #FF4F00 68.9873417721519%, #FF2C00 82.9113924050633%, #FF0900 96.8354430379747%, #FF0000 "],"labels":["2","4","6","8","10","12","14"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Path use","extra":{"p_1":0.132911392405063,"p_n":0.968354430379747},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Time","Path use"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]}],"limits":{"lat":[50.66778333,50.6693833],"lng":[-120.3634889,-120.3612389]}},"evals":[],"jsHooks":[]}</script>
 <p>The map is interactive in that it can be zoomed, the tiles changed, and different elements added or removed. loggers (white-outlined black dots) can also be clicked on to reveal ids and circles and paths can clicked on to reveal their actual numbers.</p>
 <p>You can also adjust some of the cosmetic details:</p>
 <pre class="r"><code>map_leaflet(p = p, m = m, summary = &quot;sum_indiv&quot;,
             p_scale = 0.5, m_scale = 0.5,
             p_title = &quot;Presence (min)&quot;, m_title = &quot;Paths (Total use)&quot;,
             p_pal = c(&quot;blue&quot;,&quot;white&quot;), m_pal = c(&quot;black&quot;,&quot;red&quot;))</code></pre>
-<div id="htmlwidget-81c7bcabf5a4076ca45c" style="width:768px;height:480px;" class="leaflet html-widget"></div>
-<script type="application/json" data-for="htmlwidget-81c7bcabf5a4076ca45c">{"x":{"options":{"maxZoom":18,"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,"Open Street Map",{"minZoom":0,"maxZoom":18,"maxNativeZoom":null,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"continuousWorld":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["Stamen.Toner",null,"Black and White",{"errorTileUrl":"","noWrap":false,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false}]},{"method":"addProviderTiles","args":["Esri.WorldImagery",null,"Satellite",{"errorTileUrl":"","noWrap":false,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false}]},{"method":"addProviderTiles","args":["Esri.WorldTopoMap",null,"Terrain",{"errorTileUrl":"","noWrap":false,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false}]},{"method":"addCircleMarkers","args":[[50.66895556,50.66778333,50.6693833,50.66909444],[-120.3624278,-120.3612389,-120.3634889,-120.3631833],5,null,"Loggers",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"white","weight":2,"opacity":1,"fill":true,"fillColor":"black","fillOpacity":1,"dashArray":null},null,null,["Logger: 2100","Logger: 2200","Logger: 2400","Logger: 2700"],null,null,null,null]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],"Loggers",{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[50.66909444,50.66895556,50.66778333,50.6693833],[-120.3631833,-120.3624278,-120.3612389,-120.3634889],[25,24.0965166014493,14.5542233109127,10],["presence-1","presence-2","presence-3","presence-4"],"Presence (min)",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"black","weight":1,"opacity":1,"fill":true,"fillColor":["#FFFFFF","#E9E9FF","#3636FF","#0000FF"],"fillOpacity":0.8,"dashArray":null},null,null,["174","159","37","0"],null,null,null,null]},{"method":"addLegend","args":[{"colors":["#0000FF , #4848FF 28.6411192320089%, #9292FF 57.3885167214029%, #DBDBFF 86.1359142107968%, #FFFFFF "],"labels":["50","100","150"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Presence (min)","extra":{"p_1":0.286411192320089,"p_n":0.861359142107968},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Presence (min)"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3634889],"lat":[50.66895556,50.6693833]}]]],"2100_2400","Paths (Total use)",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#000000","weight":10,"opacity":0.8,"fill":false,"fillColor":"#000000","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"0.1",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3634889,-120.3631833],"lat":[50.6693833,50.66909444]}]]],"2400_2700","Paths (Total use)",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#000000","weight":10,"opacity":0.8,"fill":false,"fillColor":"#000000","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"0.1",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3612389],"lat":[50.66895556,50.66778333]}]]],"2100_2200","Paths (Total use)",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#120000","weight":11.0443037974684,"opacity":0.8,"fill":false,"fillColor":"#120000","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"1.1",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3612389,-120.3631833],"lat":[50.66778333,50.66909444]}]]],"2200_2700","Paths (Total use)",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#170000","weight":11.3291139240506,"opacity":0.8,"fill":false,"fillColor":"#170000","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"1.4",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3631833],"lat":[50.66895556,50.66909444]}]]],"2100_2700","Paths (Total use)",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FF0000","weight":25,"opacity":0.8,"fill":false,"fillColor":"#FF0000","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"14",null,null,null,null]},{"method":"addLegend","args":[{"colors":["#000000 , #220000 13.2911392405063%, #450000 27.2151898734177%, #690000 41.1392405063291%, #8C0000 55.0632911392405%, #AF0000 68.9873417721519%, #D30000 82.9113924050633%, #F70000 96.8354430379747%, #FF0000 "],"labels":["2","4","6","8","10","12","14"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Paths (Total use)","extra":{"p_1":0.132911392405063,"p_n":0.968354430379747},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Presence (min)","Paths (Total use)"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]}],"limits":{"lat":[50.66778333,50.6693833],"lng":[-120.3634889,-120.3612389]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-d05d9d0273c8b71cfa68" style="width:768px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-d05d9d0273c8b71cfa68">{"x":{"options":{"maxZoom":18,"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,"Open Street Map",{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["Stamen.Toner",null,"Black and White",{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addProviderTiles","args":["Esri.WorldImagery",null,"Satellite",{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addProviderTiles","args":["Esri.WorldTopoMap",null,"Terrain",{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addCircleMarkers","args":[[50.66895556,50.66778333,50.6693833,50.66909444],[-120.3624278,-120.3612389,-120.3634889,-120.3631833],5,null,"Loggers",{"interactive":true,"className":"","stroke":true,"color":"white","weight":2,"opacity":1,"fill":true,"fillColor":"black","fillOpacity":1},null,null,["Logger: 2100","Logger: 2200","Logger: 2400","Logger: 2700"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],"Loggers",{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[50.66909444,50.66895556,50.66778333,50.6693833],[-120.3631833,-120.3624278,-120.3612389,-120.3634889],[25,24.0965166014493,14.5542233109127,10],["presence-1","presence-2","presence-3","presence-4"],"Presence (min)",{"interactive":true,"className":"","stroke":true,"color":"black","weight":1,"opacity":1,"fill":true,"fillColor":["#FFFFFF","#E9E9FF","#3636FF","#0000FF"],"fillOpacity":0.8},null,null,["174","159","37","0"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLegend","args":[{"colors":["#0000FF , #4848FF 28.6411192320089%, #9292FF 57.3885167214029%, #DBDBFF 86.1359142107968%, #FFFFFF "],"labels":["50","100","150"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Presence (min)","extra":{"p_1":0.286411192320089,"p_n":0.861359142107968},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Presence (min)"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3634889],"lat":[50.66895556,50.6693833]}]]],"2100_2400","Paths (Total use)",{"interactive":true,"className":"","stroke":true,"color":"#000000","weight":10,"opacity":0.8,"fill":false,"fillColor":"#000000","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"0.1",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3634889,-120.3631833],"lat":[50.6693833,50.66909444]}]]],"2400_2700","Paths (Total use)",{"interactive":true,"className":"","stroke":true,"color":"#000000","weight":10,"opacity":0.8,"fill":false,"fillColor":"#000000","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"0.1",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3612389],"lat":[50.66895556,50.66778333]}]]],"2100_2200","Paths (Total use)",{"interactive":true,"className":"","stroke":true,"color":"#120000","weight":11.0443037974684,"opacity":0.8,"fill":false,"fillColor":"#120000","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"1.1",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3612389,-120.3631833],"lat":[50.66778333,50.66909444]}]]],"2200_2700","Paths (Total use)",{"interactive":true,"className":"","stroke":true,"color":"#170000","weight":11.3291139240506,"opacity":0.8,"fill":false,"fillColor":"#170000","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"1.4",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3631833],"lat":[50.66895556,50.66909444]}]]],"2100_2700","Paths (Total use)",{"interactive":true,"className":"","stroke":true,"color":"#FF0000","weight":25,"opacity":0.8,"fill":false,"fillColor":"#FF0000","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"14",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLegend","args":[{"colors":["#000000 , #220000 13.2911392405063%, #450000 27.2151898734177%, #690000 41.1392405063291%, #8C0000 55.0632911392405%, #AF0000 68.9873417721519%, #D30000 82.9113924050633%, #F70000 96.8354430379747%, #FF0000 "],"labels":["2","4","6","8","10","12","14"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Paths (Total use)","extra":{"p_1":0.132911392405063,"p_n":0.968354430379747},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Presence (min)","Paths (Total use)"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]}],"limits":{"lat":[50.66778333,50.6693833],"lng":[-120.3634889,-120.3612389]}},"evals":[],"jsHooks":[]}</script>
 <p>To plot by individual, simply use individual summaries:</p>
 <pre class="r"><code>map_leaflet(p = p, m = m, summary = &quot;indiv&quot;)</code></pre>
-<div id="htmlwidget-690a792796db5e33ddef" style="width:768px;height:480px;" class="leaflet html-widget"></div>
-<script type="application/json" data-for="htmlwidget-690a792796db5e33ddef">{"x":{"options":{"maxZoom":18,"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,"Open Street Map",{"minZoom":0,"maxZoom":18,"maxNativeZoom":null,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"continuousWorld":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["Stamen.Toner",null,"Black and White",{"errorTileUrl":"","noWrap":false,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false}]},{"method":"addProviderTiles","args":["Esri.WorldImagery",null,"Satellite",{"errorTileUrl":"","noWrap":false,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false}]},{"method":"addProviderTiles","args":["Esri.WorldTopoMap",null,"Terrain",{"errorTileUrl":"","noWrap":false,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false}]},{"method":"addCircleMarkers","args":[[50.66895556,50.66778333,50.6693833,50.66909444],[-120.3624278,-120.3612389,-120.3634889,-120.3631833],5,null,"Loggers",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"white","weight":2,"opacity":1,"fill":true,"fillColor":"black","fillOpacity":1,"dashArray":null},null,null,["Logger: 2100","Logger: 2200","Logger: 2400","Logger: 2700"],null,null,null,null]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],"Loggers",{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[50.66895556,50.66909444,50.66895556,50.66909444,50.66909444,50.66909444,50.66778333,50.66778333,50.66895556,50.66778333,50.66909444,50.66778333,50.66895556,50.66909444,50.66895556,50.66909444,50.66895556,50.66895556,50.66895556,50.66778333,50.6693833,50.66895556,50.66909444],[-120.3624278,-120.3631833,-120.3624278,-120.3631833,-120.3631833,-120.3631833,-120.3612389,-120.3612389,-120.3624278,-120.3612389,-120.3631833,-120.3612389,-120.3624278,-120.3631833,-120.3624278,-120.3631833,-120.3624278,-120.3624278,-120.3624278,-120.3612389,-120.3634889,-120.3624278,-120.3631833],[50,46.7409614359785,38.4865681277209,33.0229823713486,28.5292060950398,24.0744758247277,23.1240104680988,21.484706769472,13.7003385652339,13.4346399055589,12.5204751642671,12.4302712236106,12.367199672995,11.5390418754609,11.5225006116255,11.1523874149372,11.0544734301588,10.8489663804933,10.6717103098694,10.2802655206506,10.2263192158645,10.2244539217939,10],["presence-1","presence-2","presence-3","presence-4","presence-5","presence-6","presence-7","presence-8","presence-9","presence-10","presence-11","presence-12","presence-13","presence-14","presence-15","presence-16","presence-17","presence-18","presence-19","presence-20","presence-21","presence-22","presence-23"],"Time",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"black","weight":1,"opacity":1,"fill":true,"fillColor":["#FF0000","#FF2200","#FF6C00","#FF9500","#FFB300","#FFCC00","#FFD000","#FFD800","#FFF500","#FFF600","#FFF900","#FFF900","#FFF900","#FFFB00","#FFFB00","#FFFC00","#FFFD00","#FFFD00","#FFFD00","#FFFE00","#FFFE00","#FFFE00","#FFFF00"],"fillOpacity":0.8,"dashArray":null},null,null,["1049","911","604","433","312","210","190","158","38","35","25","24","23","15","14","11","10","8","6","3","2","2","0"],null,null,null,null]},{"method":"addLegend","args":[{"colors":["#FFFF00 , #FFCE00 19.0701740443455%, #FF9D00 38.1435269808472%, #FF6D00 57.2168799173488%, #FF3C00 76.2902328538504%, #FF0D00 95.3635857903521%, #FF0000 "],"labels":["200","400","600","800","1,000"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Time","extra":{"p_1":0.190701740443455,"p_n":0.953635857903521},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Time"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3631833,-120.3624278,-120.3631833,-120.3624278,-120.3631833,-120.3624278,-120.3631833,-120.3624278,-120.3631833,-120.3624278,-120.3631833,-120.3624278,-120.3631833],"lat":[50.66895556,50.66909444,50.66895556,50.66909444,50.66895556,50.66909444,50.66895556,50.66909444,50.66895556,50.66909444,50.66895556,50.66909444,50.66895556,50.66909444]}]]],"2100_2700","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"1",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3612389,-120.3624278,-120.3612389,-120.3624278,-120.3612389],"lat":[50.66895556,50.66778333,50.66895556,50.66778333,50.66895556,50.66778333]}]]],"2100_2200","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"1",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3634889],"lat":[50.66895556,50.6693833]}]]],"2100_2400","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"1",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3612389,-120.3631833,-120.3612389,-120.3631833,-120.3612389,-120.3631833,-120.3612389,-120.3631833],"lat":[50.66778333,50.66909444,50.66778333,50.66909444,50.66778333,50.66909444,50.66778333,50.66909444]}]]],"2200_2700","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"1",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3634889,-120.3631833],"lat":[50.6693833,50.66909444]}]]],"2400_2700","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"1",null,null,null,null]},{"method":"addLegend","args":[{"colors":["#FFFF00 , #FFDF00 12.1621621621622%, #FFBD00 25.6756756756757%, #FF9A00 39.1891891891892%, #FF7800 52.7027027027027%, #FF5600 66.2162162162162%, #FF3300 79.7297297297297%, #FF1100 93.2432432432432%, #FF0000 "],"labels":["10","20","30","40","50","60","70"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Path use","extra":{"p_1":0.121621621621622,"p_n":0.932432432432432},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Time","Path use"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]}],"limits":{"lat":[50.66778333,50.6693833],"lng":[-120.3634889,-120.3612389]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-61a023e349853a8a38e6" style="width:768px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-61a023e349853a8a38e6">{"x":{"options":{"maxZoom":18,"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,"Open Street Map",{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["Stamen.Toner",null,"Black and White",{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addProviderTiles","args":["Esri.WorldImagery",null,"Satellite",{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addProviderTiles","args":["Esri.WorldTopoMap",null,"Terrain",{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addCircleMarkers","args":[[50.66895556,50.66778333,50.6693833,50.66909444],[-120.3624278,-120.3612389,-120.3634889,-120.3631833],5,null,"Loggers",{"interactive":true,"className":"","stroke":true,"color":"white","weight":2,"opacity":1,"fill":true,"fillColor":"black","fillOpacity":1},null,null,["Logger: 2100","Logger: 2200","Logger: 2400","Logger: 2700"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],"Loggers",{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[50.66895556,50.66909444,50.66895556,50.66909444,50.66909444,50.66909444,50.66778333,50.66778333,50.66895556,50.66778333,50.66909444,50.66778333,50.66895556,50.66909444,50.66895556,50.66909444,50.66895556,50.66895556,50.66895556,50.66778333,50.6693833,50.66895556,50.66909444],[-120.3624278,-120.3631833,-120.3624278,-120.3631833,-120.3631833,-120.3631833,-120.3612389,-120.3612389,-120.3624278,-120.3612389,-120.3631833,-120.3612389,-120.3624278,-120.3631833,-120.3624278,-120.3631833,-120.3624278,-120.3624278,-120.3624278,-120.3612389,-120.3634889,-120.3624278,-120.3631833],[50,46.7409614359785,38.4865681277209,33.0229823713486,28.5292060950398,24.0744758247277,23.1240104680988,21.484706769472,13.7003385652339,13.4346399055589,12.5204751642671,12.4302712236106,12.367199672995,11.5390418754609,11.5225006116255,11.1523874149372,11.0544734301588,10.8489663804933,10.6717103098694,10.2802655206506,10.2263192158645,10.2244539217939,10],["presence-1","presence-2","presence-3","presence-4","presence-5","presence-6","presence-7","presence-8","presence-9","presence-10","presence-11","presence-12","presence-13","presence-14","presence-15","presence-16","presence-17","presence-18","presence-19","presence-20","presence-21","presence-22","presence-23"],"Time",{"interactive":true,"className":"","stroke":true,"color":"black","weight":1,"opacity":1,"fill":true,"fillColor":["#FF0000","#FF2200","#FF6C00","#FF9500","#FFB300","#FFCC00","#FFD000","#FFD800","#FFF500","#FFF600","#FFF900","#FFF900","#FFF900","#FFFB00","#FFFB00","#FFFC00","#FFFD00","#FFFD00","#FFFD00","#FFFE00","#FFFE00","#FFFE00","#FFFF00"],"fillOpacity":0.8},null,null,["1049","911","604","433","312","210","190","158","38","35","25","24","23","15","14","11","10","8","6","3","2","2","0"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLegend","args":[{"colors":["#FFFF00 , #FFCE00 19.0701740443455%, #FF9D00 38.1435269808472%, #FF6D00 57.2168799173488%, #FF3C00 76.2902328538504%, #FF0D00 95.3635857903521%, #FF0000 "],"labels":["200","400","600","800","1,000"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Time","extra":{"p_1":0.190701740443455,"p_n":0.953635857903521},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Time"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3631833,-120.3624278,-120.3631833,-120.3624278,-120.3631833,-120.3624278,-120.3631833,-120.3624278,-120.3631833,-120.3624278,-120.3631833,-120.3624278,-120.3631833],"lat":[50.66895556,50.66909444,50.66895556,50.66909444,50.66895556,50.66909444,50.66895556,50.66909444,50.66895556,50.66909444,50.66895556,50.66909444,50.66895556,50.66909444]}]]],"2100_2700","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"1",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3612389,-120.3624278,-120.3612389,-120.3624278,-120.3612389],"lat":[50.66895556,50.66778333,50.66895556,50.66778333,50.66895556,50.66778333]}]]],"2100_2200","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"1",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3634889],"lat":[50.66895556,50.6693833]}]]],"2100_2400","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"1",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3612389,-120.3631833,-120.3612389,-120.3631833,-120.3612389,-120.3631833,-120.3612389,-120.3631833],"lat":[50.66778333,50.66909444,50.66778333,50.66909444,50.66778333,50.66909444,50.66778333,50.66909444]}]]],"2200_2700","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"1",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3634889,-120.3631833],"lat":[50.6693833,50.66909444]}]]],"2400_2700","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"1",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLegend","args":[{"colors":["#FFFF00 , #FFDF00 12.1621621621622%, #FFBD00 25.6756756756757%, #FF9A00 39.1891891891892%, #FF7800 52.7027027027027%, #FF5600 66.2162162162162%, #FF3300 79.7297297297297%, #FF1100 93.2432432432432%, #FF0000 "],"labels":["10","20","30","40","50","60","70"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Path use","extra":{"p_1":0.121621621621622,"p_n":0.932432432432432},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Time","Path use"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]}],"limits":{"lat":[50.66778333,50.6693833],"lng":[-120.3634889,-120.3612389]}},"evals":[],"jsHooks":[]}</script>
 <p>Note, however, that for leaflet maps, the individual lines are stacked in order of magnitude and visualizations like this may not be very useful for large numbers of individuals.</p>
 <p>To save this map, you can zoom and set it up as you like and use the “Export &gt; Save as image” button in RStudio.</p>
-<p>Alternatively, you can use the <code>map_ggmap()</code> function to visualize a static map.</p>
 <table>
 <tbody>
 <tr class="odd">
@@ -372,46 +416,6 @@ m &lt;- move(v)</code></pre>
 </tr>
 </tbody>
 </table>
-<p><a id = "ggmap"></a></p>
-</div>
-<div id="map_ggmap" class="section level2">
-<h2><code>map_ggmap()</code></h2>
-<p>This creates static maps using the package <code>ggmap</code>. This map may take longer to create as it downloads background images from Google Maps (but you can also specify the source, see below).</p>
-<pre class="r"><code>map_ggmap(p = p, m = m, summary = &quot;sum_indiv&quot;)</code></pre>
-<pre><code>## Map from URL : http://maps.googleapis.com/maps/api/staticmap?center=50.669025,-120.362806&amp;zoom=17&amp;size=640x640&amp;scale=2&amp;maptype=satellite&amp;language=en-EN&amp;sensor=false</code></pre>
-<p><img src="maps_files/figure-html/unnamed-chunk-5-1.png" width="768" /></p>
-<p>Getting the zoom level often requires some trial and error (default = 17). If you see a warning about rows with missing values omitted, this means that not all your data could fit on the map, consider using a different zoom:</p>
-<pre class="r"><code>map_ggmap(p = p, m = m, summary = &quot;sum_indiv&quot;, zoom = 16)</code></pre>
-<pre><code>## Map from URL : http://maps.googleapis.com/maps/api/staticmap?center=50.669025,-120.362806&amp;zoom=16&amp;size=640x640&amp;scale=2&amp;maptype=satellite&amp;language=en-EN&amp;sensor=false</code></pre>
-<p><img src="maps_files/figure-html/unnamed-chunk-6-1.png" width="768" /></p>
-<pre class="r"><code>map_ggmap(p = p, m = m, summary = &quot;sum_indiv&quot;,
-          zoom = 16, p_scale = 0.7)</code></pre>
-<pre><code>## Map from URL : http://maps.googleapis.com/maps/api/staticmap?center=50.669025,-120.362806&amp;zoom=16&amp;size=640x640&amp;scale=2&amp;maptype=satellite&amp;language=en-EN&amp;sensor=false</code></pre>
-<p><img src="maps_files/figure-html/unnamed-chunk-7-1.png" width="768" /></p>
-<p>We can adjust the map type:</p>
-<pre class="r"><code>map_ggmap(p = p, m = m, summary = &quot;sum_indiv&quot;, maptype = &quot;terrain&quot;)</code></pre>
-<pre><code>## Map from URL : http://maps.googleapis.com/maps/api/staticmap?center=50.669025,-120.362806&amp;zoom=17&amp;size=640x640&amp;scale=2&amp;maptype=terrain&amp;language=en-EN&amp;sensor=false</code></pre>
-<p><img src="maps_files/figure-html/unnamed-chunk-8-1.png" width="768" /></p>
-<pre class="r"><code>map_ggmap(p = p, m = m, summary = &quot;sum_indiv&quot;, maptype = &quot;roadmap&quot;)</code></pre>
-<pre><code>## Map from URL : http://maps.googleapis.com/maps/api/staticmap?center=50.669025,-120.362806&amp;zoom=17&amp;size=640x640&amp;scale=2&amp;maptype=roadmap&amp;language=en-EN&amp;sensor=false</code></pre>
-<p><img src="maps_files/figure-html/unnamed-chunk-9-1.png" width="768" /></p>
-<p>For individuals:</p>
-<pre class="r"><code>map_ggmap(p = p, m = m, summary = &quot;indiv&quot;)</code></pre>
-<pre><code>## Error in map_ggmap(p = p, m = m, summary = &quot;indiv&quot;): You have chosen to run this function on more than 10 animals. This may overload your system. We recommend trying again using the &#39;which&#39; argument to specify a subset of animals.</code></pre>
-<p>Okay, let’s try with fewer individuals</p>
-<pre class="r"><code>map_ggmap(p = p, m = m, summary = &quot;indiv&quot;,
-          which = c(&quot;041868E9A8&quot;, &quot;06200003AA&quot;))</code></pre>
-<pre><code>## Map from URL : http://maps.googleapis.com/maps/api/staticmap?center=50.669025,-120.362806&amp;zoom=17&amp;size=640x640&amp;scale=2&amp;maptype=satellite&amp;language=en-EN&amp;sensor=false</code></pre>
-<pre><code>## You have specified multiple animals and static maps, this means that an individual map will be drawn for each animal. This may take some time to display in the plots window.</code></pre>
-<p><img src="maps_files/figure-html/unnamed-chunk-11-1.png" width="960" /></p>
-<p>Let’s look at all the birds for which we have movements</p>
-<pre class="r"><code>ids &lt;- unique(m$animal_id)
-
-map_ggmap(p = p, m = m, summary = &quot;indiv&quot;,
-          which = ids)</code></pre>
-<pre><code>## Map from URL : http://maps.googleapis.com/maps/api/staticmap?center=50.669025,-120.362806&amp;zoom=17&amp;size=640x640&amp;scale=2&amp;maptype=satellite&amp;language=en-EN&amp;sensor=false</code></pre>
-<pre><code>## You have specified multiple animals and static maps, this means that an individual map will be drawn for each animal. This may take some time to display in the plots window.</code></pre>
-<p><img src="maps_files/figure-html/unnamed-chunk-12-1.png" width="960" /></p>
 </div>
 <div id="custom-summaries" class="section level2">
 <h2>Custom Summaries</h2>
@@ -420,13 +424,13 @@ map_ggmap(p = p, m = m, summary = &quot;indiv&quot;,
   group_by(logger_id) %&gt;%
   summarize(amount = sum(length) / animal_n[1])
 p_pop</code></pre>
-<pre><code>## # A tibble: 4 x 2
-##   logger_id           amount
-##      &lt;fctr&gt;           &lt;time&gt;
-## 1      2100 159.4181818 mins
-## 2      2200  37.2318182 mins
-## 3      2400   0.1848485 mins
-## 4      2700 174.1136364 mins</code></pre>
+<pre><code>## # A tibble: 4 × 2
+##   logger_id  amount
+##   &lt;fct&gt;       &lt;dbl&gt;
+## 1 2100      159.   
+## 2 2200       37.2  
+## 3 2400        0.185
+## 4 2700      174.</code></pre>
 <p>We use <code>animal_n[1]</code> because we want to divide the total sum by the number of individuals in each experiment. However, the value <code>animal_n</code> is repeated, but we only need the first one, hence the <code>[1]</code>.</p>
 <p>If we wanted to calculate mean time present, we would use <code>amount = mean(length)</code><br />
 If we wanted to calculate total time presence with no correction, we would use <code>amount = sum(length)</code></p>
@@ -434,67 +438,70 @@ If we wanted to calculate total time presence with no correction, we would use <
 <p>Now let’s summarize the movement data for each movement path between loggers. We can summarize individually for each logger, which will account for the double counting (one row for leaving the logger and one row for arriving) as well as making sure we have <code>logger_id</code> in the final data set. We will also group by <code>lat</code> and <code>lon</code>, so they remain in the data set (because they are associated with <code>logger_id</code> they do not contribute any unique grouping combinations).</p>
 <pre class="r"><code>m_pop &lt;- m %&gt;%
   group_by(logger_id, move_path, lat, lon) %&gt;%
-  summarize(path_use = length(move_path) / animal_n[1])
-m_pop</code></pre>
-<pre><code>## # A tibble: 10 x 5
-## # Groups:   logger_id, move_path, lat [?]
-##    logger_id move_path      lat       lon    path_use
-##       &lt;fctr&gt;    &lt;fctr&gt;    &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;
-##  1      2100 2100_2200 50.66896 -120.3624  1.09090909
-##  2      2100 2100_2400 50.66896 -120.3624  0.09090909
-##  3      2100 2100_2700 50.66896 -120.3624 14.45454545
-##  4      2200 2100_2200 50.66778 -120.3612  1.09090909
-##  5      2200 2200_2700 50.66778 -120.3612  1.36363636
-##  6      2400 2100_2400 50.66938 -120.3635  0.09090909
-##  7      2400 2400_2700 50.66938 -120.3635  0.09090909
-##  8      2700 2100_2700 50.66909 -120.3632 14.45454545
-##  9      2700 2200_2700 50.66909 -120.3632  1.36363636
-## 10      2700 2400_2700 50.66909 -120.3632  0.09090909</code></pre>
+  summarize(path_use = length(move_path) / animal_n[1])</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;logger_id&#39;, &#39;move_path&#39;, &#39;lat&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>m_pop</code></pre>
+<pre><code>## # A tibble: 10 × 5
+## # Groups:   logger_id, move_path, lat [10]
+##    logger_id move_path   lat   lon path_use
+##    &lt;fct&gt;     &lt;fct&gt;     &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
+##  1 2100      2100_2200  50.7 -120.   1.09  
+##  2 2100      2100_2400  50.7 -120.   0.0909
+##  3 2100      2100_2700  50.7 -120.  14.5   
+##  4 2200      2100_2200  50.7 -120.   1.09  
+##  5 2200      2200_2700  50.7 -120.   1.36  
+##  6 2400      2100_2400  50.7 -120.   0.0909
+##  7 2400      2400_2700  50.7 -120.   0.0909
+##  8 2700      2100_2700  50.7 -120.  14.5   
+##  9 2700      2200_2700  50.7 -120.   1.36  
+## 10 2700      2400_2700  50.7 -120.   0.0909</code></pre>
 <p><strong>Note:</strong> The new summary data set must have the column <code>path_use</code>, regardless of how it is calculated. The mapping functions will look for that column name.</p>
 <p>Specify <code>summary = none</code> when the data is already summarized:</p>
 <pre class="r"><code>map_leaflet(p = p_pop, m = m_pop, summary = &quot;none&quot;)</code></pre>
-<div id="htmlwidget-c20340179dea2a01df83" style="width:768px;height:480px;" class="leaflet html-widget"></div>
-<script type="application/json" data-for="htmlwidget-c20340179dea2a01df83">{"x":{"options":{"maxZoom":18,"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,"Open Street Map",{"minZoom":0,"maxZoom":18,"maxNativeZoom":null,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"continuousWorld":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["Stamen.Toner",null,"Black and White",{"errorTileUrl":"","noWrap":false,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false}]},{"method":"addProviderTiles","args":["Esri.WorldImagery",null,"Satellite",{"errorTileUrl":"","noWrap":false,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false}]},{"method":"addProviderTiles","args":["Esri.WorldTopoMap",null,"Terrain",{"errorTileUrl":"","noWrap":false,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false}]},{"method":"addCircleMarkers","args":[[50.66895556,50.66778333,50.6693833,50.66909444],[-120.3624278,-120.3612389,-120.3634889,-120.3631833],5,null,"Loggers",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"white","weight":2,"opacity":1,"fill":true,"fillColor":"black","fillOpacity":1,"dashArray":null},null,null,["Logger: 2100","Logger: 2200","Logger: 2400","Logger: 2700"],null,null,null,null]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],"Loggers",{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[50.66909444,50.66895556,50.66778333,50.6693833],[-120.3631833,-120.3624278,-120.3612389,-120.3634889],[50,47.9293342840202,24.7224979028219,10],["presence-1","presence-2","presence-3","presence-4"],"Time",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"black","weight":1,"opacity":1,"fill":true,"fillColor":["#FF0000","#FF1600","#FFC800","#FFFF00"],"fillOpacity":0.8,"dashArray":null},null,null,["174","159","37","0"],null,null,null,null]},{"method":"addLegend","args":[{"colors":["#FFFF00 , #FFB600 28.6411192320089%, #FF6C00 57.3885167214029%, #FF2300 86.1359142107968%, #FF0000 "],"labels":["50","100","150"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Time","extra":{"p_1":0.286411192320089,"p_n":0.861359142107968},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Time"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3634889],"lat":[50.66895556,50.6693833]}]]],"2100_2400","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"0.1",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3634889,-120.3631833],"lat":[50.6693833,50.66909444]}]]],"2400_2700","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"0.1",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3612389],"lat":[50.66895556,50.66778333]}]]],"2100_2200","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FFEC00","weight":12.7848101265823,"opacity":0.8,"fill":false,"fillColor":"#FFEC00","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"1.1",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3612389,-120.3631833],"lat":[50.66778333,50.66909444]}]]],"2200_2700","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FFE800","weight":13.5443037974684,"opacity":0.8,"fill":false,"fillColor":"#FFE800","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"1.4",null,null,null,null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3631833],"lat":[50.66895556,50.66909444]}]]],"2100_2700","Path use",{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":"#FF0000","weight":50,"opacity":0.8,"fill":false,"fillColor":"#FF0000","fillOpacity":0.2,"dashArray":null,"smoothFactor":1,"noClip":false},"14",null,null,null,null]},{"method":"addLegend","args":[{"colors":["#FFFF00 , #FFDD00 13.2911392405063%, #FFB900 27.2151898734177%, #FF9500 41.1392405063291%, #FF7200 55.0632911392405%, #FF4F00 68.9873417721519%, #FF2C00 82.9113924050633%, #FF0900 96.8354430379747%, #FF0000 "],"labels":["2","4","6","8","10","12","14"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Path use","extra":{"p_1":0.132911392405063,"p_n":0.968354430379747},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Time","Path use"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]}],"limits":{"lat":[50.66778333,50.6693833],"lng":[-120.3634889,-120.3612389]}},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-b9e1d97d43628260c418" style="width:768px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b9e1d97d43628260c418">{"x":{"options":{"maxZoom":18,"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,"Open Street Map",{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addProviderTiles","args":["Stamen.Toner",null,"Black and White",{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addProviderTiles","args":["Esri.WorldImagery",null,"Satellite",{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addProviderTiles","args":["Esri.WorldTopoMap",null,"Terrain",{"errorTileUrl":"","noWrap":false,"detectRetina":false}]},{"method":"addCircleMarkers","args":[[50.66895556,50.66778333,50.6693833,50.66909444],[-120.3624278,-120.3612389,-120.3634889,-120.3631833],5,null,"Loggers",{"interactive":true,"className":"","stroke":true,"color":"white","weight":2,"opacity":1,"fill":true,"fillColor":"black","fillOpacity":1},null,null,["Logger: 2100","Logger: 2200","Logger: 2400","Logger: 2700"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],"Loggers",{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addCircleMarkers","args":[[50.66909444,50.66895556,50.66778333,50.6693833],[-120.3631833,-120.3624278,-120.3612389,-120.3634889],[50,47.9293342840202,24.7224979028219,10],["presence-1","presence-2","presence-3","presence-4"],"Time",{"interactive":true,"className":"","stroke":true,"color":"black","weight":1,"opacity":1,"fill":true,"fillColor":["#FF0000","#FF1600","#FFC800","#FFFF00"],"fillOpacity":0.8},null,null,["174","159","37","0"],null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLegend","args":[{"colors":["#FFFF00 , #FFB600 28.6411192320089%, #FF6C00 57.3885167214029%, #FF2300 86.1359142107968%, #FF0000 "],"labels":["50","100","150"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Time","extra":{"p_1":0.286411192320089,"p_n":0.861359142107968},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Time"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3634889],"lat":[50.66895556,50.6693833]}]]],"2100_2400","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"0.1",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3634889,-120.3631833],"lat":[50.6693833,50.66909444]}]]],"2400_2700","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FFFF00","weight":10,"opacity":0.8,"fill":false,"fillColor":"#FFFF00","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"0.1",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3612389],"lat":[50.66895556,50.66778333]}]]],"2100_2200","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FFEC00","weight":12.7848101265823,"opacity":0.8,"fill":false,"fillColor":"#FFEC00","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"1.1",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3612389,-120.3631833],"lat":[50.66778333,50.66909444]}]]],"2200_2700","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FFE800","weight":13.5443037974684,"opacity":0.8,"fill":false,"fillColor":"#FFE800","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"1.4",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[-120.3624278,-120.3631833],"lat":[50.66895556,50.66909444]}]]],"2100_2700","Path use",{"interactive":true,"className":"","stroke":true,"color":"#FF0000","weight":50,"opacity":0.8,"fill":false,"fillColor":"#FF0000","fillOpacity":0.2,"smoothFactor":1,"noClip":false},"14",null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLegend","args":[{"colors":["#FFFF00 , #FFDD00 13.2911392405063%, #FFB900 27.2151898734177%, #FF9500 41.1392405063291%, #FF7200 55.0632911392405%, #FF4F00 68.9873417721519%, #FF2C00 82.9113924050633%, #FF0900 96.8354430379747%, #FF0000 "],"labels":["2","4","6","8","10","12","14"],"na_color":null,"na_label":"NA","opacity":1,"position":"topright","type":"numeric","title":"Path use","extra":{"p_1":0.132911392405063,"p_n":0.968354430379747},"layerId":null,"className":"info legend","group":null}]},{"method":"hideGroup","args":["Loggers"]},{"method":"showGroup","args":["Loggers"]},{"method":"removeLayersControl","args":[]},{"method":"addLayersControl","args":[["Satellite","Terrain","Open Street Map","Black and White"],["Loggers","Time","Path use"],{"collapsed":true,"autoZIndex":true,"position":"topright"}]}],"limits":{"lat":[50.66778333,50.6693833],"lng":[-120.3634889,-120.3612389]}},"evals":[],"jsHooks":[]}</script>
 <p>We can also summarize data by individual for plotting of individual maps.</p>
 <p>This is virtually identical to what we did above, except that we add one more variable to group by and we don’t correct for the number of individuals:</p>
 <pre class="r"><code>p_indiv &lt;- p %&gt;%
   group_by(animal_id, logger_id) %&gt;%
-  summarize(amount = sum(length))
-p_indiv</code></pre>
-<pre><code>## # A tibble: 23 x 3
-## # Groups:   animal_id [?]
-##     animal_id logger_id            amount
-##        &lt;fctr&gt;    &lt;fctr&gt;            &lt;time&gt;
-##  1 041868E9A8      2100   2.01666667 mins
-##  2 041868E9A8      2200 189.96666667 mins
-##  3 041868E9A8      2700  14.51666667 mins
-##  4 041869123C      2200  23.85000000 mins
-##  5 06200003AA      2100  23.16666667 mins
-##  6 06200003AA      2700 311.95000000 mins
-##  7 0620000400      2100   7.76666667 mins
-##  8 0620000400      2700  24.83333333 mins
-##  9 062000043E      2700   0.03333333 mins
-## 10 0620000477      2100  14.35000000 mins
-## # ... with 13 more rows</code></pre>
+  summarize(amount = sum(length))</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;animal_id&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>p_indiv</code></pre>
+<pre><code>## # A tibble: 23 × 3
+## # Groups:   animal_id [11]
+##    animal_id  logger_id   amount
+##    &lt;fct&gt;      &lt;fct&gt;        &lt;dbl&gt;
+##  1 041868E9A8 2100        2.02  
+##  2 041868E9A8 2200      190.    
+##  3 041868E9A8 2700       14.5   
+##  4 041869123C 2200       23.8   
+##  5 06200003AA 2100       23.2   
+##  6 06200003AA 2700      312.    
+##  7 0620000400 2100        7.77  
+##  8 0620000400 2700       24.8   
+##  9 062000043E 2700        0.0333
+## 10 0620000477 2100       14.4   
+## # … with 13 more rows</code></pre>
 <pre class="r"><code>m_indiv &lt;- m %&gt;%
   group_by(animal_id, move_path, logger_id, lat, lon) %&gt;%
-  summarize(path_use = length(move_path))
-m_indiv</code></pre>
-<pre><code>## # A tibble: 32 x 6
-## # Groups:   animal_id, move_path, logger_id, lat [?]
-##     animal_id move_path logger_id      lat       lon path_use
-##        &lt;fctr&gt;    &lt;fctr&gt;    &lt;fctr&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;int&gt;
-##  1 041868E9A8 2100_2700      2100 50.66896 -120.3624        1
-##  2 041868E9A8 2100_2700      2700 50.66909 -120.3632        1
-##  3 041868E9A8 2200_2700      2200 50.66778 -120.3612        3
-##  4 041868E9A8 2200_2700      2700 50.66909 -120.3632        3
-##  5 06200003AA 2100_2700      2100 50.66896 -120.3624        6
-##  6 06200003AA 2100_2700      2700 50.66909 -120.3632        6
-##  7 0620000400 2100_2700      2100 50.66896 -120.3624        3
-##  8 0620000400 2100_2700      2700 50.66909 -120.3632        3
-##  9 0620000477 2100_2700      2100 50.66896 -120.3624        8
-## 10 0620000477 2100_2700      2700 50.66909 -120.3632        8
-## # ... with 22 more rows</code></pre>
+  summarize(path_use = length(move_path))</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;animal_id&#39;, &#39;move_path&#39;, &#39;logger_id&#39;, &#39;lat&#39;. You can override using the `.groups` argument.</code></pre>
+<pre class="r"><code>m_indiv</code></pre>
+<pre><code>## # A tibble: 32 × 6
+## # Groups:   animal_id, move_path, logger_id, lat [32]
+##    animal_id  move_path logger_id   lat   lon path_use
+##    &lt;fct&gt;      &lt;fct&gt;     &lt;fct&gt;     &lt;dbl&gt; &lt;dbl&gt;    &lt;int&gt;
+##  1 041868E9A8 2100_2700 2100       50.7 -120.        1
+##  2 041868E9A8 2100_2700 2700       50.7 -120.        1
+##  3 041868E9A8 2200_2700 2200       50.7 -120.        3
+##  4 041868E9A8 2200_2700 2700       50.7 -120.        3
+##  5 06200003AA 2100_2700 2100       50.7 -120.        6
+##  6 06200003AA 2100_2700 2700       50.7 -120.        6
+##  7 0620000400 2100_2700 2100       50.7 -120.        3
+##  8 0620000400 2100_2700 2700       50.7 -120.        3
+##  9 0620000477 2100_2700 2100       50.7 -120.        8
+## 10 0620000477 2100_2700 2700       50.7 -120.        8
+## # … with 22 more rows</code></pre>
 <div id="recap" class="section level3">
 <h3>Recap:</h3>
 <p>To create maps you need to define a summary OR create custom summaries with the following:</p>
@@ -503,30 +510,10 @@ m_indiv</code></pre>
 <li>movement summary with a columns: <code>logger_id</code>, <code>move_path</code>, <code>path_use</code>, <code>lat</code>, and <code>lon</code></li>
 </ul>
 <p>If you want to look at individual data, add <code>animal_id</code> to the groupings.</p>
-</div>
-</div>
-<div id="animations" class="section level2">
-<h2>Animations</h2>
-<p>To look at animations of your data overtime, you can use the function <code>ui_animate()</code> to launch the animation shiny app included in the <code>feedr</code> package:</p>
-<pre class="r"><code>ui_animate(v)</code></pre>
-<div class="figure">
-<img src="ui_animate.png" />
-
-</div>
-<p>Here you can choose</p>
-<ul>
-<li>Whether animations should show cumulative or instantaneous movements/path use</li>
-<li>Which individual (or all individuals) to animate over</li>
-<li>What kind of summary to show (total sum, or, if average sum, if all individuals are chosen)</li>
-<li>What time range</li>
-<li>The temporal resolution of each animated frame (i.e. the time frame that data will be summarized over)</li>
-<li>The animation speed (how fast will frames advance?)</li>
-<li>Whether to include a shadowed overlay showing sunrise and sunset</li>
-</ul>
-<p>The figure along the bottom shows the number of movements and/or bouts of presence over time. This can help you chose which time frames to include.</p>
 <hr />
 <p>Back to <a href="#top">top</a><br />
 Go back to <a href="index.html">home</a> | Go back to <a href="transformations.html">transformations</a></p>
+</div>
 </div>
 
 
@@ -540,13 +527,59 @@ Go back to <a href="index.html">home</a> | Go back to <a href="transformations.h
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->

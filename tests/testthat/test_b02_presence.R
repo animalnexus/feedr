@@ -1,19 +1,19 @@
-library(magrittr)
-context("Transformations to presence bouts")
-
 # presence() single
 test_that("presence() handles single animal", {
 
-  expect_silent(p <- presence(visits(finches) %>% dplyr::filter(animal_id == "0620000514")))
+  p <- visits(finches) %>%
+    dplyr::filter(animal_id == "0620000514") %>%
+    presence() %>%
+    expect_silent()
 
   ## Format
-  expect_is(p, "data.frame")
+  expect_s3_class(p, "data.frame")
   expect_length(p, 14)
   expect_match(names(p)[1:5], "^logger_id$|^animal_id$|^date$|^start$|^end$|^length$")
-  expect_is(p$animal_id, "factor")
-  expect_is(p$logger_id, "factor")
-  expect_is(p$date, "Date")
-  expect_is(p$start, "POSIXct")
+  expect_s3_class(p$animal_id, "factor")
+  expect_s3_class(p$logger_id, "factor")
+  expect_s3_class(p$date, "Date")
+  expect_s3_class(p$start, "POSIXct")
 
   expect_equal(p$date, as.Date(p$start, tz = lubridate::tz(p$start)))
 
@@ -27,16 +27,19 @@ test_that("presence() handles single animal", {
 # presence() multiple
 test_that("presence() handles multiple animals", {
 
-  expect_silent(p <- presence(visits(finches)))
+  p <- finches %>%
+    visits() %>%
+    presence() %>%
+    expect_silent()
 
   ## Format
-  expect_is(p, "data.frame")
+  expect_s3_class(p, "data.frame")
   expect_length(p, 14)
   expect_match(names(p)[1:5], "^logger_id$|^animal_id$|^date$|^start$|^end$|^length$")
-  expect_is(p$animal_id, "factor")
-  expect_is(p$logger_id, "factor")
-  expect_is(p$date, "Date")
-  expect_is(p$start, "POSIXct")
+  expect_s3_class(p$animal_id, "factor")
+  expect_s3_class(p$logger_id, "factor")
+  expect_s3_class(p$date, "Date")
+  expect_s3_class(p$start, "POSIXct")
 
   ## Not impossible nor missing
   expect_equal(sum(is.na(p)), 0)

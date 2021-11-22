@@ -17,7 +17,7 @@ index. In either case, the data must contain two columns:
 }
 \value{
 A data frame with corrected ids. Messages are printed to inform the
-  user of any corrections made.
+user of any corrections made.
 }
 \description{
 This function compares the animal ids in your data file to those in a problem

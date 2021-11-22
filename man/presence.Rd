@@ -7,7 +7,7 @@
 presence(v, bw = 15, pass = TRUE)
 }
 \arguments{
-\item{v}{Dataframe. A visits data frame from the output of \code{\link{visits}} (may
+\item{v}{Dataframe. A visits data frame from the output of \code{\link[=visits]{visits()}} (may
 contain more than one animal_id). Must contain columns \code{animal_id},
 \code{logger_id}, \code{start}, and \code{end}.}
 
@@ -20,13 +20,13 @@ them to the output.}
 }
 \value{
 A data frame of presence events. This data frame has the following
-  columns:
-  \itemize{
-  \item ID of the animal (\code{animal_id})
-  \item ID of the logger(\code{logger_id})
-  \item Time of the start of the event (\code{start})
-  \item Time of the end of the event (\code{end})
-  }
+columns:
+\itemize{
+\item ID of the animal (\code{animal_id})
+\item ID of the logger(\code{logger_id})
+\item Time of the start of the event (\code{start})
+\item Time of the end of the event (\code{end})
+}
 }
 \description{
 Turns multiple visits at specific loggers into overall presence events.

@@ -4,7 +4,7 @@
 #' area (nest box, hive, etc.). This function assumes that if an individual
 #' enters by A -> B then it must exit B -> A.
 #'
-#' Specify \code{type} to indicate what the trip of interest is (either time
+#' Specify `type` to indicate what the trip of interest is (either time
 #' out, or time in, the area of interest). Assume loggers A follwed by B
 #' indicates an exit. A full "out" trip must have an exit followed eventually by
 #' an entry. The trip starts the moment an individual finishes exiting (ie.
@@ -15,10 +15,10 @@
 #' and ends the moment an individual starts to exit (ie. arrives at B if the
 #' next read is at A).
 #'
-#' \code{trip_length} indicates the total time between the start of a trip and
+#' `trip_length` indicates the total time between the start of a trip and
 #' the end of a trip. Sometimes an individual may exit (or enter), but might not
 #' leave the area around the outside (or inside) logger. The
-#' \code{max_time_away} column indicates the maximum amount of time the
+#' `max_time_away` column indicates the maximum amount of time the
 #' individual was not detected by a logger during the trip. Where the
 #' trip_length is roughly equivalent to the max_time_away, the individual likely
 #' left the immediate area. Where the max_time_away is very small, the
@@ -63,12 +63,20 @@ inout <- function(r, dir_in, type = "out", all = FALSE, pass = TRUE){
   id_opts <- paste0("(", paste0(unique(r$logger_id), collapse = ")|("), ")")
   if(!is.character(dir_in) |
      !all(grepl(paste0("(", id_opts,")", "_", "(", id_opts, ")"), dir_in))) {
-    stop("dir_in must be a character vector in the format of 'id1_id2' where id1 is the outer RFID logger and id2 is the inner RFID logger. id1 and id2 must be in logger_ids. You can include multiple sets of RFID loggers.")
+    stop("dir_in must be a character vector in the format of 'id1_id2' ",
+         "where id1 is the outer RFID logger and id2 is the inner RFID ",
+         "logger. id1 and id2 must be in logger_ids. You can include ",
+         "multiple sets of RFID loggers.", call. = FALSE)
   }
 
   # Get factor levels for whole dataset
-  if(is.factor(r$animal_id)) animal_id <- levels(r$animal_id) else animal_id <- unique(r$animal_id)
-  if(is.factor(r$logger_id)) logger_id <- levels(r$logger_id) else logger_id <- unique(r$logger_id)
+  if(is.factor(r$animal_id)) {
+    animal_id <- levels(r$animal_id)
+  } else animal_id <- unique(r$animal_id)
+
+  if(is.factor(r$logger_id)) {
+    logger_id <- levels(r$logger_id)
+  } else logger_id <- unique(r$logger_id)
 
   # Remove factors to allow silent joins between different levels
   r$animal_id <- as.character(r$animal_id)
@@ -80,58 +88,66 @@ inout <- function(r, dir_in, type = "out", all = FALSE, pass = TRUE){
   }
 
   # Get extra columns
-  if(pass == TRUE) extra <- keep_extra(r, n = c("time", "logger_id"), only = c("animal_id", "date"))
+  if(pass == TRUE) extra <- keep_extra(r, n = c("time", "logger_id"),
+                                       only = c("animal_id", "date"))
 
   # Apply individually to each animal
   i <- r %>%
-    dplyr::group_by(animal_id) %>%
+    dplyr::group_by(.data$animal_id) %>%
     dplyr::do(inout_single(., dir_in = dir_in, all = all)) %>%
     dplyr::ungroup()
 
   if(nrow(i) > 0){
 
     i <- i %>%
-      dplyr::group_by(animal_id, inout_id) %>%
-      dplyr::filter((direction == dir_from & time == max(time)) |
-                      (direction == dir_to & time == min(time))) %>%
+      dplyr::group_by(.data$animal_id, .data$inout_id) %>%
+      dplyr::filter((.data$direction == !!dir_from &
+                       .data$time == max(.data$time)) |
+                      (.data$direction == !!dir_to &
+                         .data$time == min(.data$time))) %>%
       dplyr::ungroup()
 
     i <- i %>%
-      tidyr::nest(-animal_id) %>%
+      tidyr::nest(data = c(-"animal_id")) %>%
       dplyr::mutate(data = purrr::map(data, ~remove_edges(.x, dir_to, dir_from))) %>%
-      tidyr::unnest()
+      tidyr::unnest(cols = c("data"))
 
     # Maybe report number of problems, amount of time, etc.?
     i <- i %>%
-      dplyr::group_by(animal_id) %>%
-      dplyr::mutate(inout_dir = inout_dir[inout_dir %in% dir_in][1],
-                    problem_next = dplyr::if_else(direction == dplyr::lead(direction), TRUE, FALSE),
-                    problem_prev = dplyr::if_else(direction == dplyr::lag(direction), TRUE, FALSE),
-                    problem = problem_next & problem_prev) %>%
-      dplyr::filter(problem != TRUE) %>%
-      dplyr::group_by(animal_id, direction) %>%
-      dplyr::mutate(trip_id = seq_along(animal_id))
+      dplyr::group_by(.data$animal_id) %>%
+      dplyr::mutate(
+        inout_dir = .data$inout_dir[.data$inout_dir %in% !!dir_in][1],
+        problem_next = dplyr::if_else(
+          .data$direction == dplyr::lead(.data$direction), TRUE, FALSE),
+        problem_prev = dplyr::if_else(
+          .data$direction == dplyr::lag(.data$direction), TRUE, FALSE),
+        problem = .data$problem_next & .data$problem_prev) %>%
+      dplyr::filter(.data$problem != TRUE) %>%
+      dplyr::group_by(.data$animal_id, .data$direction) %>%
+      dplyr::mutate(trip_id = seq_along(.data$animal_id))
 
     i_sum <- summarize_inout(i, r, dir_in, dir_from, dir_to, type = "out")
 
     i <- i %>%
-      dplyr::select(-date, -logger_id, -inout_id, -problem_next, -problem_prev, -problem) %>%
-      tidyr::spread(direction, time) %>%
-      dplyr::select(animal_id, trip_id, inout_dir, exit, enter) %>%
+      dplyr::select(-"date", -"logger_id", -"inout_id", -"problem_next",
+                    -"problem_prev", -"problem") %>%
+      tidyr::pivot_wider(names_from = "direction", values_from = "time") %>%
+      dplyr::select("animal_id", "trip_id", "inout_dir", "exit", "enter") %>%
       dplyr::ungroup() %>%
       dplyr::left_join(i_sum, by = c("animal_id", "inout_dir", "trip_id"))
 
-    # Remove trips where exit/enter times are identical (i.e. only one read on one of the loggers)
-    i <- dplyr::filter(i, exit != enter)
+    # Remove trips where exit/enter times are identical
+    # (i.e. only one read on one of the loggers)
+    i <- dplyr::filter(i, .data$exit != .data$enter)
 
     # Re-calculate date from enter/exit and organize
     if(type == "out") {
-      i <- dplyr::arrange(i, animal_id, exit) %>%
-        dplyr::mutate(date = lubridate::as_date(exit))
+      i <- dplyr::arrange(i, .data$animal_id, .data$exit) %>%
+        dplyr::mutate(date = lubridate::as_date(.data$exit))
     }
     if(type == "in") {
-      i <- dplyr::arrange(i, animal_id, enter) %>%
-        dplyr::mutate(date = lubridate::as_date(enter))
+      i <- dplyr::arrange(i, .data$animal_id, .data$enter) %>%
+        dplyr::mutate(date = lubridate::as_date(.data$enter))
     }
 
     # Add in extra cols
@@ -141,30 +157,35 @@ inout <- function(r, dir_in, type = "out", all = FALSE, pass = TRUE){
 
   i$animal_id <- factor(i$animal_id, levels = animal_id)
 
-  return(i)
+  i
 }
 
 summarize_inout <- function(i, r, dir_in, dir_from, dir_to, type = "out"){
   # Calculate place/in times and amount of hovering time
   i_raw <- r %>%
-    dplyr::select(animal_id, logger_id, time) %>%
-    dplyr::mutate(inout_dir = purrr::map_chr(logger_id, ~dir_in[stringr::str_detect(dir_in, .x)])) %>%
-    dplyr::left_join(i[, c("animal_id", "time", "direction", "trip_id", "inout_dir")],
-                     by = c("animal_id", "time", "inout_dir")) %>%
-    dplyr::group_by(animal_id, inout_dir) %>%
-    dplyr::mutate(trip_idx = trip_id,
-                  trip_idx = replace(trip_idx, direction == dir_to, "NOID"),
-                  trip_id2 = fill_trips(trip_idx),
-                  trip_id2 = replace(trip_id2,
-                                     !is.na(direction) & direction == dir_to,
-                                     trip_id[!is.na(direction) & direction == dir_to]),
-                  trip_id2 = as.numeric(replace(trip_id2, trip_id2 == "NOID", NA))) %>%
-    dplyr::select(animal_id, inout_dir, time, trip_id = trip_id2) %>%
-    dplyr::filter(!is.na(trip_id)) %>%
-    dplyr::group_by(animal_id, inout_dir, trip_id) %>%
-    dplyr::mutate(diff_time = as.numeric(difftime(dplyr::lead(time), time, units = "secs"))) %>%
-    dplyr::summarize(trip_length = as.numeric(difftime(max(time), min(time), units = "secs")),
-                     max_time_away = max(diff_time, na.rm = TRUE))
+    dplyr::select("animal_id", "logger_id", "time") %>%
+    dplyr::mutate(inout_dir = purrr::map_chr(
+      .data$logger_id, ~dir_in[stringr::str_detect(dir_in, .x)])) %>%
+    dplyr::left_join(
+      i[, c("animal_id", "time", "direction", "trip_id", "inout_dir")],
+      by = c("animal_id", "time", "inout_dir")) %>%
+    dplyr::group_by(.data$animal_id, .data$inout_dir) %>%
+    dplyr::mutate(
+      trip_idx = .data$trip_id,
+      trip_idx = replace(.data$trip_idx, .data$direction == !!dir_to, "NOID"),
+      trip_id2 = fill_trips(.data$trip_idx),
+      trip_id2 = replace(
+        .data$trip_id2,
+        !is.na(.data$direction) & .data$direction == !!dir_to,
+        .data$trip_id[!is.na(.data$direction) & .data$direction == !!dir_to]),
+      trip_id2 = as.numeric(replace(.data$trip_id2, .data$trip_id2 == "NOID", NA))) %>%
+    dplyr::select("animal_id", "inout_dir", "time", "trip_id" = "trip_id2") %>%
+    dplyr::filter(!is.na(.data$trip_id)) %>%
+    dplyr::group_by(.data$animal_id, .data$inout_dir, .data$trip_id) %>%
+    dplyr::mutate(diff_time = as.numeric(difftime(dplyr::lead(.data$time),
+                                                  .data$time, units = "secs"))) %>%
+    dplyr::summarize(trip_length = as.numeric(difftime(max(.data$time), min(.data$time), units = "secs")),
+                     max_time_away = max(.data$diff_time, na.rm = TRUE))
 
   if(length(s <- setdiff(unique(r$animal_id), unique(i_raw$animal_id))) > 0) {
     i_raw <- dplyr::bind_rows(i_raw,
@@ -185,57 +206,60 @@ inout_single <- function(r1, dir_in, all = FALSE){
     # If there are movements, calculate events
     e1 <- r1 %>%
       dplyr::ungroup() %>%
-      dplyr::select(animal_id, date, time, logger_id) %>%
-      dplyr::arrange(time) %>%
-      dplyr::mutate(first = logger_id != dplyr::lead(logger_id),
-                    second = logger_id != dplyr::lag(logger_id)) %>%
-      dplyr::filter(first | second) %>%
-      tidyr::gather(direction, value, first, second) %>%
-      dplyr::filter(value) %>%
-      dplyr::select(-value) %>%
-      dplyr::arrange(time) %>%
-      dplyr::mutate(inout_id = sort(rep(1:(length(animal_id)/2),2))) %>%
-      dplyr::group_by(inout_id) %>%
-      dplyr::mutate(inout_dir = paste0(as.character(logger_id), collapse = "_")) %>%
+      dplyr::select("animal_id", "date", "time", "logger_id") %>%
+      dplyr::arrange(.data$time) %>%
+      dplyr::mutate(first = .data$logger_id != dplyr::lead(.data$logger_id),
+                    second = .data$logger_id != dplyr::lag(.data$logger_id)) %>%
+      dplyr::filter(.data$first | .data$second) %>%
+      tidyr::pivot_longer(cols = c("first", "second"),
+                          names_to = "direction", values_to = "value") %>%
+      dplyr::filter(.data$value) %>%
+      dplyr::select(-"value") %>%
+      dplyr::arrange(.data$time) %>%
+      dplyr::mutate(inout_id = sort(rep(1:(length(.data$animal_id)/2),2))) %>%
+      dplyr::group_by(.data$inout_id) %>%
+      dplyr::mutate(inout_dir = paste0(as.character(.data$logger_id),
+                                       collapse = "_")) %>%
       dplyr::ungroup() %>%
       dplyr::mutate(direction = "exit",
-                    direction = replace(direction, inout_dir %in% dir_in, "enter"))
+                    direction = replace(.data$direction,
+                                        .data$inout_dir %in% !!dir_in, "enter"))
 
   } else if (all == TRUE) {
     # Create the movement data frame for animals that didn't move between loggers
-    e1 <- tibble::data_frame(animal_id = r1$animal_id[1],
-                             date = as.Date(NA),
-                             time = as.POSIXct(NA),
-                             logger_id = as.character(NA),
-                             direction = as.character(NA),
-                             inout_id = as.numeric(NA),
-                             inout_dir = as.character(NA))
+    e1 <- tibble::tibble(animal_id = r1$animal_id[1],
+                         date = as.Date(NA),
+                         time = as.POSIXct(NA),
+                         logger_id = as.character(NA),
+                         direction = as.character(NA),
+                         inout_id = as.numeric(NA),
+                         inout_dir = as.character(NA))
   } else {
     # If there are no movements and all == FALSE, return an empty data frame
-    e1 <- tibble::data_frame()
+    e1 <- tibble::tibble()
   }
-  return(e1)
+  e1
 }
 
 #' Visits
 #'
 #' Raw data from RFID loggers contain multiple reads per individual simply
-#' because the individual sat there long enough. In \code{visits()} these reads
+#' because the individual sat there long enough. In `visits()` these reads
 #' are collapsed into one visit.
 #'
 #' Visits are defined by three pieces of data:
 #' \itemize{
-#' \item How much time has passed between reads (\code{bw})
-#' \item A change in identity between two successive reads (\code{animal_id})
-#' \item A change in logger for a single individual (\code{logger_id})
+#' \item How much time has passed between reads (`bw`)
+#' \item A change in identity between two successive reads (`animal_id`)
+#' \item A change in logger for a single individual (`logger_id`)
 #' }
 #'
 #' The function will return an error if impossible visits are detected (unless
-#'   \code{allow_imp = TRUE}) . A visit is deemed impossible if a single animal
-#'   travels between loggers in less time than specified by \code{bw}.
+#'   `allow_imp = TRUE`) . A visit is deemed impossible if a single animal
+#'   travels between loggers in less time than specified by `bw`.
 #'
 #' @param r Dataframe. Contains raw reads from an RFID reader with colums
-#'   \code{animal_id}, \code{logger_id}, \code{time}.
+#'   `animal_id`, `logger_id`, `time`.
 #' @param bw Numerical. The minimum interval, in seconds, between reads for two
 #'   successive reads to be considered separate visits.
 #' @param allow_imp Logical. Whether impossible visits should be allowed (see
@@ -248,8 +272,8 @@ inout_single <- function(r1, dir_in, all = FALSE){
 #'   them to the output.
 #' @param allow.imp,na.rm Depreciated.
 #'
-#' @return A data frame with visits specifying \code{animal_id} and
-#'   \code{logger_id} as well as the \code{start} and \code{end} of the visit.
+#' @return A data frame with visits specifying `animal_id` and
+#'   `logger_id` as well as the `start` and `end` of the visit.
 #'   Any extra columns that are unique at the level of animal_id or logger_id will
 #'   also be passed through (i.e. age, sex, logger location, etc.).
 #'
@@ -266,9 +290,9 @@ inout_single <- function(r1, dir_in, all = FALSE){
 #'   group_by(experiment) %>%
 #'   do(visits(.))
 #'
-#' @import magrittr
 #' @export
-visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass = TRUE, allow.imp, na.rm){
+visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE,
+                   pass = TRUE, allow.imp, na.rm){
   if (!missing(allow.imp)) {
     warning("Argument allow.imp is deprecated; please use allow_imp instead.",
             call. = FALSE)
@@ -288,7 +312,10 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
 
   # Check for NAs, remove if specified by na_rm = TRUE
   if(any(is.na(r[, c("animal_id", "logger_id", "time")]))){
-    if(na_rm == FALSE) stop("NAs found. To automatically remove NAs, specify 'na_rm = TRUE'.")
+    if(na_rm == FALSE) {
+      stop("NAs found. To automatically remove NAs, specify 'na_rm = TRUE'.",
+           call. = FALSE)
+    }
     if(na_rm == TRUE) r <- r[rowSums(is.na(r)) == 0,]
   }
 
@@ -311,33 +338,45 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
   # Diff logger PER ID
 
   v <- r %>%
-    dplyr::arrange(time) %>%
-    dplyr::group_by(logger_id) %>%
+    dplyr::arrange(.data$time) %>%
+    dplyr::group_by(.data$logger_id) %>%
     #dplyr::mutate(diff_animal = dplyr::lead(logger_id) == logger_id & dplyr::lead(animal_id) != animal_id) %>%
-    dplyr::mutate(diff_animal = dplyr::lead(animal_id) != animal_id) %>%
-    dplyr::group_by(animal_id) %>%
-    dplyr::mutate(diff_time = difftime(dplyr::lead(time), time, units = "sec") > bw,
-                  diff_logger = dplyr::lead(logger_id) != logger_id)
+    dplyr::mutate(diff_animal = dplyr::lead(.data$animal_id) != .data$animal_id) %>%
+    dplyr::group_by(.data$animal_id) %>%
+    dplyr::mutate(
+      diff_time = difftime(dplyr::lead(.data$time), time, units = "sec") > bw,
+      diff_logger = dplyr::lead(.data$logger_id) != .data$logger_id)
 
   # Check for impossible combos: where less than bw, still the same animal, but a different logger
   if(!allow_imp) {
+
     impos <- v %>%
-      dplyr::mutate(diff_imp = difftime(dplyr::lead(time), time, units = "sec") < bw_imp,
-                    diff_imp = diff_imp & diff_logger) %>%
-      dplyr::arrange(animal_id) %>%
-      dplyr::filter(diff_imp | dplyr::lag(diff_imp)) %>%
+      dplyr::mutate(
+        diff_imp = difftime(dplyr::lead(.data$time),
+                            .data$time, units = "sec"),
+        diff_imp = .data$diff_imp < !!bw_imp,
+        diff_imp = .data$diff_imp & .data$diff_logger) %>%
+      dplyr::arrange(.data$animal_id) %>%
+      dplyr::filter(.data$diff_imp | dplyr::lag(.data$diff_imp)) %>%
       unique()
 
     if(nrow(impos) > 0) {
       impos <- impos %>%
-        dplyr::arrange(animal_id, time) %>%
-        dplyr::select(animal_id, time, logger_id)
+        dplyr::arrange(.data$animal_id, .data$time) %>%
+        dplyr::select("animal_id", "time", "logger_id")
 
       rows <- nrow(impos)
       if(nrow(impos) > 6) {
         rows <- 6
       }
-      stop("Impossible visits found (n = ", nrow(impos), "), no specification for how to handle:\n\nIndividual(s) detected at 2+ loggers within ", bw_imp, "s.\nDecrease the `bw_imp` argument, remove these reads, or\nallow impossible visits (allow_imp = TRUE) and try again.\n\nFirst 6 impossible visits:\n", paste0(utils::capture.output(as.data.frame(impos[1:rows, ])), collapse = "\n"), call. = FALSE)
+      stop("Impossible visits found (n = ", nrow(impos),
+           "), no specification for how to handle:",
+           "\n\nIndividual(s) detected at 2+ loggers within ", bw_imp, "s.",
+           "\nDecrease the `bw_imp` argument, remove these reads, or\n",
+           "allow impossible visits (allow_imp = TRUE) and try again.\n\n",
+           "First 6 impossible visits:\n",
+           paste0(utils::capture.output(as.data.frame(impos[1:rows, ])),
+                  collapse = "\n"), call. = FALSE)
     }
   }
 
@@ -359,31 +398,42 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
   v <- v %>%
     # Assign end points
     dplyr::mutate(new = "include") %>%
-    dplyr::mutate(new = replace(new, diff_logger | diff_time | diff_animal, "end"),
-                  new = replace(new, is.na(dplyr::lead(new)), "end")) %>%
-    # Assign start or start-end points for each individual
-    dplyr::mutate(new = replace(new, new == "include" &
-                                  (is.na(dplyr::lag(new)) | dplyr::lag(new) == "end"), "start"),
-                  new = replace(new, new == "end" &
-                                  (is.na(dplyr::lag(new)) | dplyr::lag(new) == "end"), "start-end")) %>%
+    dplyr::mutate(
+      new = replace(new,
+                    .data$diff_logger | .data$diff_time | .data$diff_animal,
+                    "end"),
+      new = replace(new, is.na(dplyr::lead(.data$new)), "end"),
+      # Assign start or start-end points for each individual
+      new = replace(new, new == "include" &
+                      (is.na(dplyr::lag(.data$new)) |
+                         dplyr::lag(.data$new) == "end"), "start"),
+      new = replace(new, new == "end" &
+                      (is.na(dplyr::lag(.data$new)) |
+                         dplyr::lag(.data$new) == "end"), "start-end")) %>%
     dplyr::ungroup() %>%
     dplyr::filter(new != "include") %>%
-    dplyr::mutate(start = as.POSIXct(NA, tz = tz),
-                  end = as.POSIXct(NA, tz = tz),
-                  start = replace(start, stringr::str_detect(new, "start"), time[stringr::str_detect(new, "start")]),
-                  end = replace(end, stringr::str_detect(new, "end"), time[stringr::str_detect(new, "end")])) %>%
-    dplyr::select(logger_id, animal_id, start, end) %>%
-    tidyr::gather(variable, value, start, end) %>%
-    dplyr::filter(!is.na(value)) %>%
-    dplyr::arrange(value) %>%
-    dplyr::group_by(logger_id, animal_id, variable) %>%
-    dplyr::mutate(n = 1:length(value)) %>%
-    tidyr::spread(variable, value) %>%
-    dplyr::select(-n) %>%
+    dplyr::mutate(
+      start = as.POSIXct(NA, tz = !!tz),
+      end = as.POSIXct(NA, tz = !!tz),
+      start = replace(
+        .data$start,
+        stringr::str_detect(.data$new, "start"),
+        .data$time[stringr::str_detect(.data$new, "start")]),
+      end = replace(.data$end, stringr::str_detect(.data$new, "end"),
+                    .data$time[stringr::str_detect(.data$new, "end")])) %>%
+    dplyr::select("logger_id", "animal_id", "start", "end") %>%
+    tidyr::pivot_longer(cols = c("start", "end"),
+                        names_to = "variable", values_to = "value") %>%
+    dplyr::filter(!is.na(.data$value)) %>%
+    dplyr::arrange(.data$value) %>%
+    dplyr::group_by(.data$logger_id, .data$animal_id, .data$variable) %>%
+    dplyr::mutate(n = 1:length(.data$value)) %>%
+    tidyr::pivot_wider(names_from = "variable", values_from = "value") %>%
+    dplyr::select(-"n") %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(animal_n = length(unique(animal_id)),         # Get sample sizes
-                 logger_n = length(unique(logger_id)),
-                 date = as.Date(start, tz = lubridate::tz(start)))
+    dplyr::mutate(animal_n = length(unique(.data$animal_id)),# Get sample sizes
+                  logger_n = length(unique(.data$logger_id)),
+                  date = as.Date(.data$start, tz = lubridate::tz(.data$start)))
 
   # Set timezone attributes
   attr(v$start, "tzone") <- tz
@@ -391,13 +441,14 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
 
   # Order data frame
   v <- v %>%
-    dplyr::select(animal_id, date, start, end, logger_id, animal_n, logger_n) %>%
-    dplyr::arrange(animal_id, start)
+    dplyr::select("animal_id", "date", "start", "end",
+                  "logger_id", "animal_n", "logger_n") %>%
+    dplyr::arrange(.data$animal_id, .data$start)
 
   # Add in extra variables
   if(pass == TRUE) v <- merge_extra(v, extra)
 
-  return(v)
+  v
 }
 
 
@@ -406,11 +457,11 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
 #' Turns visits to mulitple loggers into movements between loggers
 #'
 #' @param v Dataframe. A visits data frame (may contain multiple animal_ids). From
-#'   the output of \code{visits}. Must contain columns \code{animal_id},
-#'   \code{logger_id}, \code{start}, and \code{end}.
+#'   the output of `visits`. Must contain columns `animal_id`,
+#'   `logger_id`, `start`, and `end`.
 #' @param all Logical. Should all animal_ids be returned, even if the animal made no
 #'   movements? If TRUE, a data frame with NAs for all columns except
-#'   \code{animal_id} will be returned, if FALSE, an empty data frame will be
+#'   `animal_id` will be returned, if FALSE, an empty data frame will be
 #'   returned.
 #' @param pass Logical. Pass 'extra' columns through the function and append
 #'   them to the output.
@@ -419,17 +470,17 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
 #'   leaving one logger to arriving at a second one. Each movement bout consists
 #'   of two rows of data containing:
 #'   \itemize{
-#'   \item ID of the animal (\code{animal_id})
-#'   \item Date of event (\code{date})
-#'   \item Time of event (\code{time})
-#'   \item The ID of loggers involved (\code{logger_id})
-#'   \item The movement path including direction (\code{move_dir})
-#'   \item The movement path independent of direction (\code{move_path})
+#'   \item ID of the animal (`animal_id`)
+#'   \item Date of event (`date`)
+#'   \item Time of event (`time`)
+#'   \item The ID of loggers involved (`logger_id`)
+#'   \item The movement path including direction (`move_dir`)
+#'   \item The movement path independent of direction (`move_path`)
 #'   \item The 'strength' of the connection (inverse of time taken to move
-#'   between; \code{strength})
-#'   \item Information on whether left/arrived (\code{direction})
-#'   \item The ID of a single move event for a particular individual (\code{move_id})
-#'   \item Any extra columns \code{pass}ed through
+#'   between; `strength`)
+#'   \item Information on whether left/arrived (`direction`)
+#'   \item The ID of a single move event for a particular individual (`move_id`)
+#'   \item Any extra columns `pass`ed through
 #'   }
 #'
 #' @examples
@@ -455,7 +506,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE, pass
 #'   do(move(.))
 #'
 
-#' @import magrittr
+
 #' @export
 move <- function(v, all = FALSE, pass = TRUE){
 
@@ -534,18 +585,18 @@ move_single <- function(v1, move_dir, move_path, all = FALSE){
       dplyr::ungroup()
   } else if (all == TRUE) {
     # Create the movement data frame for animals that didn't move between loggers
-    m <- tibble::data_frame(animal_id = v1$animal_id[1],
-                            date = as.Date(NA),
-                            time = as.POSIXct(NA),
-                            logger_id = as.character(NA),
-                            direction = as.character(NA),
-                            move_id = as.numeric(NA),
-                            move_dir = factor(NA, levels = move_dir),
-                            move_path = factor(NA, levels = move_path),
-                            strength = as.numeric(NA))
+    m <- tibble::tibble(animal_id = v1$animal_id[1],
+                        date = as.Date(NA),
+                        time = as.POSIXct(NA),
+                        logger_id = as.character(NA),
+                        direction = as.character(NA),
+                        move_id = as.numeric(NA),
+                        move_dir = factor(NA, levels = move_dir),
+                        move_path = factor(NA, levels = move_path),
+                        strength = as.numeric(NA))
   } else {
     # If there are no movements and all == FALSE, return an empty data frame
-    m <- tibble::data_frame()
+    m <- tibble::tibble()
   }
   return(m)
 }
@@ -561,15 +612,15 @@ move_single <- function(v1, move_dir, move_path, all = FALSE){
 #' considered a less precise 'smoothing' of the data.
 #'
 #' The start and end of a period of presence is determined by either switching
-#' loggers (when \code{bw = NULL}) or by both switching loggers and by a cutoff
-#' time of \code{bw} minutes.
+#' loggers (when `bw = NULL`) or by both switching loggers and by a cutoff
+#' time of `bw` minutes.
 #'
 #'
-#' @param v Dataframe. A visits data frame from the output of \code{\link{visits}} (may
-#'   contain more than one animal_id). Must contain columns \code{animal_id},
-#'   \code{logger_id}, \code{start}, and \code{end}.
+#' @param v Dataframe. A visits data frame from the output of [visits()] (may
+#'   contain more than one animal_id). Must contain columns `animal_id`,
+#'   `logger_id`, `start`, and `end`.
 #' @param bw Numeric. The maximum number of minutes between visits for them to
-#'   be considered the same event. When \code{bw} = NULL only
+#'   be considered the same event. When `bw` = NULL only
 #'   visits to another logger are scored as a separate event.
 #' @param pass Logical. Pass 'extra' columns through the function and append
 #'   them to the output.
@@ -577,10 +628,10 @@ move_single <- function(v1, move_dir, move_path, all = FALSE){
 #' @return A data frame of presence events. This data frame has the following
 #'   columns:
 #'   \itemize{
-#'   \item ID of the animal (\code{animal_id})
-#'   \item ID of the logger(\code{logger_id})
-#'   \item Time of the start of the event (\code{start})
-#'   \item Time of the end of the event (\code{end})
+#'   \item ID of the animal (`animal_id`)
+#'   \item ID of the logger(`logger_id`)
+#'   \item Time of the start of the event (`start`)
+#'   \item Time of the end of the event (`end`)
 #'   }
 #'
 #' @examples
@@ -663,22 +714,20 @@ presence_single <- function(v1, bw = bw){
   }
 
   ## Create the presence data frame.
-  p <- tibble::data_frame(animal_id = v1$animal_id[1],
-                          date = v1$date[v1$start == TRUE],
-                          logger_id = v1$logger_id[v1$start == TRUE],
-                          start = v1$start_orig[v1$start == TRUE],
-                          end = v1$end_orig[v1$end == TRUE],
-                          length = as.numeric(difftime(v1$end_orig[v1$end == TRUE],
-                                                       v1$start_orig[v1$start == TRUE],
-                                                       units = "mins")))
-
-  return(p)
+  tibble::tibble(animal_id = v1$animal_id[1],
+                 date = v1$date[v1$start == TRUE],
+                 logger_id = v1$logger_id[v1$start == TRUE],
+                 start = v1$start_orig[v1$start == TRUE],
+                 end = v1$end_orig[v1$end == TRUE],
+                 length = as.numeric(difftime(v1$end_orig[v1$end == TRUE],
+                                              v1$start_orig[v1$start == TRUE],
+                                              units = "mins")))
 }
 
 
 #' Displacements
 #'
-#' For an entire \code{visits} data frame, identifies displacement events.
+#' For an entire `visits` data frame, identifies displacement events.
 #' Displacements are events when one animal leaves the logger right before the
 #' arrival of another.
 #'
@@ -686,41 +735,39 @@ presence_single <- function(v1, bw = bw){
 #' non-displacer and non-displacee, respectively.
 #'
 #' In some species displacements can be used to infer dominance. Displacements
-#' The interactions data frame returned by the \code{disp()} function can be
-#' passed directly to the \code{\link[Perc]{as.conflictmat}} function of the
-#' \link{Perc} package to be transformed into a conflict matrix, ready for
+#' The interactions data frame returned by the `disp()` function can be
+#' passed directly to the [Perc::as.conflictmat()] function of the
+#' Perc package to be transformed into a conflict matrix, ready for
 #' analysis of dominance using percolation and conductance. Finally, the
 #' displacements data frame can also be converted using the
-#' \code{\link{convert_anidom}} function to a data frame for use by the
-#' \link{aniDom} package's \link[aniDom]{elo_scores} function.
+#' [convert_anidom()] function to a data frame for use by the
+#' aniDom package's [elo_scores][aniDom::elo_scores] function.
 #'
-#' @param v Dataframe. A visits data frame containing \strong{all} visits from
-#'   \strong{all} animals. From the output of \code{visits}. Must contain columns
-#'   \code{animal_id}, \code{logger_id}, \code{start}, and \code{end}.
+#' @param v Dataframe. A visits data frame containing **all** visits from
+#'   **all** animals. From the output of `visits`. Must contain columns
+#'   `animal_id`, `logger_id`, `start`, and `end`.
 #' @param bw Numeric. The maximum interval in seconds between visits by two
 #'   different animals for the interaction to be considered a displacement.
 #' @param pass Logical. Pass 'extra' columns through the function and append
 #'   them to the output.
 #'
 #' @return A list with the following named items: \enumerate{ \item
-#'   \code{displacements}: A data frame of individual displacement events,
-#'   including the following columns: \itemize{ \item \code{logger_id}: ID of
+#'   `displacements`: A data frame of individual displacement events,
+#'   including the following columns: \itemize{ \item `logger_id`: ID of
 #'   the logger at which the event occurred \item ID of the animal being displaced
-#'   (\code{displacee}) \item ID of the animal doing the displacing
-#'   (\code{displacer}) \item Time of the departure of the displacee
-#'   (\code{left}) \item Time of the arrival of the displacer (\code{arrived}) }
+#'   (`displacee`) \item ID of the animal doing the displacing
+#'   (`displacer`) \item Time of the departure of the displacee
+#'   (`left`) \item Time of the arrival of the displacer (`arrived`) }
 #'
-#'   \item \code{summaries}: A data frame of overall wins/lossess per
+#'   \item `summaries`: A data frame of overall wins/lossess per
 #'   individual, containing the following columns: \itemize{ \item ID of the
-#'   animal (\code{animal_id}) \item No. of times the animal was displaced
-#'   (\code{displacee}) \item No. of times the animal was a displacer
-#'   (\code{displacer}) \item Proportion of wins (\code{p_win}) } \item
-#'   \code{interactions}: A data frame of interaction summaries, containing the
-#'   following columns: \itemize{ \item ID of the displacee (\code{displacee})
-#'   \item ID of the displacer (\code{displacer}) \item No. of times this
-#'   interaction occurred (\code{n}) } }
-#'
-#' @seealso \link{Perc}, \link{aniDom}, \link{Dominance}
+#'   animal (`animal_id`) \item No. of times the animal was displaced
+#'   (`displacee`) \item No. of times the animal was a displacer
+#'   (`displacer`) \item Proportion of wins (`p_win`) } \item
+#'   `interactions`: A data frame of interaction summaries, containing the
+#'   following columns: \itemize{ \item ID of the displacee (`displacee`)
+#'   \item ID of the displacer (`displacer`) \item No. of times this
+#'   interaction occurred (`n`) } }
 #'
 #' @examples
 #'
@@ -761,7 +808,7 @@ presence_single <- function(v1, bw = bw){
 #' d[["data"]][[2]]$displacements #or
 #' d$data[[2]]$displacements
 #'
-#' @import magrittr
+
 #' @export
 disp <- function(v, bw = 2, pass = TRUE){
 
@@ -788,19 +835,23 @@ disp <- function(v, bw = 2, pass = TRUE){
   diff_time <- difftime(v$start[-1], v$end[-nrow(v)], units = "sec") < bw
   diff_logger <- v$logger_id[-1] == v$logger_id[-nrow(v)]
 
-  d <- rbind(v[c(diff_animal & diff_time & diff_logger, FALSE), c("animal_id", "logger_id", "date", "start", "end")],
-             v[c(FALSE, diff_animal & diff_time & diff_logger), c("animal_id", "logger_id", "date", "start", "end")])
+  d <- rbind(v[c(diff_animal & diff_time & diff_logger, FALSE),
+               c("animal_id", "logger_id", "date", "start", "end")],
+             v[c(FALSE, diff_animal & diff_time & diff_logger),
+               c("animal_id", "logger_id", "date", "start", "end")])
 
   if(nrow(d) > 0) {
-    d <- d[order(d$start), ]
-    d$role <- c("displacee", "displacer")
-    d <- d[order(d$role, d$start), ]
+    d <- d %>%
+      dplyr::arrange(.data$start) %>%
+      dplyr::mutate(role = rep(c("displacee", "displacer"), dplyr::n()/2)) %>%
+      dplyr::arrange(.data$role, .data$start)
 
     d$left <- rep(v$end[c(diff_animal & diff_time & diff_logger, FALSE)], 2)
     d$arrived <- rep(v$start[c(FALSE, diff_animal & diff_time & diff_logger)], 2)
 
-    d <- dplyr::select(d, animal_id, date, left, arrived, logger_id, role) %>%
-      dplyr::arrange(left, logger_id, role)
+    d <- d %>%
+      dplyr::select("animal_id", "date", "left", "arrived", "logger_id", "role") %>%
+      dplyr::arrange(.data$left, .data$logger_id, .data$role)
 
     if(pass == TRUE) d <- merge_extra(d, extra)
 
@@ -830,34 +881,37 @@ disp <- function(v, bw = 2, pass = TRUE){
 
     t <- t[order(match(t$displacer, s$animal_id)),]  ##Sort according to the p_win value from s
 
-    return(list("displacements" = d, "summaries" = s, "interactions" = t))
+    d <- list("displacements" = d, "summaries" = s, "interactions" = t)
   } else {
     message("There are no displacement events with a bw = ", bw)
-    return(list("displacements" = data.frame(), "summaries" = data.frame(), "interactions" = data.frame()))
+    d <- list("displacements" = data.frame(),
+              "summaries" = data.frame(),
+              "interactions" = data.frame())
   }
+  d
 }
 
 
 #' Activity
 #'
-#' Calculate activity status (active vs. inactive) at a resolution of \code{res}
-#' from \code{\link{presence}} data.
+#' Calculate activity status (active vs. inactive) at a resolution of `res`
+#' from [presence()] data.
 #'
-#' A message will alert you to when the \code{res} is larger than the 50\% of
+#' A message will alert you to when the `res` is larger than the 50\% of
 #' the presence bout lengths. This may result in missed activity, and it may be
-#' better to choose a smaller \code{res}.
+#' better to choose a smaller `res`.
 #'
-#' The \code{missing} data frame should have columns \code{start} and \code{end}
+#' The `missing` data frame should have columns `start` and `end`
 #' corresponding to the start and end times of the missing data. Any activity between
 #' those start/end times will be scored as unknown, regardless of the
-#' \code{logger_id}. However, if \code{by_logger} is TRUE, \code{missing} may
-#' also include the column \code{logger_id}. In this case, only activity for the
+#' `logger_id`. However, if `by_logger` is TRUE, `missing` may
+#' also include the column `logger_id`. In this case, only activity for the
 #' logger with the missing start/end times will be scored as unknown. If
-#' \code{by_logger} is TRUE but \code{missing} does not contain the column
-#' \code{logger_id}, all activity between the start and end times will be scored
+#' `by_logger` is TRUE but `missing` does not contain the column
+#' `logger_id`, all activity between the start and end times will be scored
 #' as unknown, regardless of the logger. See examples.
 #'
-#' @param p Dataframe. A \code{\link{presence}} data frame (may contain multiple
+#' @param p Dataframe. A [presence()] data frame (may contain multiple
 #'   animal_ids).
 #' @param res Numeric. The resolution over which to calculate activity in
 #'   minutes.
@@ -872,7 +926,7 @@ disp <- function(v, bw = 2, pass = TRUE){
 #'   median sun rise/set across all loggers for each day.
 #' @param keep_all Logical. Keep all individuals, even ones with less than 24hrs of data.
 #' @param pass Logical. Pass 'extra' columns through the function and append them to the output.
-#' @param f Depreciated. Use \code{p}.
+#' @param f Depreciated. Use `p`.
 #'
 #' @examples
 #'
@@ -885,7 +939,6 @@ disp <- function(v, bw = 2, pass = TRUE){
 #' a <- activity(p, res = 1, by_logger = TRUE)
 #'}
 #'
-#' @import magrittr
 #' @export
 
 activity <- function(p, res = 15, by_logger = FALSE, missing = NULL, sun = TRUE, keep_all = FALSE, pass = TRUE, f){
@@ -959,7 +1012,7 @@ activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = 
 
   if(nrow(p1) == 0) {
     message(paste0(p1$animal_id[1], ": Skipping. Individual has no data"))
-    return(tibble::data_frame())
+    return(tibble::tibble())
   } else {
 
 
@@ -972,10 +1025,10 @@ activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = 
     # Calculate Activity only if > 24hrs of data
     if((max(p1$end) - min(p1$start)) < lubridate::dhours(24) & keep_all == FALSE) {
       message(paste0(p1$animal_id[1], ": Skipping. Individual has less than 24hrs of data"))
-      return(tibble::data_frame())
+      return(tibble::tibble())
     } else if (all(p1$length == 0))  {
       message(paste0(p1$animal_id[1], ": Skipping. All bouts are 0 min. Consider increasing 'bw' in presence()"))
-      return(tibble::data_frame())
+      return(tibble::tibble())
     } else {
       ## ACCOUNT FOR MISSING!!!
 
@@ -994,7 +1047,7 @@ activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = 
 
       # Prep activity data frame
       res <- res * 60
-      a <- tibble::data_frame(
+      a <- tibble::tibble(
         animal_id = p1$animal_id[1],
         time = seq(start, end, by = paste0(res, " sec")),
         activity_c = factor("inactive",
@@ -1006,7 +1059,7 @@ activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = 
       if(by_logger == FALSE){
         a$logger_id <- NA
       } else {
-        temp <- tibble::data_frame()
+        temp <- tibble::tibble()
         for(i in levels(loggers$logger_id)){
           temp <- rbind(temp, cbind(a, logger_id = i))
         }
@@ -1067,7 +1120,7 @@ activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = 
       # Select
       n <- c("animal_id", "date", "time", "activity", "activity_c", "logger_id", "rise", "set")
       n <- n[n %in% names(a)]
-      a <- dplyr::select_(a, .dots = n)
+      a <- dplyr::select(a, dplyr::all_of(n))
 
       return(a)
     }
@@ -1086,10 +1139,10 @@ activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = 
 #' plotting, omit the date part of the label to accurately portray time only.
 #'
 #' Resolution of the data is automatically detected as the same as that
-#' specified in \code{activity()}.
+#' specified in `activity()`.
 #'
 #'
-#' @param a Data frame. Data from output of \code{activity()}.
+#' @param a Data frame. Data from output of `activity()`.
 #' @param pass Logical. Pass 'extra' columns through the function and append them to the output.
 #'
 #' @export
@@ -1153,10 +1206,8 @@ daily_single <- function(a1, pass = TRUE){
   n <- c("animal_id", "time", "time_c", "p_active", "p_inactive", "p_unknown", "p_total", "logger_id", "rise", "set")
   n <- n[n %in% names(d)]
 
-  d <- dplyr::select_(d, .dots = n) %>%
+  dplyr::select(d, dplyr::all_of(n)) %>%
     dplyr::arrange(animal_id, time)
-
-  return(d)
 }
 
 #' Get sunrise/sunset times

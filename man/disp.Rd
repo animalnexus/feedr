@@ -19,22 +19,22 @@ them to the output.}
 }
 \value{
 A list with the following named items: \enumerate{ \item
-  \code{displacements}: A data frame of individual displacement events,
-  including the following columns: \itemize{ \item \code{logger_id}: ID of
-  the logger at which the event occurred \item ID of the animal being displaced
-  (\code{displacee}) \item ID of the animal doing the displacing
-  (\code{displacer}) \item Time of the departure of the displacee
-  (\code{left}) \item Time of the arrival of the displacer (\code{arrived}) }
+\code{displacements}: A data frame of individual displacement events,
+including the following columns: \itemize{ \item \code{logger_id}: ID of
+the logger at which the event occurred \item ID of the animal being displaced
+(\code{displacee}) \item ID of the animal doing the displacing
+(\code{displacer}) \item Time of the departure of the displacee
+(\code{left}) \item Time of the arrival of the displacer (\code{arrived}) }
 
-  \item \code{summaries}: A data frame of overall wins/lossess per
-  individual, containing the following columns: \itemize{ \item ID of the
-  animal (\code{animal_id}) \item No. of times the animal was displaced
-  (\code{displacee}) \item No. of times the animal was a displacer
-  (\code{displacer}) \item Proportion of wins (\code{p_win}) } \item
-  \code{interactions}: A data frame of interaction summaries, containing the
-  following columns: \itemize{ \item ID of the displacee (\code{displacee})
-  \item ID of the displacer (\code{displacer}) \item No. of times this
-  interaction occurred (\code{n}) } }
+\item \code{summaries}: A data frame of overall wins/lossess per
+individual, containing the following columns: \itemize{ \item ID of the
+animal (\code{animal_id}) \item No. of times the animal was displaced
+(\code{displacee}) \item No. of times the animal was a displacer
+(\code{displacer}) \item Proportion of wins (\code{p_win}) } \item
+\code{interactions}: A data frame of interaction summaries, containing the
+following columns: \itemize{ \item ID of the displacee (\code{displacee})
+\item ID of the displacer (\code{displacer}) \item No. of times this
+interaction occurred (\code{n}) } }
 }
 \description{
 For an entire \code{visits} data frame, identifies displacement events.
@@ -47,12 +47,12 @@ non-displacer and non-displacee, respectively.
 
 In some species displacements can be used to infer dominance. Displacements
 The interactions data frame returned by the \code{disp()} function can be
-passed directly to the \code{\link[Perc]{as.conflictmat}} function of the
-\link{Perc} package to be transformed into a conflict matrix, ready for
+passed directly to the \code{\link[Perc:as.conflictmat]{Perc::as.conflictmat()}} function of the
+Perc package to be transformed into a conflict matrix, ready for
 analysis of dominance using percolation and conductance. Finally, the
 displacements data frame can also be converted using the
-\code{\link{convert_anidom}} function to a data frame for use by the
-\link{aniDom} package's \link[aniDom]{elo_scores} function.
+\code{\link[=convert_anidom]{convert_anidom()}} function to a data frame for use by the
+aniDom package's \link[aniDom:elo_scores]{elo_scores} function.
 }
 \examples{
 
@@ -93,7 +93,4 @@ d$data[d$experiment == "exp3"][[1]]$displacements #or
 d[["data"]][[2]]$displacements #or
 d$data[[2]]$displacements
 
-}
-\seealso{
-\link{Perc}, \link{aniDom}, \link{Dominance}
 }
