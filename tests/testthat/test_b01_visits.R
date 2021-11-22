@@ -16,7 +16,7 @@ test_that("visits() returns appropriate, non-empty dataframe", {
     expect_true(all(!is.na(v$end)))
     expect_true(all(!is.na(v$date)))
     expect_true(all(as.numeric(v$end - v$start) >= 0))
-    expect_equal(v$date, as.Date(v$start, tz = lubridate::tz(v$start)))
+    expect_equal(v$date, lubridate::as_date(v$start))
   }
 
   for(r in list(finches, finches_lg, chickadees)) {
