@@ -6,13 +6,12 @@ title: "Visualizing Data"
 source("setup.R")
 ```
 
-Here we will go over visualizing your data with maps. `feedr` includes two wrapper functions that can be used to visualize your data on maps. These two functions, `map_leaflet` and `map_ggmap` are really just convenience functions to do a lot of the grunt work. If you want to achieve a more fine tuned map, I suggest you check out the packages `leaflet` and `ggmap`.
+Here we will go over visualizing your data with maps. `feedr` includesa wrapper function that can be used to visualize your data on maps. This function, `map_leaflet` is really just a convenience function to do a lot of the grunt work. If you want to achieve a more fine tuned map, I suggest you check out the packages `leaflet` or `mapview`.
 
-`map_leaflet` and `map_ggmap` take summarized presence and movement data and turn it into circles and paths around/between loggers representing time spent at different loggers and the amount of movement between particular logger paths. Because different projects may need different summaries (totals vs. means, corrected for number of individuals, uncorrected, etc.) we will first go over how to create the summary data and then pass this to the functions for plotting. This gives us more flexibility, but does mean that we have to do some work before we can visualize the data.
+`map_leaflet` takes summarized presence and movement data and turns it into circles and paths around/between loggers representing time spent at different loggers and the amount of movement between particular logger paths. Because different projects may need different summaries (totals vs. means, corrected for number of individuals, uncorrected, etc.) we will first go over how to create the summary data and then pass this to the functions for plotting. This gives us more flexibility, but does mean that we have to do some work before we can visualize the data.
 
+The companion package, `feedrUI`, also includes a stand-alone shiny app (launched with `ui_animate()`) that can be used to create simple animations of your data, this is a simple process as it does not require summarized data, but is also less flexible (see [animations](#animations) below).
 
-> **NOTE:** As of Nov 10th, 2021, `map_ggmap()` is no longer available. 
-> I'm hoping to get a replacement.
 
 ## Built-in Summaries
 
@@ -125,6 +124,31 @@ To create maps you need to define a summary OR create custom summaries with the 
 - movement summary with a columns: `logger_id`, `move_path`, `path_use`, `lat`, and `lon`
 
 If you want to look at individual data, add `animal_id` to the groupings.
+
+## Animations
+
+To look at animations of your data overtime, you can use the function `ui_animate()` to launch the animation shiny app included in the `feedr` package:
+
+```{r, eval = FALSE}
+library(feedrUI)
+
+ui_animate(v)
+```
+
+![](ui_animate.png)
+
+Here you can choose 
+
+- Whether animations should show cumulative or instantaneous movements/path use
+- Which individual (or all individuals) to animate over
+- What kind of summary to show (total sum, or, if average sum, if all individuals are chosen)
+- What time range
+- The temporal resolution of each animated frame (i.e. the time frame that data will be summarized over)
+- The animation speed (how fast will frames advance?)
+- Whether to include a shadowed overlay showing sunrise and sunset
+
+The figure along the bottom shows the number of movements and/or bouts of presence over time. This can help you chose which time frames to include.
+
 
 --------------------------
 Back to [top](#top)  

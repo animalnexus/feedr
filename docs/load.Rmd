@@ -201,6 +201,19 @@ head(r)
 This data is now ready for [housekeeping](housekeeping.html) or go straight to [transformations](transformations.html)!
 
 
+## `ui_import()`
+
+**`ui_import()`** is a helper function that launches a stand-alone shiny app to give you a user-interface for importing data.
+
+```{r, eval = FALSE}
+library(feedrUI)
+
+my_imported_data <- ui_import()
+```
+
+![](ui_import.png)
+
+
 --------------------------
 Back to [top](#top)  
 Go back to [home](index.html) | Continue with [housekeeping](housekeeping.html)

@@ -13,8 +13,8 @@ rmarkdown::render_site("./docs/") -->
 
 This is an overview of how to use functions in the `feedr` package to transform and visual your RFID data. Note that while we've tried to explain the code in detail, if you are new to R, you may benefit from an introduction to coding in R before tackling your data with the `feedr` package
 
-> **NOTE**: As of Nov 10th, 2021, feedr shiny UI functions have been moved to the
-> feedrUI package. This documentation now only reflects the basic feedr functions
+> **NOTE**: As of Nov 10th, 2021, feedr` shiny UI functions have been moved to the
+> `feedrUI` package.
 >
 > I'm in the process of updating this documentation (slowly!) so parts may seem
 > out of date. Let me know (open an [issue](https://github.com/animalnexus/feedr/issues))
@@ -45,7 +45,7 @@ graph [overlap = true, compound = true]
 node[shape = Mrecord]
 edge[arrowhead = vee]
 
-load[label = '{Loading/Importing Data | {load_raw()}}']
+load[label = '{Loading/Importing Data | {ui_import() | load_raw_all() | load_web()}}']
 
 hk[label = '{Housekeeping (Optional) | {check_ids() | check_problems()}}', width = 3]
 
@@ -66,14 +66,11 @@ presence -> act
 disp -> dom
 act -> daily
 
-map[label = '{Visualizations | {map_leaflet()}}']
-
+map[label = '{Visualizations | {ui_animate() | map_leaflet()}}']
 {presence; move} -> map
-
 #A -> e [ltail = cluster0, lhead = cluster1]
 #f -> 'visits()' [ltail = cluster1, lhead = cluster2]
 #'move()' -> 'map_leaflet()' [ltail = cluster2, lhead = cluster3]
-
 }
 ", width = 500)
 ```
@@ -91,6 +88,7 @@ head(chickadees)
 ### [Loading/Importing Data](load.html)
 <a id = "load"></a>
 
+- __ui_import():__ (`feedrUI` package) Launch an interactive user-interface to import/load local data files 
 - __load_raw():__ Load in a single file of raw logger data
 - __load_raw_all():__ Load in and combine multiple files of raw logger data
 
@@ -103,6 +101,7 @@ head(chickadees)
 ### [Transformations](transformations.html)
 <a id = "trans"></a>
 
+- __ui_trans():__ (`feedrUI` package) Launch an interactive user-interface to transform data
 - __visits():__ Transform raw data into visits data
 - __move():__ Transform visits data into movements between loggers
 - __presence():__ Transform visits data into presence around loggers
@@ -114,6 +113,7 @@ head(chickadees)
 ## [Visualizations](maps.html)
 <a id = "vis"></a>
 
+- __ui_animate():__ (`feedrUI` package) Launch an interactive user-interface to create animations
 - __map_leaflet():__ Visualize movements and/or presence with leaflet (interactive)
 
 -----------------------------------------
