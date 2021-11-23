@@ -103,9 +103,6 @@ man <- get_manual() %>%
 man$value[man$f == "visits" & man$arg == "allow_imp"] <- TRUE
 
 ############################################################################
-url <- "http://gaia.tru.ca/birdMOVES/rscripts/anquery.csv"
-url_count <- "http://gaia.tru.ca/birdMOVES/rscripts/anInit.csv"
-url_loggers <- "http://gaia.tru.ca/birdMOVES/rscripts/anloggers.csv"
 
 # Get species list
 species_list <- RCurl::getForm(url_count, key = feedr:::check_db()) %>%
@@ -115,5 +112,5 @@ species_list <- RCurl::getForm(url_count, key = feedr:::check_db()) %>%
   unlist(., use.names = FALSE)
 
 if(nrow(man) > 0) {
-  devtools::use_data(man, url, url_count, url_loggers, species_list, internal = TRUE, overwrite = TRUE)
+  usethis::use_data(man, species_list, internal = TRUE, overwrite = TRUE)
 } else stop("Manual entries didn't compile")
