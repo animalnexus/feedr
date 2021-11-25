@@ -173,7 +173,7 @@ load_raw <- function(r_file,
     # Convert times
     r$time <- lubridate::parse_date_time(paste(r$date, r$time), orders = time_format, tz = tz)
     if(tz_disp != tz) r$time <- lubridate::with_tz(r$time, tz_disp)
-    r$date <- as.Date(r$time, tz = lubridate::tz(r$time))
+    r$date <- lubridate::as_date(r$time)
 
     # Reorder columns
     cols <- names(r)[names(r) %in% c("animal_id", "date", "time", "logger_id", "lat", "lon")]
@@ -378,7 +378,7 @@ load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE, tim
       r$time <- lubridate::parse_date_time(r$time, orders = time_format, tz = tz, truncated = 1)
     }
     if(tz != tz_disp) r$time <- lubridate::with_tz(r$time, tz_disp)
-    r$date <- as.Date(r$time, tz = lubridate::tz(r$time))
+    r$date <- lubridate::as_date(r$time)
   }
 
   # Make sure all factors are factors:

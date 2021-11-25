@@ -74,7 +74,7 @@ merge_extra <- function(d, extra, only = NULL) {
 mean_clock <- function(time, origin = FALSE) {
   tz <- lubridate::tz(time[1])
   mean_time <- format(mean(as.POSIXct(paste("1970-01-01", format(time, "%H:%M:%S")))), "%H:%M:%S")
-  mean_date <- ifelse(origin, "1970-01-01", as.character(as.Date(mean(time))))
+  mean_date <- ifelse(origin, "1970-01-01", as.character(lubridate::as_date(mean(time))))
   return(as.POSIXct(paste(mean_date, mean_time), tz = tz))
 }
 

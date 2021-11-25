@@ -14,6 +14,7 @@ Note that for several examples of summarizing, we'll be using functions from the
 
 ```{r}
 library(tidyverse)
+library(lubridate)
 ```
 
 
@@ -632,8 +633,8 @@ library(lubridate)
 
 # Filter by date and animal ID, create a "day" column
 sept <- a %>%
-  filter(date >= as.Date("2015-09-21"),
-         date < as.Date("2015-09-28"),
+  filter(date >= as_date("2015-09-21"),
+         date < as_date("2015-09-28"),
          animal_id == "06200004F8")
 
 # Use facet_wrap to look at individual days, use drop = TRUE to omit days without activity

@@ -16,7 +16,7 @@ test_that("load_format() loads and formats data correctly", {
   expect_equal(r$animal_id[1], chickadees$animal_id[1])
   expect_equal(r$logger_id[1], chickadees$logger_id[1])
   expect_equal(r$time[1], as.POSIXct("2016-01-11 10:48:49", tz = current_tz_nodst))
-  expect_equal(r$date[1], as.Date("2016-01-11"))
+  expect_equal(r$date[1], lubridate::as_date("2016-01-11"))
   expect_equal(substr(r$time, 1, 10), as.character(r$date))
 
   # Current tz

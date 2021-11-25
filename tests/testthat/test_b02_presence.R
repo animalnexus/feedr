@@ -15,7 +15,7 @@ test_that("presence() handles single animal", {
   expect_s3_class(p$date, "Date")
   expect_s3_class(p$start, "POSIXct")
 
-  expect_equal(p$date, as.Date(p$start, tz = lubridate::tz(p$start)))
+  expect_equal(p$date, lubridate::as_date(p$start, tz = lubridate::tz(p$start)))
 
   ## Not impossible nor missing
   expect_equal(sum(is.na(p)), 0)

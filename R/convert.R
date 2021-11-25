@@ -56,7 +56,7 @@ convert_asnipe <- function(r, fun = "gmmevents", by_day = TRUE,
   check_name(r, n = c('animal_id', 'logger_id', 'time'))
   check_time(r, n = "time", internal = FALSE)
 
-  r <- dplyr::mutate(r, date = as.Date(.data$time))
+  r <- dplyr::mutate(r, date = lubridate::as_date(.data$time))
 
   if(!(time_scale %in% c("auto", "secs", "mins", "hours", "days", "weeks"))) {
     stop("time_scale should be one of: 'auto', 'secs', 'mins', 'hours', ",

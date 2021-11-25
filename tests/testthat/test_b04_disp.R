@@ -45,9 +45,9 @@ test_that("disp() returns correct data", {
   expect_equal(unique(d1$animal_id[1]), factor("0620000514", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
   expect_equal(d1$logger_id[1], factor(c("2200"), levels = c("2100", "2200", "2400", "2700")))
   expect_equal(d1$left[1], as.POSIXct(c("2016-01-28 12:34:28"), tz = "Etc/GMT+8"))
-  expect_equal(d1$date[1], as.Date("2016-01-28"))
+  expect_equal(d1$date[1], lubridate::as_date("2016-01-28"))
 
-  expect_equal(d1$date, as.Date(d1$left, tz = lubridate::tz(d1$left)))
+  expect_equal(d1$date, lubridate::as_date(d1$left, tz = lubridate::tz(d1$left)))
 
   expect_equal(d1$animal_n[1], 5)
   expect_equal(d1$logger_n[1], 4)

@@ -32,8 +32,8 @@ test_that("move() returns expected data", {
   expect_equal(m$logger_id[1:2], factor(c("2400", "2100"), levels = c("2100", "2200", "2400", "2700")))
   expect_equal(m$time[1:2], as.POSIXct(c("2016-01-29 08:35:26", "2016-01-29 11:21:23"),
                                        tz = "Etc/GMT+8"))
-  expect_equal(m$date[2], as.Date("2016-01-29"))
-  expect_equal(m$date, as.Date(m$time, tz = lubridate::tz(m$time)))
+  expect_equal(m$date[2], lubridate::as_date("2016-01-29"))
+  expect_equal(m$date, lubridate::as_date(m$time, tz = lubridate::tz(m$time)))
   expect_equal(m$animal_n[1], 5)
   expect_equal(m$logger_n[1], 4)
   expect_equal(round(m$lon[2], 4), -120.3624)

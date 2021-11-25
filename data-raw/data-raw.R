@@ -34,8 +34,8 @@ chickadees <- load_raw_all(system.file("extdata", "raw", package = "feedr"),
                            extra_name = "experiment",
                           ) %>%
   mutate(logger_id = paste0(experiment, "-", logger_id)) %>%  ##Make logger id unique
-  filter((date > as.Date("2016-01-10") & date <= as.Date("2016-01-25")) |
-         (date > as.Date("2016-01-31") & date <= as.Date("2016-02-15"))) %>%
+  filter((date > lubridate::as_date("2016-01-10") & date <= lubridate::as_date("2016-01-25")) |
+         (date > lubridate::as_date("2016-01-31") & date <= lubridate::as_date("2016-02-15"))) %>%
   left_join(locs[, c("logger_id", "lat", "lon")], by = "logger_id") %>%
   check_ids(ids = data.frame(animal_id = "0000000000", species = "error")) %>%
   load_format() %>%

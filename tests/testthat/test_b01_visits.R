@@ -24,7 +24,7 @@ test_that("visits() returns appropriate, non-empty dataframe", {
     expect_true(all(!is.na(v$start)))
     expect_true(all(!is.na(v$end)))
     expect_true(all(!is.na(v$date)))
-    expect_equal(v$date, as.Date(v$start, tz = lubridate::tz(v$start)))
+    expect_equal(v$date, lubridate::as_date(v$start, tz = lubridate::tz(v$start)))
     expect_true(all(as.numeric(v$end - v$start) >= 0))
   }
 
@@ -111,7 +111,7 @@ test_that("visits() returns correct data", {
   expect_equal(v$logger_id[2], factor("2100", levels = c("2100", "2200", "2400", "2700")))
   expect_equal(v$start[2], as.POSIXct("2016-01-29 11:21:23", tz = "Etc/GMT+8"))
   expect_equal(v$end[2], as.POSIXct("2016-01-29 11:21:26", tz = "Etc/GMT+8"))
-  expect_equal(v$date[2], as.Date("2016-01-29"))
+  expect_equal(v$date[2], lubridate::as_date("2016-01-29"))
   expect_equal(v$animal_n[2], 5)
   expect_equal(v$logger_n[2], 4)
   expect_equal(round(v$lon[2], 4), -120.3624)

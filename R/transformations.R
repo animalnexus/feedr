@@ -228,7 +228,7 @@ inout_single <- function(r1, dir_in, all = FALSE){
   } else if (all == TRUE) {
     # Create the movement data frame for animals that didn't move between loggers
     e1 <- tibble::tibble(animal_id = r1$animal_id[1],
-                         date = as.Date(NA),
+                         date = lubridate::as_date(NA),
                          time = as.POSIXct(NA),
                          logger_id = as.character(NA),
                          direction = as.character(NA),
@@ -321,7 +321,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE,
 
   ## Make factors and get date
   # r <- dplyr::mutate(r,
-  #                    #date = as.Date(time),
+  #                    #date = lubridate::as_date(time),
   #                    logger_id = factor(logger_id),
   #                    animal_id = factor(animal_id))
 
@@ -433,7 +433,7 @@ visits <- function(r, bw = 3, allow_imp = FALSE, bw_imp = 2, na_rm = FALSE,
     dplyr::ungroup() %>%
     dplyr::mutate(animal_n = length(unique(.data$animal_id)),# Get sample sizes
                   logger_n = length(unique(.data$logger_id)),
-                  date = as.Date(.data$start, tz = lubridate::tz(.data$start)))
+                  date = lubridate::as_date(.data$start))
 
   # Set timezone attributes
   attr(v$start, "tzone") <- tz
@@ -586,7 +586,7 @@ move_single <- function(v1, move_dir, move_path, all = FALSE){
   } else if (all == TRUE) {
     # Create the movement data frame for animals that didn't move between loggers
     m <- tibble::tibble(animal_id = v1$animal_id[1],
-                        date = as.Date(NA),
+                        date = lubridate::as_date(NA),
                         time = as.POSIXct(NA),
                         logger_id = as.character(NA),
                         direction = as.character(NA),
@@ -1053,7 +1053,7 @@ activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = 
         activity_c = factor("inactive",
                             levels = c("active", "inactive", "unknown")))
 
-      a$date <- as.Date(lubridate::floor_date(a$time, unit = "day"))
+      a$date <- lubridate::as_date(lubridate::floor_date(a$time, unit = "day"))
 
       # Get by individual only, or by individual for each logger
       if(by_logger == FALSE){
@@ -1099,7 +1099,7 @@ activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = 
         } else {
 
           s <- expand.grid(logger_id = loggers$logger_id,
-                           date = as.Date(seq(start, end, by = "1 day"))) %>%
+                           date = lubridate::as_date(seq(start, end, by = "1 day"))) %>%
             dplyr::left_join(unique(loggers[, c("logger_id", "lon", "lat")]), by = "logger_id")
 
           s <- dplyr::bind_cols(s, sun(s[, c("lon", "lat")], s$date, tz = tz))
