@@ -1,4 +1,3 @@
-context("Check map utility functions")
 
 test_that("get_locs handles custom data types", {
   p <- presence(visits(finches)) %>%

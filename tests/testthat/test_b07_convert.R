@@ -272,7 +272,7 @@ test_that("convert_perc converts as expected", {
   expect_named(a, c("Initiator1", "Recipient1", "Freq"))
   expect_type(a$Initiator1, "character")
   expect_type(a$Recipient1, "character")
-  expect_type(a$Freq, "double")
+  expect_type(a$Freq, "integer")
   expect_equivalent(a[1,], data.frame(Initiator1 = "0620000500",
                                       Recipient1 = "06200003AA",
                                       Freq = 1))
