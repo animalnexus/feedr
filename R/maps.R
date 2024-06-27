@@ -112,9 +112,9 @@ map_leaflet_base <- function(locs, marker = "logger_id",
     options = leaflet::leafletOptions(minZoom = minZoom,
                                       maxZoom = maxZoom)) %>%
     leaflet::addTiles(group = "Open Street Map") %>%
-    leaflet::addProviderTiles("Stamen.Toner", group = "Black and White") %>%
-    leaflet::addProviderTiles("Esri.WorldImagery", group = "Satellite") %>%
-    leaflet::addProviderTiles("Esri.WorldTopoMap", group = "Terrain") %>%
+    leaflet::addProviderTiles(providers$Stadia.StamenToner, group = "Black and White") %>%
+    leaflet::addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
+    leaflet::addProviderTiles(providers$Esri.WorldTopoMap, group = "Terrain") %>%
     leaflet::addCircleMarkers(~lon, ~lat,
                               popup  = htmltools::htmlEscape(
                                 paste("Logger:",
@@ -467,6 +467,7 @@ map_ggmap <- function() {
   .Defunct()
 }
 
+
 map.ggmap <- function() {
- .Defunct()
+  .Defunct()
 }
