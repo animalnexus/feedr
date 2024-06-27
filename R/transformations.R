@@ -1100,11 +1100,13 @@ activity_single <- function(p1, loggers, res = 15, by_logger = FALSE, missing = 
           message(paste0(p1$animal_id[1], ": Skipping sunrise/sunset, no lat/lon information"))
         } else {
 
-          s <- expand.grid(logger_id = loggers$logger_id,
-                           date = lubridate::as_date(seq(start, end, by = "1 day"))) %>%
-            dplyr::left_join(unique(loggers[, c("logger_id", "lon", "lat")]), by = "logger_id")
-
-          s <- dplyr::bind_cols(s, sun(s[, c("lon", "lat")], s$date, tz = tz))
+          s <- tidyr::expand_grid(
+            date = lubridate::as_date(seq(start, end, by = "1 day")),
+            dplyr::distinct(loggers[, c("lon", "lat")])) |>
+            suncalc::getSunlightTimes(data = _, keep = c("sunrise", "sunset")) |>
+            dplyr::rename("rise" = "sunrise", "set" = "sunset") |>
+            dplyr::left_join(x = loggers, y = _, by = c("lat", "lon"),
+                             relationship = "many-to-many")
 
           if(by_logger == TRUE) {
             a <- dplyr::left_join(a, s[, c("logger_id", "date", "rise", "set")],
@@ -1210,24 +1212,4 @@ daily_single <- function(a1, pass = TRUE){
 
   dplyr::select(d, dplyr::all_of(n)) %>%
     dplyr::arrange(animal_id, time)
-}
-
-#' Get sunrise/sunset times
-#'
-#' Calculate times of sunrise and sunset depending on the location and the date.
-#'
-#' @param loc Vector/Data frame. Longitude and Latitude coordinates for location
-#'   of sun rise/set
-#' @param date Vector. Date(s) to cacluate sun rise/set for.
-#' @param tz Timezone of the dates.
-#'
-#' @export
-sun <- function(loc, date, tz) {
-  if(class(loc) == "numeric") loc <- matrix(loc, nrow = 1)
-  if(class(loc) %in% c("data.frame", "matrix")) loc <- as.matrix(loc)
-  date <- as.POSIXct(as.character(date), tz = tz)
-  s <- data.frame(rise = maptools::sunriset(loc, date, direction = "sunrise", POSIXct.out = TRUE)$time,
-                  set = maptools::sunriset(loc, date, direction = "sunset", POSIXct.out = TRUE)$time)
-
-  return(s)
 }
