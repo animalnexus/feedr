@@ -2,7 +2,7 @@
 % Please edit documentation in R/convert.R
 \name{convert_dominance}
 \alias{convert_dominance}
-\title{Convert displacements for use by functions from the Dominance package}
+\title{DEFUNCT - Convert displacements for use by functions from the Dominance package}
 \usage{
 convert_dominance(d)
 }
@@ -25,32 +25,13 @@ vector indicating that the action type "displacement" should be included in
 the calculation. See examples for specific application.
 }
 \description{
+\strong{The Dominance package is no longer available therefore this function
+is defunct}
+}
+\details{
 Converts displacements RFID data into a format for easy use by either the
-\code{\link[Dominance:ADI]{Dominance::ADI()}} or the \code{\link[Dominance:Sociogram]{Dominance::Sociogram()}}
+\code{Dominance::ADI()} or the \code{Dominance::Sociogram()}
 functions included in the Dominance package for calculating average
 dominance indices and drawing sociograms. Only includes individuals that
 participated in at least one interaction.
-}
-\examples{
-# Calculate displacements
-d <- disp(visits(finches_lg))
-
-# Format for use by Dominance package
-i <- convert_dominance(d)
-i <- convert_dominance(d$displacements) # Equivalent
-
-\dontrun{
-# Use Dominance package:
-library(Dominance)
-
-# Calculate the Average Dominance Index
-ADI(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bytes = i$bytes)
-
-# Construct social network graphs
-Sociogram(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bits = i$bytes)
-}
-
-}
-\seealso{
-Dominance package and it's functions: \link[Dominance:ADI]{Dominance::ADI} and \link[Dominance:Sociogram]{Dominance::Sociogram}. \url{https://cran.r-project.org/package=Dominance}
 }
