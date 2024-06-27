@@ -841,6 +841,7 @@ disp <- function(v, bw = 2, pass = TRUE){
                c("animal_id", "logger_id", "date", "start", "end")])
 
   if(nrow(d) > 0) {
+
     d <- d %>%
       dplyr::arrange(.data$start) %>%
       dplyr::mutate(role = rep(c("displacee", "displacer"), dplyr::n()/2)) %>%
@@ -859,6 +860,7 @@ disp <- function(v, bw = 2, pass = TRUE){
     s <- d %>%
       dplyr::group_by(role, animal_id) %>%
       dplyr::summarize(n = length(animal_id)) %>%
+      dplyr::ungroup() %>%
       tidyr::complete(animal_id, role, fill = list("n" = 0)) %>%
       tidyr::spread(role, n) %>%
       dplyr::mutate(p_win = displacer / (displacee + displacer)) %>%
