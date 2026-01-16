@@ -1,0 +1,22 @@
+citHeader("To cite feedr in publications please use:")
+
+
+bibentry(
+  bibtype  = "Article",
+  title    = "feedr and animalnexus.ca: A paired R package and user-friendly Web application for transforming and visualizing animal movement data from static stations",
+  author   = c(person(c("Stefanie", "E"), "LaZerte"),
+               person(c("Matthew", "W"), "Reudink"),
+               person(c("Ken", "A"), "Otter"),
+               person("Jackson", "Kusack"),
+               person(c("Jacob", "M"), "Bailey"),
+               person("Austin", "Woolverton"),
+               person("Mark", "Paetkau"),
+               person("Adriaan", "de Jong"),
+               person(c("David", "J"), "Hill")),
+  journal  = "Ecology and Evolution",
+  year     = 2017,
+  volume   = 7,
+  number   = 19,
+  pages    = "7884-7896",
+  doi      = "https://doi.org/10.1002/ece3.3240"
+)

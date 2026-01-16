@@ -17,3 +17,14 @@ In-depth turorials available online:
 \references{
 animalnexus \url{http://animalnexus.ca}.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/animalnexus/feedr}
+}
+
+}
+\author{
+\strong{Maintainer}: Steffi LaZerte \email{steffi@steffi.ca}
+
+}

@@ -6,3 +6,4 @@
 ^appveyor\.yml$
 ^.*.rds$
 ^\.github$
+^codecov\.yml$

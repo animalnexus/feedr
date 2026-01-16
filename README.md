@@ -1,5 +1,6 @@
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/animalnexus/feedr/workflows/R-CMD-check/badge.svg)](https://github.com/animalnexus/feedr/actions)
+[![R-CMD-check](https://github.com/animalnexus/feedr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/animalnexus/feedr/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/animalnexus/feedr/graph/badge.svg)](https://app.codecov.io/gh/animalnexus/feedr)
 <!-- badges: end -->
   
 # feedr
@@ -10,13 +11,12 @@
 
 To ensure the smoothest possible installation, it is recommended that you start a new R session before installing. 
 
-`feedr` is available from GitHub and can be installed directly with the package 'remotes'. 
+`feedr` is available from GitHub and can be installed directly with the package 'pak'. 
 
 ```r
-install.packages("remotes") # if not already installed
-remotes::install_github("animalnexus/feedr")
+install.packages("pak") # if not already installed
+pak::pkg_install("animalnexus/feedr")
 ```
-
 
 ## Usage
 We have an extensive tutorial hosted on our github pages: <https://animalnexus.github.io/feedr/>
