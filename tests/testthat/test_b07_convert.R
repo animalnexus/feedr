@@ -9,17 +9,25 @@ test_that("convert_asnipe converts gmmevents as expected", {
   expect_named(a, c("time", "identity", "location"))
   expect_type(a$time, "double")
 
-  expect_equal(a[1,],
-               data.frame(time = 0,
-                          identity = factor("0620000514", levels = ids),
-                          location = factor("2200_2016-01-28", levels = locs)),
-               ignore_attr = TRUE)
+  expect_equal(
+    a[1, ],
+    data.frame(
+      time = 0,
+      identity = factor("0620000514", levels = ids),
+      location = factor("2200_2016-01-28", levels = locs)
+    ),
+    ignore_attr = TRUE
+  )
 
-  expect_equal(a[nrow(a),],
-               data.frame(time = 97247,
-                          identity = factor("041868D396", levels = ids),
-                          location = factor("2100_2016-01-29", levels = locs)),
-               ignore_attr = TRUE)
+  expect_equal(
+    a[nrow(a), ],
+    data.frame(
+      time = 97247,
+      identity = factor("041868D396", levels = ids),
+      location = factor("2100_2016-01-29", levels = locs)
+    ),
+    ignore_attr = TRUE
+  )
 
   expect_silent(a <- convert_asnipe(finches, by_day = FALSE))
   expect_s3_class(a, "data.frame")
@@ -27,17 +35,25 @@ test_that("convert_asnipe converts gmmevents as expected", {
   expect_named(a, c("time", "identity", "location"))
   expect_type(a$time, "double")
 
-  expect_equal(a[1,],
-               data.frame(time = 0,
-                          identity = factor("0620000514", levels = ids),
-                          location = factor("2200", levels = loggers)),
-               ignore_attr = TRUE)
+  expect_equal(
+    a[1, ],
+    data.frame(
+      time = 0,
+      identity = factor("0620000514", levels = ids),
+      location = factor("2200", levels = loggers)
+    ),
+    ignore_attr = TRUE
+  )
 
-  expect_equal(a[nrow(a),],
-               data.frame(time = 97247,
-                          identity = factor("041868D396", levels = ids),
-                          location = factor("2100", levels = loggers)),
-               ignore_attr = TRUE)
+  expect_equal(
+    a[nrow(a), ],
+    data.frame(
+      time = 97247,
+      identity = factor("041868D396", levels = ids),
+      location = factor("2100", levels = loggers)
+    ),
+    ignore_attr = TRUE
+  )
 
   expect_silent(a <- convert_asnipe(finches, time_scale = "hours"))
   expect_s3_class(a, "data.frame")
@@ -45,51 +61,71 @@ test_that("convert_asnipe converts gmmevents as expected", {
   expect_named(a, c("time", "identity", "location"))
   expect_type(a$time, "double")
 
-  expect_equal(a[1,],
-               data.frame(time = 0,
-                          identity = factor("0620000514", levels = ids),
-                          location = factor("2200_2016-01-28", levels = locs)),
-               ignore_attr = TRUE)
+  expect_equal(
+    a[1, ],
+    data.frame(
+      time = 0,
+      identity = factor("0620000514", levels = ids),
+      location = factor("2200_2016-01-28", levels = locs)
+    ),
+    ignore_attr = TRUE
+  )
 
-  expect_equal(a[nrow(a),],
-               data.frame(time = 97247/60/60,
-                          identity = factor("041868D396", levels = ids),
-                          location = factor("2100_2016-01-29", levels = locs)),
-               ignore_attr = TRUE)
+  expect_equal(
+    a[nrow(a), ],
+    data.frame(
+      time = 97247 / 60 / 60,
+      identity = factor("041868D396", levels = ids),
+      location = factor("2100_2016-01-29", levels = locs)
+    ),
+    ignore_attr = TRUE
+  )
 })
 
 test_that("convert_asnipe converts get_associations_points_tw as expected", {
-
-  expect_silent(a <- convert_asnipe(finches, fun = "get_associations_points_tw"))
+  expect_silent(
+    a <- convert_asnipe(finches, fun = "get_associations_points_tw")
+  )
   expect_s3_class(a, "data.frame")
   expect_named(a, c("Date", "Time", "ID", "Location"))
   expect_type(a$Time, "double")
   expect_type(a$Date, "double")
 
-  expect_equal(a[1,],
-               data.frame(Date = 1,
-                          Time = 0,
-                          ID = factor("0620000514", levels = ids),
-                          Location = factor("2200", levels = loggers)),
-               ignore_attr = TRUE)
+  expect_equal(
+    a[1, ],
+    data.frame(
+      Date = 1,
+      Time = 0,
+      ID = factor("0620000514", levels = ids),
+      Location = factor("2200", levels = loggers)
+    ),
+    ignore_attr = TRUE
+  )
 
-  expect_equal(a[nrow(a),],
-               data.frame(Date = 2,
-                          Time = 97247,
-                          ID = factor("041868D396", levels = ids),
-                          Location = factor("2100", levels = loggers)),
-               ignore_attr = TRUE)
-
+  expect_equal(
+    a[nrow(a), ],
+    data.frame(
+      Date = 2,
+      Time = 97247,
+      ID = factor("041868D396", levels = ids),
+      Location = factor("2100", levels = loggers)
+    ),
+    ignore_attr = TRUE
+  )
 })
 
 test_that("convert_asnipe data runs in asnipe gmmevents function", {
   ## gmmevents
   set.seed(201)
-  a <- convert_asnipe(finches)[1:100,]
+  a <- convert_asnipe(finches)[1:100, ]
 
-  temp <- capture.output(b <- asnipe::gmmevents(time = a$time,
-                                                identity = a$identity,
-                                                location = a$location)) %>%
+  temp <- capture.output(
+    b <- asnipe::gmmevents(
+      time = a$time,
+      identity = a$identity,
+      location = a$location
+    )
+  ) %>%
     suppressWarnings() %>%
     expect_silent()
 
@@ -100,10 +136,17 @@ test_that("convert_asnipe data runs in asnipe gmmevents function", {
   expect_s3_class(b$metadata, "data.frame")
   expect_true("matrix" %in% class(b$B))
 
-  a <- convert_asnipe(chickadees)[1:100,]
-  expect_error(suppressWarnings(temp <- capture.output(b <- asnipe::gmmevents(time = a$time,
-                                                                              identity = a$identity,
-                                                                              location = a$location)), NA))
+  a <- convert_asnipe(chickadees)[1:100, ]
+  expect_error(suppressWarnings(
+    temp <- capture.output(
+      b <- asnipe::gmmevents(
+        time = a$time,
+        identity = a$identity,
+        location = a$location
+      )
+    ),
+    NA
+  ))
   expect_type(b, "list")
   expect_length(b, 3)
   expect_named(b, c("gbi", "metadata", "B"))
@@ -113,7 +156,7 @@ test_that("convert_asnipe data runs in asnipe gmmevents function", {
 })
 
 test_that("convert_asnipe data runs in asnipe get_associations_points_tw function", {
-  a <- convert_asnipe(finches, fun = "get_associations_points_tw")[1:100,]
+  a <- convert_asnipe(finches, fun = "get_associations_points_tw")[1:100, ]
   expect_silent(b <- asnipe::get_associations_points_tw(a))
 
   expect_type(b, "list")
@@ -124,7 +167,7 @@ test_that("convert_asnipe data runs in asnipe get_associations_points_tw functio
   expect_type(b[[3]], "double")
   expect_s3_class(b[[4]], "factor")
 
-  a <- convert_asnipe(chickadees, fun = "get_associations_points_tw")[1:100,]
+  a <- convert_asnipe(chickadees, fun = "get_associations_points_tw")[1:100, ]
   expect_silent(b <- asnipe::get_associations_points_tw(a))
 
   expect_type(b, "list")
@@ -143,34 +186,55 @@ test_that("convert_anidom converts as expected", {
   expect_silent(a2 <- convert_anidom(d))
   expect_equivalent(a, a2)
   expect_s3_class(a, "data.frame")
-  expect_equal(nrow(a), nrow(d$displacements)/2)
+  expect_equal(nrow(a), nrow(d$displacements) / 2)
   expect_named(a, c("winner", "loser"))
   expect_type(a$winner, "character")
   expect_type(a$loser, "character")
-  expect_equivalent(a[1,],
-                    data.frame(winner = "0620000500",
-                               loser = "06200004F8",
-                               stringsAsFactors = FALSE))
-  expect_equivalent(a[nrow(a),],
-                    data.frame(winner = "06200004F8",
-                               loser = "06200003AA", stringsAsFactors = FALSE))
+  expect_equivalent(
+    a[1, ],
+    data.frame(
+      winner = "0620000500",
+      loser = "06200004F8",
+      stringsAsFactors = FALSE
+    )
+  )
+  expect_equivalent(
+    a[nrow(a), ],
+    data.frame(
+      winner = "06200004F8",
+      loser = "06200003AA",
+      stringsAsFactors = FALSE
+    )
+  )
 })
 
 test_that("convert_anidom runs aniDom functions as expected", {
-
   d <- disp(visits(finches_lg), bw = 5)
   i <- convert_anidom(d)
 
   # Elo_scores
   expect_silent(s <- aniDom::elo_scores(winners = i$winner, losers = i$loser))
   expect_true("matrix" %in% class(s))
-  expect_equal(dimnames(s)[[1]],  c("0620000500", "06200004F8",
-                                    "0620000477", "06200003AA", "0620000400"))
+  expect_equal(
+    dimnames(s)[[1]],
+    c("0620000500", "06200004F8", "0620000477", "06200003AA", "0620000400")
+  )
 
   # Estimate repeatability
   set.seed(191)
-  expect_silent(r1 <- aniDom::estimate_uncertainty_by_repeatability(winners = i$winner, losers = i$loser))
-  expect_silent(r2 <- aniDom::estimate_uncertainty_by_splitting(winners = i$winner, losers = i$loser, randomise = TRUE))
+  expect_silent(
+    r1 <- aniDom::estimate_uncertainty_by_repeatability(
+      winners = i$winner,
+      losers = i$loser
+    )
+  )
+  expect_silent(
+    r2 <- aniDom::estimate_uncertainty_by_splitting(
+      winners = i$winner,
+      losers = i$loser,
+      randomise = TRUE
+    )
+  )
 
   expect_type(r1, "double")
   expect_type(r2, "double")
@@ -189,23 +253,29 @@ test_that("convert_perc converts as expected", {
   expect_type(a$Initiator1, "character")
   expect_type(a$Recipient1, "character")
   expect_type(a$Freq, "integer")
-  expect_equivalent(a[1,], data.frame(Initiator1 = "0620000500",
-                                      Recipient1 = "06200003AA",
-                                      Freq = 1))
-  expect_equivalent(a[nrow(a),], data.frame(Initiator1 = "0620000477",
-                                            Recipient1 = "0620000500",
-                                            Freq = 1))
+  expect_equivalent(
+    a[1, ],
+    data.frame(Initiator1 = "0620000500", Recipient1 = "06200003AA", Freq = 1)
+  )
+  expect_equivalent(
+    a[nrow(a), ],
+    data.frame(Initiator1 = "0620000477", Recipient1 = "0620000500", Freq = 1)
+  )
 })
 
 test_that("convert_perc runs Perc functions as expected", {
-
   d <- disp(visits(finches_lg), bw = 5)
   i <- convert_perc(d)
 
   # as.conflictmat
   expect_silent(s <- Perc::as.conflictmat(i, weighted = TRUE))
-  expect_equal(dimnames(s), list(sort(unique(c(i$Initiator1, i$Recipient1))),
-                                 sort(unique(c(i$Initiator1, i$Recipient1)))))
+  expect_equal(
+    dimnames(s),
+    list(
+      sort(unique(c(i$Initiator1, i$Recipient1))),
+      sort(unique(c(i$Initiator1, i$Recipient1)))
+    )
+  )
 
   # conductance
   expect_silent(c <- Perc::conductance(s, 2))
@@ -220,9 +290,19 @@ test_that("convert_perc runs Perc functions as expected", {
   expect_s3_class(r$BestSimulatedRankOrder, "data.frame")
   expect_s3_class(r$Cost, "data.frame")
   expect_s3_class(r$AllSimulatedRankOrder, "data.frame")
-  expect_equal(r$BestSimulatedRankOrder,
-               data.frame(ID = c("0620000500", "06200004F8", "06200003AA",
-                                 "0620000477", "0620000400"), ranking = 1:5))
+  expect_equal(
+    r$BestSimulatedRankOrder,
+    data.frame(
+      ID = c(
+        "0620000500",
+        "06200004F8",
+        "06200003AA",
+        "0620000477",
+        "0620000400"
+      ),
+      ranking = 1:5
+    )
+  )
 })
 
 test_that("convert_activity converts as expected", {
@@ -244,5 +324,5 @@ test_that("convert_activity runs activity functions as expected", {
   #' plot(a[["06200004F8"]])
   expect_silent(a <- activity::fitact(i[["06200003AA"]], sample = "none"))
   expect_s4_class(a, "actmod")
-  expect_silent(activity:::plot.actmod (a))
+  expect_silent(activity:::plot.actmod(a))
 })

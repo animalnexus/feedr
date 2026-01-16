@@ -94,75 +94,138 @@
 #'
 #' }
 #' @export
-load_raw <- function(r_file,
-                     tz = Sys.timezone(), tz_disp = NULL, dst = FALSE,
-                     details = 1, logger_pattern = NA,
-                     time_format = "mdy HMS",
-                     extra_pattern = NULL, extra_name = NULL,
-                     sep = "", skip = 0, verbose = TRUE,
-                     feeder_pattern) {
-
+load_raw <- function(
+  r_file,
+  tz = Sys.timezone(),
+  tz_disp = NULL,
+  dst = FALSE,
+  details = 1,
+  logger_pattern = NA,
+  time_format = "mdy HMS",
+  extra_pattern = NULL,
+  extra_name = NULL,
+  sep = "",
+  skip = 0,
+  verbose = TRUE,
+  feeder_pattern
+) {
   # Error Checks
   r_file <- try(as.character(r_file), silent = TRUE)
-  if(class(r_file) != "character") stop("r_file must coercible to character")
-  if(length(r_file) > 1) stop("r_file can only be length 1, the file name.")
-  if(!(details %in% 0:2)) stop("'details' must be one of 0, 1, or 2.")
+  if (class(r_file) != "character") {
+    stop("r_file must coercible to character")
+  }
+  if (length(r_file) > 1) {
+    stop("r_file can only be length 1, the file name.")
+  }
+  if (!(details %in% 0:2)) {
+    stop("'details' must be one of 0, 1, or 2.")
+  }
 
   # Check deprecated arguments
   if (!missing(feeder_pattern)) {
-    warning("Argument feeder_pattern is deprecated; please use logger_pattern instead.",
-            call. = FALSE)
+    warning(
+      "Argument feeder_pattern is deprecated; please use logger_pattern instead.",
+      call. = FALSE
+    )
     logger_pattern <- feeder_pattern
   }
 
   # Timezone checks
   tz <- check_tz(tz)
-  if(is.null(tz_disp)) tz_disp <- tz else tz_disp <- check_tz(tz_disp)
+  if (is.null(tz_disp)) {
+    tz_disp <- tz
+  } else {
+    tz_disp <- check_tz(tz_disp)
+  }
 
-  if(!dst) tz <- tz_offset(tz, tz_name = TRUE)
-  if(!dst) tz_disp <- tz_offset(tz_disp, tz_name = TRUE)
+  if (!dst) {
+    tz <- tz_offset(tz, tz_name = TRUE)
+  }
+  if (!dst) {
+    tz_disp <- tz_offset(tz_disp, tz_name = TRUE)
+  }
 
   skip <- details + skip
 
   # Load data
-  if(verbose) message("Loading file ", r_file, "...")
+  if (verbose) {
+    message("Loading file ", r_file, "...")
+  }
   r <- tryCatch(
-    utils::read.table(r_file,
-                      col.names = c("animal_id","date","time"),
-                      colClasses = "character",
-                      skip = skip,
-                      sep = sep),
+    utils::read.table(
+      r_file,
+      col.names = c("animal_id", "date", "time"),
+      colClasses = "character",
+      skip = skip,
+      sep = sep
+    ),
     error = function(c) {
-      if(grepl("did not have 3 elements", c$message)) {
-        c$message <- paste0(c$message, "\n\nA line did not have the three columns required. Did you specify appropriate 'details' and 'skip' values?")}
+      if (grepl("did not have 3 elements", c$message)) {
+        c$message <- paste0(
+          c$message,
+          "\n\nA line did not have the three columns required. Did you specify appropriate 'details' and 'skip' values?"
+        )
+      }
       stop(c, call. = FALSE)
-    })
+    }
+  )
 
-
-  if(nrow(r) > 0){
+  if (nrow(r) > 0) {
     # Trim leading or trailing whitespace
     r <- dplyr::mutate_all(r, trimws)
 
     # Get logger ids
-    if(details == 0) { # Match patterns in file name
-      if(is.na(logger_pattern)) r$logger_id <- stringr::str_extract(basename(r_file), "^[^.]*")
-      if(!is.na(logger_pattern)) r$logger_id <- stringr::str_extract(r_file, logger_pattern)
-      if(any(is.na(r$logger_id))) stop("logger_id not detected in file name", call. = FALSE)
-    } else if (details > 0) { # Get logger id from first line
-      if(is.na(logger_pattern)) r$logger_id <- readLines(r_file, n = 1)
-      if(!is.na(logger_pattern)) r$logger_id <- stringr::str_extract(readLines(r_file, n = 1), logger_pattern)
-      if(any(is.na(r$logger_id))) stop("logger_id not detected from first line of file", call. = FALSE)
-      if(nchar(r$logger_id[1]) == nchar(paste(r$animal_id[1], r$date[1], r$time[1]))) warning("logger_id extracted from first line of the file as '",r$logger_id[1], "', this seems odd", call. = FALSE)
+    if (details == 0) {
+      # Match patterns in file name
+      if (is.na(logger_pattern)) {
+        r$logger_id <- stringr::str_extract(basename(r_file), "^[^.]*")
+      }
+      if (!is.na(logger_pattern)) {
+        r$logger_id <- stringr::str_extract(r_file, logger_pattern)
+      }
+      if (any(is.na(r$logger_id))) {
+        stop("logger_id not detected in file name", call. = FALSE)
+      }
+    } else if (details > 0) {
+      # Get logger id from first line
+      if (is.na(logger_pattern)) {
+        r$logger_id <- readLines(r_file, n = 1)
+      }
+      if (!is.na(logger_pattern)) {
+        r$logger_id <- stringr::str_extract(
+          readLines(r_file, n = 1),
+          logger_pattern
+        )
+      }
+      if (any(is.na(r$logger_id))) {
+        stop("logger_id not detected from first line of file", call. = FALSE)
+      }
+      if (
+        nchar(r$logger_id[1]) ==
+          nchar(paste(r$animal_id[1], r$date[1], r$time[1]))
+      ) {
+        warning(
+          "logger_id extracted from first line of the file as '",
+          r$logger_id[1],
+          "', this seems odd",
+          call. = FALSE
+        )
+      }
     }
 
     # Get lat, lon
-    if(details == 2) {
+    if (details == 2) {
       locs <- readLines(r_file, n = 2)[2] %>%
         strsplit(split = ",") %>%
         unlist() %>%
         trimws()
       locs <- suppressWarnings(try(as.numeric(locs), silent = TRUE))
-      if(class(locs) == "try-error" || is.na(locs) || length(locs) != 2) stop("Expecting one pair of lat/lon on second line of the file. Check format or change 'details'\n(Format should be e.g.,  53.91448, -122.76925).", call. = FALSE)
+      if (class(locs) == "try-error" || is.na(locs) || length(locs) != 2) {
+        stop(
+          "Expecting one pair of lat/lon on second line of the file. Check format or change 'details'\n(Format should be e.g.,  53.91448, -122.76925).",
+          call. = FALSE
+        )
+      }
       r$lat <- locs[1]
       r$lon <- locs[2]
     }
@@ -171,23 +234,43 @@ load_raw <- function(r_file,
     r$animal_id <- as.character(r$animal_id)
 
     # Convert times
-    r$time <- lubridate::parse_date_time(paste(r$date, r$time), orders = time_format, tz = tz)
-    if(tz_disp != tz) r$time <- lubridate::with_tz(r$time, tz_disp)
+    r$time <- lubridate::parse_date_time(
+      paste(r$date, r$time),
+      orders = time_format,
+      tz = tz
+    )
+    if (tz_disp != tz) {
+      r$time <- lubridate::with_tz(r$time, tz_disp)
+    }
     r$date <- lubridate::as_date(r$time)
 
     # Reorder columns
-    cols <- names(r)[names(r) %in% c("animal_id", "date", "time", "logger_id", "lat", "lon")]
+    cols <- names(r)[
+      names(r) %in% c("animal_id", "date", "time", "logger_id", "lat", "lon")
+    ]
     r <- dplyr::select(r, dplyr::all_of(cols)) %>%
       dplyr::arrange(time, animal_id)
 
     # Get any extra columns by matching patterns in file name as specified by extra_pattern and extra_name
-    if(!is.null(extra_pattern)){
-      if(is.null(extra_name)) stop("You have specified patterns to match for extra columns, but you have not specified what these column names ('extra_name') should be.")
-      for(i in 1:length(extra_pattern)) r[, extra_name[i]] <- stringr::str_extract(r_file, extra_pattern[i])
-    } else if(!is.null(extra_name)) stop("You have specified names for extra columns, but you have not specified what pattern to match for filling ('extra_pattern').")
+    if (!is.null(extra_pattern)) {
+      if (is.null(extra_name)) {
+        stop(
+          "You have specified patterns to match for extra columns, but you have not specified what these column names ('extra_name') should be."
+        )
+      }
+      for (i in 1:length(extra_pattern)) {
+        r[, extra_name[i]] <- stringr::str_extract(r_file, extra_pattern[i])
+      }
+    } else if (!is.null(extra_name)) {
+      stop(
+        "You have specified names for extra columns, but you have not specified what pattern to match for filling ('extra_pattern')."
+      )
+    }
 
     return(r)
-  } else if(verbose) message("Empty file skipped: ", r_file)
+  } else if (verbose) {
+    message("Empty file skipped: ", r_file)
+  }
 }
 
 #' Load and combine raw data files
@@ -271,37 +354,63 @@ load_raw <- function(r_file,
 #' @param feeder_pattern Deprecated. Use logger_pattern instead.
 #'
 #' @export
-load_raw_all <- function(r_dir, r_list, pattern = "DATA",
-                         tz = Sys.timezone(), tz_disp = NULL, dst = FALSE,
-                         details = 1, logger_pattern = NA,
-                         time_format = "mdy HMS",
-                         extra_pattern = NULL, extra_name = NULL,
-                         sep = "", skip = 0, verbose = TRUE,
-                         feeder_pattern) {
-
+load_raw_all <- function(
+  r_dir,
+  r_list,
+  pattern = "DATA",
+  tz = Sys.timezone(),
+  tz_disp = NULL,
+  dst = FALSE,
+  details = 1,
+  logger_pattern = NA,
+  time_format = "mdy HMS",
+  extra_pattern = NULL,
+  extra_name = NULL,
+  sep = "",
+  skip = 0,
+  verbose = TRUE,
+  feeder_pattern
+) {
   if (!missing(feeder_pattern)) {
-    warning("Argument feeder_pattern is deprecated; please use logger_pattern instead.",
-            call. = FALSE)
+    warning(
+      "Argument feeder_pattern is deprecated; please use logger_pattern instead.",
+      call. = FALSE
+    )
     logger_pattern <- feeder_pattern
   }
 
-  if(!missing(r_dir)) {
+  if (!missing(r_dir)) {
     # Get file locations (match pattern and get all subfiles)
-    r_list <- list.files(r_dir, pattern = pattern, recursive = TRUE, full.names = TRUE)
+    r_list <- list.files(
+      r_dir,
+      pattern = pattern,
+      recursive = TRUE,
+      full.names = TRUE
+    )
     r_list <- r_list[!grepl("~", r_list)] # Omit temporary files
-    if(length(r_list) == 0) stop("Either the directory is empty or your pattern matches no files")
+    if (length(r_list) == 0) {
+      stop("Either the directory is empty or your pattern matches no files")
+    }
   }
 
   # Load in data and assign extra colums
-  r <- do.call('rbind', lapply(r_list, load_raw,
-                               details = details,
-                               tz = tz,
-                               dst = dst,
-                               logger_pattern = logger_pattern,
-                               time_format = time_format,
-                               extra_pattern = extra_pattern,
-                               extra_name = extra_name,
-                               sep = sep, skip = skip, verbose = verbose))
+  r <- do.call(
+    'rbind',
+    lapply(
+      r_list,
+      load_raw,
+      details = details,
+      tz = tz,
+      dst = dst,
+      logger_pattern = logger_pattern,
+      time_format = time_format,
+      extra_pattern = extra_pattern,
+      extra_name = extra_name,
+      sep = sep,
+      skip = skip,
+      verbose = verbose
+    )
+  )
   load_format(r, tz = tz, tz_disp = tz_disp)
 }
 
@@ -344,49 +453,96 @@ load_raw_all <- function(r_dir, r_list, pattern = "DATA",
 #'   columns.
 #'
 #' @export
-load_format <- function(r, tz = Sys.timezone(), tz_disp = NULL, dst = FALSE, time_format = "ymd HMS", verbose = TRUE){
-
+load_format <- function(
+  r,
+  tz = Sys.timezone(),
+  tz_disp = NULL,
+  dst = FALSE,
+  time_format = "ymd HMS",
+  verbose = TRUE
+) {
   # Check timezones
   tz <- check_tz(tz)
-  if(is.null(tz_disp)) tz_disp <- tz else tz_disp <- check_tz(tz_disp)
-  if(!dst) tz <- tz_offset(tz, tz_name = TRUE)
-  if(!dst) tz_disp <- tz_offset(tz_disp, tz_name = TRUE)
+  if (is.null(tz_disp)) {
+    tz_disp <- tz
+  } else {
+    tz_disp <- check_tz(tz_disp)
+  }
+  if (!dst) {
+    tz <- tz_offset(tz, tz_name = TRUE)
+  }
+  if (!dst) {
+    tz_disp <- tz_offset(tz_disp, tz_name = TRUE)
+  }
 
   # Trim leading or trailing whitespace
-  r <- dplyr::mutate_if(r,
-                        .predicate = ~ is.factor(.x) | is.character(.x),
-                        .funs = trimws)
+  r <- dplyr::mutate_if(
+    r,
+    .predicate = ~ is.factor(.x) | is.character(.x),
+    .funs = trimws
+  )
 
   # If locs combined, split apart
-  if("loc" %in% names(r)) {
+  if ("loc" %in% names(r)) {
     r$lon <- as.numeric(gsub("\\(([-0-9.]+),[-0-9.]+\\)", "\\1", r$loc))
     r$lat <- as.numeric(gsub("\\([-0-9.]+,([-0-9.]+)\\)", "\\1", r$loc))
-    r <- r[, names(r) != "loc",]
+    r <- r[, names(r) != "loc", ]
   }
 
   # Check input names
-  r <- check_input(r, input = "animal_id", options = c("animal_id", "bird_id"), verbose = verbose)
-  r <- check_input(r, input = "logger_id", options = c("logger_id", "feeder_id"), verbose = verbose)
-  r <- check_input(r, input = "lon", options = c("lon", "longitude", "long"), verbose = verbose)
-  r <- check_input(r, input = "lat", options = c("lat", "latitude"), verbose = verbose)
+  r <- check_input(
+    r,
+    input = "animal_id",
+    options = c("animal_id", "bird_id"),
+    verbose = verbose
+  )
+  r <- check_input(
+    r,
+    input = "logger_id",
+    options = c("logger_id", "feeder_id"),
+    verbose = verbose
+  )
+  r <- check_input(
+    r,
+    input = "lon",
+    options = c("lon", "longitude", "long"),
+    verbose = verbose
+  )
+  r <- check_input(
+    r,
+    input = "lat",
+    options = c("lat", "latitude"),
+    verbose = verbose
+  )
   r <- check_input(r, input = "time", options = "time", verbose = verbose)
   r <- check_input(r, input = "date", options = "date", verbose = verbose)
 
   # Extract Proper Date and Times
-  if("time" %in% names(r)){
-    if(!lubridate::is.POSIXct(r$time)) {
-      r$time <- lubridate::parse_date_time(r$time, orders = time_format, tz = tz, truncated = 1)
+  if ("time" %in% names(r)) {
+    if (!lubridate::is.POSIXct(r$time)) {
+      r$time <- lubridate::parse_date_time(
+        r$time,
+        orders = time_format,
+        tz = tz,
+        truncated = 1
+      )
     }
-    if(tz != tz_disp) r$time <- lubridate::with_tz(r$time, tz_disp)
+    if (tz != tz_disp) {
+      r$time <- lubridate::with_tz(r$time, tz_disp)
+    }
     r$date <- lubridate::as_date(r$time)
   }
 
   # Make sure all factors are factors:
-  if(any(names(r) == "animal_id")) r$animal_id <- as.factor(r$animal_id)
-  if(any(names(r) == "logger_id")) r$logger_id <- as.factor(r$logger_id)
+  if (any(names(r) == "animal_id")) {
+    r$animal_id <- as.factor(r$animal_id)
+  }
+  if (any(names(r) == "logger_id")) {
+    r$logger_id <- as.factor(r$logger_id)
+  }
 
   # If locs already present, convert to numeric
-  if(all(c("lat", "lon") %in% names(r))) {
+  if (all(c("lat", "lon") %in% names(r))) {
     r$lon <- as.numeric(as.character(r$lon))
     r$lat <- as.numeric(as.character(r$lat))
   }

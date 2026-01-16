@@ -7,3 +7,5 @@
 ^.*.rds$
 ^\.github$
 ^codecov\.yml$
+^\.vscode$
+^[.]?air[.]toml$

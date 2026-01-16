@@ -15,12 +15,12 @@ NULL
 
 
 # Dealing with Non-standard evaluation
-.onLoad <- function(libname = find.package("feedr"), pkgname = "feedr"){
-# CRAN Note avoidance
-if(getRversion() >= "2.15.1")
-  utils::globalVariables(
-    c(".") # piping requires '.' at times
-  )
-invisible()
+.onLoad <- function(libname = find.package("feedr"), pkgname = "feedr") {
+  # CRAN Note avoidance
+  if (getRversion() >= "2.15.1") {
+    utils::globalVariables(
+      c(".") # piping requires '.' at times
+    )
+  }
+  invisible()
 }
-
