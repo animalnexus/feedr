@@ -3,14 +3,14 @@
 #' Load, clean, transform, and visualize raw RFID data for looking at a variety
 #' of biological questions.
 #'
-#' In-depth turorials available online:
-#' <https://animalnexus.github.io/feedr/>
-#'
-#' @references animalnexus <http://animalnexus.ca>.
-#' @docType package
 #' @name feedr-package
-#' @aliases feedr feedr-package animalnexus-package
-#' @importFrom rlang .data
+#' @aliases feedr feedr-package
+#' @importFrom rlang .data .env
+#' @keywords internal
+"_PACKAGE"
+
+## usethis namespace: start
+## usethis namespace: end
 NULL
 
 

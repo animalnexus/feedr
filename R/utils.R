@@ -5,7 +5,7 @@
 #' @param tz_name Logical. Whether or not to return name of the timezone or
 #'   just the offset in hours.
 #'
-#' @export
+#' @noRd
 tz_offset <- function(tz, dst = FALSE, tz_name = FALSE) {
   tz <- check_tz(tz)
   if (!dst) {
