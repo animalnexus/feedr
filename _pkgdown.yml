@@ -1,0 +1,55 @@
+url: https://animalnexus.github.io/feedr/
+template:
+  bootstrap: 5
+
+reference:
+- title: Loading/Importing Data
+  desc: Loading raw data directly from the loggers, or data already combined
+- contents:
+  - starts_with("load")
+
+- title: Housekeeping
+  desc: Checking and correcting errors before you transform the data
+- contents:
+  - starts_with("check")
+
+- title: Transformations
+  desc: Transforming raw data into visits, presence, activity, etc
+- contents:
+  - visits
+  - move
+  - presence
+  - disp
+  - activity
+  - daily
+  - inout
+
+- title: Visualizations
+  desc: Static or interactive maps produced by the mapping functions which visualize movements between and presence around the RFID loggers.
+- contents:
+  - starts_with("map")
+
+- title: Conversion
+  desc: Converting summarized activity for use by other R packages
+- contents:
+  - starts_with("convert")
+
+- title: Datasets
+  desc: Included data sets for demos and examples
+- contents:
+  - chickadees
+  - finches
+  - finches_lg
+
+articles:
+- title: Workflow
+  contents: 
+  - load
+  - housekeeping
+  - transformations
+  - maps
+
+- title: Extra
+  contents:
+  - multiple
+  - conversion

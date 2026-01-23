@@ -3,3 +3,4 @@ inst/doc
 .Rhistory
 docs/*_cache/
 data-raw/Pictures/
+docs

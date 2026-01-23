@@ -14,19 +14,7 @@ options(width = 10000)
 
 ```
 
-<!-- Render entire site:
-rmarkdown::render_site("./docs/") -->
-
-
-
-This is an overview of how to use functions in the `feedr` package to transform and visual your RFID data. Note that while we've tried to explain the code in detail, if you are new to R, you may benefit from an introduction to coding in R before tackling your data with the `feedr` package
-
-> **NOTE**: As of Nov 10th, 2021, feedr` shiny UI functions have been moved to the
-> `feedrUI` package.
->
-> I'm in the process of updating this documentation (slowly!) so parts may seem
-> out of date. Let me know (open an [issue](https://github.com/animalnexus/feedr/issues))
-> if you find anything particularly problematic, thanks!
+This is an overview of how to use functions in the feedr package to transform and visual your RFID data. Note that while we've tried to explain the code in detail, if you are new to R, you may benefit from an introduction to coding in R before tackling your data with the feedr package
 
 ## Order of operations
 This package contains functions to perform three broad services: 
@@ -87,7 +75,7 @@ map[label = '{Visualizations | {ui_animate() | map_leaflet()}}']
 ```
 
 ## Tutorial Data
-Two data frames, `finches` and `chickadees` are included in the `feedr` package for the purpose of demonstration.
+Two data frames, `finches` and `chickadees` are included in the feedr package for the purpose of demonstration.
 
 ```{r}
 head(finches)

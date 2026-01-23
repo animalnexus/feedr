@@ -2,25 +2,21 @@
 title: "Transforming/Summarizing Data"
 ---
 
-```{r setup, include = F}
-source("setup.R")
-```
-
 This section will get you started with transforming and summarizing your data from raw read data to a variety of different data types which can be used to answer different questions.
 
 Here we assume that you know how to [load/import](load.html) your data and that, if needed, you've cleaned up problematic `animal_id`s with the various [housekeeping](housekeeping.html) functions.
 
-Note that for several examples of summarizing, we'll be using functions from the [`tidyverse`](http://tidyverse.org/) including the magrittr pipe `%>%`, which essentially 'pipes' the output of the first line to the next line, see this [intro to the pipe](http://magrittr.tidyverse.org/articles/magrittr.html) for more details.
+Note that for several examples of summarizing, we'll be using functions pipes `|>`, which essentially 'pipes' the output of the first line to the next line, see this explanation of [using the pipe in data transformations](https://r4ds.hadley.nz/data-transform.html#sec-the-pipe) for more details.
 
 ```{r}
-library(tidyverse)
+library(dplyr)
 library(lubridate)
 ```
 
 
 ## Functions
 
-In all cases you'll want to use the `visits()` function first, but after that it depends on what kinda of data you want to end up with.
+In all cases you'll want to use the `visits()` function first, but after that it depends on what kind of data you want to end up with.
 
 1. [`visits()`](#visits) - Visits to a logger
 2. [`move()`](#movements) - Movements between loggers
@@ -34,7 +30,8 @@ In all cases you'll want to use the `visits()` function first, but after that it
 Or click on the function name below to skip directly to the function tutorial:
 
 ```{r, echo = F, fig.align='center'}
-DiagrammeR::grViz("
+DiagrammeR::grViz(
+  "
 digraph order {
 
 graph [overlap = true, compound = true]
@@ -59,9 +56,10 @@ map2[label = 'map_leaflet()', URL = '#mapleaflet', tooltip = 'Visualize with an 
 {presence; move} -> {map1; map2}
 
 }
-", width = 500)
+",
+  width = 500
+)
 ```
-<a id = "visits"></a>
 
 ## `visits()`
 This function is designed to turn 'raw' data into 'visits' data.
@@ -71,14 +69,14 @@ This is always the first function you should use. Raw read data contains an indi
 For example, if the logger was set to record ids every ~2 seconds, an individual sitting on the logger for 8 seconds followed by a 12 second gap before returning would look something like this:
 
 ```{r}
-head(finches_lg)
+finches_lg
 ```
 
 The `visits()` function turns this raw data into something more practical:
 
 ```{r visits}
 v <- visits(finches_lg)
-head(v)
+v
 ```
 
 We can see that the first series of raw reads have been combined into one visit, starting at 2015-10-01 17:38:52 and ending at 2015-10-01 17:39:00.
@@ -86,8 +84,8 @@ We can see that the first series of raw reads have been combined into one visit,
 We can also look directly at visit data for a particular individual by pulling out it's `animal_id`:
 
 ```{r}
-head(finches_lg[finches_lg$animal_id == "06200004F8", ])
-head(v[v$animal_id == "06200004F8", ])
+finches_lg[finches_lg$animal_id == "06200004F8", ]
+v[v$animal_id == "06200004F8", ]
 ```
 
 Alternatively, you can use `filter(v, animal_id == "06200004F8")` from the `dplyr` package or `subset(v, animal_id == "06200004F8")` which is built into R base.
@@ -98,9 +96,7 @@ Visits are defined by:
 - A change in `animal_id` between two successive reads
 - A change in `logger_id` between two successive reads (although generally this shouldn't be a defining point, because the `bw` should be smaller than the length of time it takes to move from one logger to another)
 
-<a id = "visitsdata"></a>
-
-### Data returned
+### Data returned {#visitsdata}
 
 The data returned by the visit function contains both new and old data:
 
@@ -115,8 +111,8 @@ The data returned by the visit function contains both new and old data:
 Note that several of these new values could also have been obtained by hand:
 
 ```{r}
-length(unique(v$animal_id))
-length(unique(v$logger_id))
+n_distinct(v$animal_id)
+n_distinct(v$logger_id)
 ```
 
 `species`, `sex`, `lon` and `lat` are all columns originally in the `finches_lg` data set, they were automatically passed through the `visits()` function. Columns of extra data that are associated with either a `date`, an `animal_id`, or a `logger_id` will always be passed through unless `pass = FALSE`:
@@ -156,18 +152,19 @@ For example, if we want to create daily summaries of the number of visits made a
 Currently we have data on the total number of loggers in the data set, but what if we wanted to know how many loggers each individual used?
 
 ```{r}
-library(dplyr)
-visit_summary <- v %>%
-  group_by(animal_id) %>%
-  summarize(n_visits = length(start),
-            n_loggers = length(unique(logger_id)),
-            n_days = length(unique(date)),
-            mean_visit_length = mean(as.numeric(difftime(end, start, units = "sec"))))
+visit_summary <- summarize(
+  v,
+  n_visits = length(start),
+  n_loggers = length(unique(logger_id)),
+  n_days = length(unique(date)),
+  mean_visit_length = mean(as.numeric(difftime(end, start, units = "sec"))),
+  .by = "animal_id"
+)
 visit_summary
 ```
 
 __A Side Note__  
-This bit of code uses a slightly advanced technique called 'pipes': `%>%` These allow you to pass the output from one line directly down to the next line where it becomes the first (and hidden) argument. In this case, the first line specifies our visits data frame `v`, this then becomes the input for `group_by()`. The output of `group_by()` then becomes the input for `summarize()`. This makes your coding more efficient but may take a bit of getting used to.
+This bit of code uses a slightly advanced technique called 'pipes': `` These allow you to pass the output from one line directly down to the next line where it becomes the first (and hidden) argument. In this case, the first line specifies our visits data frame `v`, this then becomes the input for `group_by()`. The output of `group_by()` then becomes the input for `summarize()`. This makes your coding more efficient but may take a bit of getting used to.
 
 You can find an in-depth look at `dplyr`, pipes and related packages here: <http://r4ds.had.co.nz/transform.html>
 
@@ -176,11 +173,13 @@ For reference, you can achieve the same effect without pipes:
 ```{r}
 library(dplyr)
 visit_summary <- group_by(v, animal_id)
-visit_summary <- summarize(visit_summary,
-               n_visits = length(start),
-               n_loggers = length(unique(logger_id)),
-               n_days = length(unique(date)),
-               mean_visit_length = mean(as.numeric(difftime(end, start, units = "sec"))))
+visit_summary <- summarize(
+  visit_summary,
+  n_visits = length(start),
+  n_loggers = length(unique(logger_id)),
+  n_days = length(unique(date)),
+  mean_visit_length = mean(as.numeric(difftime(end, start, units = "sec")))
+)
 visit_summary
 ```
 
@@ -237,7 +236,7 @@ This function returns a lot of information for each movement event. Note, in par
 In this case, four `animal_id` have been omitted because they never moved between loggers. While the id is retained in the _levels_ of the factor, `animal_id`, it is not present in the data frame:
 
 ```{r}
-unique(m$animal_id)         # The animal_ids currently in the movement data
+unique(m$animal_id) # The animal_ids currently in the movement data
 length(unique(m$animal_id)) # The number of animal_ids currently in the data
 length(levels(m$animal_id)) # The number of levels of animal_id
 ```
@@ -247,7 +246,7 @@ However, if you wanted to retain all animals in the data set, regardless of whet
 ```{r}
 m <- move(v, all = TRUE)
 
-unique(m$animal_id)         # The animal_ids currently in the movement data
+unique(m$animal_id) # The animal_ids currently in the movement data
 length(unique(m$animal_id)) # The number of animal_ids currently in the data
 length(levels(m$animal_id)) # The number of levels of animal_id
 ```
@@ -264,19 +263,22 @@ Once again we can summarize movement data using the `dplyr` package.
 
 Are certain paths used more often?
 ```{r}
-move_summary <- m %>%
-  group_by(move_path, logger_id) %>%
-  summarize(n = length(move_path))
+move_summary <- summarize(
+  m,
+  n = length(move_path),
+  .by = c("move_path", "logger_id")
+)
 move_summary
 ```
+
 The NAs reflect the four individuals that did not move. 
 
 Note that because there are two rows per movement event (leaving and arriving), we group by logger_id to summarize individually by logger (resulting in duplicate `n`s per `move_path`. This will account for the 2 rows and keep logger ids in the final data frame (required for mapping later on).
 
 However, if you only wanted `move_path` and `n`, you could simply omit `logger_id` and remove duplicates:
 ```{r}
-move_summary %>% 
-  select(-logger_id) %>%
+move_summary |>
+  select(-logger_id) |>
   unique()
 ```
 
@@ -286,12 +288,14 @@ ggplot(data = move_summary, aes(x = move_path, y = n)) +
 ```
 
 Are certain directions on particular paths used more often? (i.e. do birds go back and forth or do they circle around?)
-```{r}
 
-move_summary <- m %>%
-  group_by(logger_id, move_path, move_dir) %>%
-  summarize(n = length(move_path))
-head(move_summary)
+```{r}
+move_summary <- summarize(
+  m,
+  n = length(move_path),
+  .by = c("logger_id", "move_path", "move_dir")
+)
+move_summary
 ```
 
 ```{r, fig.width = 6}
@@ -300,12 +304,14 @@ ggplot(data = move_summary, aes(x = move_path, y = n, fill = move_dir)) +
 ```
 
 Is there a relationship between use of a path and the average 'strength'?
-```{r}
 
-move_summary <- m %>%
-  group_by(logger_id, move_path) %>%
-  summarize(n = length(move_path),
-            strength = mean(strength, na.rm = TRUE))
+```{r}
+move_summary <- summarize(
+  m,
+  n = length(move_path),
+  strength = mean(strength, na.rm = TRUE),
+  .by = c("logger_id", "move_path")
+)
 move_summary
 ```
 
@@ -317,9 +323,11 @@ ggplot(data = move_summary, aes(x = strength, y = n)) +
 
 Do some animals move more than others?
 ```{r}
-move_summary <- m %>%
-  group_by(animal_id) %>%
-  summarize(n = length(move_path[!is.na(move_path)])) # Number of movements omitting NAs
+move_summary <- summarize(
+  m,
+  n = length(move_path[!is.na(move_path)]), # Number of movements omitting NAs
+  .by = "animal_id"
+)
 move_summary
 ```
 
@@ -328,15 +336,8 @@ Note that we have some zeros because we made sure to include all individuals in 
 ```{r, fig.width = 6}
 ggplot(data = move_summary, aes(x = animal_id, y = n)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + #rotate and shift id labels
-  geom_bar(stat = "identity") 
+  geom_bar(stat = "identity")
 ```
-
-
---------------------
-Back to [top](#top) 
---------------------
-
-<a id = "presence"></a>
 
 ## `presence()`
 
@@ -368,13 +369,13 @@ Note that the units for `bw` when defining [visits](#visits) is in seconds, whil
 
 ```{r}
 v <- visits(finches_lg, bw = 5)
-p <- presence(v, bw = 20)  # Within 20 min
+p <- presence(v, bw = 20) # Within 20 min
 head(p)
 ```
 
 ```{r}
 v <- visits(finches_lg, bw = 5)
-p <- presence(v, bw = 90)  # Within 1.5 h
+p <- presence(v, bw = 90) # Within 1.5 h
 head(p)
 ```
 
@@ -394,10 +395,12 @@ What's the average time present for each individual?
 v <- visits(finches_lg, bw = 5)
 p <- presence(v)
 
-presence_summary <- p %>%
-  group_by(animal_id) %>%
-  summarize(n = length(start),          ## how many rows = number of events
-            mean_length = mean(length)) ## mean length of events
+presence_summary <- summarize(
+  p,
+  n = length(start), # how many rows = number of events
+  mean_length = mean(length), # mean length of events
+  .by = "animal_id"
+)
 
 presence_summary
 ```
@@ -410,29 +413,29 @@ ggplot(data = presence_summary, aes(x = n, y = mean_length)) +
 
 Do animals spend more time around certain loggers?
 ```{r}
-presence_summary <- p %>%
-  group_by(logger_id) %>%
-  summarize(n = length(start),
-            mean_length = mean(length),
-            se_length = sd(length)/sqrt(n))
-
+presence_summary <- summarize(
+  p,
+  n = length(start),
+  mean_length = mean(length),
+  se_length = sd(length) / sqrt(n),
+  .by = "logger_id"
+)
 presence_summary
 
-ggplot(data = presence_summary, aes(x = logger_id, y = mean_length, fill = logger_id)) +
+ggplot(
+  data = presence_summary,
+  aes(x = logger_id, y = mean_length, fill = logger_id)
+) +
   geom_bar(stat = "identity") +
-  geom_errorbar(aes(ymin = mean_length - se_length, 
-                    ymax = mean_length + se_length), width = 0.25)
+  geom_errorbar(
+    aes(ymin = mean_length - se_length, ymax = mean_length + se_length),
+    width = 0.25
+  )
 ```
 
 Note that there is only one bout of presence around logger 2400, hence the lack of errorbars.
 
---------------------
-Back to [top](#top) 
---------------------
-
-<a id = "displacements"></a>
-
-## `disp()`
+## `disp()` {#displacements}
 This function is designed to turn 'visit' data into 'displacements' data.
 
 __Displacements__ are events when one animal leaves the logger and is replaced by another animal within a certain, defined, time span.
@@ -506,20 +509,26 @@ v <- visits(finches_lg, bw = 5)
 head(disp(v)$summaries)
 head(disp(v, bw = 10)$summaries)
 head(disp(v, bw = 15)$summaries)
-```
+`
+`
+`
 However, an interval of 15s is pretty long and probably doesn't constitute a real displacement event.
 
 ### Summarizing
 
 Is one logger more contentious than others?
 
-```{r}
+`
+``
+{
+  r
+}
 v <- visits(finches_lg, bw = 5)
 d <- disp(v)
 
-disp_summary <- d$displacements %>%
-  group_by(logger_id, role) %>%
-  count() %>%
+disp_summary <- d$displacements |>
+  group_by(logger_id, role) |>
+  count() |>
   filter(role == "displacer")
 
 ggplot(data = disp_summary, aes(x = logger_id, y = n)) +
@@ -529,18 +538,20 @@ ggplot(data = disp_summary, aes(x = logger_id, y = n)) +
 What if we control for overall logger use?
 
 ```{r}
-disp_summary <- d$displacements %>%
-  group_by(logger_id, role) %>%
-  count() %>%
+disp_summary <- d$displacements |>
+  group_by(logger_id, role) |>
+  count() |>
   filter(role == "displacer")
 
-presence_summary <- p %>%
-  group_by(logger_id) %>%
-  summarize(amount = sum(as.numeric(length)))
+presence_summary <- p |>
+  group_by(logger_id) |>
+  summarize(p, amount = sum(as.numeric(length)))
 
-full_summary <- full_join(disp_summary, presence_summary, by = "logger_id") %>%
-  mutate(n = replace(n, is.na(n), 0),  # First replace the missing values of n with 0
-         n_per_hour = n / amount * 60) # Calculate the number of interactions as an hourly rate
+full_summary <- full_join(disp_summary, presence_summary, by = "logger_id") |>
+  mutate(
+    n = replace(n, is.na(n), 0), # First replace the missing values of n with 0
+    n_per_hour = n / amount * 60
+  ) # Calculate the number of interactions as an hourly rate
 
 full_summary
 
@@ -560,12 +571,6 @@ ggplot(data = d$summaries, aes(x = animal_id, y = p_win)) +
 
 ```
 
---------------------
-Back to [top](#top) 
---------------------
-
-<a id = "activity"></a>
-
 ## `activity()`
 This function scores individuals as either active or inactive based on their presence data. While simply looking at the presence bouts is a good proxy for active/inactive, scoring intervals as active/inactive allows for easier plotting as well as for averaging over days to create daily activity patterns (see [`daily()` function](#dailyactivity)).
 
@@ -573,7 +578,7 @@ This function scores individuals as either active or inactive based on their pre
 v <- visits(finches_lg, bw = 5)
 p <- presence(v)
 a <- activity(p, res = 5)
-head(a)
+a
 ```
 
 ### Data returned
@@ -602,14 +607,14 @@ The messages reflect information regarding the quality of the activity data:
 The default function calculates activity for each animal at a resolution of 15min. Meaning that every 15min an individual is scored as active or inactive. However, if individuals make short and infrequency visits to a logger, periods of activity may be missed if the active bouts are smaller than the resolution. Resolution can be adjusted through the `res` argument (note the change in time, and the change in messages).
 
 ```{r, message = FALSE}
-head(activity(p, res = 1))
+activity(p, res = 1)
 ```
 
 ### `by_logger`
 By default, the `activity()` function sums all activity across loggers. However, if you wish to calculate separate activity patterns for different loggers, you can set `by_logger = TRUE`. Note the `logger_id` and that there are now 4 observations per time block for each individual:
 
 ```{r, message = FALSE}
-head(activity(p, by_logger = TRUE))
+activity(p, by_logger = TRUE)
 ```
 
 ### `sun`
@@ -632,14 +637,16 @@ library(ggplot2)
 library(lubridate)
 
 # Filter by date and animal ID, create a "day" column
-sept <- a %>%
-  filter(date >= as_date("2015-09-21"),
-         date < as_date("2015-09-28"),
-         animal_id == "06200004F8")
+sept <- filter(
+  a,
+  date >= as_date("2015-09-21"),
+  date < as_date("2015-09-28"),
+  animal_id == "06200004F8"
+)
 
 # Use facet_wrap to look at individual days, use drop = TRUE to omit days without activity
 ggplot(data = sept, aes(x = time, y = activity)) +
-  facet_wrap(~ date, scales = "free_x", ncol = 1, drop = TRUE) +
+  facet_wrap(~date, scales = "free_x", ncol = 1, drop = TRUE) +
   geom_area()
 ```
 
@@ -649,19 +656,25 @@ There's a clear daily pattern, but it's a bit hard to tell without sunrise and s
 sun <- unique(select(sept, rise, set, date))
 
 ggplot(data = sept, aes(x = time, y = activity)) +
-  facet_wrap(~ date, scales = "free_x", ncol = 1, drop = TRUE) +
-  geom_rect(mapping = aes(xmax = rise), xmin = -Inf, ymin = -Inf, ymax = +Inf, fill = "grey") +
-  geom_rect(mapping = aes(xmin = set), xmax = +Inf, ymin = -Inf, ymax = +Inf, fill = "grey") +
+  facet_wrap(~date, scales = "free_x", ncol = 1, drop = TRUE) +
+  geom_rect(
+    mapping = aes(xmax = rise),
+    xmin = -Inf,
+    ymin = -Inf,
+    ymax = +Inf,
+    fill = "grey"
+  ) +
+  geom_rect(
+    mapping = aes(xmin = set),
+    xmax = +Inf,
+    ymin = -Inf,
+    ymax = +Inf,
+    fill = "grey"
+  ) +
   geom_area()
 ```
 
---------------------
-Back to [top](#top) 
---------------------
-
-<a id = "dailyactivity"></a>
-
-## `daily()`
+## `daily()` {#dailyactivity}
 
 `daily()` converts activity patterns created by the [`activity()` function](#activity) to averaged daily activity patterns.
 
@@ -695,10 +708,22 @@ Daily activity patterns can be plotted by hiding the date portion of the time st
 
 ```{r}
 ggplot(data = da, aes(x = time, y = p_active)) +
-  geom_rect(aes(xmax = rise), xmin = -Inf, ymin = -Inf, ymax = +Inf, fill = "grey") +
-  geom_rect(aes(xmin = set), xmax = +Inf, ymin = -Inf, ymax = +Inf, fill = "grey") +
+  geom_rect(
+    aes(xmax = rise),
+    xmin = -Inf,
+    ymin = -Inf,
+    ymax = +Inf,
+    fill = "grey"
+  ) +
+  geom_rect(
+    aes(xmin = set),
+    xmax = +Inf,
+    ymin = -Inf,
+    ymax = +Inf,
+    fill = "grey"
+  ) +
   geom_area() +
-  facet_wrap(~ animal_id) +
+  facet_wrap(~animal_id) +
   scale_x_datetime(date_labels = "%H:%M:%S", date_breaks = "6 hours")
 ```
 
@@ -708,203 +733,30 @@ Note also that this script repeats the drawing of the sunrise/sunset rectangles,
 sun <- unique(da[, c("rise", "set", "animal_id")])
 
 ggplot(data = da) +
-  geom_rect(data = sun, aes(xmax = rise), xmin = -Inf, ymin = -Inf, ymax = +Inf, fill = "black", alpha = 0.1) +
-  geom_rect(data = sun, aes(xmin = set), xmax = +Inf, ymin = -Inf, ymax = +Inf, fill = "black", alpha = 0.1) +
+  geom_rect(
+    data = sun,
+    aes(xmax = rise),
+    xmin = -Inf,
+    ymin = -Inf,
+    ymax = +Inf,
+    fill = "black",
+    alpha = 0.1
+  ) +
+  geom_rect(
+    data = sun,
+    aes(xmin = set),
+    xmax = +Inf,
+    ymin = -Inf,
+    ymax = +Inf,
+    fill = "black",
+    alpha = 0.1
+  ) +
   geom_area(aes(x = time, y = p_active)) +
-  facet_wrap(~ animal_id) +
+  facet_wrap(~animal_id) +
   scale_x_datetime(date_labels = "%H:%M:%S", date_breaks = "6 hours")
 ```
 
-## Conversion functions
-
-Conversion functions permit you to format raw or transformed data for use in other packages.
-
-### `convert_anidom()`
-
-Converts the output of `disp()` for use by the package [`aniDom`](https://cran.r-project.org/package=aniDom)'s functions: `elo_scores()` and `estimate_uncertainty_by_splitting()`
-
-```{r}
-d <- disp(visits(finches_lg), bw = 5)
-i <- convert_anidom(d)
-head(i)
-```
-
-```{r}
-library(aniDom)
-
-# Calculate elo_scores
-s <- elo_scores(winners = i$winner, losers = i$loser)
-s
-
-# Estimate repeatability
-estimate_uncertainty_by_repeatability(winners = i$winner, losers = i$loser)
-estimate_uncertainty_by_splitting(winners = i$winner, losers = i$loser, 
-                                  randomise = TRUE)
-```
-
-### `convert_dominance()`
-Converts the output of `disp()` for use by the package [`Dominance`](https://cran.r-project.org/package=Dominance)'s functions: `ADI()` and `Sociogram()`
-
-```{r}
-d <- disp(visits(finches_lg), bw = 5)
-i <- convert_dominance(d)
-
-library(Dominance)
-
-# Calculate the Average Dominance Index
-ADI(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bytes = i$bytes)
-```
-
-```{r eval = FALSE}
-# Construct social network graphs
-Sociogram(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bits = i$bytes)
-```
-
-### `convert_perc()`
-Converts the output of `disp()` for use by the package [`Perc`](https://cran.r-project.org/package=Perc)
-
-```{r}
-d <- disp(visits(finches_lg), bw = 5)
-i <- convert_perc(d)
-head(i)
-```
-
-```{r}
-library(Perc)
-
-# Calculate ranks (adapted from Perc examples)
-conflict_mat <- as.conflictmat(i, weighted = TRUE)
-perm <- conductance(conflict_mat, 2)
-simRankOrder(perm$p.hat, num = 10, kmax = 1000)
-```
-
-### `convert_asnipe()`
-Converts raw RFID data into a format for easy use by either the `gmmevents()` or the `get_associations_points_tw()` functions included in the [`asnipe`](https://cran.r-project.org/package=asnipe) package for calculating group membership.
-
-For `gmmevents()`:
-```{r}
-a <- convert_asnipe(finches, fun = "gmmevents")
-head(a)
-```
-
-```{r, eval = FALSE}
-library(asnipe)
-gmmevents(a$time, a$identity, a$location)
-```
-
-For `get_associations_points_bw()`:
-```{r}
-a <- convert_asnipe(finches, fun = "get_associations_points_tw")
-head(a)
-```
-
-```{r, eval = FALSE}
-get_associations_points_tw(a)
-```
-
-
-### `convert_activity()`
-Converts raw RFID data into a format for easy use by the `fitact()` function included in the [`activity`](https://cran.r-project.org/package=activity) package for modelling activity levels and daily activity patterns.
-
-```{r}
-i <- convert_activity(finches_lg)
-```
-
-```{r}
-library(activity)
-
-# Calculate daily activity pattern for a single individual
-a <- fitact(i[[1]], sample = "none")
-plot(a)
-
-# Calculate daily activity pattern for all individuals
-a <- lapply(i, fitact, sample = "none")
-plot(a[[3]])
-plot(a[["06200004F8"]])
-```
-
-
---------------------
-Back to [top](#top) 
---------------------
-
-
-## Multiple groups
-
-Sometimes you may want to perform the same data transformations multiple times, perhaps for different sites, time periods, or experiments. You could repeat yourself, but the easiest thing to do is to use the `do()` function from the [`dplyr` package](http://dplyr.tidyverse.org/) or the `map()` frunction from the [`purrr` package](http://purrr.tidyverse.org/).
-
-These function allows you to apply functions to groups in your data frame.
-
-In this example we have two experiments, so we want to calculate the transformations separately for each experiment:
-
-```{r}
-library(dplyr)
-
-v_exp <- chickadees %>%
-  group_by(experiment) %>%
-  do(visits(.))  # Use "." to define where the piped data should go 
-
-# Note that the data set retains it's grouping so we do not have to 
-# specify the grouping again until we change it:
-p_exp <- v_exp %>%
-  do(presence(.)) 
-
-m_exp <- v_exp %>%
-  do(move(.))
-
-# Summarizing
-p_avg <- p_exp %>%
-  group_by(experiment, logger_id) %>%
-  summarize(amount = sum(length)/animal_n[1])  #This is using the animal_n specific to the experiment
-
-m_avg <- m_exp %>%
-  group_by(experiment, move_path, logger_id, lat, lon) %>%
-  summarize(path_use = length(move_path))
-
-summary(p_avg)
-summary(m_avg)
-```
-
-These data are now ready for analysis and visualizations, note that they can be applied as is to visualizing functions in the next section.
-
-
-In future versions of `dplyr` it is likely the `do()` function will be deprecated, so let's consider the `map()` function from the `purrr` package. This is also an interesting method in that all data sets can be kept together in a single object (note that each line in mutate runs sequentially, so we can create the column `visits` and then use it in the next line).
-
-```{r}
-library(dplyr)
-library(purrr)
-
-exp <- chickadees %>%
-  group_by(experiment) %>%
-  nest(.key = "raw") %>%
-  mutate(visits = map(raw, ~ visits(.x)),
-         presence = map(visits, ~ presence(.x)),
-         move = map(presence, ~ move(.x)))
-         
-exp
-```
-
-
-## Summarizing
-
-```{r}
-
-p_avg <- exp %>%
-  unnest(presence) %>%
-  group_by(experiment, logger_id) %>%
-  summarize(amount = sum(length)/animal_n[1])  
-  # This is using the animal_n specific to the experiment
-
-m_avg <- exp %>%
-  unnest(move) %>%
-  group_by(experiment, move_path, logger_id, lat, lon) %>%
-  summarize(path_use = length(move_path))
-
-summary(p_avg)
-summary(m_avg)
-```
 
 
 --------------------------
-Back to [top](#top)  
-Go back to [home](index.html) | Go back to [housekeeping](housekeeping.html) | Continue with [visualizations](maps.html)
+Go back to [housekeeping](housekeeping.html) | Continue with [visualizations](maps.html)

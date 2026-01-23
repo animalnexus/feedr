@@ -2,52 +2,79 @@
 title: "Housekeeping"
 ---
 
-```{r setup, include = F}
-source("setup.R")
+```{r setup}
+#| include: false
+o <- options("readr.show_col_types" = FALSE)
 ```
 
 This is a quick tutorial covering a couple functions you can use to clean and fix problems in your data.
 
-- [`check_ids()`](#checkids)
-- [`check_problems()`](#checkproblems)
+- `check_ids()`
+- `check_problems()`
 
 These functions can be skipped, or used one after the other. It's up to you. Basically, they are wrapper functions for cleaning your data while maintaining appropriate categorical (factor) levels.
 
-This tutorial assumes that you already know how to [load/import](load.html) your data. We will be using the `feedr` package example data set: finches.
+## Setup
+
+First we'll load the packages we want to use.
 
 ```{r}
-head(finches)
+#| message: false
+library(feedr)
+library(dplyr)
+library(readr)
 ```
 
-<a id = "checkids"></a>
+And make sure we have the data files we need: 
+
+```{r}
+# Create the Data folder in your working directory
+dir.create("Data")
+
+# Copy the animal index file to your Data folder
+file.copy(
+  system.file(
+    "extdata",
+    c("animal_index.csv", "problems.csv"),
+    package = "feedr"
+  ),
+  "Data"
+)
+```
+
+
+This tutorial assumes that you already know how to [load/import](load.html) your data. We will be using the feedr package example data set: finches (loaded when you load the feedr package with `library(feedr)`).
+```{r}
+finches
+```
 
 ## `check_ids()`
 This function can be used to remove any `animal_ids` that are present, but which you know aren't really animals. For example, if you use a 'wand' to test the deployment of your loggers, this is an `animal_id` that you should remove prior to analysis. Further, occasionally there are `animal_ids` that are error codes (e.g. 0000000000), you may wish to determine why these are present (you probably should!), but once again, for analysis they should be removed.
 
 This function works by comparing the list of `animal_ids` in the data to an external, `animal_id` data set. The data set is expected to have at least two columns: `animal_id` and `species`. The `species` column should either contain species identity (e.g. House Finch or HOFI) or the error code (e.g. wand, or error).
 
-In addition to removing error or wand ids, this function will also report which `animal_id`s are in your data sets, but not in your `animal_id` index, and which are in your `animal_id` index, but not in your data sets. This will help you determine whether you are detecting RFID tags that are not in your master index (weird!) and whether some RFID tags have never been recorded by a logger.
+In addition to removing error or wand ids, this function will also report which `animal_id`s are in your data sets, but not in your `animal_id` index, and which are in your `animal_id` index, but not in your data sets. This will help you determine whether you are detecting RFID tags that are not in your master index (weird!) and whether some RFID tags you were expecting to see have never been recorded by a logger.
 
 ### With no error/wand ids
 
 Let's load an animal index file. Note that there are no errors or wands ids.
 
 ```{r}
-animal_index <- read.csv("./Data/animal_index.csv")
+animal_index <- read_csv("Data/animal_index.csv")
 animal_index
 ```
 
-You need to give this function a data set, and it will return a cleaned data set. Here we'll save it as r_clean:
+`check_ids()` works by comparing the index to a feedr data set, and then returns a cleaned data set. Here we'll save it as `r_clean`:
 ```{r}
 r_clean <- check_ids(finches, ids = animal_index)
 ```
 
 This output shows that all the `animal_id`s in the data are also in the index and vice versa. Further, there were no omitted ids (error or wand ids).
 
-__Note__: You can also skip loading the index and simply provide `check_ids()` with the location of the index file:
+__Note__: You can also skip reading the index and simply provide `check_ids()` with the location of the index file:
 
 ```{r}
-r_clean <- check_ids(finches, ids = "./Data/animal_index.csv")
+r_clean <- check_ids(finches, ids = "Data/animal_index.csv")
 ```
 
 ### With error/wand ids
@@ -66,6 +93,10 @@ r_clean <- check_ids(finches, ids = animal_index)
 
 Here we omitted two `animal_id`s, one associated with a wand (0620000514) and one with an error (041868D861).  
 
+```{r}
+filter(r_clean, animal_id %in% c("0620000514", "041868D861"))
+```
+
 Note that nothing else changed.
 
 ### `animal_id`s present in data set but not in the index
@@ -79,17 +110,14 @@ animal_index
 r_clean <- check_ids(finches, ids = animal_index)
 ```
 
-
-<a id = "checkproblems"></a>
-
 ## `check_problems()`
 
 This function is only necessary if, for some reason, you're getting errors in the recorded `animal_id`s.
 
-This function will correct all instances of an `animal_id` according to the list provided.
+This function will correct all instances of an `animal_id` according to the list you provide.
 
 ```{r}
-problems <- read.csv("./Data/problems.csv")
+problems <- read_csv("Data/problems.csv")
 problems
 ```
 
@@ -106,9 +134,14 @@ r_clean$animal_id[1:5]
 
 Note that the `animal_id`s have been modified, but also that the factor levels have been updated to match.
 
-
 Now that your data has been cleaned of erroneous or problematic data, it is ready to be [transformed](transformations.html).
 
 --------------------------
-Back to [top](#top)  
-Go back to [home](index.html) | Go back to [loading/importing data](load.html) | Continue with [transformations](transformations.html)
+Go back to [loading data](load.html) | Continue with [transformations](transform.html)
+
+
+```{r}
+#| include: false
+options(o)
+unlink("Data", recursive = TRUE)
+```

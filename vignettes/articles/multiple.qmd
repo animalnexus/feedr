@@ -1,0 +1,88 @@
+---
+title: "Transformations with multiple groups"
+---
+
+Sometimes you may want to perform the same data transformations multiple times, perhaps for different sites, time periods, or experiments. You could repeat yourself, but the easiest thing to do is to use the `map()` frunction from the [`purrr` package](http://purrr.tidyverse.org/).
+
+This function allows you to apply functions to nested data in your data frame.
+
+In this example we have two experiments, so we want to calculate the transformations separately for each experiment. First we need to `nest()` the raw data by experiment. 
+Then we can calculate `visits()`, `presence()` and `move()`ments within this dataset.
+Here, all data sets can be kept together in a single object (note that each line in mutate runs sequentially, so we can create the column `visits` and then use it in the next line).
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(purrr)
+
+exp <- chickadees |>
+  group_by(experiment) |>
+  nest(.key = "raw") |>
+  mutate(
+    visits = map(raw, \(r) visits(r)),
+    presence = map(visits, \(v) presence(v)),
+    move = map(presence, \(v) move(v))
+  ) |>
+  ungroup()
+
+exp
+```
+
+
+These data are now ready for analysis and visualizations, or for more summarizing:
+
+```{r}
+p_avg <- exp |>
+  unnest(presence) |>
+  summarize(
+    amount = sum(length) / animal_n[1],
+    .by = c("experiment", "logger_id")
+  )
+# This is using the animal_n specific to the experiment
+
+m_avg <- exp %>%
+  unnest(move) %>%
+  summarize(
+    path_use = length(move_path),
+    .by = c("experiment", "move_path", "logger_id", "lat", "lon")
+  )
+
+summary(p_avg)
+summary(m_avg)
+```
+
+
+## dplyr's `do()` function
+
+Previously I recommended the `do()` function from dplyr. This should still work
+but is now superseded (meaning it's not going anywhere but there are better ways of doing thigns).
+
+Previous examples using `do()` (note these examples need to use the `.` placeholder and therefore require the magrittr pipe (`%>%`).
+
+```{r}
+library(dplyr)
+
+v_exp <- chickadees %>%
+  group_by(experiment) %>%
+  do(visits(.)) # Use "." to define where the piped data should go
+
+# Note that the data set retains it's grouping so we do not have to
+# specify the grouping again until we change it:
+p_exp <- v_exp %>%
+  do(presence(.))
+
+m_exp <- v_exp %>%
+  do(move(.))
+
+# Summarizing
+p_avg <- p_exp %>%
+  group_by(experiment, logger_id) %>%
+  summarize(amount = sum(length) / animal_n[1]) #This is using the animal_n specific to the experiment
+
+m_avg <- m_exp %>%
+  group_by(experiment, move_path, logger_id, lat, lon) %>%
+  summarize(path_use = length(move_path))
+
+summary(p_avg)
+summary(m_avg)
+```

@@ -2,11 +2,8 @@
 title: "Visualizing Data"
 ---
 
-```{r setup, include = F}
-source("setup.R")
-```
 
-Here we will go over visualizing your data with maps. `feedr` includesa wrapper function that can be used to visualize your data on maps. This function, `map_leaflet` is really just a convenience function to do a lot of the grunt work. If you want to achieve a more fine tuned map, I suggest you check out the packages `leaflet` or `mapview`.
+Here we will go over visualizing your data with maps. feedr includesa wrapper function that can be used to visualize your data on maps. This function, `map_leaflet` is really just a convenience function to do a lot of the grunt work. If you want to achieve a more fine tuned map, I suggest you check out the packages `leaflet` or `mapview`.
 
 `map_leaflet` takes summarized presence and movement data and turns it into circles and paths around/between loggers representing time spent at different loggers and the amount of movement between particular logger paths. Because different projects may need different summaries (totals vs. means, corrected for number of individuals, uncorrected, etc.) we will first go over how to create the summary data and then pass this to the functions for plotting. This gives us more flexibility, but does mean that we have to do some work before we can visualize the data.
 
@@ -29,9 +26,7 @@ There are many ways we can summarize the data. The following options are availab
 - totals (sums)
 - totals corrected for number of individuals
 
-<a id = "leaflet"></a>
-
-## `map_leaflet()`
+## `map_leaflet()` {#leaflet}
 
 This function creates an interactive html map using leaflet for R (package `leaflet`). 
 
@@ -44,10 +39,17 @@ The map is interactive in that it can be zoomed, the tiles changed, and differen
 You can also adjust some of the cosmetic details:
 
 ```{r}
-map_leaflet(p = p, m = m, summary = "sum_indiv",
-            p_scale = 0.5, m_scale = 0.5,
-            p_title = "Presence (min)", m_title = "Paths (Total use)",
-            p_pal = c("blue","white"), m_pal = c("black","red"))
+map_leaflet(
+  p = p,
+  m = m,
+  summary = "sum_indiv",
+  p_scale = 0.5,
+  m_scale = 0.5,
+  p_title = "Presence (min)",
+  m_title = "Paths (Total use)",
+  p_pal = c("blue", "white"),
+  m_pal = c("black", "red")
+)
 ```
 
 To plot by individual, simply use individual summaries:
@@ -60,18 +62,12 @@ Note, however, that for leaflet maps, the individual lines are stacked in order 
 
 To save this map, you can zoom and set it up as you like and use the "Export > Save as image" button in RStudio. 
 
---------------------
-Back to [top](#top) 
---------------------
-
 ## Custom Summaries
 
 Calculate total time present at each logger, corrected for the number of individuals total
 
 ```{r}
-p_pop <- p %>%
-  group_by(logger_id) %>%
-  summarize(amount = sum(length) / animal_n[1])
+p_pop <- summarize(p, amount = sum(length) / animal_n[1], .by = "logger_id")
 p_pop
 ```
 
@@ -86,9 +82,11 @@ Now let's summarize the movement data for each movement path between loggers. We
 
 
 ```{r}
-m_pop <- m %>%
-  group_by(logger_id, move_path, lat, lon) %>%
-  summarize(path_use = length(move_path) / animal_n[1])
+m_pop <- summarize(
+  m,
+  path_use = length(move_path) / animal_n[1],
+  .by = c("logger_id", "move_path", "lat", "lon")
+)
 m_pop
 ```
 
@@ -105,14 +103,14 @@ We can also summarize data by individual for plotting of individual maps.
 This is virtually identical to what we did above, except that we add one more variable to group by and we don't correct for the number of individuals:
 
 ```{r}
-p_indiv <- p %>%
-  group_by(animal_id, logger_id) %>%
-  summarize(amount = sum(length))
+p_indiv <- summarize(p, amount = sum(length), .by = c("animal_id", "logger_id"))
 p_indiv
 
-m_indiv <- m %>%
-  group_by(animal_id, move_path, logger_id, lat, lon) %>%
-  summarize(path_use = length(move_path))
+m_indiv <- summarize(
+  m,
+  path_use = length(move_path),
+  .by = c("animal_id", "move_path", "logger_id", "lat", "lon")
+)
 m_indiv
 ```
 
@@ -127,7 +125,7 @@ If you want to look at individual data, add `animal_id` to the groupings.
 
 ## Animations
 
-To look at animations of your data overtime, you can use the function `ui_animate()` to launch the animation shiny app included in the `feedr` package:
+To look at animations of your data overtime, you can use the function `ui_animate()` to launch the animation shiny app included in the feedr package:
 
 ```{r, eval = FALSE}
 library(feedrUI)
@@ -136,6 +134,8 @@ ui_animate(v)
 ```
 
 ![](ui_animate.png)
+
+> Note: While feedrUI still generally works, it is a lower maintenance priority so features many not be stable.
 
 Here you can choose 
 
@@ -151,5 +151,4 @@ The figure along the bottom shows the number of movements and/or bouts of presen
 
 
 --------------------------
-Back to [top](#top)  
-Go back to [home](index.html) | Go back to [transformations](transformations.html)
+Go back to [transformations](transformations.html)
