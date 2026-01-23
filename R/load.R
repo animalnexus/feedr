@@ -82,11 +82,11 @@
 #' r <- load_raw("2300.csv", logger_pattern = "[0-9]{4}")
 #'
 #' # Load a file where the logger id is detected as the first line in the file,
-#' not the file name (still use default skip = 1):
+#' # not the file name (still use default skip = 1):
 #' r <- load_raw("2016-01-01_09_30.csv", details = 1)
 #'
 #' # Note that the following won't work because the pattern matches both the
-#' logger id as well as the year:
+#' # logger id as well as the year:
 #' r <- load_raw("2300_2015_12_01.csv", logger_pattern = "[0-9]{4}")
 #'
 #' # Extract extra data to be stored in another column:
@@ -190,13 +190,13 @@ load_raw <- function(
       # Get logger id from first line
       if (is.na(logger_pattern)) {
         r$logger_id <- readLines(r_file, n = 1)
-      }
-      if (!is.na(logger_pattern)) {
+      } else {
         r$logger_id <- stringr::str_extract(
           readLines(r_file, n = 1),
           logger_pattern
         )
       }
+
       if (any(is.na(r$logger_id))) {
         stop("logger_id not detected from first line of file", call. = FALSE)
       }
@@ -219,8 +219,11 @@ load_raw <- function(
         strsplit(split = ",") %>%
         unlist() %>%
         trimws()
+
       locs <- suppressWarnings(try(as.numeric(locs), silent = TRUE))
-      if (class(locs) == "try-error" || is.na(locs) || length(locs) != 2) {
+      if (
+        inherits(locs, "try-error") || any(is.na(locs)) || length(locs) != 2
+      ) {
         stop(
           "Expecting one pair of lat/lon on second line of the file. Check format or change 'details'\n(Format should be e.g.,  53.91448, -122.76925).",
           call. = FALSE
@@ -266,6 +269,8 @@ load_raw <- function(
         "You have specified names for extra columns, but you have not specified what pattern to match for filling ('extra_pattern')."
       )
     }
+
+    r <- dplyr::as_tibble(r)
 
     return(r)
   } else if (verbose) {
@@ -417,7 +422,8 @@ load_raw_all <- function(
 
 #' Format data
 #'
-#' Formats manually loaded data. Not necessary if using any of the helper loading functions (e.g., `load_raw()`, `load_raw_all()`, or `data_dl()`.
+#' Formats manually loaded data. Not necessary if using any of the helper
+#' loading functions (e.g., `load_raw()`, `load_raw_all()`, or `data_dl()`.
 #'
 #' @details
 #' Expects at least three named columns in the data: `animal_id`,
@@ -551,4 +557,7 @@ load_format <- function(
   cols <- c("animal_id", "date", "time", "logger_id")
   cols <- cols[which(cols %in% names(r))]
   r[, c(cols, names(r)[!(names(r) %in% cols)])]
+  r <- dplyr::as_tibble(r)
+
+  r
 }

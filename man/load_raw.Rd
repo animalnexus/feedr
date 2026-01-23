@@ -116,11 +116,11 @@ r <- load_raw("GPR13DATA_2015_12_01.csv", logger_pattern = "[GPR]{2,3}[0-9]{1,2}
 r <- load_raw("2300.csv", logger_pattern = "[0-9]{4}")
 
 # Load a file where the logger id is detected as the first line in the file,
-not the file name (still use default skip = 1):
+# not the file name (still use default skip = 1):
 r <- load_raw("2016-01-01_09_30.csv", details = 1)
 
 # Note that the following won't work because the pattern matches both the
-logger id as well as the year:
+# logger id as well as the year:
 r <- load_raw("2300_2015_12_01.csv", logger_pattern = "[0-9]{4}")
 
 # Extract extra data to be stored in another column:

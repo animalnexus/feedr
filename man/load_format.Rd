@@ -40,7 +40,8 @@ etc.).}
 columns.}
 }
 \description{
-Formats manually loaded data. Not necessary if using any of the helper loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, or \code{data_dl()}.
+Formats manually loaded data. Not necessary if using any of the helper
+loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, or \code{data_dl()}.
 }
 \details{
 Expects at least three named columns in the data: \code{animal_id},
