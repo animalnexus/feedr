@@ -10,3 +10,5 @@
 ^\.vscode$
 ^[.]?air[.]toml$
 ^vignettes/articles$
+^_pkgdown\.yml$
+^pkgdown$
