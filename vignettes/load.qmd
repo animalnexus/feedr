@@ -115,9 +115,9 @@ Alternatively, you can use `details = 2` if the logger id is on the first line o
 Such a file would look like this:
 ```{r details3, echo = FALSE}
 file.copy("Data/exp2/GR10DATA_2016_01_16.TXT", "Data/exp2/Logger_Data.TXT")
-system(
-  "sed -i '1s/GR10DATA/Logger_21\\\n53.89086,-122.81933/' Data/exp2/Logger_Data.TXT"
-)
+l <- readLines("Data/exp2/Logger_Data.TXT")
+l <- c("Logger_21", "53.89086,-122.81933", l[-1])
+writeLines(l, "Data/exp2/Logger_Data.TXT")
 ```
 
 ```{r, comment='', echo = FALSE}
