@@ -36,7 +36,7 @@ scale_area <- function(
 controls <- function(map, group) {
   c <- list(character(0), group)
   c_old <- grep("addLayersControl", map$x$calls)
-  if (length(c_old > 0)) {
+  if (length(c_old) > 0) {
     c[[1]] <- map$x$calls[[c_old[length(c_old)]]]$args[[1]]
     c[[2]] <- unique(c(map$x$calls[[c_old[length(c_old)]]]$args[[2]], c[[2]]))
   }
