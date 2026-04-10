@@ -150,11 +150,6 @@ check_ids <- function(
 }
 
 
-check.ids <- function(r, animal_ids, omit_animal = c("wand", "error")) {
-  .Deprecated("check_ids")
-  check_ids(r, animals_ids, omit_animal)
-}
-
 #' Check for and correct odd animal ids
 #'
 #' This function compares the animal ids in your data file to those in a problem
@@ -241,9 +236,4 @@ check_problems <- function(r, problems) {
   }
 
   r
-}
-
-check.problems <- function(r, problems) {
-  .Deprecated("check_problems")
-  check_ids(r, problems)
 }

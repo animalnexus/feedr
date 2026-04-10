@@ -217,47 +217,6 @@ convert_dominance <- function(d) {
     "is defunct",
     call. = FALSE
   )
-
-  # Function takes either the whole output of disp() or just the displacements
-  if (!is.data.frame(d)) {
-    d <- d$displacements
-  }
-
-  # Check for Correct formating
-  check_name(d, c("animal_id", "role"), type = "displacement")
-  check_format(d)
-
-  d <- d %>%
-    dplyr::arrange(left) %>%
-    dplyr::mutate(
-      animal_id = as.character(.data$animal_id),
-      item.number = as.numeric(factor(!!d$animal_id))
-    )
-
-  items <- d %>%
-    dplyr::select("Name" = "animal_id", "item.number") %>%
-    dplyr::distinct() %>%
-    dplyr::arrange(.data$item.number) %>%
-    as.data.frame()
-
-  data_sheet <- d %>%
-    dplyr::select("item.number", "role", "left", "arrived") %>%
-    tidyr::pivot_wider(names_from = "role", values_from = "item.number") %>%
-    dplyr::select("action.from" = "displacer", "action.to" = "displacee") %>%
-    dplyr::mutate(kind.of.action = 1) %>%
-    as.data.frame()
-
-  actions <- data.frame(
-    name.of.action = "displacement",
-    action.number = 1,
-    classification = 1,
-    weighting = 1,
-    stringsAsFactors = FALSE
-  )
-
-  bytes <- paste0(rep(1, nrow(actions)), collapse = "")
-
-  list(data_sheet = data_sheet, items = items, actions = actions, bytes = bytes)
 }
 
 #' Convert displacements for use by the Perc package
