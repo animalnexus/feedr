@@ -1,0 +1,213 @@
+---
+title: "Loading in Data"
+vignette: >
+  %\VignetteIndexEntry{Loading in Data}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
+---
+
+```{r setup}
+#| include: false
+o <- options("readr.show_col_types" = FALSE)
+```
+
+This is a quick tutorial to get you started with loading in your own data. feedr includes several wrapper functions that can be used to load and format your data.
+
+- `load_format()`
+- `load_raw()`
+- `load_raw_all()`
+
+
+## Loading packages
+
+Make sure you load the feedr package, and here we'll also use some [tidyverse](https://tidyverse.org/) packages such as dplyr and readr.
+```{r}
+#| message: false
+library(feedr)
+library(dplyr)
+library(readr)
+```
+
+## A note about file structure
+
+It's important to remember that when specifying file locations, you must either specify a complete file location (e.g. `/home/steffi/Desktop/data.csv`) __or__ an appropriate relative file location. A relative file location would be something like: `Data/data.csv` which points to a file called data.csv which is in a folder called `Data`. The `` (or no `/`) indicates that `Data` is in the current working directory. If we used `.` that would indicate that `Data` was one directory up.
+
+Also, remember that file locations are relative to where R's working directory is, and this is not necessarily the same place as the R script with which you are working.
+
+If you are using RStudio, it is highly recommended that you specify an RStudio project in the directory which holds your scripts. This way, anytime you open the file, the working directly is automatically set to where your scripts are.
+
+## Setup
+
+This tutorial uses data which comes with the feedr package, but it assumes that you've copied this data to a folder `Data` which is in turn stored in your R scripts folder.
+
+Let's move those files over.
+
+```{r}
+# Create the Data folder in your working directory
+dir.create("Data")
+
+# List the data folders we want to copy
+f <- system.file("extdata", "raw", package = "feedr") %>%
+  list.files(full.names = TRUE)
+
+# Copy them to our new "Data" folder
+# (recursive means copy the contents of folders too)
+file.copy(f, "Data", recursive = TRUE)
+
+file.copy(
+  system.file("extdata", "chickadees_logger_index.csv", package = "feedr"),
+  "Data"
+)
+```
+
+## `load_raw()`
+
+This loads and formats a raw data file downloaded directly from RFID loggers setup in the same manner as the Thompson Rivers University loggers.
+
+In the raw form, this data looks like:
+
+```{r preview, comment='', echo = FALSE}
+cat(readLines("Data/exp2/GR10DATA_2016_01_16.TXT", n = 6), sep = '\n')
+```
+
+When we use `load_raw()` to import it, we get this:
+
+```{r load_raw}
+r1 <- load_raw("Data/exp2/GR10DATA_2016_01_16.TXT")
+r1
+```
+
+Note that the `logger_id` has been extracted from the first line of the file. This is done by matching an expected pattern against the the contents of the first line (these patterns are called [Regular Expressions](https://stringr.tidyverse.org/articles/regular-expressions.html)).
+
+The default pattern matches GR or GPR followed by 1 or 2 digits. If you need to specify a different pattern you can do so. For example, if your loggers were labeled "Logger_10" or "Logger_01":
+
+```{r, echo = FALSE}
+f <- readLines("Data/exp2/GR10DATA_2016_01_16.TXT")
+f[1] <- gsub(f[1], "GR10DATA", "Logger_10")
+write(f, "Data/exp2/Logger_10_2016_01_16.TXT")
+```
+
+```{r, comment='', echo = FALSE}
+cat(readLines("Data/exp2/Logger_10_2016_01_16.TXT", n = 6), sep = '\n')
+```
+
+```{r logger_pattern}
+r1 <- load_raw(
+  "Data/exp2/Logger_10_2016_01_16.TXT",
+  logger_pattern = "Logger_[0-9]{2}"
+)
+r1
+```
+
+### Details
+
+Alternatively, you can determine where `load_raw()` gets extra details from by specifying the `details` argument (defaults to `details = 1`).
+
+Up to now, our examples all use this method. However if you have a file where the logger id is in the file name, and not on the first line, you'll want to use `details = 0` to extract the logger id from the file name instead.
+
+Alternatively, you can use `details = 2` if the logger id is on the first line of the file, 
+**and** lat/lon information is on the second line, in the format of "latitude, longitude" both in decimal format (spacing doesn't matter, but the comma does).
+
+Such a file would look like this:
+```{r details3, echo = FALSE}
+file.copy("Data/exp2/GR10DATA_2016_01_16.TXT", "Data/exp2/Logger_Data.TXT")
+l <- readLines("Data/exp2/Logger_Data.TXT")
+l <- c("Logger_21", "53.89086,-122.81933", l[-1])
+writeLines(l, "Data/exp2/Logger_Data.TXT")
+```
+
+```{r, comment='', echo = FALSE}
+cat(readLines("Data/exp2/Logger_Data.TXT", n = 6), sep = '\n')
+```
+
+And would be loaded by `load_raw()` like this:
+
+```{r}
+load_raw(
+  "Data/exp2/Logger_Data.TXT",
+  logger_pattern = "Logger_[0-9]{2}",
+  details = 2
+)
+```
+
+
+For more information on how to write Regular Expression patterns, see the [Regular Expressions Article](https://stringr.tidyverse.org/articles/regular-expressions.html) from the stringr package. 
+
+## `load_raw_all()`
+
+The function `load_raw_all()` is a wrapper function which will automatically load and combine data contained in several different files in a single folder, or in a nested series of folders. Other, non-logger, files can be present, because logger files must be identifiable by a pattern (`pattern` argument, which defaults to `DATA`) in the file name.
+
+In this example there are several sets of data, each corresponding to an individual experiment which are then stored in their own folder called `exp1`, `exp2`, etc. Logger data files are identifiable by the characters `DATA` present in the name (as in the above example), which is the default pattern:
+
+```{r load_raw_all}
+r <- load_raw_all(r_dir = "Data")
+r
+summary(r)
+```
+
+(Note that empty files are skipped, but identified)
+
+If your logger files don't have an identifiable label, but are the only csv files in the folders, you could use:
+```{r eval = FALSE}
+r <- load_raw_all(r_dir = "Data", pattern = ".csv")
+```
+
+### Extra details
+
+In this example we have several different experiments, which we'll probably want to identify in our data. This is where the `extra_xxx` arguments come in.
+
+```{r extra}
+list.files("Data")
+```
+
+In our example, each experiment is stored in its own folder ('exp2' and 'exp3'). Therefore we can tell our function to identify patterns (`extra_pattern`) in the file names and store the values in an extra column (`extra_name`):
+
+```{r extra_pattern}
+r <- load_raw_all(
+  r_dir = "Data",
+  extra_pattern = "exp[2-3]{1}",
+  extra_name = "experiment"
+)
+r
+```
+
+`exp[2-3]{1}` matches the exact characters "exp" followed by either a 2 or a 3 of which there is exactly 1. The values matching this pattern are then stored in a new column called 'experiment'.
+
+Because here the loggers were RFID-enabled feeders reused for different experiments, some logger have the same id, but a different lat/lon. However, `logger_id`s need to be unique or we will have problems later on, so let's create unique `logger_id` names:
+
+```{r logger_id}
+r <- mutate(r, logger_id = paste0(experiment, "-", logger_id))
+r
+```
+
+### Logger details
+Because raw logger data doesn't include logger specific details, we should probably include some extra data for use later (visualizations, etc.):
+
+We can do this the same way as we did above (see ['Details' under `load_raw()`](#loaddetails)), or by merging our raw data with a logger index file. This method works best when you have multiple details you'd like to add (more than just lat/lon information), or when your raw files don't contain lat/lon information already.
+
+```{r logger_index}
+# Open logger index and make sure the logger_ids match
+l_index <- read_csv("Data/chickadees_logger_index.csv") %>%
+  mutate(logger_id = paste0(experiment, "-", logger_name))
+
+l_index
+
+# Add logger index into RFID data, matching by 'experiment' and 'logger_id'
+r <- left_join(r, l_index, by = c("experiment", "logger_id"))
+r
+```
+
+This data is now ready for [housekeeping](housekeeping.html) or go straight to [transformations](transformations.html)!
+
+--------------------------
+Continue with [housekeeping](housekeeping.html)
+
+```{r}
+#| include: false
+options(o)
+unlink("Data", recursive = TRUE)
+```

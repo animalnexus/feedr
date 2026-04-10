@@ -6,3 +6,13 @@
 ^appveyor\.yml$
 ^.*.rds$
 ^\.github$
+^codecov\.yml$
+^\.vscode$
+^[.]?air[.]toml$
+^vignettes/articles$
+^_pkgdown\.yml$
+^pkgdown$
+^vignettes/\.quarto$
+^vignettes/*_files$
+^README.Rmd$
+^RELEASE.R$

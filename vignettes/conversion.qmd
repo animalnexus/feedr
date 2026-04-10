@@ -1,0 +1,121 @@
+---
+title: "Conversion functions"
+vignette: >
+  %\VignetteIndexEntry{Conversion functions}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
+---
+
+Conversion functions permit you to format raw or transformed data for use in other packages.
+
+## Setup
+
+First we'll load the packages we want to use.
+
+```{r}
+#| message: false
+library(feedr)
+```
+
+### `convert_anidom()`
+
+Converts the output of `disp()` for use by the package [`aniDom`](https://cran.r-project.org/package=aniDom)'s functions: `elo_scores()` and `estimate_uncertainty_by_splitting()`
+
+```{r}
+d <- disp(visits(finches_lg), bw = 5)
+i <- convert_anidom(d)
+i
+```
+
+```{r}
+library(aniDom)
+
+# Calculate elo_scores
+s <- elo_scores(winners = i$winner, losers = i$loser)
+s
+
+# Estimate repeatability
+estimate_uncertainty_by_repeatability(winners = i$winner, losers = i$loser)
+estimate_uncertainty_by_splitting(
+  winners = i$winner,
+  losers = i$loser,
+  randomise = TRUE
+)
+```
+
+```{r eval = FALSE}
+# Construct social network graphs
+Sociogram(
+  data_sheet = i$data_sheet,
+  items = i$items,
+  actions = i$actions,
+  bits = i$bytes
+)
+```
+
+### `convert_perc()`
+Converts the output of `disp()` for use by the package [`Perc`](https://cran.r-project.org/package=Perc)
+
+```{r}
+d <- disp(visits(finches_lg), bw = 5)
+i <- convert_perc(d)
+head(i)
+```
+
+```{r}
+library(Perc)
+
+# Calculate ranks (adapted from Perc examples)
+conflict_mat <- as.conflictmat(i, weighted = TRUE)
+perm <- conductance(conflict_mat, 2)
+simRankOrder(perm$p.hat, num = 10, kmax = 1000)
+```
+
+### `convert_asnipe()`
+Converts raw RFID data into a format for easy use by either the `gmmevents()` or the `get_associations_points_tw()` functions included in the [`asnipe`](https://cran.r-project.org/package=asnipe) package for calculating group membership.
+
+For `gmmevents()`:
+```{r}
+a <- convert_asnipe(finches, fun = "gmmevents")
+head(a)
+```
+
+```{r, eval = FALSE}
+library(asnipe)
+gmmevents(a$time, a$identity, a$location)
+```
+
+For `get_associations_points_bw()`:
+```{r}
+a <- convert_asnipe(finches, fun = "get_associations_points_tw")
+head(a)
+```
+
+```{r, eval = FALSE}
+get_associations_points_tw(a)
+```
+
+
+### `convert_activity()`
+Converts raw RFID data into a format for easy use by the `fitact()` function included in the [`activity`](https://cran.r-project.org/package=activity) package for modelling activity levels and daily activity patterns.
+
+```{r}
+i <- convert_activity(finches_lg)
+```
+
+```{r}
+library(activity)
+
+# Calculate daily activity pattern for a single individual
+a <- fitact(i[[1]], sample = "none")
+plot(a)
+
+# Calculate daily activity pattern for all individuals
+a <- lapply(i, fitact, sample = "none")
+plot(a[[3]])
+plot(a[["06200004F8"]])
+```
