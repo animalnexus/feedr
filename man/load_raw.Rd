@@ -86,7 +86,7 @@ The columns \code{date} and \code{time} will be combined to extract the
 date/time of each event. Thus, the \code{time_format} argument specifies the
 order of the combined date and time columns and should be in formats usable
 by the \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} function from the
-\link{lubridate} package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.). For
+\link[lubridate:lubridate-package]{lubridate::lubridate} package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.). For
 example, the default "mdy HMS" expects a date column in the format of
 month/day/year and a time column in the format of H:M:S (note that separators
 and leading zeros are ignored, thus month-day-year is equivalent to

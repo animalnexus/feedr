@@ -62,11 +62,11 @@ get_locs <- function(d) {
   lon <- "lon"
 
   if (
-    any(lat %in% names(d)) &
-      any(lon %in% names(d)) &
+    any(lat %in% names(d)) &&
+      any(lon %in% names(d)) &&
       "logger_id" %in% names(d)
   ) {
-    if (sum(lat %in% names(d)) > 1 | sum(lon %in% names(d)) > 1) {
+    if (sum(lat %in% names(d)) > 1 || sum(lon %in% names(d)) > 1) {
       stop(paste0(
         "Muliple latitude or longitudes in data possible. ",
         "Looking for latitude (",
@@ -78,7 +78,7 @@ get_locs <- function(d) {
     }
 
     locs <- dplyr::ungroup(d) %>%
-      dplyr::select(logger_id, lat, lon) %>%
+      dplyr::select("logger_id", "lat", "lon") %>%
       dplyr::distinct()
     return(locs)
   } else {

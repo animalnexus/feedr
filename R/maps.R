@@ -71,7 +71,7 @@ map_prep <- function(p = NULL, m = NULL, locs = NULL, summary = "none") {
     }
     if (!is.null(m) && nrow(m) > 0) m <- summaries(m, summary = summary)
   } else {
-    if (!("amount" %in% names(p)) | !("path_use" %in% names(m))) {
+    if (!("amount" %in% names(p)) || !("path_use" %in% names(m))) {
       stop(
         "If not supplying a summary type (i.e. summary = 'none') ",
         "data must already be summarized. Presence data (p) ",
@@ -286,7 +286,7 @@ path_layer <- function(
     stop("Missing path lat/lon data, did you supply location data?")
   }
 
-  m <- dplyr::arrange(m, path_use)
+  m <- dplyr::arrange(m, .data$path_use)
 
   # Define palette
   m_pal <- leaflet::colorNumeric(
@@ -352,7 +352,7 @@ presence_markers <- function(
   layerId = "presence"
 ) {
   if (length(layerId) != nrow(data)) {
-    layerId <- paste0(layerId, "-", 1:nrow(data))
+    layerId <- paste0(layerId, "-", seq_len(nrow(data)))
   }
   addCircleMarkers(
     map,

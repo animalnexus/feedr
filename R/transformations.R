@@ -61,7 +61,7 @@ inout <- function(r, dir_in, type = "out", all = FALSE, pass = TRUE) {
   # Check direction options
   id_opts <- paste0("(", paste0(unique(r$logger_id), collapse = ")|("), ")")
   if (
-    !is.character(dir_in) |
+    !is.character(dir_in) ||
       !all(grepl(paste0("(", id_opts, ")", "_", "(", id_opts, ")"), dir_in))
   ) {
     stop(
@@ -91,12 +91,13 @@ inout <- function(r, dir_in, type = "out", all = FALSE, pass = TRUE) {
   r$logger_id <- as.character(r$logger_id)
 
   # Exclude loggers which not involved
-  if (any(exclude <- !stringr::str_detect(dir_in, r$logger_id))) {
+  exclude <- !stringr::str_detect(dir_in, r$logger_id)
+  if (any(exclude)) {
     r <- r[!exclude, ]
   }
 
   # Get extra columns
-  if (pass == TRUE) {
+  if (pass) {
     extra <- keep_extra(
       r,
       n = c("time", "logger_id"),
@@ -124,7 +125,7 @@ inout <- function(r, dir_in, type = "out", all = FALSE, pass = TRUE) {
     i <- i %>%
       tidyr::nest(data = c(-"animal_id")) %>%
       dplyr::mutate(
-        data = purrr::map(data, ~ remove_edges(.x, dir_to, dir_from))
+        data = purrr::map(.data$data, ~ remove_edges(.x, dir_to, dir_from))
       ) %>%
       tidyr::unnest(cols = c("data"))
 
@@ -133,19 +134,11 @@ inout <- function(r, dir_in, type = "out", all = FALSE, pass = TRUE) {
       dplyr::group_by(.data$animal_id) %>%
       dplyr::mutate(
         inout_dir = .data$inout_dir[.data$inout_dir %in% !!dir_in][1],
-        problem_next = dplyr::if_else(
-          .data$direction == dplyr::lead(.data$direction),
-          TRUE,
-          FALSE
-        ),
-        problem_prev = dplyr::if_else(
-          .data$direction == dplyr::lag(.data$direction),
-          TRUE,
-          FALSE
-        ),
+        problem_next = .data$direction == dplyr::lead(.data$direction),
+        problem_prev = .data$direction == dplyr::lag(.data$direction),
         problem = .data$problem_next & .data$problem_prev
       ) %>%
-      dplyr::filter(.data$problem != TRUE) %>%
+      dplyr::filter(!.data$problem) %>%
       dplyr::group_by(.data$animal_id, .data$direction) %>%
       dplyr::mutate(trip_id = seq_along(.data$animal_id))
 
@@ -180,7 +173,7 @@ inout <- function(r, dir_in, type = "out", all = FALSE, pass = TRUE) {
     }
 
     # Add in extra cols
-    if (pass == TRUE) i <- merge_extra(i, extra)
+    if (pass) i <- merge_extra(i, extra)
   }
 
   i$animal_id <- factor(i$animal_id, levels = animal_id)
@@ -237,7 +230,8 @@ summarize_inout <- function(i, r, dir_in, dir_from, dir_to, type = "out") {
       max_time_away = max(.data$diff_time, na.rm = TRUE)
     )
 
-  if (length(s <- setdiff(unique(r$animal_id), unique(i_raw$animal_id))) > 0) {
+  s <- setdiff(unique(r$animal_id), unique(i_raw$animal_id))
+  if (length(s) > 0) {
     i_raw <- dplyr::bind_rows(
       i_raw,
       tibble::tibble(
@@ -291,7 +285,7 @@ inout_single <- function(r1, dir_in, all = FALSE) {
           "enter"
         )
       )
-  } else if (all == TRUE) {
+  } else if (all) {
     # Create the movement data frame for animals that didn't move between loggers
     e1 <- tibble::tibble(
       animal_id = r1$animal_id[1],
@@ -391,14 +385,14 @@ visits <- function(
   check_format(r)
 
   # Check for NAs, remove if specified by na_rm = TRUE
-  if (any(is.na(r[, c("animal_id", "logger_id", "time")]))) {
-    if (na_rm == FALSE) {
+  if (anyNA(r[, c("animal_id", "logger_id", "time")])) {
+    if (!na_rm) {
       stop(
         "NAs found. To automatically remove NAs, specify 'na_rm = TRUE'.",
         call. = FALSE
       )
     }
-    if (na_rm == TRUE) r <- r[rowSums(is.na(r)) == 0, ]
+    if (na_rm) r <- r[rowSums(is.na(r)) == 0, ]
   }
 
   ## Make factors and get date
@@ -408,7 +402,7 @@ visits <- function(
   #                    animal_id = factor(animal_id))
 
   # Grab unique extra cols
-  if (pass == TRUE) {
+  if (pass) {
     extra <- keep_extra(r, n = "time")
   }
 
@@ -430,7 +424,8 @@ visits <- function(
     ) %>%
     dplyr::group_by(.data$animal_id) %>%
     dplyr::mutate(
-      diff_time = difftime(dplyr::lead(.data$time), time, units = "sec") > bw,
+      diff_time = difftime(dplyr::lead(.data$time), .data$time, units = "sec") >
+        .env$bw,
       diff_logger = dplyr::lead(.data$logger_id) != .data$logger_id
     )
 
@@ -494,29 +489,29 @@ visits <- function(
     dplyr::mutate(new = "include") %>%
     dplyr::mutate(
       new = replace(
-        new,
+        .data$new,
         .data$diff_logger | .data$diff_time | .data$diff_animal,
         "end"
       ),
-      new = replace(new, is.na(dplyr::lead(.data$new)), "end"),
+      new = replace(.data$new, is.na(dplyr::lead(.data$new)), "end"),
       # Assign start or start-end points for each individual
       new = replace(
-        new,
-        new == "include" &
+        .data$new,
+        .data$new == "include" &
           (is.na(dplyr::lag(.data$new)) |
             dplyr::lag(.data$new) == "end"),
         "start"
       ),
       new = replace(
-        new,
-        new == "end" &
+        .data$new,
+        .data$new == "end" &
           (is.na(dplyr::lag(.data$new)) |
             dplyr::lag(.data$new) == "end"),
         "start-end"
       )
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::filter(new != "include") %>%
+    dplyr::filter(.data$new != "include") %>%
     dplyr::mutate(
       start = as.POSIXct(NA, tz = !!tz),
       end = as.POSIXct(NA, tz = !!tz),
@@ -540,7 +535,7 @@ visits <- function(
     dplyr::filter(!is.na(.data$value)) %>%
     dplyr::arrange(.data$value) %>%
     dplyr::group_by(.data$logger_id, .data$animal_id, .data$variable) %>%
-    dplyr::mutate(n = 1:length(.data$value)) %>%
+    dplyr::mutate(n = dplyr::row_number()) %>%
     tidyr::pivot_wider(names_from = "variable", values_from = "value") %>%
     dplyr::select(-"n") %>%
     dplyr::ungroup() %>%
@@ -568,7 +563,7 @@ visits <- function(
     dplyr::arrange(.data$animal_id, .data$start)
 
   # Add in extra variables
-  if (pass == TRUE) {
+  if (pass) {
     v <- merge_extra(v, extra)
   }
 
@@ -654,7 +649,7 @@ move <- function(v, all = FALSE, pass = TRUE) {
   v$logger_id <- as.character(v$logger_id)
 
   # Get extra columns
-  if (pass == TRUE) {
+  if (pass) {
     extra <- keep_extra(v, n = c("start", "end"))
   }
 
@@ -666,7 +661,7 @@ move <- function(v, all = FALSE, pass = TRUE) {
 
   # Apply individually to each animal
   m <- v %>%
-    dplyr::group_by(animal_id) %>%
+    dplyr::group_by(.data$animal_id) %>%
     dplyr::do(move_single(
       .,
       move_dir = move_dir,
@@ -679,20 +674,20 @@ move <- function(v, all = FALSE, pass = TRUE) {
     # Order
     m <- m %>%
       dplyr::select(
-        animal_id,
-        date,
-        time,
-        logger_id,
-        direction,
-        move_id,
-        move_dir,
-        move_path,
-        strength
+        "animal_id",
+        "date",
+        "time",
+        "logger_id",
+        "direction",
+        "move_id",
+        "move_dir",
+        "move_path",
+        "strength"
       ) %>%
-      dplyr::arrange(animal_id, time)
+      dplyr::arrange(.data$animal_id, .data$time)
 
     # Add in extra cols
-    if (pass == TRUE) {
+    if (pass) {
       m <- merge_extra(m, extra)
     }
 
@@ -718,33 +713,36 @@ move_single <- function(v1, move_dir, move_path, all = FALSE) {
     v1$arrived[c(FALSE, diff)] <- TRUE
 
     m <- v1 %>%
-      dplyr::filter(left | arrived) %>%
-      tidyr::gather(direction, value, left, arrived) %>%
-      dplyr::filter(value) %>%
-      tidyr::gather(type, time, start, end) %>%
+      dplyr::filter(.data$left | .data$arrived) %>%
+      tidyr::gather(key = "direction", value = "value", "left", "arrived") %>%
+      dplyr::filter(.data$value) %>%
+      tidyr::gather(key = "type", value = "time", "start", "end") %>%
       dplyr::filter(
-        (direction == "arrived" & type == "start") |
-          (direction == "left" & type == "end")
+        (.data$direction == "arrived" & .data$type == "start") |
+          (.data$direction == "left" & .data$type == "end")
       ) %>%
-      dplyr::select(-value, -type) %>%
-      dplyr::arrange(time) %>%
-      dplyr::mutate(move_id = sort(rep(1:(length(animal_id) / 2), 2))) %>%
-      dplyr::group_by(move_id) %>%
+      dplyr::select(-"value", -"type") %>%
+      dplyr::arrange(.data$time) %>%
+      dplyr::mutate(move_id = sort(rep(1:(length(.data$animal_id) / 2), 2))) %>%
+      dplyr::group_by(.data$move_id) %>%
       dplyr::mutate(
-        move_dir = factor(paste0(logger_id, collapse = "_"), levels = move_dir),
+        move_dir = factor(
+          paste0(.data$logger_id, collapse = "_"),
+          levels = .env$move_dir
+        ),
         move_path = factor(
-          paste0(sort(logger_id), collapse = "_"),
-          levels = move_path
+          paste0(sort(.data$logger_id), collapse = "_"),
+          levels = .env$move_path
         ),
         strength = 1 /
           as.numeric(difftime(
-            time[direction == "arrived"],
-            time[direction == "left"],
+            .data$time[.data$direction == "arrived"],
+            .data$time[.data$direction == "left"],
             units = "hours"
           ))
       ) %>%
       dplyr::ungroup()
-  } else if (all == TRUE) {
+  } else if (all) {
     # Create the movement data frame for animals that didn't move between loggers
     m <- tibble::tibble(
       animal_id = v1$animal_id[1],
@@ -845,7 +843,7 @@ presence <- function(v, bw = 15, pass = TRUE) {
   v$logger_id <- as.character(v$logger_id)
 
   # Keep extra cols
-  if (pass == TRUE) {
+  if (pass) {
     extra <- keep_extra(v, n = c("start", "end"))
   }
 
@@ -856,7 +854,7 @@ presence <- function(v, bw = 15, pass = TRUE) {
     dplyr::ungroup()
 
   # Get extra columns and add in
-  if (pass == TRUE) {
+  if (pass) {
     p <- merge_extra(p, extra)
   }
   p <- p[order(p$animal_id, p$start, p$logger_id), ]
@@ -893,13 +891,13 @@ presence_single <- function(v1, bw = bw) {
   ## Create the presence data frame.
   tibble::tibble(
     animal_id = v1$animal_id[1],
-    date = v1$date[v1$start == TRUE],
-    logger_id = v1$logger_id[v1$start == TRUE],
-    start = v1$start_orig[v1$start == TRUE],
-    end = v1$end_orig[v1$end == TRUE],
+    date = v1$date[v1$start],
+    logger_id = v1$logger_id[v1$start],
+    start = v1$start_orig[v1$start],
+    end = v1$end_orig[v1$end],
     length = as.numeric(difftime(
-      v1$end_orig[v1$end == TRUE],
-      v1$start_orig[v1$start == TRUE],
+      v1$end_orig[v1$end],
+      v1$start_orig[v1$start],
       units = "mins"
     ))
   )
@@ -1012,7 +1010,7 @@ disp <- function(v, bw = 2, pass = TRUE) {
   v <- v[order(v$start), ]
 
   # Keep extra columns
-  if (pass == TRUE) {
+  if (pass) {
     extra <- keep_extra(v, n = c("start", "end"))
   }
 
@@ -1059,34 +1057,40 @@ disp <- function(v, bw = 2, pass = TRUE) {
       ) %>%
       dplyr::arrange(.data$left, .data$logger_id, .data$role)
 
-    if (pass == TRUE) {
+    if (pass) {
       d <- merge_extra(d, extra)
     }
 
     ## Summarize totals
     s <- d %>%
-      dplyr::group_by(role, animal_id) %>%
-      dplyr::summarize(n = length(animal_id)) %>%
+      dplyr::group_by(.data$role, .data$animal_id) %>%
+      dplyr::summarize(n = length(.data$animal_id)) %>%
       dplyr::ungroup() %>%
-      tidyr::complete(animal_id, role, fill = list("n" = 0)) %>%
-      tidyr::spread(role, n) %>%
-      dplyr::mutate(p_win = displacer / (displacee + displacer)) %>%
-      dplyr::arrange(desc(p_win))
+      tidyr::complete(.data$animal_id, .data$role, fill = list("n" = 0)) %>%
+      tidyr::spread(.data$role, .data$n) %>%
+      dplyr::mutate(
+        p_win = .data$displacer / (.data$displacee + .data$displacer)
+      ) %>%
+      dplyr::arrange(dplyr::desc(.data$p_win))
 
     ## Summarize interactions
     t <- d %>%
-      dplyr::select(left, animal_id, role) %>%
-      tidyr::spread(role, animal_id) %>%
-      dplyr::group_by(displacer, displacee) %>%
-      dplyr::summarize(n = length(displacee)) %>%
+      dplyr::select("left", "animal_id", "role") %>%
+      tidyr::spread("role", "animal_id") %>%
+      dplyr::group_by(.data$displacer, .data$displacee) %>%
+      dplyr::summarize(n = length(.data$displacee)) %>%
       dplyr::ungroup()
 
     t$displacee <- factor(t$displacee, levels = animal_id)
     t$displacer <- factor(t$displacer, levels = animal_id)
 
     t <- t %>%
-      tidyr::complete(displacer, displacee, fill = list("n" = 0)) %>%
-      dplyr::filter(displacee != displacer)
+      tidyr::complete(
+        .data$displacer,
+        .data$displacee,
+        fill = list("n" = 0)
+      ) %>%
+      dplyr::filter(.data$displacee != .data$displacer)
 
     t <- t[order(match(t$displacer, s$animal_id)), ] ##Sort according to the p_win value from s
 
@@ -1202,7 +1206,7 @@ activity <- function(
 
   # Keep extra cols
   if (pass) {
-    if (by_logger == FALSE) {
+    if (!by_logger) {
       only <- c("animal_id", "date")
     } else {
       only <- c("logger_id", "animal_id", "date")
@@ -1210,7 +1214,7 @@ activity <- function(
     extra <- keep_extra(p, n = c("start", "end", "length"), only = only)
   }
 
-  if (any(!lubridate::is.POSIXct(c(p$start, p$end)))) {
+  if (!all(lubridate::is.POSIXct(c(p$start, p$end)))) {
     stop(
       "Cannot define start and end times of the presence data set, make sure this is the output from presence()."
     )
@@ -1218,7 +1222,7 @@ activity <- function(
 
   # Apply individually to each animal
   a <- p %>%
-    dplyr::group_by(animal_id) %>%
+    dplyr::group_by(.data$animal_id) %>%
     dplyr::do(activity_single(
       .,
       loggers = loggers,
@@ -1234,7 +1238,13 @@ activity <- function(
     a <- merge_extra(a, extra)
   }
 
-  a <- dplyr::arrange(a, animal_id, date, time, logger_id)
+  a <- dplyr::arrange(
+    a,
+    .data$animal_id,
+    .data$date,
+    .data$time,
+    .data$logger_id
+  )
 
   # Apply factors
   a$animal_id <- factor(a$animal_id, levels = animal_id)
@@ -1266,9 +1276,7 @@ activity_single <- function(
     end <- lubridate::ceiling_date(max(p1$end), "day")
 
     # Calculate Activity only if > 24hrs of data
-    if (
-      (max(p1$end) - min(p1$start)) < lubridate::dhours(24) & keep_all == FALSE
-    ) {
+    if ((max(p1$end) - min(p1$start)) < lubridate::dhours(24) && !keep_all) {
       message(paste0(
         p1$animal_id[1],
         ": Skipping. Individual has less than 24hrs of data"
@@ -1306,7 +1314,7 @@ activity_single <- function(
           "% of obs are shorter than 'res' (",
           res,
           " min). Median obs is ",
-          round(median(p1$length), 2),
+          round(stats::median(p1$length), 2),
           " min."
         ))
       }
@@ -1325,7 +1333,7 @@ activity_single <- function(
       a$date <- lubridate::as_date(lubridate::floor_date(a$time, unit = "day"))
 
       # Get by individual only, or by individual for each logger
-      if (by_logger == FALSE) {
+      if (!by_logger) {
         a$logger_id <- NA
       } else {
         temp <- tibble::tibble()
@@ -1338,8 +1346,8 @@ activity_single <- function(
       # Fill with active/inactive
       for (p_id in unique(p1$logger_id)) {
         p <- p1[p1$logger_id == p_id, ]
-        for (i in 1:nrow(p)) {
-          if (by_logger == FALSE) {
+        for (i in seq_len(nrow(p))) {
+          if (!by_logger) {
             a$activity_c[a$time >= p$start[i] & a$time <= p$end[i]] <- "active"
           } else {
             a$activity_c[
@@ -1364,7 +1372,7 @@ activity_single <- function(
       a$activity[a$activity_c == "unknown"] <- NA
 
       # Calculate sunrise/sunset times
-      if (sun == TRUE) {
+      if (sun) {
         if (!all(c("lat", "lon") %in% names(p1))) {
           message(paste0(
             p1$animal_id[1],
@@ -1387,7 +1395,7 @@ activity_single <- function(
               relationship = "many-to-many"
             )
 
-          if (by_logger == TRUE) {
+          if (by_logger) {
             a <- dplyr::left_join(
               a,
               s[, c("logger_id", "date", "rise", "set")],
@@ -1395,8 +1403,11 @@ activity_single <- function(
             )
           } else {
             s <- s %>%
-              dplyr::group_by(date) %>%
-              dplyr::summarize(rise = median(rise), set = median(set))
+              dplyr::group_by(.data$date) %>%
+              dplyr::summarize(
+                rise = stats::median(.data$rise),
+                set = stats::median(.data$set)
+              )
             a <- dplyr::left_join(a, s[, c("date", "rise", "set")], by = "date")
           }
         }
@@ -1464,7 +1475,7 @@ daily <- function(a, pass = TRUE) {
   # Apply single function
 
   d <- a %>%
-    dplyr::group_by(animal_id) %>%
+    dplyr::group_by(.data$animal_id) %>%
     dplyr::do(daily_single(., pass = pass)) %>%
     dplyr::ungroup()
 
@@ -1482,15 +1493,15 @@ daily_single <- function(a1, pass = TRUE) {
   tz <- attr(a1$time, "tzone")
 
   d <- a1 %>%
-    dplyr::group_by(animal_id, logger_id, time_c) %>%
+    dplyr::group_by(.data$animal_id, .data$logger_id, .data$time_c) %>%
     dplyr::summarize(
-      p_active = length(activity_c[activity_c == "active"]) /
-        length(activity_c[activity_c != "unknown"]),
-      p_inactive = length(activity_c[activity_c == "inactive"]) /
-        length(activity_c[activity_c != "unknown"]),
-      p_unknown = length(activity_c[activity_c == "unknown"]) /
-        length(activity_c),
-      p_total = 1 - p_unknown
+      p_active = length(.data$activity_c[.data$activity_c == "active"]) /
+        length(.data$activity_c[.data$activity_c != "unknown"]),
+      p_inactive = length(.data$activity_c[.data$activity_c == "inactive"]) /
+        length(.data$activity_c[.data$activity_c != "unknown"]),
+      p_unknown = length(.data$activity_c[.data$activity_c == "unknown"]) /
+        length(.data$activity_c),
+      p_total = 1 - .data$p_unknown
     )
 
   d$time <- as.POSIXct(paste0(lubridate::origin, " ", d$time_c), tz = tz)
@@ -1501,11 +1512,12 @@ daily_single <- function(a1, pass = TRUE) {
     sun <- unique(a1[, c("date", "logger_id", "rise", "set")])
 
     sun <- sun %>%
-      dplyr::group_by(logger_id) %>%
+      dplyr::group_by(.data$logger_id) %>%
       dplyr::summarize(
-        rise = mean_clock(rise, origin = TRUE),
-        set = mean_clock(set, origin = TRUE)
+        rise = mean_clock(.data$rise, origin = TRUE),
+        set = mean_clock(.data$set, origin = TRUE)
       )
+
     d <- merge(d, sun, by = "logger_id", all.x = TRUE, all.y = FALSE)
   }
 
@@ -1525,5 +1537,5 @@ daily_single <- function(a1, pass = TRUE) {
   n <- n[n %in% names(d)]
 
   dplyr::select(d, dplyr::all_of(n)) %>%
-    dplyr::arrange(animal_id, time)
+    dplyr::arrange(.data$animal_id, .data$time)
 }

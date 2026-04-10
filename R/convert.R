@@ -85,7 +85,7 @@ convert_asnipe <- function(
           min(.data$time, na.rm = TRUE),
           units = !!time_scale
         ),
-        time = as.numeric(time)
+        time = as.numeric(.data$time)
       ) %>%
       dplyr::select("time", "identity" = "animal_id", "location" = "logger_id")
   } else if (fun == "get_associations_points_tw") {
@@ -309,7 +309,7 @@ convert_perc <- function(d) {
   check_format(d)
 
   d %>%
-    dplyr::filter(n != 0) %>%
+    dplyr::filter(.data$n != 0) %>%
     dplyr::mutate(
       displacer = as.character(.data$displacer),
       displacee = as.character(.data$displacee)

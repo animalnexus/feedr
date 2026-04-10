@@ -5,7 +5,7 @@
 #'
 #' @name feedr-package
 #' @aliases feedr feedr-package
-#' @importFrom rlang .data .env
+#' @importFrom rlang .data .env :=
 #' @keywords internal
 "_PACKAGE"
 

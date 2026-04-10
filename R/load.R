@@ -111,7 +111,7 @@ load_raw <- function(
 ) {
   # Error Checks
   r_file <- try(as.character(r_file), silent = TRUE)
-  if (class(r_file) != "character") {
+  if (!inherits(r_file, "character")) {
     stop("r_file must coercible to character")
   }
   if (length(r_file) > 1) {
@@ -183,7 +183,7 @@ load_raw <- function(
       if (!is.na(logger_pattern)) {
         r$logger_id <- stringr::str_extract(r_file, logger_pattern)
       }
-      if (any(is.na(r$logger_id))) {
+      if (anyNA(r$logger_id)) {
         stop("logger_id not detected in file name", call. = FALSE)
       }
     } else if (details > 0) {
@@ -197,7 +197,7 @@ load_raw <- function(
         )
       }
 
-      if (any(is.na(r$logger_id))) {
+      if (anyNA(r$logger_id)) {
         stop("logger_id not detected from first line of file", call. = FALSE)
       }
       if (
@@ -221,9 +221,7 @@ load_raw <- function(
         trimws()
 
       locs <- suppressWarnings(try(as.numeric(locs), silent = TRUE))
-      if (
-        inherits(locs, "try-error") || any(is.na(locs)) || length(locs) != 2
-      ) {
+      if (inherits(locs, "try-error") || anyNA(locs) || length(locs) != 2) {
         stop(
           "Expecting one pair of lat/lon on second line of the file. Check format or change 'details'\n(Format should be e.g.,  53.91448, -122.76925).",
           call. = FALSE
@@ -252,7 +250,7 @@ load_raw <- function(
       names(r) %in% c("animal_id", "date", "time", "logger_id", "lat", "lon")
     ]
     r <- dplyr::select(r, dplyr::all_of(cols)) %>%
-      dplyr::arrange(time, animal_id)
+      dplyr::arrange(.data$time, .data$animal_id)
 
     # Get any extra columns by matching patterns in file name as specified by extra_pattern and extra_name
     if (!is.null(extra_pattern)) {
@@ -261,7 +259,7 @@ load_raw <- function(
           "You have specified patterns to match for extra columns, but you have not specified what these column names ('extra_name') should be."
         )
       }
-      for (i in 1:length(extra_pattern)) {
+      for (i in seq_along(extra_pattern)) {
         r[, extra_name[i]] <- stringr::str_extract(r_file, extra_pattern[i])
       }
     } else if (!is.null(extra_name)) {

@@ -44,5 +44,5 @@ summaries <- function(d, summary = "sum_indiv") {
     d <- dplyr::summarize(d, s = unique(.data$s), .groups = "drop")
   }
 
-  dplyr::rename(d, !!n := s)
+  dplyr::rename(d, !!n := .data$s)
 }
