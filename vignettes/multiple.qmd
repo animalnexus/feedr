@@ -1,20 +1,32 @@
 ---
 title: "Transformations with multiple groups"
+vignette: >
+  %\VignetteIndexEntry{Transformations with multiple groups}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
 ---
 
-Sometimes you may want to perform the same data transformations multiple times, perhaps for different sites, time periods, or experiments. You could repeat yourself, but the easiest thing to do is to use the `map()` frunction from the [`purrr` package](http://purrr.tidyverse.org/).
+Sometimes you may want to perform the same data transformations multiple times, perhaps for different sites, time periods, or experiments. You could repeat yourself, but the easiest thing to do is to use the `map()` function from the [`purrr` package](http://purrr.tidyverse.org/).
 
-This function allows you to apply functions to nested data in your data frame.
+First we'll load the packages we want to use.
 
-In this example we have two experiments, so we want to calculate the transformations separately for each experiment. First we need to `nest()` the raw data by experiment. 
+```{r}
+#| message: false
+library(feedr)
+library(dplyr)
+library(tidyr)
+library(purrr)
+```
+
+In this example we have two experiments, so we want to calculate the transformations separately for each experiment. First we need to `nest()` (from the tidyr package) the raw data by experiment. 
 Then we can calculate `visits()`, `presence()` and `move()`ments within this dataset.
 Here, all data sets can be kept together in a single object (note that each line in mutate runs sequentially, so we can create the column `visits` and then use it in the next line).
 
 ```{r}
-library(dplyr)
-library(tidyr)
-library(purrr)
-
 exp <- chickadees |>
   group_by(experiment) |>
   nest(.key = "raw") |>

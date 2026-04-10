@@ -1,5 +1,13 @@
 ---
 title: "Loading in Data"
+vignette: >
+  %\VignetteIndexEntry{Loading in Data}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
 ---
 
 ```{r setup}

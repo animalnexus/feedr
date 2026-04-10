@@ -1,5 +1,13 @@
 ---
 title: "Transforming/Summarizing Data"
+vignette: >
+  %\VignetteIndexEntry{Transforming/Summarizing Data}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
 ---
 
 This section will get you started with transforming and summarizing your data from raw read data to a variety of different data types which can be used to answer different questions.
@@ -9,8 +17,10 @@ Here we assume that you know how to [load/import](load.html) your data and that,
 Note that for several examples of summarizing, we'll be using functions pipes `|>`, which essentially 'pipes' the output of the first line to the next line, see this explanation of [using the pipe in data transformations](https://r4ds.hadley.nz/data-transform.html#sec-the-pipe) for more details.
 
 ```{r}
+library(feedr)
 library(dplyr)
 library(lubridate)
+library(ggplot2)
 ```
 
 
@@ -171,7 +181,6 @@ You can find an in-depth look at `dplyr`, pipes and related packages here: <http
 For reference, you can achieve the same effect without pipes:
 
 ```{r}
-library(dplyr)
 visit_summary <- group_by(v, animal_id)
 visit_summary <- summarize(
   visit_summary,
@@ -238,7 +247,7 @@ In this case, four `animal_id` have been omitted because they never moved betwee
 ```{r}
 unique(m$animal_id) # The animal_ids currently in the movement data
 length(unique(m$animal_id)) # The number of animal_ids currently in the data
-length(levels(m$animal_id)) # The number of levels of animal_id
+nlevels(m$animal_id) # The number of levels of animal_id
 ```
 
 However, if you wanted to retain all animals in the data set, regardless of whether they moved or not (for example, if you wanted to look at the likelihood of moving between loggers), you can specify that:
@@ -248,7 +257,7 @@ m <- move(v, all = TRUE)
 
 unique(m$animal_id) # The animal_ids currently in the movement data
 length(unique(m$animal_id)) # The number of animal_ids currently in the data
-length(levels(m$animal_id)) # The number of levels of animal_id
+nlevels(m$animal_id) # The number of levels of animal_id
 ```
 
 Here we've told R that an additional parameter for `move()` is `all = TRUE`. animals which never visit more than one logger will have NA's in the data frame:
@@ -509,20 +518,15 @@ v <- visits(finches_lg, bw = 5)
 head(disp(v)$summaries)
 head(disp(v, bw = 10)$summaries)
 head(disp(v, bw = 15)$summaries)
-`
-`
-`
+```
+
 However, an interval of 15s is pretty long and probably doesn't constitute a real displacement event.
 
 ### Summarizing
 
 Is one logger more contentious than others?
 
-`
-``
-{
-  r
-}
+```{r}
 v <- visits(finches_lg, bw = 5)
 d <- disp(v)
 
@@ -545,17 +549,17 @@ disp_summary <- d$displacements |>
 
 presence_summary <- p |>
   group_by(logger_id) |>
-  summarize(p, amount = sum(as.numeric(length)))
+  summarize(amount = sum(as.numeric(length)))
 
 full_summary <- full_join(disp_summary, presence_summary, by = "logger_id") |>
   mutate(
     n = replace(n, is.na(n), 0), # First replace the missing values of n with 0
     n_per_hour = n / amount * 60
-  ) # Calculate the number of interactions as an hourly rate
+  ) # Calculate the number of interactions as an hourly rate of hours actually used
 
 full_summary
 
-ggplot(data = full_summary, aes(x = logger_id, y = n)) +
+ggplot(data = full_summary, aes(x = logger_id, y = n_per_hour)) +
   geom_bar(stat = "identity")
 ```
 
@@ -632,10 +636,6 @@ Currently this functionality is not implemented. However, eventually we plan to 
 Activity patterns can be plotted in ggplot2. Let's look at a specific time period:
 
 ```{r, fig.height = 10}
-library(dplyr)
-library(ggplot2)
-library(lubridate)
-
 # Filter by date and animal ID, create a "day" column
 sept <- filter(
   a,

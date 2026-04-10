@@ -1,5 +1,13 @@
 ---
 title: "Visualizing Data"
+vignette: >
+  %\VignetteIndexEntry{Visualizing Data}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
 ---
 
 
@@ -15,6 +23,9 @@ The companion package, `feedrUI`, also includes a stand-alone shiny app (launche
 Let's start by calculating presence and movements:
 
 ```{r}
+library(feedr)
+library(dplyr)
+
 v <- visits(finches_lg)
 p <- presence(v)
 m <- move(v)

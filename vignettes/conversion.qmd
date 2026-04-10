@@ -1,9 +1,25 @@
 ---
 title: "Conversion functions"
-format: html
+vignette: >
+  %\VignetteIndexEntry{Conversion functions}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
 ---
 
 Conversion functions permit you to format raw or transformed data for use in other packages.
+
+## Setup
+
+First we'll load the packages we want to use.
+
+```{r}
+#| message: false
+library(feedr)
+```
 
 ### `convert_anidom()`
 
@@ -28,24 +44,6 @@ estimate_uncertainty_by_splitting(
   winners = i$winner,
   losers = i$loser,
   randomise = TRUE
-)
-```
-
-### `convert_dominance()`
-Converts the output of `disp()` for use by the package [`Dominance`](https://cran.r-project.org/package=Dominance)'s functions: `ADI()` and `Sociogram()`
-
-```{r}
-d <- disp(visits(finches_lg), bw = 5)
-i <- convert_dominance(d)
-
-library(Dominance)
-
-# Calculate the Average Dominance Index
-ADI(
-  data_sheet = i$data_sheet,
-  items = i$items,
-  actions = i$actions,
-  bytes = i$bytes
 )
 ```
 

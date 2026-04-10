@@ -4,3 +4,4 @@ inst/doc
 docs/*_cache/
 data-raw/Pictures/
 docs
+**/.quarto/

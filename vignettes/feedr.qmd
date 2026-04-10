@@ -1,5 +1,13 @@
 ---
 title: "Getting started"
+vignette: >
+  %\VignetteIndexEntry{Getting started}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
 ---
 
 ```{r setup, include = FALSE}
@@ -78,8 +86,9 @@ map[label = '{Visualizations | {ui_animate() | map_leaflet()}}']
 Two data frames, `finches` and `chickadees` are included in the feedr package for the purpose of demonstration.
 
 ```{r}
-head(finches)
-head(chickadees)
+library(feedr)
+finches
+chickadees
 ```
 
 ## Function Index

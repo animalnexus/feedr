@@ -30,12 +30,12 @@ Suggests:
     knitr,
     Perc,
     png,
+    quarto,
     rmarkdown,
     sp,
     testthat (>= 3.0.0)
 RoxygenNote: 7.3.2
-VignetteBuilder:
-    quarto
+VignetteBuilder: quarto, knitr
 Roxygen: list(markdown = TRUE)
 Encoding: UTF-8
 Config/testthat/edition: 3
