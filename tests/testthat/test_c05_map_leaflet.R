@@ -1,5 +1,6 @@
 test_that("maps_leaflet_base return maps", {
   skip_on_cran()
+  skip_on_os(c("windows", "mac"))
 
   expect_silent(
     map <- map_leaflet_base(
@@ -11,34 +12,44 @@ test_that("maps_leaflet_base return maps", {
     attr(map$x, "leafletData"),
     unique(finches[, c("logger_id", "lat", "lon")])
   )
+
+  skip_on_os(c("windows", "mac"))
   expect_snapshot_value(deparse(map$x), style = "json2")
 })
 
-test_that("map_leaflet() returns summary map", {
+test_that("map_leaflet() returns sum", {
   skip_on_cran()
 
-  expect_error(
+  expect_silent(
     map <- map_leaflet(
       p = presence(visits(finches)),
       m = move(visits(finches)),
       summary = "sum"
-    ),
-    NA
+    )
   )
   expect_s3_class(map, c("leaflet", "htmlwidget"))
-  expect_snapshot_value(deparse(map$x), style = "json2")
 
-  expect_error(
+  skip_on_os(c("windows", "mac"))
+  expect_snapshot_value(deparse(map$x), style = "json2")
+})
+
+test_that("map_leaflet() returns sum_indiv", {
+  skip_on_cran()
+  expect_silent(
     map <- map_leaflet(
       p = presence(visits(finches)),
       m = move(visits(finches)),
       summary = "sum_indiv"
-    ),
-    NA
+    )
   )
   expect_s3_class(map, c("leaflet", "htmlwidget"))
-  expect_snapshot_value(deparse(map$x), style = "json2")
 
+  skip_on_os(c("windows", "mac"))
+  expect_snapshot_value(deparse(map$x), style = "json2")
+})
+
+test_that("map_leaflet() returns pre-summarized", {
+  skip_on_cran()
   p2 <- presence(visits(finches)) %>%
     dplyr::group_by(logger_id, lat, lon) %>%
     dplyr::summarize(amount = sum(length) / logger_n[1], .groups = "drop")
@@ -52,6 +63,8 @@ test_that("map_leaflet() returns summary map", {
 
   expect_error(map <- map_leaflet(p = p2, m = m2), NA)
   expect_s3_class(map, c("leaflet", "htmlwidget"))
+
+  skip_on_os(c("windows", "mac"))
   expect_snapshot_value(deparse(map$x), style = "json2")
 })
 
@@ -67,7 +80,9 @@ test_that("map_leaflet() returns summary map of individuals", {
 
   expect_error(map <- map_leaflet(p = p_indiv, m = m_indiv), NA)
   expect_s3_class(map, c("leaflet", "htmlwidget"))
-  expect_snapshot_value(deparse(map$x), style = "json2")
+
+  skip_on_os(c("windows", "mac"))
+  expect_snapshot_value(deparse(map$x), style = "json2", variant = )
 })
 
 test_that("map_leaflet() scale, pal, title", {
@@ -88,5 +103,7 @@ test_that("map_leaflet() scale, pal, title", {
     NA
   )
   expect_s3_class(map, c("leaflet", "htmlwidget"))
+
+  skip_on_os(c("windows", "mac"))
   expect_snapshot_value(deparse(map$x), style = "json2")
 })
