@@ -14,8 +14,8 @@ file.edit("NEWS.md")
 # Rebuild README
 devtools::build_readme()
 
-# Precompile Vignettes
-source("vignettes/articles/precompile.R")
+# Precompile Vignettes - If needed add precompilation script
+# source("vignettes/articles/precompile.R")
 
 # Standard checks ------------------------------------------
 devtools::test() # Use Ctrl-Shift-T to test non-interactively
