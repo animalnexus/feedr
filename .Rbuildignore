@@ -16,3 +16,5 @@
 ^vignettes/*_files$
 ^README.Rmd$
 ^RELEASE.R$
+^CODE_DESIGN\.md$
+^\.claude$
