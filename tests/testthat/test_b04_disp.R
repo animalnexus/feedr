@@ -1,5 +1,4 @@
 test_that("disp() returns appropriate, non-empty dataframe", {
-
   ## Errors
   expect_message(d <- visits(finches) %>% disp(), "There are no displacement")
   expect_silent(d <- visits(finches) %>% disp(bw = 300))
@@ -21,7 +20,10 @@ test_that("disp() returns appropriate, non-empty dataframe", {
   expect_equal(sum(is.na(d2)), 0)
   expect_equal(sum(is.na(d3)), 0)
 
-  expect_match(names(d1)[1:3], "^animal_id$|^date$|^left$|^arrived$|^logger_id$|^role$")
+  expect_match(
+    names(d1)[1:3],
+    "^animal_id$|^date$|^left$|^arrived$|^logger_id$|^role$"
+  )
   expect_s3_class(d1$animal_id, "factor")
   expect_s3_class(d1$date, "Date")
   expect_s3_class(d1$logger_id, "factor")
@@ -29,9 +31,11 @@ test_that("disp() returns appropriate, non-empty dataframe", {
 })
 
 test_that("disp() has correct spacing", {
-  for(b in c(15, 30, 100, 300, 1000)) {
+  for (b in c(15, 30, 100, 300, 1000)) {
     d <- visits(finches) %>% disp(., bw = b) %>% .$displacements
-    expect_true(all(as.numeric(difftime(d$arrived, d$left, units = "secs")) <= b))
+    expect_true(all(
+      as.numeric(difftime(d$arrived, d$left, units = "secs")) <= b
+    ))
   }
 })
 
@@ -42,12 +46,33 @@ test_that("disp() returns correct data", {
   d3 <- d[["interactions"]]
 
   ## Data
-  expect_equal(unique(d1$animal_id[1]), factor("0620000514", levels = c("041868D396", "041868D861", "062000043E", "06200004F8", "0620000514")))
-  expect_equal(d1$logger_id[1], factor(c("2200"), levels = c("2100", "2200", "2400", "2700")))
-  expect_equal(d1$left[1], as.POSIXct(c("2016-01-28 12:34:28"), tz = "Etc/GMT+8"))
+  expect_equal(
+    unique(d1$animal_id[1]),
+    factor(
+      "0620000514",
+      levels = c(
+        "041868D396",
+        "041868D861",
+        "062000043E",
+        "06200004F8",
+        "0620000514"
+      )
+    )
+  )
+  expect_equal(
+    d1$logger_id[1],
+    factor(c("2200"), levels = c("2100", "2200", "2400", "2700"))
+  )
+  expect_equal(
+    d1$left[1],
+    as.POSIXct(c("2016-01-28 12:34:28"), tz = "Etc/GMT+8")
+  )
   expect_equal(d1$date[1], lubridate::as_date("2016-01-28"))
 
-  expect_equal(d1$date, lubridate::as_date(d1$left, tz = lubridate::tz(d1$left)))
+  expect_equal(
+    d1$date,
+    lubridate::as_date(d1$left, tz = lubridate::tz(d1$left))
+  )
 
   expect_equal(d1$animal_n[1], 5)
   expect_equal(d1$logger_n[1], 4)
@@ -61,7 +86,12 @@ test_that("disp() returns correct data", {
 })
 
 test_that("disp() pass", {
-  expect_length(visits(finches) %>% disp(., bw = 30, pass = FALSE) %>% .$displacements, 6)
-  expect_length(visits(finches) %>% disp(., bw = 30, pass = TRUE) %>% .$displacements, 14)
+  expect_length(
+    visits(finches) %>% disp(., bw = 30, pass = FALSE) %>% .$displacements,
+    6
+  )
+  expect_length(
+    visits(finches) %>% disp(., bw = 30, pass = TRUE) %>% .$displacements,
+    14
+  )
 })
-

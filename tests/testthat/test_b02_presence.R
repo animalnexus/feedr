@@ -1,6 +1,5 @@
 # presence() single
 test_that("presence() handles single animal", {
-
   p <- visits(finches) %>%
     dplyr::filter(animal_id == "0620000514") %>%
     presence() %>%
@@ -9,7 +8,10 @@ test_that("presence() handles single animal", {
   ## Format
   expect_s3_class(p, "data.frame")
   expect_length(p, 14)
-  expect_match(names(p)[1:5], "^logger_id$|^animal_id$|^date$|^start$|^end$|^length$")
+  expect_match(
+    names(p)[1:5],
+    "^logger_id$|^animal_id$|^date$|^start$|^end$|^length$"
+  )
   expect_s3_class(p$animal_id, "factor")
   expect_s3_class(p$logger_id, "factor")
   expect_s3_class(p$date, "Date")
@@ -23,10 +25,8 @@ test_that("presence() handles single animal", {
 })
 
 
-
 # presence() multiple
 test_that("presence() handles multiple animals", {
-
   p <- finches %>%
     visits() %>%
     presence() %>%
@@ -35,7 +35,10 @@ test_that("presence() handles multiple animals", {
   ## Format
   expect_s3_class(p, "data.frame")
   expect_length(p, 14)
-  expect_match(names(p)[1:5], "^logger_id$|^animal_id$|^date$|^start$|^end$|^length$")
+  expect_match(
+    names(p)[1:5],
+    "^logger_id$|^animal_id$|^date$|^start$|^end$|^length$"
+  )
   expect_s3_class(p$animal_id, "factor")
   expect_s3_class(p$logger_id, "factor")
   expect_s3_class(p$date, "Date")
@@ -50,4 +53,3 @@ test_that("presence() pass", {
   expect_length(presence(visits(finches), pass = FALSE), 6)
   expect_length(presence(visits(finches), pass = TRUE), 14)
 })
-

@@ -51,39 +51,65 @@
 #' }
 #'
 #' @export
-convert_asnipe <- function(r, fun = "gmmevents", by_day = TRUE,
-                           time_scale = "secs") {
+convert_asnipe <- function(
+  r,
+  fun = "gmmevents",
+  by_day = TRUE,
+  time_scale = "secs"
+) {
   check_name(r, n = c('animal_id', 'logger_id', 'time'))
   check_time(r, n = "time", internal = FALSE)
 
   r <- dplyr::mutate(r, date = lubridate::as_date(.data$time))
 
-  if(!(time_scale %in% c("auto", "secs", "mins", "hours", "days", "weeks"))) {
-    stop("time_scale should be one of: 'auto', 'secs', 'mins', 'hours', ",
-         "'days', or 'weeks'.", call. = FALSE)
+  if (!(time_scale %in% c("auto", "secs", "mins", "hours", "days", "weeks"))) {
+    stop(
+      "time_scale should be one of: 'auto', 'secs', 'mins', 'hours', ",
+      "'days', or 'weeks'.",
+      call. = FALSE
+    )
   }
 
-  if(fun == "gmmevents"){
-    if(by_day) r <- dplyr::mutate(r,
-                                  logger_id = paste0(.data$logger_id,
-                                                     "_", .data$date),
-                                  logger_id = factor(.data$logger_id))
+  if (fun == "gmmevents") {
+    if (by_day) {
+      r <- dplyr::mutate(
+        r,
+        logger_id = paste0(.data$logger_id, "_", .data$date),
+        logger_id = factor(.data$logger_id)
+      )
+    }
     r <- r %>%
-      dplyr::mutate(time = difftime(.data$time,
-                                    min(.data$time, na.rm = TRUE),
-                                    units = !!time_scale),
-                    time = as.numeric(time)) %>%
+      dplyr::mutate(
+        time = difftime(
+          .data$time,
+          min(.data$time, na.rm = TRUE),
+          units = !!time_scale
+        ),
+        time = as.numeric(.data$time)
+      ) %>%
       dplyr::select("time", "identity" = "animal_id", "location" = "logger_id")
-  } else if(fun == "get_associations_points_tw") {
+  } else if (fun == "get_associations_points_tw") {
     r <- r %>%
-      dplyr::mutate(date = difftime(.data$date, min(.data$date, na.rm = TRUE),
-                                    units = "day"),
-                    date = as.numeric(.data$date) + 1,
-                    time = difftime(.data$time, min(.data$time, na.rm = TRUE),
-                                    units = "sec"),
-                    time = as.numeric(.data$time)) %>%
-      dplyr::select("Date" = "date", "Time" = "time",
-                    "ID" = "animal_id", "Location" = "logger_id")
+      dplyr::mutate(
+        date = difftime(
+          .data$date,
+          min(.data$date, na.rm = TRUE),
+          units = "day"
+        ),
+        date = as.numeric(.data$date) + 1,
+        time = difftime(
+          .data$time,
+          min(.data$time, na.rm = TRUE),
+          units = "sec"
+        ),
+        time = as.numeric(.data$time)
+      ) %>%
+      dplyr::select(
+        "Date" = "date",
+        "Time" = "time",
+        "ID" = "animal_id",
+        "Location" = "logger_id"
+      )
   }
   as.data.frame(r)
 }
@@ -132,13 +158,14 @@ convert_asnipe <- function(r, fun = "gmmevents", by_day = TRUE,
 #' }
 #'
 #' @export
-convert_anidom <- function(d){
-
+convert_anidom <- function(d) {
   # Function takes either the whole output of disp() or just the displacements
-  if(!is.data.frame(d)) d <- d$displacements
+  if (!is.data.frame(d)) {
+    d <- d$displacements
+  }
 
   # Check for Correct formating
-  check_name(d, c("animal_id","role"), type = "displacement")
+  check_name(d, c("animal_id", "role"), type = "displacement")
   check_format(d)
 
   # Format
@@ -146,17 +173,22 @@ convert_anidom <- function(d){
     dplyr::arrange(.data$left) %>%
     dplyr::select("animal_id", "role", "left", "arrived") %>%
     tidyr::pivot_wider(names_from = "role", values_from = "animal_id") %>%
-    dplyr::mutate(displacer = as.character(.data$displacer),
-                  displacee = as.character(.data$displacee)) %>%
+    dplyr::mutate(
+      displacer = as.character(.data$displacer),
+      displacee = as.character(.data$displacee)
+    ) %>%
     dplyr::select("winner" = "displacer", "loser" = "displacee") %>%
     as.data.frame()
 }
 
 
-#' Convert displacements for use by functions from the Dominance package
+#' DEFUNCT - Convert displacements for use by functions from the Dominance package
+#'
+#' **The Dominance package is no longer available therefore this function
+#'   is defunct**
 #'
 #' Converts displacements RFID data into a format for easy use by either the
-#' [Dominance::ADI()] or the [Dominance::Sociogram()]
+#' `Dominance::ADI()` or the `Dominance::Sociogram()`
 #' functions included in the Dominance package for calculating average
 #' dominance indices and drawing sociograms. Only includes individuals that
 #' participated in at least one interaction.
@@ -177,60 +209,14 @@ convert_anidom <- function(d){
 #'   vector indicating that the action type "displacement" should be included in
 #'   the calculation. See examples for specific application.
 #'
-#' @seealso Dominance package and it's functions: [Dominance::ADI] and [Dominance::Sociogram]. <https://cran.r-project.org/package=Dominance>
-#'
-#' @examples
-#' # Calculate displacements
-#' d <- disp(visits(finches_lg))
-#'
-#' # Format for use by Dominance package
-#' i <- convert_dominance(d)
-#' i <- convert_dominance(d$displacements) # Equivalent
-#'
-#' \dontrun{
-#' # Use Dominance package:
-#' library(Dominance)
-#'
-#' # Calculate the Average Dominance Index
-#' ADI(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bytes = i$bytes)
-#'
-#' # Construct social network graphs
-#' Sociogram(data_sheet = i$data_sheet, items = i$items, actions = i$actions, bits = i$bytes)
-#' }
-#'
 #' @export
+
 convert_dominance <- function(d) {
-  # Function takes either the whole output of disp() or just the displacements
-  if(!is.data.frame(d)) d <- d$displacements
-
-  # Check for Correct formating
-  check_name(d, c("animal_id","role"), type = "displacement")
-  check_format(d)
-
-  d <- d %>%
-    dplyr::arrange(left) %>%
-    dplyr::mutate(animal_id = as.character(.data$animal_id),
-                  item.number = as.numeric(factor(!!d$animal_id)))
-
-  items <- d %>%
-    dplyr::select("Name" = "animal_id", "item.number") %>%
-    dplyr::distinct() %>%
-    dplyr::arrange(.data$item.number) %>%
-    as.data.frame()
-
-  data_sheet <- d %>%
-    dplyr::select("item.number", "role", "left", "arrived") %>%
-    tidyr::pivot_wider(names_from = "role", values_from = "item.number") %>%
-    dplyr::select("action.from" = "displacer", "action.to" = "displacee") %>%
-    dplyr::mutate(kind.of.action = 1) %>%
-    as.data.frame()
-
-  actions <- data.frame(name.of.action = "displacement", action.number = 1,
-                        classification = 1, weighting = 1, stringsAsFactors = FALSE)
-
-  bytes <- paste0(rep(1, nrow(actions)), collapse = "")
-
-  list(data_sheet = data_sheet, items = items, actions = actions, bytes = bytes)
+  stop(
+    "The Dominance package is no longer available therefore this function ",
+    "is defunct",
+    call. = FALSE
+  )
 }
 
 #' Convert displacements for use by the Perc package
@@ -271,21 +257,27 @@ convert_dominance <- function(d) {
 #' }
 #'
 #' @export
-convert_perc <- function(d){
-
+convert_perc <- function(d) {
   # Function takes either the whole output of disp() or just the displacements
-  if(!is.data.frame(d)) d <- d$interactions
+  if (!is.data.frame(d)) {
+    d <- d$interactions
+  }
 
   # Check for Correct formating
-  check_name(d, c("displacer", "displacee","n"), type = "displacement")
+  check_name(d, c("displacer", "displacee", "n"), type = "displacement")
   check_format(d)
 
   d %>%
-    dplyr::filter(n != 0) %>%
-    dplyr::mutate(displacer = as.character(.data$displacer),
-                  displacee = as.character(.data$displacee)) %>%
-    dplyr::rename("Initiator1" = "displacer", "Recipient1" = "displacee",
-                  "Freq" = "n") %>%
+    dplyr::filter(.data$n != 0) %>%
+    dplyr::mutate(
+      displacer = as.character(.data$displacer),
+      displacee = as.character(.data$displacee)
+    ) %>%
+    dplyr::rename(
+      "Initiator1" = "displacer",
+      "Recipient1" = "displacee",
+      "Freq" = "n"
+    ) %>%
     as.data.frame()
 }
 
@@ -327,16 +319,18 @@ convert_perc <- function(d){
 #' }
 #'
 #' @export
-convert_activity <- function(r){
+convert_activity <- function(r) {
   # Check for Correct formatting
   check_name(r, n = c('animal_id', 'logger_id', 'time'))
   check_time(r, n = "time", internal = FALSE)
 
   t <- r %>%
-    dplyr::mutate(midnight = lubridate::floor_date(.data$time, "day"),
-                  time_sec = difftime(.data$time, .data$midnight, units = "sec"),
-                  time_sec = as.numeric(.data$time_sec) / (60*60*24),
-                  time_rad = 2 * pi * .data$time_sec) %>%
+    dplyr::mutate(
+      midnight = lubridate::floor_date(.data$time, "day"),
+      time_sec = difftime(.data$time, .data$midnight, units = "sec"),
+      time_sec = as.numeric(.data$time_sec) / (60 * 60 * 24),
+      time_rad = 2 * pi * .data$time_sec
+    ) %>%
     dplyr::select("animal_id", "time_rad") %>%
     tidyr::nest(data = c(.data$time_rad)) %>%
     dplyr::rowwise() %>%

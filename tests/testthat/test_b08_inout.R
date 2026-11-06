@@ -28,7 +28,6 @@ test_that("Data looks as expected", {
 })
 
 test_that("Trips have valid values", {
-
   # No enters == exits
   expect_true(all(out_dir$exit < out_dir$enter))
   expect_true(all(in_dir$enter < in_dir$exit))

@@ -1,50 +1,77 @@
+# feedr 1.0.0
+
+- Full revamping of code, using pkgdown docs, removing conversion functions for
+  defunct packages.
+
 # feedr 0.11.0
 
 - Updated package to current dependency versions
-- Splitting Shiny UI elements into a separate package to make maintaining this one easier
-
+- Splitting Shiny UI elements into a separate package to make maintaining this
+  one easier
 
 # feedr 0.10.0
 
 ## New features
-- Add `inout()` function to calculate trips with RFID loggers are set up to determine directionality
+
+- Add `inout()` function to calculate trips with RFID loggers are set up to
+  determine directionality
 
 ## Bug fix
+
 - Fix `load_format()` so it lose millisecond information in times
-- Convert `length` to numeric in `presence()` to avoid problems with `ui_animate()`
+- Convert `length` to numeric in `presence()` to avoid problems with
+  `ui_animate()`
 - Fix bug which crashed `ui_trans()`
 
 # feedr 0.9.1
 
-- Fix bug wherein dates were converted using wrong timezone, occasionally resulting in wrong date
+- Fix bug wherein dates were converted using wrong timezone, occasionally
+  resulting in wrong date
 - Updated included datasets
 
 # feedr 0.9.0
 
 ## Major Changes
+
 - animalnexus.ca now includes 'Settings' tab to change function arguments
-- New 'convert' functions: convert_asnipe, convert_anidom, convert_dominance, convert_perc, convert_activity to convert data for use by other packages (namely [asnipe](https://cran.r-project.org/package=asnipe), [aniDom](https://cran.r-project.org/package=aniDom),  [Dominance](https://cran.r-project.org/package=Dominance), [Perc](https://cran.r-project.org/package=Perc), [activity](https://CRAN.R-project.org/package=activity))
-- New summary options for map_leaflet() and map_ggmap(). These arguments perform common data summarizations before plotting, so users have the option of passing unsummarized movement and presence data.
-- Removed the `dom()` function in favour of conversion functions. Dominance can be calculated by other packages.
+- New 'convert' functions: convert_asnipe, convert_anidom, convert_dominance,
+  convert_perc, convert_activity to convert data for use by other packages
+  (namely [asnipe](https://cran.r-project.org/package=asnipe),
+  [aniDom](https://cran.r-project.org/package=aniDom),
+  [Dominance](https://cran.r-project.org/package=Dominance),
+  [Perc](https://cran.r-project.org/package=Perc),
+  [activity](https://CRAN.R-project.org/package=activity))
+- New summary options for map_leaflet() and map_ggmap(). These arguments perform
+  common data summarizations before plotting, so users have the option of
+  passing unsummarized movement and presence data.
+- Removed the `dom()` function in favour of conversion functions. Dominance can
+  be calculated by other packages.
 
 ## Bug fixes/tweaks
-- `load_format()`, `ui_import()` and animalnexus Import tab are now much more forgiving for column names
-    - will ignores capitalizations
-    - will accept lon, long, and longitude, as well as lat, and latitude for coordinates
-    - will accept animal_id or bird_id, and logger_id or feeder_id
-    - will rename all to be consistent: animal_id, logger_id, time, lon, lat
-- `load_format()` has new `verbose` argument to allow/prevent messages about renaming
-- `load_raw()` and `load_raw_all()` have new `verbose` argument to allow/prevent progress messages
+
+- `load_format()`, `ui_import()` and animalnexus Import tab are now much more
+  forgiving for column names
+  - will ignores capitalizations
+  - will accept lon, long, and longitude, as well as lat, and latitude for
+    coordinates
+  - will accept animal_id or bird_id, and logger_id or feeder_id
+  - will rename all to be consistent: animal_id, logger_id, time, lon, lat
+- `load_format()` has new `verbose` argument to allow/prevent messages about
+  renaming
+- `load_raw()` and `load_raw_all()` have new `verbose` argument to allow/prevent
+  progress messages
 - `load_raw()` and `load_raw_all()` stop if logger_ids extracted as NA
 
 ## Other
+
 - Internal changes to include more testing
 
 # feedr 0.8.2.1
 
 ## Bug fixes
 
-- Fix bug in `visits()` where some visits were allowed to overlap (in only very specific circumstances, related to previous bug fix)
+- Fix bug in `visits()` where some visits were allowed to overlap (in only very
+  specific circumstances, related to previous bug fix)
 
 # feedr 0.8.2
 
@@ -55,8 +82,8 @@
 
 ## Bug fixes
 
-- Fix bug in `visits()` where visit was premature terminated if another animal_id was detected at a different logger.
-
+- Fix bug in `visits()` where visit was premature terminated if another
+  animal_id was detected at a different logger.
 
 # feedr 0.8.1 (2017-02-24)
 
@@ -71,7 +98,8 @@
 - Timezone usage is more consistent and uses non-DST by default
 - Fixed numerous timezone issues in animalnexus
 - Fixed bug that prevented importing a second dataset in animalnexus
-- Fixed bug that reverted to original database dataset if tried to load second dataset in animalnexus
+- Fixed bug that reverted to original database dataset if tried to load second
+  dataset in animalnexus
 - Species names are now English names
 - Active dataset name only shows first data set if multiple files loaded
 - Can't download data if zero selected
@@ -93,41 +121,45 @@
 - Altered display of pictures of species/individuals on animalnexus.ca
 - Added new documentation examples
 - Renamed standalone shiny apps to reflect the user-interface
-    - `import_data()` -> `ui_import()`
-    - `map_animate()` -> `ui_animate()`
+  - `import_data()` -> `ui_import()`
+  - `map_animate()` -> `ui_animate()`
 - Changed termniology to reflect more general usage
-    - `bird_id -> animal_id`
-    - `feeder_id -> logger_id`
-    - `feeding() -> presence()`
+  - `bird_id -> animal_id`
+  - `feeder_id -> logger_id`
+  - `feeding() -> presence()`
 
 ## Bug Fixes
 
 - Fixed minor errors in `activity()`, `move()` and `feeding()`
+
 - Fixed errors in documentation examples
 
-- Changed factoring to allow use of dplyr's group_by to run transformations on groups of data (e.g. different sites or experiments)
+- Changed factoring to allow use of dplyr's group_by to run transformations on
+  groups of data (e.g. different sites or experiments)
 
 # feedr 0.7.0 (2016-11-03)
 
-This update provides a large amount of new functionality and bug fixes, making the app smoother overall.
+This update provides a large amount of new functionality and bug fixes, making
+the app smoother overall.
 
 ## New functionality
 
 - Add loading messages to various calculations
 - Force user to wait until app is loaded
 - Add functions for various shiny mods which can be called from the R console
-    - map_animate()
-    - map\_animate\_indiv()
-    - map_summary()
-    - import_file()
-- Add new visualization mods (map\_animate\_indiv(), map\_summary()) to animal\_nexus.
+  - map_animate()
+  - map\_animate\_indiv()
+  - map_summary()
+  - import_file()
+- Add new visualization mods (map\_animate\_indiv(), map\_summary()) to
+  animal\_nexus.
 
 ## Updated functionality
 
 - Add date column to transformation outputs
 - Update `pass = TRUE` to also keep track of data associated with date
 - Update manual entries for various mods
-- Add more details and descriptions to animal_nexus_.
+- Add more details and descriptions to animal_nexus\_.
 - Add new column, move_id, to movements (output of move()).
 - Change `activity()` to accept multiple bird_ids
 - Add option to specify date format when importing
@@ -139,15 +171,13 @@ This update provides a large amount of new functionality and bug fixes, making t
 - Fix bug that prevents switching between sites when accessing the database
 - Fix scaling error in `map_ggmap()`
 
-    
-
 # feedr 0.6.2
 
-This update fixed a couple of minor bugs in the main package, and includes some fairly substantial changes to the animalnexus server.
+This update fixed a couple of minor bugs in the main package, and includes some
+fairly substantial changes to the animalnexus server.
 
 - Fixed bug which omitted columns even when pass = TRUE in transformations.
 - Added ability to import personal data for use in animalnexus
-
 
 # feedr 0.6.1
 
@@ -155,11 +185,11 @@ This update fixed a couple of minor bugs in the main package, and includes some 
 - Fixed some bugs in visualizations
 - Correct animalnexus UI issues
 
-
-
 # feedr 0.6.0 (2016-06-20)
 
-This update fixes a couple of small bugs and mostly involves rewriting code to use `dplyr`/`tidyr` as opposed to `plyr`/`reshape2`, and further includes `magrittr` as an import. 
+This update fixes a couple of small bugs and mostly involves rewriting code to
+use `dplyr`/`tidyr` as opposed to `plyr`/`reshape2`, and further includes
+`magrittr` as an import.
 
 - Clarify error codes
 - Fix scaling errors in mapping
@@ -167,4 +197,6 @@ This update fixes a couple of small bugs and mostly involves rewriting code to u
 
 # feedr <= 0.5.0 (2016-03-16 through 2016-06-20)
 
-These versions encompassed early days of the package. Added and developed functions for transforming and visuallizing RFID data as well as documentation and vignettes.
+These versions encompassed early days of the package. Added and developed
+functions for transforming and visuallizing RFID data as well as documentation
+and vignettes.

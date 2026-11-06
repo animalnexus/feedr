@@ -86,7 +86,7 @@ The columns \code{date} and \code{time} will be combined to extract the
 date/time of each event. Thus, the \code{time_format} argument specifies the
 order of the combined date and time columns and should be in formats usable
 by the \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} function from the
-\link{lubridate} package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.). For
+\link[lubridate:lubridate-package]{lubridate::lubridate} package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.). For
 example, the default "mdy HMS" expects a date column in the format of
 month/day/year and a time column in the format of H:M:S (note that separators
 and leading zeros are ignored, thus month-day-year is equivalent to
@@ -116,11 +116,11 @@ r <- load_raw("GPR13DATA_2015_12_01.csv", logger_pattern = "[GPR]{2,3}[0-9]{1,2}
 r <- load_raw("2300.csv", logger_pattern = "[0-9]{4}")
 
 # Load a file where the logger id is detected as the first line in the file,
-not the file name (still use default skip = 1):
+# not the file name (still use default skip = 1):
 r <- load_raw("2016-01-01_09_30.csv", details = 1)
 
 # Note that the following won't work because the pattern matches both the
-logger id as well as the year:
+# logger id as well as the year:
 r <- load_raw("2300_2015_12_01.csv", logger_pattern = "[0-9]{4}")
 
 # Extract extra data to be stored in another column:

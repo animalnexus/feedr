@@ -40,7 +40,8 @@ etc.).}
 columns.}
 }
 \description{
-Formats manually loaded data. Not necessary if using any of the helper loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, or \code{data_dl()}.
+Formats manually loaded data. Not necessary if using any of the helper
+loading functions (e.g., \code{load_raw()}, \code{load_raw_all()}, or \code{data_dl()}.
 }
 \details{
 Expects at least three named columns in the data: \code{animal_id},
@@ -51,7 +52,7 @@ and long, but will be renamed to lat and lon).
 \code{time} should be a character or factor in date/time format , e.g.
 2016-09-30 14:00:00. The exact format of the date/time can be supplied using
 the \code{time_format} argument and should represent a format usable by the
-\code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} function from the \link{lubridate}
+\code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} function from the \link[lubridate:lubridate-package]{lubridate::lubridate}
 package (e.g., "ymd HMS", "mdy HMS", "dmy HMS", etc.). For example, 09/30/16
 2:00 pm can be specified by time_format = "mdy HM p".
 }
