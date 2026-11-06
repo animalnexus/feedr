@@ -7,7 +7,7 @@ vignette: >
 knitr:
   opts_chunk:
     collapse: true
-    comment: '#>'
+    comment: "#>"
 ---
 
 Sometimes you may want to perform the same data transformations multiple times, perhaps for different sites, time periods, or experiments. You could repeat yourself, but the easiest thing to do is to use the `map()` function from the [`purrr` package](http://purrr.tidyverse.org/).
@@ -16,13 +16,14 @@ First we'll load the packages we want to use.
 
 ```{r}
 #| message: false
+
 library(feedr)
 library(dplyr)
 library(tidyr)
 library(purrr)
 ```
 
-In this example we have two experiments, so we want to calculate the transformations separately for each experiment. First we need to `nest()` (from the tidyr package) the raw data by experiment. 
+In this example we have two experiments, so we want to calculate the transformations separately for each experiment. First we need to `nest()` (from the tidyr package) the raw data by experiment.
 Then we can calculate `visits()`, `presence()` and `move()`ments within this dataset.
 Here, all data sets can be kept together in a single object (note that each line in mutate runs sequentially, so we can create the column `visits` and then use it in the next line).
 
@@ -39,7 +40,6 @@ exp <- chickadees |>
 
 exp
 ```
-
 
 These data are now ready for analysis and visualizations, or for more summarizing:
 
@@ -62,7 +62,6 @@ m_avg <- exp %>%
 summary(p_avg)
 summary(m_avg)
 ```
-
 
 ## dplyr's `do()` function
 

@@ -18,3 +18,4 @@
 ^RELEASE.R$
 ^CODE_DESIGN\.md$
 ^\.claude$
+^panache.toml$

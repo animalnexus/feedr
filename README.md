@@ -3,7 +3,7 @@
 
 [![R-CMD-check](https://github.com/animalnexus/feedr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/animalnexus/feedr/actions/workflows/R-CMD-check.yaml)
 ![Code Coverage:
-75%](https://img.shields.io/badge/code_coverage-75%-yellowgreen)
+77%](https://img.shields.io/badge/code_coverage-77%-yellowgreen)
 <!-- badges: end -->
 
 # feedr
@@ -44,7 +44,7 @@ split into two packages, the core functions (feedr) and the Shiny UI
 **The feedr package is actively maintained by Steffi LaZerte, but the
 feedrUI package is currently on hold.**
 
-We published an introduction to the pacagek in Ecology in Evolution in
+We published an introduction to the package in Ecology in Evolution in
 2017 which you can use to cite this package:
 
 LaZerte SE, Reudink MW, Otter KA, Kusack J, Bailey JM, Woolverto, A,

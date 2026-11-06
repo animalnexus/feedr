@@ -8,10 +8,10 @@ scale_area <- function(
   val_min = NULL
 ) {
   if (is.null(val_max)) {
-    val_max = max(r, na.rm = TRUE)
+    val_max <- max(r, na.rm = TRUE)
   }
   if (is.null(val_min)) {
-    val_min = min(r, na.rm = TRUE)
+    val_min <- min(r, na.rm = TRUE)
   }
 
   if (val_max == val_min) {

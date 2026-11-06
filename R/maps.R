@@ -604,7 +604,7 @@ map_leaflet <- function(
   if (any(names(p) == "animal_id", names(m) == "animal_id")) {
     animal_id <- unique(unlist(list(p$animal_id, m$animal_id)))
   } else {
-    animal_id = NULL
+    animal_id <- NULL
   }
 
   # BASE MAP

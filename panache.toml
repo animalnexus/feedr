@@ -1,0 +1,5 @@
+[format]
+wrap = "preserve"
+
+[formatters]
+r = "air"

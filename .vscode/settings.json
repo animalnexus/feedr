@@ -5,6 +5,10 @@
     },
     "[quarto]": {
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "quarto.quarto"
+        "editor.defaultFormatter": "jolars.panache"
+    },
+    "[rmarkdown]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "jolars.panache"
     }
 }

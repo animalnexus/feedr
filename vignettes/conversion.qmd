@@ -7,7 +7,7 @@ vignette: >
 knitr:
   opts_chunk:
     collapse: true
-    comment: '#>'
+    comment: "#>"
 ---
 
 Conversion functions permit you to format raw or transformed data for use in other packages.
@@ -18,6 +18,7 @@ First we'll load the packages we want to use.
 
 ```{r}
 #| message: false
+
 library(feedr)
 ```
 
@@ -47,7 +48,9 @@ estimate_uncertainty_by_splitting(
 )
 ```
 
-```{r eval = FALSE}
+```{r}
+#| eval: false
+
 # Construct social network graphs
 Sociogram(
   data_sheet = i$data_sheet,
@@ -58,6 +61,7 @@ Sociogram(
 ```
 
 ### `convert_perc()`
+
 Converts the output of `disp()` for use by the package [`Perc`](https://cran.r-project.org/package=Perc)
 
 ```{r}
@@ -76,31 +80,38 @@ simRankOrder(perm$p.hat, num = 10, kmax = 1000)
 ```
 
 ### `convert_asnipe()`
+
 Converts raw RFID data into a format for easy use by either the `gmmevents()` or the `get_associations_points_tw()` functions included in the [`asnipe`](https://cran.r-project.org/package=asnipe) package for calculating group membership.
 
 For `gmmevents()`:
+
 ```{r}
 a <- convert_asnipe(finches, fun = "gmmevents")
 head(a)
 ```
 
-```{r, eval = FALSE}
+```{r}
+#| eval: false
+
 library(asnipe)
 gmmevents(a$time, a$identity, a$location)
 ```
 
 For `get_associations_points_bw()`:
+
 ```{r}
 a <- convert_asnipe(finches, fun = "get_associations_points_tw")
 head(a)
 ```
 
-```{r, eval = FALSE}
+```{r}
+#| eval: false
+
 get_associations_points_tw(a)
 ```
 
-
 ### `convert_activity()`
+
 Converts raw RFID data into a format for easy use by the `fitact()` function included in the [`activity`](https://cran.r-project.org/package=activity) package for modelling activity levels and daily activity patterns.
 
 ```{r}

@@ -7,16 +7,14 @@ vignette: >
 knitr:
   opts_chunk:
     collapse: true
-    comment: '#>'
+    comment: "#>"
 ---
-
 
 Here we will go over visualizing your data with maps. feedr includesa wrapper function that can be used to visualize your data on maps. This function, `map_leaflet` is really just a convenience function to do a lot of the grunt work. If you want to achieve a more fine tuned map, I suggest you check out the packages `leaflet` or `mapview`.
 
 `map_leaflet` takes summarized presence and movement data and turns it into circles and paths around/between loggers representing time spent at different loggers and the amount of movement between particular logger paths. Because different projects may need different summaries (totals vs. means, corrected for number of individuals, uncorrected, etc.) we will first go over how to create the summary data and then pass this to the functions for plotting. This gives us more flexibility, but does mean that we have to do some work before we can visualize the data.
 
 The companion package, `feedrUI`, also includes a stand-alone shiny app (launched with `ui_animate()`) that can be used to create simple animations of your data, this is a simple process as it does not require summarized data, but is also less flexible (see [animations](#animations) below).
-
 
 ## Built-in Summaries
 
@@ -39,7 +37,7 @@ There are many ways we can summarize the data. The following options are availab
 
 ## `map_leaflet()` {#leaflet}
 
-This function creates an interactive html map using leaflet for R (package `leaflet`). 
+This function creates an interactive html map using leaflet for R (package `leaflet`).
 
 ```{r}
 map_leaflet(p = p, m = m, summary = "sum_indiv")
@@ -71,7 +69,7 @@ map_leaflet(p = p, m = m, summary = "indiv")
 
 Note, however, that for leaflet maps, the individual lines are stacked in order of magnitude and visualizations like this may not be very useful for large numbers of individuals.
 
-To save this map, you can zoom and set it up as you like and use the "Export > Save as image" button in RStudio. 
+To save this map, you can zoom and set it up as you like and use the "Export > Save as image" button in RStudio.
 
 ## Custom Summaries
 
@@ -84,13 +82,12 @@ p_pop
 
 We use `animal_n[1]` because we want to divide the total sum by the number of individuals in each experiment. However, the value `animal_n` is repeated, but we only need the first one, hence the `[1]`.
 
-If we wanted to calculate mean time present, we would use `amount = mean(length)`  
-If we wanted to calculate total time presence with no correction, we would use `amount = sum(length)`  
+If we wanted to calculate mean time present, we would use `amount = mean(length)`\
+If we wanted to calculate total time presence with no correction, we would use `amount = sum(length)`
 
-__Note:__ The new summary data set must have the column `amount`, regardless of how it is calculated. The mapping functions will look for that column name.
+**Note:** The new summary data set must have the column `amount`, regardless of how it is calculated. The mapping functions will look for that column name.
 
 Now let's summarize the movement data for each movement path between loggers. We can summarize individually for each logger, which will account for the double counting (one row for leaving the logger and one row for arriving) as well as making sure we have `logger_id` in the final data set. We will also group by `lat` and `lon`, so they remain in the data set (because they are associated with `logger_id` they do not contribute any unique grouping combinations).
-
 
 ```{r}
 m_pop <- summarize(
@@ -101,7 +98,7 @@ m_pop <- summarize(
 m_pop
 ```
 
-__Note:__ The new summary data set must have the column `path_use`, regardless of how it is calculated. The mapping functions will look for that column name.
+**Note:** The new summary data set must have the column `path_use`, regardless of how it is calculated. The mapping functions will look for that column name.
 
 Specify `summary = none` when the data is already summarized:
 
@@ -138,7 +135,9 @@ If you want to look at individual data, add `animal_id` to the groupings.
 
 To look at animations of your data overtime, you can use the function `ui_animate()` to launch the animation shiny app included in the feedr package:
 
-```{r, eval = FALSE}
+```{r}
+#| eval: false
+
 library(feedrUI)
 
 ui_animate(v)
@@ -148,7 +147,7 @@ ui_animate(v)
 
 > Note: While feedrUI still generally works, it is a lower maintenance priority so features many not be stable.
 
-Here you can choose 
+Here you can choose
 
 - Whether animations should show cumulative or instantaneous movements/path use
 - Which individual (or all individuals) to animate over
@@ -160,6 +159,6 @@ Here you can choose
 
 The figure along the bottom shows the number of movements and/or bouts of presence over time. This can help you chose which time frames to include.
 
+--------------------------------------------------------------------------------
 
---------------------------
 Go back to [transformations](transformations.html)
